@@ -6,6 +6,8 @@ use ffibox::define_ctype;
 
 use libcrypto_sys as ffi;
 
+use crate::stack::stack::{Stack, StackMut, StackRef};
+
 define_ctype!(
     /// Wraps: asn1_string_table_st
     Asn1StringTable,
@@ -157,5 +159,68 @@ mod tests {
         let mut exclusive = unsafe { Asn1ValueMut::from_ptr(raw) }.expect("non-null value");
         assert_eq!(exclusive.as_mut_ptr(), raw);
         assert_eq!(exclusive.as_ref().as_ptr(), raw.cast_const());
+    }
+}
+
+/// Wraps: stack_st_ASN1_STRING_TABLE
+///
+/// Typed view of OpenSSL's `STACK_OF(ASN1_STRING_TABLE)`. The generated C
+/// type erases to the common `OPENSSL_STACK` representation while this alias
+/// retains the element type.
+pub type Asn1StringTableStack = Stack<Asn1StringTable>;
+
+/// Shared borrowed handle to a `STACK_OF(ASN1_STRING_TABLE)`.
+pub type Asn1StringTableStackRef<'a> = StackRef<'a, Asn1StringTable>;
+
+/// Exclusive borrowed handle to a `STACK_OF(ASN1_STRING_TABLE)`.
+pub type Asn1StringTableStackMut<'a> = StackMut<'a, Asn1StringTable>;
+
+#[cfg(test)]
+mod stack_tests {
+    use core::mem::size_of;
+    use core::ptr;
+
+    use ffibox::{CBox, CCell, CCloned, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+
+    #[test]
+    fn string_table_stack_keeps_its_typed_erased_surface() {
+        assert_owned_cloneable_cell::<Asn1StringTableStack>();
+        assert_eq!(
+            size_of::<Asn1StringTableStack>(),
+            size_of::<ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<CBox<Asn1StringTableStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<Asn1StringTableStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<Asn1StringTableStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+
+        // `OPENSSL_sk_dup(NULL)` creates a complete empty stack.
+        // SAFETY: ownership of the returned allocation transfers to `CBox`,
+        // whose generic stack destructor calls the matching `OPENSSL_sk_free`.
+        let mut stack =
+            unsafe { CBox::<Asn1StringTableStack>::from_raw(ffi::OPENSSL_sk_dup(ptr::null())) }
+                .expect("allocate ASN1_STRING_TABLE stack");
+        let raw = stack.as_ptr();
+
+        let shared: Asn1StringTableStackRef<'_> = stack.as_ref();
+        assert_eq!(shared.as_ptr(), raw.cast_const());
+        let mut exclusive: Asn1StringTableStackMut<'_> = stack.as_mut();
+        assert_eq!(exclusive.as_mut_ptr(), raw);
+        assert_eq!(exclusive.as_ref().as_ptr(), raw.cast_const());
+
+        let duplicate = stack.try_clone().expect("duplicate typed stack");
+        assert_ne!(duplicate.as_ptr(), raw);
     }
 }
