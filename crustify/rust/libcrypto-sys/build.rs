@@ -21,6 +21,7 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "bio_addr_st",
     "bio_method_st",
     "bio_st",
+    "ossl_lib_ctx_st",
 ];
 const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
@@ -38,6 +39,8 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_secure_zalloc",
     "CRYPTO_strdup",
     "OPENSSL_LH_free",
+    "OSSL_LIB_CTX_free",
+    "OSSL_LIB_CTX_new",
 ];
 const AGENT_ALLOWED_VARS: &[&str] = &["BIO_SOCK_INFO_ADDRESS"];
 const AGENT_BLOCKLIST: &[&str] = &[];

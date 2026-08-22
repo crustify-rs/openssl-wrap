@@ -1366,6 +1366,53 @@
    }
   },
   {
+   "name": "OSSL_LIB_CTX_free",
+   "defined_in": "crypto/context.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "For a heap context, OSSL_LIB_CTX_free deinitializes and releases the allocation. NULL and the process-global default context are accepted and retained, so the general C contract also has a static borrowed path; Rust owners only adopt constructor results."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_LIB_CTX_new",
+   "defined_in": "crypto/context.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
+    }
+   }
+  },
+  {
    "name": "free",
    "defined_in": null,
    "lifetime": {
