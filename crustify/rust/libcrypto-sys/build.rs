@@ -24,7 +24,9 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "OPENSSL_STACK",
     "asn1_string_table_st",
     "bio_addr_st",
+    "bio_msg_st",
     "bio_method_st",
+    "bio_poll_descriptor_st",
     "bio_st",
     "ossl_lib_ctx_st",
     "OPENSSL_sk_compfunc",
@@ -89,7 +91,13 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "OBJ_nid2sn",
     "OBJ_sn2nid",
 ];
-const AGENT_ALLOWED_VARS: &[&str] = &["BIO_SOCK_INFO_ADDRESS"];
+const AGENT_ALLOWED_VARS: &[&str] = &[
+    "BIO_POLL_DESCRIPTOR_CUSTOM_START",
+    "BIO_POLL_DESCRIPTOR_TYPE_NONE",
+    "BIO_POLL_DESCRIPTOR_TYPE_SOCK_FD",
+    "BIO_POLL_DESCRIPTOR_TYPE_SSL",
+    "BIO_SOCK_INFO_ADDRESS",
+];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end
 

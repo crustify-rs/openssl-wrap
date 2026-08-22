@@ -411,6 +411,105 @@
    ]
   },
   {
+   "name": "bio_msg_st",
+   "defined_in": "include/openssl/bio.h",
+   "_comment_agent": "BIO_MSG is a non-owning scatter/gather descriptor. No lifecycle routine frees the descriptor or any pointer field.",
+   "fields": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed byte buffer bounded by data_len. sendmmsg reads it; recvmmsg writes received bytes into it. NULL is accepted for an empty/no-buffer message."
+     }
+    },
+    {
+     "name": "local",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller-owned BIO_ADDR. Datagram receive paths fill or clear it; send paths may read it."
+     }
+    },
+    {
+     "name": "peer",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller-owned BIO_ADDR. It is read as a destination on send and filled as a source address on receive."
+     }
+    }
+   ]
+  },
+  {
+   "name": "bio_poll_descriptor_st",
+   "defined_in": "include/openssl/bio.h",
+   "_comment_agent": "The union is non-owning and governed by type. Custom discriminants do not specify whether the shared bits are interpreted as pointer or uintptr_t.",
+   "fields": [
+    {
+     "name": "value.custom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": null,
+      "note": "Type-discriminated application-defined cookie. The OpenSSL tree does not dereference this union arm, so pointee mutability is intentionally undetermined."
+     }
+    },
+    {
+     "name": "value.ssl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed SSL handle selected by BIO_POLL_DESCRIPTOR_TYPE_SSL. SSL_poll treats NULL as a no-op and otherwise invokes mutating SSL/QUIC operations without taking ownership."
+     }
+    }
+   ]
+  },
+  {
    "name": "bio_st",
    "defined_in": "crypto/bio/bio_local.h",
    "_comment_agent": "BIO is refcounted through references. libctx and method are retained borrows; next_bio/prev_bio are non-owning chain links. cb_arg and callback_ex are application-provided borrows. ptr is method-specific and may be either owned or borrowed depending on the BIO_METHOD and shutdown policy.",

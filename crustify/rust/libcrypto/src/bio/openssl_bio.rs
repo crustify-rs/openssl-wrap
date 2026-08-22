@@ -2,12 +2,13 @@
 
 #[cfg(feature = "deprecated-1-1-0")]
 use core::ffi::CStr;
+use core::ffi::c_void;
 use core::marker::PhantomData;
 #[cfg(feature = "deprecated-1-1-0")]
 use core::ptr;
 use core::ptr::{NonNull, addr_of};
 
-use ffibox::{CCell, CPtr, CType, CVal, CValued};
+use ffibox::{CCell, CPtr, CSlice, CSliceMut, CType, CVal, CValued};
 use libcrypto_sys as ffi;
 
 #[cfg(feature = "deprecated-1-1-0")]
@@ -250,6 +251,7 @@ impl<'view, 'addr> BioSockInfoMut<'view, 'addr> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bio::internal_bio_addr::BioAddr;
 
     #[test]
     fn socket_info_union_preserves_layout() {
@@ -345,6 +347,116 @@ mod tests {
             core::mem::align_of::<ffi::BIO_lookup_type>()
         );
     }
+
+    #[test]
+    fn bio_msg_layout_and_borrowed_fields_are_preserved() {
+        assert_eq!(
+            core::mem::size_of::<BioMsg>(),
+            core::mem::size_of::<ffi::bio_msg_st>()
+        );
+        assert_eq!(
+            core::mem::align_of::<BioMsg>(),
+            core::mem::align_of::<ffi::bio_msg_st>()
+        );
+
+        let mut message = BioMsg::zeroed();
+        let message_raw = core::ptr::addr_of_mut!(message).cast::<ffi::bio_msg_st>();
+        let mut bytes = [1_u8, 2, 3, 4];
+        let mut peer = BioAddr::zeroed();
+        let peer_raw = core::ptr::addr_of_mut!(peer).cast::<ffi::bio_addr_st>();
+
+        {
+            // SAFETY: both raw pointers address initialized stack storage and
+            // no competing handles are used while these exclusive handles are
+            // live.
+            let mut message_mut = unsafe { BioMsgMut::from_ptr(message_raw) }.unwrap();
+            // SAFETY: the byte array remains live and exclusively accessed
+            // through the message for the rest of this test.
+            let bytes_view = unsafe {
+                CSliceMut::from_raw_parts(NonNull::new(bytes.as_mut_ptr()).unwrap(), bytes.len())
+            };
+            // SAFETY: `bytes` remains live and is accessed only through the
+            // descriptor for the remainder of the test.
+            unsafe { message_mut.set_data(Some(bytes_view)) };
+            message_mut.set_flags(0x55);
+
+            // SAFETY: `peer` remains live and exclusively accessed through the
+            // message until its pointer is cleared below.
+            let peer_view = unsafe { BioAddrMut::from_ptr(peer_raw) }.unwrap();
+            // SAFETY: the caller obligation described above holds.
+            unsafe { message_mut.set_peer(Some(peer_view)) };
+
+            assert_eq!(message_mut.as_ref().data_len(), 4);
+            assert_eq!(message_mut.as_ref().flags(), 0x55);
+            assert_eq!(message_mut.peer_mut().unwrap().as_mut_ptr(), peer_raw);
+            assert!(message_mut.truncate_data(3));
+            assert!(!message_mut.truncate_data(4));
+            assert!(message_mut.data_mut().unwrap().set_elem(1, 9));
+
+            message_mut.clear_peer();
+        }
+
+        // SAFETY: the initialized message and byte buffer remain live for this
+        // shared handle, and no exclusive handle is now in use.
+        let message_ref = unsafe { BioMsgRef::from_ptr(message_raw) }.unwrap();
+        let data = message_ref.data().unwrap();
+        assert_eq!(data.len(), 3);
+        assert_eq!(data.elems().collect::<Vec<_>>(), vec![1, 9, 3]);
+        assert!(message_ref.peer().is_none());
+    }
+
+    #[test]
+    fn poll_descriptor_validates_and_tags_union_arms() {
+        assert_eq!(
+            core::mem::size_of::<BioPollDescriptor>(),
+            core::mem::size_of::<ffi::bio_poll_descriptor_st>()
+        );
+        assert_eq!(
+            core::mem::align_of::<BioPollDescriptor>(),
+            core::mem::align_of::<ffi::bio_poll_descriptor_st>()
+        );
+
+        let mut descriptor = BioPollDescriptor::zeroed();
+        let raw = core::ptr::addr_of_mut!(descriptor).cast::<ffi::bio_poll_descriptor_st>();
+        {
+            // SAFETY: `raw` addresses initialized descriptor storage and this
+            // is its only active handle.
+            let mut descriptor_mut = unsafe { BioPollDescriptorMut::from_ptr(raw) }.unwrap();
+            descriptor_mut.set_socket_fd(17);
+            assert_eq!(
+                descriptor_mut.as_ref().value(),
+                Some(BioPollDescriptorValue::SocketFd(17))
+            );
+
+            let custom_type = ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START + 7;
+            assert!(descriptor_mut.set_custom_integer(custom_type, 0x1234));
+            assert_eq!(
+                descriptor_mut.as_ref().value(),
+                Some(BioPollDescriptorValue::Custom {
+                    type_id: custom_type,
+                    value: BioPollCustomValue {
+                        bits: 0x1234,
+                        _borrow: PhantomData,
+                    },
+                })
+            );
+            assert!(!descriptor_mut.set_custom_integer(3, 0));
+            descriptor_mut.set_none();
+            assert_eq!(
+                descriptor_mut.as_ref().value(),
+                Some(BioPollDescriptorValue::None)
+            );
+        }
+
+        // SAFETY: the raw-place write only installs an invalid scalar tag for
+        // validating that the safe view rejects reserved discriminants.
+        unsafe { core::ptr::addr_of_mut!((*raw).type_).write(3) };
+        // SAFETY: the descriptor storage is still live and no mutable handle is
+        // in use. Invalid tags are explicitly represented by `None`.
+        let descriptor_ref = unsafe { BioPollDescriptorRef::from_ptr(raw) }.unwrap();
+        assert_eq!(descriptor_ref.kind(), None);
+        assert_eq!(descriptor_ref.value(), None);
+    }
 }
 
 #[cfg(feature = "deprecated-1-1-0")]
@@ -416,4 +528,433 @@ pub fn BIO_get_port(service: &CStr) -> Option<u16> {
     // SAFETY: `service` is a live C string and `port` is a live output slot.
     let ok = unsafe { ffi::BIO_get_port(service.as_ptr(), &mut port) };
     (ok == 1).then_some(port)
+}
+
+ffibox::define_ctype!(
+    /// Wraps: bio_msg_st
+    ///
+    /// Layout-compatible storage for one non-owning datagram descriptor.
+    BioMsg,
+    BioMsgRef,
+    BioMsgMut,
+    ffi::bio_msg_st
+);
+
+impl<'a> BioMsgRef<'a> {
+    /// Wraps: bio_msg_st.data
+    ///
+    /// Returns the borrowed byte buffer together with the capacity or received
+    /// length currently held in `data_len`.
+    #[must_use]
+    pub fn data(&self) -> Option<CSlice<'a, u8>> {
+        // SAFETY: both fields are copied through raw-place projections. A
+        // well-formed BIO_MSG keeps `data` live for `data_len` bytes for the
+        // descriptor's borrow, as required by the C API.
+        unsafe {
+            let data = core::ptr::addr_of!((*self.as_ptr()).data)
+                .read()
+                .cast::<u8>();
+            let len = core::ptr::addr_of!((*self.as_ptr()).data_len).read();
+            NonNull::new(data).map(|data| CSlice::from_raw_parts(data, len))
+        }
+    }
+
+    /// Wraps: bio_msg_st.flags
+    #[must_use]
+    pub fn flags(&self) -> u64 {
+        // SAFETY: `self` guarantees a live initialized descriptor and this is
+        // a copy of its scalar field through a raw-place projection.
+        unsafe { core::ptr::addr_of!((*self.as_ptr()).flags).read() }
+    }
+
+    /// Wraps: bio_msg_st.peer
+    #[must_use]
+    pub fn peer(&self) -> Option<BioAddrRef<'a>> {
+        // SAFETY: a non-null peer is caller-owned initialized BIO_ADDR storage
+        // whose lifetime is part of the well-formed BIO_MSG contract.
+        unsafe {
+            let peer = core::ptr::addr_of!((*self.as_ptr()).peer).read();
+            BioAddrRef::from_ptr(peer)
+        }
+    }
+
+    /// Wraps: bio_msg_st.local
+    #[must_use]
+    pub fn local(&self) -> Option<BioAddrRef<'a>> {
+        // SAFETY: a non-null local address obeys the same borrowed-storage
+        // contract as `peer`.
+        unsafe {
+            let local = core::ptr::addr_of!((*self.as_ptr()).local).read();
+            BioAddrRef::from_ptr(local)
+        }
+    }
+
+    /// Wraps: bio_msg_st.data_len
+    #[must_use]
+    pub fn data_len(&self) -> usize {
+        // SAFETY: `self` guarantees a live initialized descriptor and this is
+        // a copy of its scalar field through a raw-place projection.
+        unsafe { core::ptr::addr_of!((*self.as_ptr()).data_len).read() }
+    }
+}
+
+impl<'a> BioMsgMut<'a> {
+    /// Exclusively views the byte buffer currently named by this descriptor.
+    #[must_use]
+    pub fn data_mut(&mut self) -> Option<CSliceMut<'_, u8>> {
+        // SAFETY: the exclusive descriptor handle prevents another Rust path
+        // through this wrapper while the returned view is live. A well-formed
+        // BIO_MSG guarantees the pointer is valid for `data_len` bytes.
+        unsafe {
+            let data = core::ptr::addr_of!((*self.as_mut_ptr()).data)
+                .read()
+                .cast::<u8>();
+            let len = core::ptr::addr_of!((*self.as_mut_ptr()).data_len).read();
+            NonNull::new(data).map(|data| CSliceMut::from_raw_parts(data, len))
+        }
+    }
+
+    /// Exclusively views the optional peer address.
+    #[must_use]
+    pub fn peer_mut(&mut self) -> Option<BioAddrMut<'_>> {
+        // SAFETY: the field's non-null value is initialized BIO_ADDR storage,
+        // and the result is restricted to this exclusive reborrow.
+        unsafe {
+            let peer = core::ptr::addr_of!((*self.as_mut_ptr()).peer).read();
+            BioAddrMut::from_ptr(peer)
+        }
+    }
+
+    /// Exclusively views the optional local address.
+    #[must_use]
+    pub fn local_mut(&mut self) -> Option<BioAddrMut<'_>> {
+        // SAFETY: as `peer_mut`, for the local-address field.
+        unsafe {
+            let local = core::ptr::addr_of!((*self.as_mut_ptr()).local).read();
+            BioAddrMut::from_ptr(local)
+        }
+    }
+
+    /// Replaces the message flags.
+    pub fn set_flags(&mut self, flags: u64) {
+        // SAFETY: the exclusive handle supplies writable provenance for this
+        // scalar field and no reference to the C object is formed.
+        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).flags).write(flags) }
+    }
+
+    /// Shrinks the visible data run without permitting it to exceed the
+    /// existing buffer bound.
+    pub fn truncate_data(&mut self, new_len: usize) -> bool {
+        if new_len > self.as_ref().data_len() {
+            return false;
+        }
+        // SAFETY: the exclusive handle supplies writable provenance and the
+        // check preserves the current buffer bound.
+        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).data_len).write(new_len) };
+        true
+    }
+
+    /// Stores a new borrowed byte run.
+    ///
+    /// # Safety
+    ///
+    /// The buffer must remain live and exclusively available to C until this
+    /// field is cleared or the descriptor can no longer be used. The wrapper
+    /// cannot encode that obligation because `BioMsg` is an ABI value without
+    /// a lifetime parameter.
+    pub unsafe fn set_data(&mut self, data: Option<CSliceMut<'a, u8>>) {
+        let (data, len) = data.map_or((core::ptr::null_mut(), 0), |data| {
+            (data.as_elem_ptr().cast::<c_void>(), data.len())
+        });
+        // SAFETY: the caller guarantees the stored borrow remains valid; this
+        // exclusive handle permits both raw-place writes.
+        unsafe {
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data).write(data);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data_len).write(len);
+        }
+    }
+
+    /// Clears the data pointer and its length together.
+    pub fn clear_data(&mut self) {
+        // SAFETY: null plus zero is a valid empty BIO_MSG buffer and this
+        // exclusive handle permits both raw-place writes.
+        unsafe {
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data).write(core::ptr::null_mut());
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data_len).write(0);
+        }
+    }
+
+    /// Stores a borrowed peer address.
+    ///
+    /// # Safety
+    ///
+    /// The address must remain live and exclusively available to C until this
+    /// field is cleared or the descriptor can no longer be used.
+    pub unsafe fn set_peer(&mut self, mut peer: Option<BioAddrMut<'a>>) {
+        let peer = peer
+            .as_mut()
+            .map_or(core::ptr::null_mut(), BioAddrMut::as_mut_ptr);
+        // SAFETY: the caller upholds the stored-borrow contract and the
+        // exclusive descriptor handle permits the raw-place write.
+        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).peer).write(peer) }
+    }
+
+    /// Stores a borrowed local address.
+    ///
+    /// # Safety
+    ///
+    /// The address must remain live and exclusively available to C until this
+    /// field is cleared or the descriptor can no longer be used.
+    pub unsafe fn set_local(&mut self, mut local: Option<BioAddrMut<'a>>) {
+        let local = local
+            .as_mut()
+            .map_or(core::ptr::null_mut(), BioAddrMut::as_mut_ptr);
+        // SAFETY: as `set_peer`, for the local-address field.
+        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).local).write(local) }
+    }
+
+    /// Clears the peer pointer without touching its external storage.
+    pub fn clear_peer(&mut self) {
+        // SAFETY: null is a valid optional peer and the handle is exclusive.
+        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).peer).write(core::ptr::null_mut()) }
+    }
+
+    /// Clears the local pointer without touching its external storage.
+    pub fn clear_local(&mut self) {
+        // SAFETY: null is a valid optional local address and the handle is
+        // exclusive.
+        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).local).write(core::ptr::null_mut()) }
+    }
+}
+
+ffibox::define_ctype!(
+    /// Wraps: bio_poll_descriptor_st
+    ///
+    /// Layout-compatible storage for OpenSSL's tagged poll-descriptor union.
+    BioPollDescriptor,
+    BioPollDescriptorRef,
+    BioPollDescriptorMut,
+    ffi::bio_poll_descriptor_st
+);
+
+/// Wraps: bio_poll_descriptor_st.type
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum BioPollDescriptorType {
+    /// No descriptor.
+    None,
+    /// A socket file descriptor.
+    SocketFd,
+    /// A borrowed SSL object.
+    Ssl,
+    /// An application-defined descriptor kind.
+    Custom(u32),
+}
+
+impl BioPollDescriptorType {
+    /// Validates a raw OpenSSL poll-descriptor tag.
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Option<Self> {
+        match raw {
+            ffi::BIO_POLL_DESCRIPTOR_TYPE_NONE => Some(Self::None),
+            ffi::BIO_POLL_DESCRIPTOR_TYPE_SOCK_FD => Some(Self::SocketFd),
+            ffi::BIO_POLL_DESCRIPTOR_TYPE_SSL => Some(Self::Ssl),
+            ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START.. => Some(Self::Custom(raw)),
+            _ => None,
+        }
+    }
+
+    /// Returns the ABI tag used by OpenSSL.
+    #[must_use]
+    pub const fn as_raw(self) -> u32 {
+        match self {
+            Self::None => ffi::BIO_POLL_DESCRIPTOR_TYPE_NONE,
+            Self::SocketFd => ffi::BIO_POLL_DESCRIPTOR_TYPE_SOCK_FD,
+            Self::Ssl => ffi::BIO_POLL_DESCRIPTOR_TYPE_SSL,
+            Self::Custom(raw) => raw,
+        }
+    }
+}
+
+/// Opaque borrowed token for the libssl-owned arm of a poll descriptor.
+///
+/// `ssl_st` is intentionally not re-wrapped in libcrypto: libssl is a
+/// higher-layer library. The token preserves identity and lifetime without
+/// publishing that unavailable dependency as a raw pointer.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct BioPollSslRef<'a> {
+    ptr: NonNull<ffi::SSL>,
+    _borrow: PhantomData<&'a ffi::SSL>,
+}
+
+impl BioPollSslRef<'_> {
+    /// Tests whether two tokens identify the same SSL object.
+    #[must_use]
+    pub fn same_object(self, other: Self) -> bool {
+        self == other
+    }
+}
+
+/// Wraps: bio_poll_descriptor_st.value.custom
+///
+/// The custom pointer and integer union arms occupy the same bits. A custom
+/// tag does not say which interpretation its owner chose, so the safe common
+/// view exposes those bits as an integer and never dereferences them.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct BioPollCustomValue<'a> {
+    bits: usize,
+    _borrow: PhantomData<&'a c_void>,
+}
+
+impl BioPollCustomValue<'_> {
+    /// Wraps: bio_poll_descriptor_st.value.custom_ui
+    #[must_use]
+    pub const fn as_integer(self) -> usize {
+        self.bits
+    }
+
+    /// Reports whether the shared pointer/integer bits are zero.
+    #[must_use]
+    pub const fn is_zero(self) -> bool {
+        self.bits == 0
+    }
+}
+
+/// Wraps: bio_poll_descriptor_st.value
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum BioPollDescriptorValue<'a> {
+    /// The union has no active value.
+    None,
+    /// Wraps: bio_poll_descriptor_st.value.fd
+    SocketFd(i32),
+    /// Wraps: bio_poll_descriptor_st.value.ssl
+    Ssl(Option<BioPollSslRef<'a>>),
+    /// An application-defined value and its custom tag.
+    Custom {
+        /// Custom tag, always at least `BIO_POLL_DESCRIPTOR_CUSTOM_START`.
+        type_id: u32,
+        /// The common pointer/integer representation.
+        value: BioPollCustomValue<'a>,
+    },
+}
+
+impl<'a> BioPollDescriptorRef<'a> {
+    /// Returns the validated union discriminator.
+    #[must_use]
+    pub fn kind(&self) -> Option<BioPollDescriptorType> {
+        // SAFETY: the scalar tag is copied through a raw-place projection.
+        let raw = unsafe { core::ptr::addr_of!((*self.as_ptr()).type_).read() };
+        BioPollDescriptorType::from_raw(raw)
+    }
+
+    /// Returns a tagged safe view of the active union arm.
+    #[must_use]
+    pub fn value(&self) -> Option<BioPollDescriptorValue<'a>> {
+        match self.kind()? {
+            BioPollDescriptorType::None => Some(BioPollDescriptorValue::None),
+            BioPollDescriptorType::SocketFd => {
+                // SAFETY: the validated tag selects the `fd` union arm; the
+                // scalar is copied through a raw-place projection.
+                let fd = unsafe { core::ptr::addr_of!((*self.as_ptr()).value.fd).read() };
+                Some(BioPollDescriptorValue::SocketFd(fd))
+            }
+            BioPollDescriptorType::Ssl => {
+                // SAFETY: the validated tag selects the `ssl` union arm. A
+                // non-null pointer is a borrowed SSL object by the C contract.
+                let ssl = unsafe { core::ptr::addr_of!((*self.as_ptr()).value.ssl).read() };
+                Some(BioPollDescriptorValue::Ssl(NonNull::new(ssl).map(|ptr| {
+                    BioPollSslRef {
+                        ptr,
+                        _borrow: PhantomData,
+                    }
+                })))
+            }
+            BioPollDescriptorType::Custom(type_id) => {
+                // SAFETY: all custom union arms share these bits and every bit
+                // pattern is valid for `usize`; no pointer is dereferenced.
+                let bits = unsafe { core::ptr::addr_of!((*self.as_ptr()).value.custom_ui).read() };
+                Some(BioPollDescriptorValue::Custom {
+                    type_id,
+                    value: BioPollCustomValue {
+                        bits,
+                        _borrow: PhantomData,
+                    },
+                })
+            }
+        }
+    }
+}
+
+impl<'a> BioPollDescriptorMut<'a> {
+    /// Selects the empty descriptor value.
+    pub fn set_none(&mut self) {
+        // SAFETY: this exclusive handle permits both writes. Zeroing the union
+        // before publishing the NONE tag leaves a valid descriptor.
+        unsafe {
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).value.custom_ui).write(0);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_)
+                .write(ffi::BIO_POLL_DESCRIPTOR_TYPE_NONE);
+        }
+    }
+
+    /// Selects a socket file descriptor.
+    pub fn set_socket_fd(&mut self, fd: i32) {
+        // SAFETY: this exclusive handle permits both writes; publishing the tag
+        // after its union payload keeps the final descriptor well formed.
+        unsafe {
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).value.fd).write(fd);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_)
+                .write(ffi::BIO_POLL_DESCRIPTOR_TYPE_SOCK_FD);
+        }
+    }
+
+    /// Selects an integer-valued custom descriptor.
+    ///
+    /// Returns `false` without modifying the descriptor for a reserved tag.
+    pub fn set_custom_integer(&mut self, type_id: u32, value: usize) -> bool {
+        if type_id < ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START {
+            return false;
+        }
+        // SAFETY: this exclusive handle permits both writes and `type_id` is a
+        // validated custom discriminator.
+        unsafe {
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).value.custom_ui).write(value);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(type_id);
+        }
+        true
+    }
+
+    /// Selects a pointer-valued custom descriptor.
+    ///
+    /// # Safety
+    ///
+    /// A non-null value must remain live, with whatever access discipline the
+    /// custom descriptor implementation requires, until this descriptor is no
+    /// longer usable or is replaced. The custom tag must denote that `T`.
+    pub unsafe fn set_custom_pointer<T>(&mut self, type_id: u32, value: Option<&'a mut T>) -> bool {
+        if type_id < ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START {
+            return false;
+        }
+        let value = value.map_or(core::ptr::null_mut(), |value| {
+            core::ptr::from_mut(value).cast::<c_void>()
+        });
+        // SAFETY: the caller upholds the stored-borrow and tag contract; this
+        // exclusive handle permits both writes.
+        unsafe {
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).value.custom).write(value);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(type_id);
+        }
+        true
+    }
+
+    /// Copies an existing borrowed SSL token into this descriptor.
+    pub fn set_ssl(&mut self, ssl: Option<BioPollSslRef<'a>>) {
+        let ssl = ssl.map_or(core::ptr::null_mut(), |ssl| ssl.ptr.as_ptr());
+        // SAFETY: the token carries the stored SSL borrow and this exclusive
+        // descriptor handle permits both writes.
+        unsafe {
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).value.ssl).write(ssl);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_)
+                .write(ffi::BIO_POLL_DESCRIPTOR_TYPE_SSL);
+        }
+    }
 }
