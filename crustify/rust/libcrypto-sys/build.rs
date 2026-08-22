@@ -21,6 +21,7 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "BIO_lookup_type",
     "BIO_sock_info_type",
     "BIO_sock_info_u",
+    "CRYPTO_EX_DATA",
     "OBJ_NAME",
     "OPENSSL_INIT_SETTINGS",
     "OPENSSL_LHASH",

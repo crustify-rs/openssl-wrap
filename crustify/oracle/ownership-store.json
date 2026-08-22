@@ -1029,6 +1029,45 @@
    ]
   },
   {
+   "name": "crypto_ex_data_st",
+   "defined_in": "include/openssl/crypto.h",
+   "_comment_agent": "Field ownership established from crypto/ex_data.c across initialization, duplication, access, mutation, and cleanup paths.",
+   "fields": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed library context installed by ossl_crypto_new_ex_data_ex; NULL selects the default context. CRYPTO_EX_DATA never increments or frees it, and callers must keep the selected context alive while ex-data operations use it."
+     }
+    },
+    {
+     "name": "sk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Nullable owned STACK_OF(void) container. CRYPTO_set_ex_data lazily allocates it and CRYPTO_free_ex_data releases the container with sk_void_free, then clears the field. Stack elements are type-erased callback-managed values and are not freed by the stack destructor itself."
+     }
+    }
+   ]
+  },
+  {
    "name": "hostent",
    "defined_in": "/usr/include/netdb.h",
    "_comment_agent": "hostent has no independent lifecycle primitive. Its pointer fields borrow static resolver storage, caller-provided reentrant storage, or the surrounding fallback object's storage; callers must not free them.",
