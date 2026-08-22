@@ -10,7 +10,7 @@ const AGENT_LINK_ARGS: &[&str] = &[
     "rustc-link-lib=dl",
     "rustc-link-lib=pthread",
 ];
-const AGENT_ALLOWED_TYPES: &[&str] = &[];
+const AGENT_ALLOWED_TYPES: &[&str] = &["BIO_hostserv_priorities", "BIO_lookup_type"];
 const AGENT_OPAQUE_TYPES: &[&str] = &[];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_clear_free",
