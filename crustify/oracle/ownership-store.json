@@ -329,6 +329,138 @@
    ]
   },
   {
+   "name": "bio_st",
+   "defined_in": "crypto/bio/bio_local.h",
+   "_comment_agent": "BIO is refcounted through references. libctx and method are retained borrows; next_bio/prev_bio are non-owning chain links. cb_arg and callback_ex are application-provided borrows. ptr is method-specific and may be either owned or borrowed depending on the BIO_METHOD and shutdown policy.",
+   "fields": [
+    {
+     "name": "callback_ex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional function pointer supplied by the application; BIO does not own executable storage."
+     }
+    },
+    {
+     "name": "cb_arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Application callback cookie retained verbatim; despite char spelling it is not required to be a NUL-terminated string."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "BIO_new_ex stores the library context without taking a reference; it must remain live while method operations use it."
+     }
+    },
+    {
+     "name": "method",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "BIO_new_ex retains the const method descriptor without cloning or freeing it; callers keep dynamic BIO_METHOD objects alive."
+     }
+    },
+    {
+     "name": "next_bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Doubly-linked BIO chain link; BIO_free does not release it and BIO_free_all traverses and releases each node separately."
+     }
+    },
+    {
+     "name": "prev_bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Doubly-linked BIO chain link; it carries no independent reference count."
+     }
+    },
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Type-erased method data: concrete BIO_METHOD create/destroy and the shutdown flag decide whether it is owned, borrowed, a singleton, or a buffer."
+     }
+    },
+    {
+     "name": "references",
+     "refcount": true
+    }
+   ]
+  },
+  {
    "name": "hostent",
    "defined_in": "/usr/include/netdb.h",
    "_comment_agent": "hostent has no independent lifecycle primitive. Its pointer fields borrow static resolver storage, caller-provided reentrant storage, or the surrounding fallback object's storage; callers must not free them.",
@@ -621,6 +753,33 @@
    }
   },
   {
+   "name": "BIO_free",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "lifetime": {
+    "for": "b",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one BIO reference; null is explicitly accepted."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_meth_free",
    "defined_in": "crypto/bio/bio_meth.c",
    "lifetime": {
@@ -681,6 +840,75 @@
      "note": "Fresh mutable method allocation, or NULL on allocation failure; released by BIO_meth_free."
     }
    }
+  },
+  {
+   "name": "BIO_new",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "method",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "BIO_new retains the method descriptor, so it must outlive the returned BIO."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns one newly constructed BIO reference or null on failure."
+    }
+   }
+  },
+  {
+   "name": "BIO_up_ref",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow whose reference counter is incremented; zero reports failure."
+     }
+    }
+   ]
   },
   {
    "name": "CRYPTO_clear_free",

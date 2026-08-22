@@ -20,11 +20,16 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "asn1_string_table_st",
     "bio_addr_st",
     "bio_method_st",
+    "bio_st",
 ];
 const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
+    "BIO_free",
     "BIO_meth_free",
     "BIO_meth_new",
+    "BIO_new",
+    "BIO_s_null",
+    "BIO_up_ref",
     "CRYPTO_clear_free",
     "CRYPTO_free",
     "CRYPTO_memdup",
