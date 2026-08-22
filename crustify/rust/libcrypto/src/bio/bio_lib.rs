@@ -415,3 +415,310 @@ mod tests {
         assert!(BIO_indent(bio.as_mut(), 4, 2));
     }
 }
+
+/// Wraps: BIO_next
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_next<'a>(bio: &BioRef<'a>) -> Option<BioRef<'a>> {
+    // SAFETY: `bio` is live for `'a`; OpenSSL returns either its linked
+    // successor (which the chain keeps live) or null.
+    let next = unsafe { ffi::BIO_next(bio.as_ptr().cast_mut()) };
+    // SAFETY: the chain relationship ties a non-null successor to `bio`.
+    unsafe { BioRef::from_ptr(next) }
+}
+
+/// Wraps: BIO_number_read
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_number_read(bio: &BioRef<'_>) -> u64 {
+    // SAFETY: `bio` supplies a live BIO for a read-only counter query.
+    unsafe { ffi::BIO_number_read(bio.as_ptr().cast_mut()) }
+}
+
+/// Wraps: BIO_number_written
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_number_written(bio: &BioRef<'_>) -> u64 {
+    // SAFETY: `bio` supplies a live BIO for a read-only counter query.
+    unsafe { ffi::BIO_number_written(bio.as_ptr().cast_mut()) }
+}
+
+/// Wraps: BIO_pop
+///
+/// # Safety
+/// The caller must own or otherwise keep the returned remainder of the chain
+/// alive for the lifetime of the returned handle.
+#[must_use]
+#[allow(non_snake_case)]
+pub unsafe fn BIO_pop<'a>(bio: &'a mut BioMut<'_>) -> Option<BioMut<'a>> {
+    // SAFETY: `bio` is exclusive and the caller upholds ownership of the
+    // detached remainder.
+    let next = unsafe { ffi::BIO_pop(bio.as_mut_ptr()) };
+    // SAFETY: a non-null result is the live detached successor and the caller
+    // guarantees its lifetime.
+    unsafe { BioMut::from_ptr(next) }
+}
+
+/// Wraps: BIO_ptr_ctrl
+///
+/// # Safety
+/// `T`, the command, and the requested lifetime must match the pointer-valued
+/// control operation implemented by this BIO. The pointee must remain live and
+/// suitably aligned while the result is used.
+#[must_use]
+#[allow(non_snake_case)]
+pub unsafe fn BIO_ptr_ctrl<T>(
+    bio: &mut BioMut<'_>,
+    command: i32,
+    argument: core::ffi::c_long,
+) -> Option<NonNull<T>> {
+    // SAFETY: `bio` is exclusive; the caller supplies the command-specific
+    // type and validity contract.
+    NonNull::new(unsafe { ffi::BIO_ptr_ctrl(bio.as_mut_ptr(), command, argument) }.cast())
+}
+
+/// Wraps: BIO_push
+///
+/// # Safety
+/// `append` must remain live until it is detached from `head`, and the caller
+/// must prevent either linked BIO from being independently freed meanwhile.
+#[allow(non_snake_case)]
+pub unsafe fn BIO_push(head: &mut BioMut<'_>, append: &mut BioMut<'_>) -> bool {
+    // SAFETY: both handles are exclusive and the caller guarantees the stored
+    // cross-object lifetime and chain ownership rules.
+    !unsafe { ffi::BIO_push(head.as_mut_ptr(), append.as_mut_ptr()) }.is_null()
+}
+
+/// Wraps: BIO_puts
+#[allow(non_snake_case)]
+pub fn BIO_puts(bio: &mut BioMut<'_>, text: &CStr) -> i32 {
+    // SAFETY: `bio` is exclusive and `text` is a live NUL-terminated input.
+    unsafe { ffi::BIO_puts(bio.as_mut_ptr(), text.as_ptr()) }
+}
+
+/// Wraps: BIO_read
+#[allow(non_snake_case)]
+pub fn BIO_read(bio: &mut BioMut<'_>, output: &mut [u8]) -> i32 {
+    let len = output.len().min(i32::MAX as usize) as i32;
+    // SAFETY: `bio` is exclusive and `output` provides `len` writable bytes.
+    unsafe { ffi::BIO_read(bio.as_mut_ptr(), output.as_mut_ptr().cast(), len) }
+}
+
+/// Wraps: BIO_read_ex
+#[allow(non_snake_case)]
+pub fn BIO_read_ex(bio: &mut BioMut<'_>, output: &mut [u8]) -> Option<usize> {
+    let mut read = 0;
+    // SAFETY: `bio` is exclusive, `output` supplies its declared writable
+    // length, and `read` is a live scalar output slot.
+    let ok = unsafe {
+        ffi::BIO_read_ex(
+            bio.as_mut_ptr(),
+            output.as_mut_ptr().cast(),
+            output.len(),
+            &mut read,
+        )
+    };
+    (ok != 0).then_some(read)
+}
+
+/// Wraps: BIO_set_callback_arg
+///
+/// # Safety
+/// `argument` is stored without ownership. A non-null pointee must remain live
+/// until the callback argument is replaced or the BIO is freed.
+#[allow(non_snake_case)]
+pub unsafe fn BIO_set_callback_arg<T>(bio: &mut BioMut<'_>, argument: Option<NonNull<T>>) {
+    // SAFETY: `bio` is exclusive and the caller guarantees the stored
+    // argument's lifetime.
+    unsafe {
+        ffi::BIO_set_callback_arg(
+            bio.as_mut_ptr(),
+            argument.map_or(core::ptr::null_mut(), |p| p.as_ptr().cast()),
+        )
+    }
+}
+
+/// Wraps: BIO_set_data
+///
+/// # Safety
+/// `data` is stored without ownership. A non-null pointee must satisfy the
+/// selected BIO method's type, lifetime, and teardown contract.
+#[allow(non_snake_case)]
+pub unsafe fn BIO_set_data<T>(bio: &mut BioMut<'_>, data: Option<NonNull<T>>) {
+    // SAFETY: `bio` is exclusive and the caller upholds the method-specific
+    // stored-data contract.
+    unsafe {
+        ffi::BIO_set_data(
+            bio.as_mut_ptr(),
+            data.map_or(core::ptr::null_mut(), |p| p.as_ptr().cast()),
+        )
+    }
+}
+
+/// Wraps: BIO_set_ex_data
+///
+/// # Safety
+/// OpenSSL stores `data` without a Rust lifetime. Its type, lifetime, and any
+/// registered ex-data cleanup callback must agree for `index`.
+#[allow(non_snake_case)]
+pub unsafe fn BIO_set_ex_data<T>(
+    bio: &mut BioMut<'_>,
+    index: i32,
+    data: Option<NonNull<T>>,
+) -> bool {
+    // SAFETY: `bio` is exclusive and the caller upholds the indexed ex-data
+    // contract.
+    unsafe {
+        ffi::BIO_set_ex_data(
+            bio.as_mut_ptr(),
+            index,
+            data.map_or(core::ptr::null_mut(), |p| p.as_ptr().cast::<c_void>()),
+        ) != 0
+    }
+}
+
+/// Wraps: BIO_set_flags
+#[allow(non_snake_case)]
+pub fn BIO_set_flags(bio: &mut BioMut<'_>, flags: i32) {
+    // SAFETY: `bio` is exclusive and flags are a by-value bit mask.
+    unsafe { ffi::BIO_set_flags(bio.as_mut_ptr(), flags) }
+}
+
+/// Wraps: BIO_set_init
+#[allow(non_snake_case)]
+pub fn BIO_set_init(bio: &mut BioMut<'_>, initialized: bool) {
+    // SAFETY: `bio` is exclusive and the state is a scalar.
+    unsafe { ffi::BIO_set_init(bio.as_mut_ptr(), i32::from(initialized)) }
+}
+
+/// Wraps: BIO_set_next
+///
+/// # Safety
+/// A non-null `next` is stored without increasing its reference count. It must
+/// remain live until replaced or detached, and linked BIOs must not be freed
+/// independently.
+#[allow(non_snake_case)]
+pub unsafe fn BIO_set_next(bio: &mut BioMut<'_>, next: Option<&mut BioMut<'_>>) {
+    // SAFETY: `bio` is exclusive and the caller guarantees the stored link's
+    // lifetime and ownership discipline.
+    unsafe {
+        ffi::BIO_set_next(
+            bio.as_mut_ptr(),
+            next.map_or(core::ptr::null_mut(), BioMut::as_mut_ptr),
+        )
+    }
+}
+
+/// Wraps: BIO_set_retry_reason
+#[allow(non_snake_case)]
+pub fn BIO_set_retry_reason(bio: &mut BioMut<'_>, reason: i32) {
+    // SAFETY: `bio` is exclusive and `reason` is a scalar.
+    unsafe { ffi::BIO_set_retry_reason(bio.as_mut_ptr(), reason) }
+}
+
+/// Wraps: BIO_set_send_flags
+#[allow(non_snake_case)]
+pub fn BIO_set_send_flags(bio: &mut BioMut<'_>, flags: i32) -> core::ffi::c_long {
+    // SAFETY: `bio` is exclusive and flags are a by-value bit mask.
+    unsafe { ffi::BIO_set_send_flags(bio.as_mut_ptr(), flags) }
+}
+
+/// Wraps: BIO_set_shutdown
+#[allow(non_snake_case)]
+pub fn BIO_set_shutdown(bio: &mut BioMut<'_>, shutdown: bool) {
+    // SAFETY: `bio` is exclusive and the state is a scalar.
+    unsafe { ffi::BIO_set_shutdown(bio.as_mut_ptr(), i32::from(shutdown)) }
+}
+
+/// Wraps: BIO_test_flags
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_test_flags(bio: &BioRef<'_>, flags: i32) -> i32 {
+    // SAFETY: `bio` is live and the operation only reads its flags.
+    unsafe { ffi::BIO_test_flags(bio.as_ptr(), flags) }
+}
+
+/// Wraps: BIO_up_ref
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_up_ref(bio: &BioRef<'_>) -> Option<CBox<Bio>> {
+    // SAFETY: `bio` is a live reference; success creates one independently
+    // owned count settled by `CBox<Bio>`'s destructor.
+    if unsafe { ffi::BIO_up_ref(bio.as_ptr().cast_mut()) } == 0 {
+        None
+    } else {
+        // SAFETY: the successful increment transferred one BIO reference.
+        unsafe { CBox::from_raw(bio.as_ptr().cast_mut()) }
+    }
+}
+
+/// Wraps: BIO_vfree
+#[allow(non_snake_case)]
+pub fn BIO_vfree(bio: Option<CBox<Bio>>) {
+    drop(bio);
+}
+
+/// Wraps: BIO_wait
+#[allow(non_snake_case)]
+pub fn BIO_wait(bio: &mut BioMut<'_>, max_time: ffi::time_t, nap_milliseconds: u32) -> i32 {
+    // SAFETY: `bio` is exclusive and the remaining arguments are scalars.
+    unsafe { ffi::BIO_wait(bio.as_mut_ptr(), max_time, nap_milliseconds) }
+}
+
+/// Wraps: BIO_write
+#[allow(non_snake_case)]
+pub fn BIO_write(bio: &mut BioMut<'_>, input: &[u8]) -> i32 {
+    let len = input.len().min(i32::MAX as usize) as i32;
+    // SAFETY: `bio` is exclusive and `input` supplies `len` readable bytes.
+    unsafe { ffi::BIO_write(bio.as_mut_ptr(), input.as_ptr().cast(), len) }
+}
+
+/// Wraps: BIO_write_ex
+#[allow(non_snake_case)]
+pub fn BIO_write_ex(bio: &mut BioMut<'_>, input: &[u8]) -> Option<usize> {
+    let mut written = 0;
+    // SAFETY: `bio` is exclusive, `input` supplies its declared readable
+    // length, and `written` is a live scalar output slot.
+    let ok = unsafe {
+        ffi::BIO_write_ex(
+            bio.as_mut_ptr(),
+            input.as_ptr().cast(),
+            input.len(),
+            &mut written,
+        )
+    };
+    (ok != 0).then_some(written)
+}
+
+#[cfg(test)]
+mod scheduled_tests {
+    use super::*;
+    use crate::bio::bss_null::BIO_s_null;
+
+    fn null_bio() -> CBox<Bio> {
+        let method = BIO_s_null().expect("null method");
+        // SAFETY: `method` is a process-lifetime method table and BIO_new
+        // returns a fresh fully constructed BIO or null.
+        let raw = unsafe { ffi::BIO_new(method.as_ptr()) };
+        // SAFETY: ownership of the fresh reference transfers to CBox.
+        unsafe { CBox::from_raw(raw) }.expect("null BIO")
+    }
+
+    #[test]
+    fn writes_update_counters_and_flags_round_trip() {
+        let mut bio = null_bio();
+        assert_eq!(BIO_write(&mut bio.as_mut(), b"hello"), 5);
+        assert_eq!(BIO_number_written(&bio.as_ref()), 5);
+
+        BIO_set_flags(&mut bio.as_mut(), 0x40);
+        assert_eq!(BIO_test_flags(&bio.as_ref(), 0x40), 0x40);
+    }
+
+    #[test]
+    fn up_ref_returns_an_independently_owned_count() {
+        let bio = null_bio();
+        let mut extra = BIO_up_ref(&bio.as_ref()).expect("reference increment");
+        BIO_vfree(Some(bio));
+        assert_eq!(BIO_write(&mut extra.as_mut(), b"x"), 1);
+    }
+}

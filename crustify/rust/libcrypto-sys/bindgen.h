@@ -11,4 +11,9 @@
 /* crustify:includes:end */
 
 /* crustify:macros:start */
+#if defined(OPENSSL_NO_DEPRECATED_3_0)
+typedef long (*crustify_BIO_callback_fn)(BIO *b, int oper,
+    const char *argp, int argi, long argl, long ret);
+void BIO_set_callback(BIO *b, crustify_BIO_callback_fn callback);
+#endif
 /* crustify:macros:end */

@@ -8,7 +8,7 @@ use libc::netdb::{AddrInfo, AddrInfoRef};
 use libcrypto_sys as ffi;
 
 use super::internal_bio_addr::{BioAddr, BioAddrMut, BioAddrRef};
-use super::openssl_bio::BioLookupType;
+use super::openssl_bio::{BioHostservPriorities, BioLookupType};
 use crate::mem::CryptoString;
 
 /// Teardown policy for the address-info lists returned by OpenSSL.
@@ -357,4 +357,53 @@ pub fn BIO_lookup_ex(
     }
     // SAFETY: success transfers the unique list head to the caller.
     unsafe { adopt_result(result) }
+}
+
+/// Host and service components allocated by `BIO_parse_hostserv`.
+#[derive(Debug)]
+pub struct ParsedHostService {
+    /// Parsed host name, absent for an empty or wildcard host.
+    pub host: Option<CryptoString>,
+    /// Parsed service name, absent for an empty or wildcard service.
+    pub service: Option<CryptoString>,
+}
+
+/// Wraps: BIO_parse_hostserv
+#[allow(non_snake_case)]
+pub fn BIO_parse_hostserv(
+    input: &CStr,
+    priority: BioHostservPriorities,
+) -> Option<ParsedHostService> {
+    let mut host = ptr::null_mut();
+    let mut service = ptr::null_mut();
+    // SAFETY: `input` is a live C string and both output slots are live.
+    // Success transfers any non-null strings to the caller.
+    let ok = unsafe {
+        ffi::BIO_parse_hostserv(input.as_ptr(), &mut host, &mut service, priority.as_raw())
+    };
+    if ok == 0 {
+        return None;
+    }
+    // SAFETY: successful non-null outputs are fresh NUL-terminated allocations
+    // released by `CRYPTO_free`.
+    let host = unsafe { CryptoString::from_raw(host) };
+    // SAFETY: as above for the independent service output.
+    let service = unsafe { CryptoString::from_raw(service) };
+    Some(ParsedHostService { host, service })
+}
+
+#[cfg(test)]
+mod scheduled_tests {
+    use super::*;
+
+    #[test]
+    fn parses_host_and_service_into_owned_strings() {
+        let parsed = BIO_parse_hostserv(c"localhost:443", BioHostservPriorities::HOST)
+            .expect("valid host/service");
+        assert_eq!(
+            parsed.host.as_ref().map(|s| s.as_c_str()),
+            Some(c"localhost")
+        );
+        assert_eq!(parsed.service.as_ref().map(|s| s.as_c_str()), Some(c"443"));
+    }
 }

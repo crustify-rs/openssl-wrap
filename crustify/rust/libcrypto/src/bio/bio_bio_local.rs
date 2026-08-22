@@ -43,9 +43,10 @@ mod tests {
     use super::*;
 
     fn new_null_bio() -> CBox<Bio> {
-        // SAFETY: `BIO_s_null` returns a process-lifetime method descriptor;
+        let method = crate::bio::bss_null::BIO_s_null().expect("null method");
+        // SAFETY: the safe selector returned a process-lifetime descriptor;
         // `BIO_new` returns a fresh, fully constructed BIO or null.
-        let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
+        let raw = unsafe { ffi::BIO_new(method.as_ptr()) };
         // SAFETY: ownership of the returned BIO reference transfers to the
         // matching `BIO_free` owner.
         unsafe { CBox::from_raw(raw) }.expect("BIO_new")

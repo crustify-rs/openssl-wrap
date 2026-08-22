@@ -2,6 +2,8 @@
 
 use libcrypto_sys as ffi;
 
+use super::internal_bio::{BioMethodRef, static_bio_method};
+
 use ffibox::CBox;
 use std::os::fd::{AsRawFd, IntoRawFd, OwnedFd};
 
@@ -38,4 +40,13 @@ pub fn BIO_new_fd(descriptor: OwnedFd) -> Option<CBox<Bio>> {
         let _ = descriptor.into_raw_fd();
     }
     bio
+}
+
+/// Wraps: BIO_s_fd
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_s_fd() -> Option<BioMethodRef<'static>> {
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // a process-lifetime static method table or null.
+    static_bio_method(unsafe { ffi::BIO_s_fd() })
 }

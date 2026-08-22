@@ -6505,6 +6505,1573 @@
      "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
     }
    }
+  },
+  {
+   "name": "BIO_new_mem_buf",
+   "defined_in": "crypto/bio/bss_mem.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed byte buffer retained read-only by the returned BIO for its full lifetime."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh fully constructed BIO reference, or null on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_socket",
+   "defined_in": "crypto/bio/bss_sock.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh fully constructed BIO reference, or null on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "BIO_next",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:b"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed linked successor tied to the lifetime of the BIO chain, or null."
+    }
+   }
+  },
+  {
+   "name": "BIO_nread",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:bio"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_nread0",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:bio"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_number_read",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_number_written",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_nwrite",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:bio"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_nwrite0",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:bio"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_parse_hostserv",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "host",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receiving a fresh OpenSSL-owned NUL string or null."
+     }
+    },
+    {
+     "name": "hostserv",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:hostserv"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated host/service specification read during the call."
+     }
+    },
+    {
+     "name": "service",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receiving a fresh OpenSSL-owned NUL string or null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_pop",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Detached remainder of the chain; ownership and lifetime follow the caller chain discipline."
+    }
+   }
+  },
+  {
+   "name": "BIO_printf",
+   "defined_in": "crypto/bio/bio_print.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "format",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:format"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated input read during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ptr_ctrl",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Command-dependent type-erased borrowed pointer; type and lifetime depend on the BIO method and command."
+    }
+   }
+  },
+  {
+   "name": "BIO_push",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Alias of the resulting chain head; no reference count is added."
+    }
+   }
+  },
+  {
+   "name": "BIO_puts",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated input read during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_read",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Writable byte buffer; null is accepted only with a zero requested length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_read_ex",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Writable byte buffer; null is accepted only with a zero requested length."
+     }
+    },
+    {
+     "name": "readbytes",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:readbytes"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required scalar output slot written by the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_s_accept",
+   "defined_in": "crypto/bio/bss_acpt.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_bio",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_connect",
+   "defined_in": "crypto/bio/bss_conn.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_core",
+   "defined_in": "crypto/bio/bss_core.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_datagram",
+   "defined_in": "crypto/bio/bss_dgram.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_dgram_mem",
+   "defined_in": "crypto/bio/bss_dgram_pair.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_dgram_pair",
+   "defined_in": "crypto/bio/bss_dgram_pair.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_fd",
+   "defined_in": "crypto/bio/bss_fd.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_file",
+   "defined_in": "crypto/bio/bss_file.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_log",
+   "defined_in": "crypto/bio/bss_log.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_mem",
+   "defined_in": "crypto/bio/bss_mem.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_null",
+   "defined_in": "crypto/bio/bss_null.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_secmem",
+   "defined_in": "crypto/bio/bss_mem.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_s_socket",
+   "defined_in": "crypto/bio/bss_sock.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed process-lifetime static BIO method table; some configured platforms return null."
+    }
+   }
+  },
+  {
+   "name": "BIO_set_callback",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "callback",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback pointer stored by the BIO until replaced; function must remain callable and obey the callback ABI."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_callback_arg",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional type-erased pointer stored without ownership; caller controls its lifetime and matching cleanup contract."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_data",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional type-erased pointer stored without ownership; caller controls its lifetime and matching cleanup contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_ex_data",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional type-erased pointer stored without ownership; caller controls its lifetime and matching cleanup contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_flags",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_init",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_next",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "next",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:next"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_retry_reason",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_send_flags",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_shutdown",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_snprintf",
+   "defined_in": "crypto/bio/bio_print.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Writable output buffer of the separately supplied size; null is valid only when size is zero."
+     }
+    },
+    {
+     "name": "format",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:format"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated format string read during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_test_flags",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_vfree",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one BIO reference and accepts null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_vprintf",
+   "defined_in": "crypto/bio/bio_print.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "format",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:format"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated input read during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_vsnprintf",
+   "defined_in": "crypto/bio/bio_print.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Writable output buffer of the separately supplied size; null is valid only when size is zero."
+     }
+    },
+    {
+     "name": "format",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:format"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated format string read during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_wait",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_write",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Readable byte buffer; null is accepted only with a zero requested length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_write_ex",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Transient live BIO borrow for this operation."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Readable byte buffer; null is accepted only with a zero requested length."
+     }
+    },
+    {
+     "name": "written",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:written"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required scalar output slot written by the call."
+     }
+    }
+   ]
   }
  ]
 }

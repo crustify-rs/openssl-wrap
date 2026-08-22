@@ -2,6 +2,8 @@
 
 use libcrypto_sys as ffi;
 
+use super::internal_bio::{BioMethodRef, static_bio_method};
+
 use ffibox::CBox;
 
 use super::bio_bio_local::Bio;
@@ -30,4 +32,13 @@ pub fn BIO_new_dgram(socket: BioSocket) -> Option<CBox<Bio>> {
         let _ = socket.into_raw_socket();
     }
     bio
+}
+
+/// Wraps: BIO_s_datagram
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_s_datagram() -> Option<BioMethodRef<'static>> {
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // a process-lifetime static method table or null.
+    static_bio_method(unsafe { ffi::BIO_s_datagram() })
 }

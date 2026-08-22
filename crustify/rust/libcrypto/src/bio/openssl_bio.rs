@@ -1305,3 +1305,34 @@ pub fn BIO_meth_get_write_ex(method: BioMethodRef<'_>) -> Option<BioMethodWriteE
     unsafe { ffi::BIO_meth_get_write_ex(method.as_ptr()) }
         .map(|raw| unsafe { BioMethodWriteExCallback::from_raw(raw) })
 }
+
+#[cfg(feature = "deprecated-3-0")]
+/// A validated legacy BIO callback pointer.
+#[derive(Clone, Copy)]
+pub struct BioCallback(ffi::crustify_BIO_callback_fn);
+
+#[cfg(feature = "deprecated-3-0")]
+impl BioCallback {
+    /// Wraps a raw legacy callback.
+    ///
+    /// # Safety
+    /// The function must uphold OpenSSL's callback ABI for every operation and
+    /// may not unwind across the C boundary.
+    pub const unsafe fn from_raw(callback: ffi::crustify_BIO_callback_fn) -> Self {
+        Self(callback)
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: BIO_set_callback
+#[allow(non_snake_case)]
+pub fn BIO_set_callback(bio: &mut super::bio_bio_local::BioMut<'_>, callback: Option<BioCallback>) {
+    // SAFETY: `bio` is exclusive and `BioCallback` can only be constructed by
+    // a caller accepting the legacy callback ABI obligations.
+    unsafe {
+        ffi::BIO_set_callback(
+            bio.as_mut_ptr(),
+            callback.map_or(None, |callback| callback.0),
+        )
+    }
+}

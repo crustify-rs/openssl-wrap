@@ -11,6 +11,15 @@ define_ctype!(
     ffi::bio_method_st
 );
 
+/// Converts a process-lifetime OpenSSL method table into its borrowed handle.
+pub(crate) fn static_bio_method(
+    method: *const ffi::bio_method_st,
+) -> Option<BioMethodRef<'static>> {
+    // SAFETY: callers pass only pointers returned by the `BIO_s_*` family,
+    // whose static method tables live for the process lifetime.
+    unsafe { BioMethodRef::from_ptr(method.cast_mut()) }
+}
+
 // Methods produced by `BIO_meth_new` exclusively own their allocation and
 // duplicated name. OpenSSL's static method tables are represented only by
 // borrowed handles and therefore never reach this implementation.

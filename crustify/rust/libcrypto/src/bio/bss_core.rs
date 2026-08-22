@@ -4,6 +4,8 @@ use core::ptr::NonNull;
 
 use libcrypto_sys as ffi;
 
+use super::internal_bio::{BioMethodRef, static_bio_method};
+
 use super::bio_lib::BorrowedBio;
 use super::context::OsslLibCtxRef;
 
@@ -29,4 +31,13 @@ pub unsafe fn BIO_new_from_core_bio<'a>(
             core_bio.as_ptr(),
         ))
     }
+}
+
+/// Wraps: BIO_s_core
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_s_core() -> Option<BioMethodRef<'static>> {
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // a process-lifetime static method table or null.
+    static_bio_method(unsafe { ffi::BIO_s_core() })
 }

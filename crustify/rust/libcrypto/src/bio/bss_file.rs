@@ -6,6 +6,8 @@ use ffibox::CBox;
 use libc::x86_64_linux_gnu_bits_types_struct_file::IoFileMut;
 use libcrypto_sys as ffi;
 
+use super::internal_bio::{BioMethodRef, static_bio_method};
+
 use super::bio_bio_local::Bio;
 use super::bio_lib::BorrowedBio;
 
@@ -49,4 +51,13 @@ mod tests {
         drop(bio);
         std::fs::remove_file(path).expect("remove fixture");
     }
+}
+
+/// Wraps: BIO_s_file
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_s_file() -> Option<BioMethodRef<'static>> {
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // a process-lifetime static method table or null.
+    static_bio_method(unsafe { ffi::BIO_s_file() })
 }

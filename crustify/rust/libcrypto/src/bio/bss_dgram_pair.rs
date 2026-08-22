@@ -5,6 +5,8 @@ use core::ptr;
 use ffibox::CBox;
 use libcrypto_sys as ffi;
 
+use super::internal_bio::{BioMethodRef, static_bio_method};
+
 use super::bio_bio_local::Bio;
 
 /// Wraps: BIO_new_bio_dgram_pair
@@ -34,4 +36,20 @@ pub fn BIO_new_bio_dgram_pair(
     // SAFETY: as above for the second output; `first` cleans up on anomaly.
     let second = unsafe { CBox::from_raw(second) }?;
     Some((first, second))
+}
+
+/// Wraps: BIO_s_dgram_mem
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_s_dgram_mem() -> Option<BioMethodRef<'static>> {
+    // SAFETY: the selector returns a process-lifetime table or null.
+    static_bio_method(unsafe { ffi::BIO_s_dgram_mem() })
+}
+
+/// Wraps: BIO_s_dgram_pair
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_s_dgram_pair() -> Option<BioMethodRef<'static>> {
+    // SAFETY: the selector returns a process-lifetime table or null.
+    static_bio_method(unsafe { ffi::BIO_s_dgram_pair() })
 }
