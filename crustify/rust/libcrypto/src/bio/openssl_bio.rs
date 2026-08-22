@@ -57,6 +57,36 @@ impl BioLookupType {
     }
 }
 
+/// Wraps: BIO_sock_info_type
+///
+/// A checked, layout-compatible value for the socket-information selector.
+/// Keeping the bindgen integer private prevents safe Rust from inventing a C
+/// enum value that OpenSSL's switch does not handle.
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct BioSockInfoType(ffi::BIO_sock_info_type);
+
+impl BioSockInfoType {
+    /// Request the socket's local address.
+    pub const ADDRESS: Self = Self(ffi::BIO_sock_info_type_BIO_SOCK_INFO_ADDRESS);
+
+    /// Convert a raw C enum value after validating its discriminant.
+    #[must_use]
+    pub const fn from_raw(raw: ffi::BIO_sock_info_type) -> Option<Self> {
+        if raw == ffi::BIO_sock_info_type_BIO_SOCK_INFO_ADDRESS {
+            Some(Self::ADDRESS)
+        } else {
+            None
+        }
+    }
+
+    /// Return the ABI value used by OpenSSL.
+    #[must_use]
+    pub const fn as_raw(self) -> ffi::BIO_sock_info_type {
+        self.0
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -85,6 +115,23 @@ mod tests {
             Some(BioLookupType::SERVER)
         );
         assert_eq!(BioLookupType::from_raw(u32::MAX), None);
+    }
+
+    #[test]
+    fn socket_info_selector_is_checked_and_layout_compatible() {
+        assert_eq!(
+            core::mem::size_of::<BioSockInfoType>(),
+            core::mem::size_of::<ffi::BIO_sock_info_type>()
+        );
+        assert_eq!(
+            core::mem::align_of::<BioSockInfoType>(),
+            core::mem::align_of::<ffi::BIO_sock_info_type>()
+        );
+        assert_eq!(
+            BioSockInfoType::from_raw(BioSockInfoType::ADDRESS.as_raw()),
+            Some(BioSockInfoType::ADDRESS)
+        );
+        assert_eq!(BioSockInfoType::from_raw(1), None);
     }
 
     #[test]

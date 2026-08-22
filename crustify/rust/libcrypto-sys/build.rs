@@ -10,8 +10,13 @@ const AGENT_LINK_ARGS: &[&str] = &[
     "rustc-link-lib=dl",
     "rustc-link-lib=pthread",
 ];
-const AGENT_ALLOWED_TYPES: &[&str] = &["BIO_hostserv_priorities", "BIO_lookup_type"];
-const AGENT_OPAQUE_TYPES: &[&str] = &[];
+const AGENT_ALLOWED_TYPES: &[&str] = &[
+    "BIO_hostserv_priorities",
+    "BIO_lookup_type",
+    "BIO_sock_info_type",
+    "OPENSSL_LHASH",
+];
+const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_clear_free",
     "CRYPTO_free",
@@ -20,8 +25,9 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_secure_free",
     "CRYPTO_secure_zalloc",
     "CRYPTO_strdup",
+    "OPENSSL_LH_free",
 ];
-const AGENT_ALLOWED_VARS: &[&str] = &[];
+const AGENT_ALLOWED_VARS: &[&str] = &["BIO_SOCK_INFO_ADDRESS"];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end
 
