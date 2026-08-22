@@ -1,6 +1,63 @@
 {
  "_comment": "Authored analysis: ownership, lifecycle, refcount and locking judgements that no composer can derive, keyed to the C entities they describe. The structural half of each record (field layout, signatures, footprints, casts) is composed from the CodeQL tables on demand and merged in at read time, so a re-extract rewrites nothing here. Written only by `crustify-oracle <target> query {types,symbols} --update`; read through crustify.manifests. Hand-edit at your own risk: `--update` validates a submission against the composed skeleton (unknown field, wrong kind, ptr-invariant violation) and this file does not.",
- "types": [],
+ "types": [
+  {
+   "name": "addrinfo",
+   "defined_in": "/usr/include/netdb.h",
+   "_comment_agent": "The layout has multiple allocation origins: system result chains use freeaddrinfo, while OpenSSL-created AF_UNIX nodes use BIO_ADDRINFO_free. The type therefore needs allocation-specific owner strategies rather than one unconditional CDropped implementation.",
+   "fields": [
+    {
+     "name": "ai_addr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional variable-sized socket-address storage belongs to the result node and is released with the chain; OpenSSL-created AF_UNIX nodes instead pair the same layout with BIO_ADDRINFO_free."
+     }
+    },
+    {
+     "name": "ai_canonname",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional NUL-terminated canonical-name storage belongs to a getaddrinfo result node and is released with its result chain."
+     }
+    },
+    {
+     "name": "ai_next",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "A result node links to the remaining owned result chain. The enclosing chain's matching releaser consumes all linked nodes; projected access must borrow the tail from the head."
+     }
+    }
+   ]
+  },
+  {
+   "name": "asn1_string_table_st",
+   "defined_in": "include/openssl/asn1.h",
+   "_comment_agent": "This is a plain scalar table record. ASN1_STRING_TABLE_get returns library-owned borrowed storage, and individual records have no unconditional public destructor because the global dynamic table and the static standard table own them.",
+   "fields": []
+  }
+ ],
  "symbols": [
   {
    "name": "BIO_ADDR_dup",

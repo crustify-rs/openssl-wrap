@@ -15,6 +15,7 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "BIO_lookup_type",
     "BIO_sock_info_type",
     "OPENSSL_LHASH",
+    "asn1_string_table_st",
     "bio_addr_st",
 ];
 const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st"];

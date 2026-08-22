@@ -1,5 +1,6 @@
 /* crustify:includes:start */
 #include <stddef.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
