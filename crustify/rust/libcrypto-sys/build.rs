@@ -17,9 +17,12 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "OPENSSL_LHASH",
     "asn1_string_table_st",
     "bio_addr_st",
+    "bio_method_st",
 ];
 const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
+    "BIO_meth_free",
+    "BIO_meth_new",
     "CRYPTO_clear_free",
     "CRYPTO_free",
     "CRYPTO_memdup",

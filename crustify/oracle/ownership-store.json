@@ -58,6 +58,232 @@
    "fields": []
   },
   {
+   "name": "bio_method_st",
+   "defined_in": "include/internal/bio.h",
+   "_comment_agent": "BIO_meth_new allocates the method and owns its duplicated NUL-terminated name; static method tables borrow static names and callbacks. Callback slots are nullable program-lifetime function pointers and do not own code storage.",
+   "fields": [
+    {
+     "name": "bgets",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "bputs",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "bread",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "bread_old",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "brecvmmsg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "bsendmmsg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "bwrite",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "bwrite_old",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "callback_ctrl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "create",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "ctrl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "destroy",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable program-lifetime function pointer."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Owned for BIO_meth_new results and borrowed-static in static method tables; BIO_meth_free is used only for dynamically allocated tables."
+     }
+    }
+   ]
+  },
+  {
    "name": "lhash_st",
    "defined_in": "crypto/lhash/lhash_local.h",
    "_comment_agent": "The public OPENSSL_LHASH is opaque. Its private bucket array is allocated, resized, mutated, and freed by crypto/lhash/lhash.c; each non-null slot owns a separately allocated node, while node payload ownership remains with callers. Callback fields are borrowed executable-code pointers: comp/hash are made non-null by OPENSSL_LH_new defaults, and thunk callbacks may remain null.",
@@ -274,6 +500,68 @@
      "nullable": true,
      "mutable": true,
      "note": "BIO_ADDR_new returns a fresh initialized allocation owned by the caller, or NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_free",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "lifetime": {
+    "for": "biom",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a dynamic BIO_METHOD allocation; NULL is explicitly accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_new",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed NUL-terminated input duplicated during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh mutable method allocation, or NULL on allocation failure; released by BIO_meth_free."
     }
    }
   },
