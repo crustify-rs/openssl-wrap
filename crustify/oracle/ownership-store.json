@@ -56,6 +56,133 @@
    "defined_in": "include/openssl/asn1.h",
    "_comment_agent": "This is a plain scalar table record. ASN1_STRING_TABLE_get returns library-owned borrowed storage, and individual records have no unconditional public destructor because the global dynamic table and the static standard table own them.",
    "fields": []
+  },
+  {
+   "name": "lhash_st",
+   "defined_in": "crypto/lhash/lhash_local.h",
+   "_comment_agent": "The public OPENSSL_LHASH is opaque. Its private bucket array is allocated, resized, mutated, and freed by crypto/lhash/lhash.c; each non-null slot owns a separately allocated node, while node payload ownership remains with callers. Callback fields are borrowed executable-code pointers: comp/hash are made non-null by OPENSSL_LH_new defaults, and thunk callbacks may remain null.",
+   "fields": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Owned bucket array of num_alloc_nodes node pointers. OPENSSL_LH_flush frees every non-null node and OPENSSL_LH_free then frees the array; expand/contract reallocates and mutates it. Individual slots may be null. Node data payloads are not owned by the table."
+     }
+    },
+    {
+     "name": "comp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed comparison callback; OPENSSL_LH_new substitutes strcmp when its argument is null."
+     }
+    },
+    {
+     "name": "compw",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed thunk callback installed by OPENSSL_LH_set_thunks."
+     }
+    },
+    {
+     "name": "daaw",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed do-all-argument thunk installed by OPENSSL_LH_set_thunks."
+     }
+    },
+    {
+     "name": "daw",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed do-all thunk installed by OPENSSL_LH_set_thunks."
+     }
+    },
+    {
+     "name": "hash",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed hash callback; OPENSSL_LH_new substitutes OPENSSL_LH_strhash when its argument is null."
+     }
+    },
+    {
+     "name": "hashw",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed thunk callback installed by OPENSSL_LH_set_thunks."
+     }
+    }
+   ]
   }
  ],
  "symbols": [
@@ -521,6 +648,87 @@
      "nullable": true,
      "mutable": true,
      "note": "Fresh NUL-terminated copy of at most s source bytes, allocated by OpenSSL and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_LH_free",
+   "defined_in": "crypto/lhash/lhash.c",
+   "lifetime": {
+    "for": "lh",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "lh",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and frees a complete OPENSSL_LHASH allocation after flushing owned nodes; null is accepted as a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_LH_new",
+   "defined_in": "crypto/lhash/lhash.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparison callback; null selects strcmp. The callback code has static executable lifetime."
+     }
+    },
+    {
+     "name": "h",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed hash callback; null selects OPENSSL_LH_strhash. The callback code has static executable lifetime."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a newly allocated, initialized table on success; caller releases it with OPENSSL_LH_free."
     }
    }
   },
