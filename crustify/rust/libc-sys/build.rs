@@ -5,7 +5,7 @@ use std::process::Command;
 // crustify:allowlist-agent:start
 const AGENT_CLANG_ARGS: &[&str] = &[];
 const AGENT_LINK_ARGS: &[&str] = &[];
-const AGENT_ALLOWED_TYPES: &[&str] = &["_IO_FILE", "addrinfo", "in_addr"];
+const AGENT_ALLOWED_TYPES: &[&str] = &["_IO_FILE", "addrinfo", "hostent", "in6_addr", "in_addr"];
 const AGENT_OPAQUE_TYPES: &[&str] = &["_IO_FILE"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &["free", "malloc", "strdup"];
 const AGENT_ALLOWED_VARS: &[&str] = &[];

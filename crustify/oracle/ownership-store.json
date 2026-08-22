@@ -329,6 +329,78 @@
    ]
   },
   {
+   "name": "hostent",
+   "defined_in": "/usr/include/netdb.h",
+   "_comment_agent": "hostent has no independent lifecycle primitive. Its pointer fields borrow static resolver storage, caller-provided reentrant storage, or the surrounding fallback object's storage; callers must not free them.",
+   "fields": [
+    {
+     "name": "h_addr_list",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "self"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NULL-terminated array; each non-null element borrows h_length address bytes from the host database result. No observed consumer writes through it."
+     }
+    },
+    {
+     "name": "h_aliases",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "self"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NULL-terminated array of borrowed NUL-terminated aliases; no observed consumer writes through it."
+     }
+    },
+    {
+     "name": "h_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed official host name. The fallback initializer stores NULL and no observed consumer writes through the string."
+     }
+    }
+   ]
+  },
+  {
+   "name": "in6_addr",
+   "defined_in": "/usr/include/netinet/in.h",
+   "_comment_agent": "in6_addr is a by-value 16-byte address with no pointer fields and no lifecycle primitive.",
+   "fields": []
+  },
+  {
    "name": "lhash_st",
    "defined_in": "crypto/lhash/lhash_local.h",
    "_comment_agent": "The public OPENSSL_LHASH is opaque. Its private bucket array is allocated, resized, mutated, and freed by crypto/lhash/lhash.c; each non-null slot owns a separately allocated node, while node payload ownership remains with callers. Callback fields are borrowed executable-code pointers: comp/hash are made non-null by OPENSSL_LH_new defaults, and thunk callbacks may remain null.",
