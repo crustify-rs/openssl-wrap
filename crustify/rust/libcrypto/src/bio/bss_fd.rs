@@ -2,6 +2,11 @@
 
 use libcrypto_sys as ffi;
 
+use ffibox::CBox;
+use std::os::fd::{AsRawFd, IntoRawFd, OwnedFd};
+
+use super::bio_bio_local::Bio;
+
 /// Wraps: BIO_fd_non_fatal_error
 #[must_use]
 #[allow(non_snake_case)]
@@ -16,4 +21,21 @@ pub fn BIO_fd_non_fatal_error(error: i32) -> bool {
 pub fn BIO_fd_should_retry(result: i32) -> bool {
     // SAFETY: the classifier takes only a by-value operation result.
     unsafe { ffi::BIO_fd_should_retry(result) != 0 }
+}
+
+/// Wraps: BIO_new_fd
+/// Transfers an owned file descriptor into a new BIO.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_new_fd(descriptor: OwnedFd) -> Option<CBox<Bio>> {
+    let raw_fd = descriptor.as_raw_fd();
+    // SAFETY: `descriptor` remains owned until success; BIO_CLOSE transfers
+    // its close obligation to the returned BIO.
+    let raw = unsafe { ffi::BIO_new_fd(raw_fd, ffi::BIO_CLOSE as i32) };
+    // SAFETY: a non-null constructor result transfers one BIO reference.
+    let bio = unsafe { CBox::from_raw(raw) };
+    if bio.is_some() {
+        let _ = descriptor.into_raw_fd();
+    }
+    bio
 }

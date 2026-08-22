@@ -1,12 +1,14 @@
 //! Wrappers assigned from `crypto/bio/bio_addr.c`.
 
+use core::ffi::CStr;
 use core::ptr::{self, NonNull};
 
-use ffibox::{CBox, CBoxWith, CCloned, CDropped, CDropper};
+use ffibox::{CBox, CBoxWith, CCell, CCloned, CDropped, CDropper};
 use libc::netdb::{AddrInfo, AddrInfoRef};
 use libcrypto_sys as ffi;
 
 use super::internal_bio_addr::{BioAddr, BioAddrMut, BioAddrRef};
+use super::openssl_bio::BioLookupType;
 use crate::mem::CryptoString;
 
 /// Teardown policy for the address-info lists returned by OpenSSL.
@@ -279,4 +281,80 @@ mod tests {
             Err(BioAddrRawAddressError::Unavailable)
         );
     }
+}
+
+fn input_ptr(value: Option<&CStr>) -> *const core::ffi::c_char {
+    value.map_or(ptr::null(), CStr::as_ptr)
+}
+
+unsafe fn adopt_result(raw: *mut ffi::BIO_ADDRINFO) -> Option<BioAddrInfo> {
+    let raw = raw.cast::<<AddrInfo as CCell>::C>();
+    // SAFETY: the caller passes the unique head returned by a successful
+    // BIO_lookup operation and selects its matching list destructor.
+    unsafe { CBoxWith::from_raw(raw, BioAddrInfoFree) }
+}
+
+/// Wraps: BIO_lookup
+/// Resolves an optional host/service pair into an owned address list.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_lookup(
+    host: Option<&CStr>,
+    service: Option<&CStr>,
+    lookup_type: BioLookupType,
+    family: i32,
+    socket_type: i32,
+) -> Option<BioAddrInfo> {
+    let mut result = ptr::null_mut();
+    // SAFETY: input strings remain live; `result` is a writable output slot.
+    let ok = unsafe {
+        ffi::BIO_lookup(
+            input_ptr(host),
+            input_ptr(service),
+            lookup_type.as_raw(),
+            family,
+            socket_type,
+            &mut result,
+        )
+    };
+    if ok != 1 {
+        return None;
+    }
+    // SAFETY: success transfers the unique list head to the caller.
+    unsafe { adopt_result(result) }
+}
+
+/// Wraps: BIO_lookup_ex
+/// Resolves an optional host/service pair with an explicit protocol.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_lookup_ex(
+    host: Option<&CStr>,
+    service: Option<&CStr>,
+    lookup_type: BioLookupType,
+    family: i32,
+    socket_type: i32,
+    protocol: i32,
+) -> Option<BioAddrInfo> {
+    let mut result = ptr::null_mut();
+    let Ok(lookup_type) = i32::try_from(lookup_type.as_raw()) else {
+        return None;
+    };
+    // SAFETY: input strings remain live; `result` is a writable output slot.
+    let ok = unsafe {
+        ffi::BIO_lookup_ex(
+            input_ptr(host),
+            input_ptr(service),
+            lookup_type,
+            family,
+            socket_type,
+            protocol,
+            &mut result,
+        )
+    };
+    if ok != 1 {
+        return None;
+    }
+    // SAFETY: success transfers the unique list head to the caller.
+    unsafe { adopt_result(result) }
 }

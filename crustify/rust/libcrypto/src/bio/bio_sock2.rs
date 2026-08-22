@@ -85,3 +85,12 @@ pub fn BIO_connect(socket: &BioSocket, address: &BioAddrRef<'_>, options: i32) -
     // SAFETY: the socket remains open and the shared address stays live for the call.
     unsafe { ffi::BIO_connect(socket.as_raw_socket(), address.as_ptr(), options) != 0 }
 }
+
+/// Wraps: BIO_listen
+/// Configures an owned socket to listen at `address`.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_listen(socket: &BioSocket, address: BioAddrRef<'_>, options: i32) -> bool {
+    // SAFETY: both borrowed operands remain live for the synchronous call.
+    unsafe { ffi::BIO_listen(socket.as_raw_socket(), address.as_ptr(), options) == 1 }
+}

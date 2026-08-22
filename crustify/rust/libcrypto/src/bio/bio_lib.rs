@@ -1,13 +1,15 @@
 //! Wrappers assigned from `crypto/bio/bio_lib.c`.
 
-use core::ffi::{c_long, c_void};
+use core::ffi::{CStr, c_long, c_void};
 use core::marker::PhantomData;
 use core::ptr::{self, NonNull};
 
-use ffibox::CBox;
+use ffibox::{CBox, CType};
 use libcrypto_sys as ffi;
 
-use super::bio_bio_local::{Bio, BioMut};
+use super::bio_bio_local::{Bio, BioMut, BioRef};
+use super::context::OsslLibCtxRef;
+use super::internal_bio::BioMethodRef;
 
 /// Wraps: BIO_err_is_non_fatal
 #[must_use]
@@ -178,6 +180,193 @@ pub fn BIO_get_data<'a>(bio: &'a mut BioMut<'_>) -> Option<BioOpaqueMut<'a>> {
     })
 }
 
+/// A BIO owner whose method or context is borrowed for `'a`.
+#[must_use = "dropping the owner releases its BIO reference"]
+pub struct BorrowedBio<'a> {
+    inner: CBox<Bio>,
+    borrow: PhantomData<&'a CType<c_void>>,
+}
+
+impl BorrowedBio<'_> {
+    pub(crate) unsafe fn from_raw(raw: *mut ffi::BIO) -> Option<Self> {
+        // SAFETY: the caller transfers one newly constructed BIO reference.
+        unsafe { CBox::from_raw(raw) }.map(|inner| Self {
+            inner,
+            borrow: PhantomData,
+        })
+    }
+
+    /// Borrow the BIO without write access.
+    #[must_use]
+    pub fn as_ref(&self) -> BioRef<'_> {
+        self.inner.as_ref()
+    }
+
+    /// Exclusively borrow the BIO.
+    #[must_use]
+    pub fn as_mut(&mut self) -> BioMut<'_> {
+        self.inner.as_mut()
+    }
+}
+
+/// An opaque application-data pointer stored in a BIO.
+#[derive(Clone, Copy)]
+pub struct BioExData<'a> {
+    ptr: NonNull<c_void>,
+    borrow: PhantomData<&'a Bio>,
+}
+
+impl BioExData<'_> {
+    /// Reinterpret the opaque application pointer.
+    ///
+    /// # Safety
+    ///
+    /// The stored value must point to a live, properly aligned `T` for the
+    /// returned pointer's use. OpenSSL does not validate application data.
+    #[must_use]
+    pub unsafe fn cast<T>(self) -> NonNull<T> {
+        self.ptr.cast()
+    }
+}
+
+/// Wraps: BIO_get_ex_data
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_ex_data(bio: BioRef<'_>, index: i32) -> Option<BioExData<'_>> {
+    // SAFETY: the shared handle keeps the BIO header live for this lookup.
+    let raw = unsafe { ffi::BIO_get_ex_data(bio.as_ptr(), index) };
+    NonNull::new(raw).map(|ptr| BioExData {
+        ptr,
+        borrow: PhantomData,
+    })
+}
+
+/// Wraps: BIO_get_init
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_init(bio: BioRef<'_>) -> i32 {
+    // SAFETY: the handle identifies a live BIO; this operation only reads its flag.
+    unsafe { ffi::BIO_get_init(bio.as_ptr().cast_mut()) }
+}
+
+/// Wraps: BIO_get_line
+/// Reads at most `buffer.len() - 1` bytes and writes a trailing NUL.
+#[allow(non_snake_case)]
+pub fn BIO_get_line(mut bio: BioMut<'_>, buffer: &mut [u8]) -> i32 {
+    let Ok(size) = i32::try_from(buffer.len()) else {
+        return -1;
+    };
+    // SAFETY: the exclusive BIO handle and mutable slice remain live for the
+    // call; `size` is exactly the writable buffer length.
+    unsafe { ffi::BIO_get_line(bio.as_mut_ptr(), buffer.as_mut_ptr().cast(), size) }
+}
+
+/// Wraps: BIO_get_retry_BIO
+/// Returns the last retrying BIO in the chain and its retry reason.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_retry_BIO<'a>(bio: BioRef<'a>) -> (BioRef<'a>, i32) {
+    let mut reason = 0;
+    // SAFETY: this function only walks and reads the live chain rooted at
+    // `bio`; the result is one of those nodes and remains borrowed from it.
+    let raw = unsafe { ffi::BIO_get_retry_BIO(bio.as_ptr().cast_mut(), &mut reason) };
+    // SAFETY: a non-null input makes the implementation return at least that
+    // input node, all of which stay live for the input borrow.
+    let retry = unsafe { BioRef::from_ptr(raw) }.expect("BIO_get_retry_BIO returned null");
+    (retry, reason)
+}
+
+/// Wraps: BIO_get_retry_reason
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_retry_reason(bio: BioRef<'_>) -> i32 {
+    // SAFETY: the live handle permits the implementation's scalar field read.
+    unsafe { ffi::BIO_get_retry_reason(bio.as_ptr().cast_mut()) }
+}
+
+/// Wraps: BIO_get_shutdown
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_shutdown(bio: BioRef<'_>) -> i32 {
+    // SAFETY: the handle identifies a live BIO; this operation only reads its flag.
+    unsafe { ffi::BIO_get_shutdown(bio.as_ptr().cast_mut()) }
+}
+
+/// Wraps: BIO_gets
+/// Reads a method-defined line or record into `buffer`.
+#[allow(non_snake_case)]
+pub fn BIO_gets(mut bio: BioMut<'_>, buffer: &mut [u8]) -> i32 {
+    let Ok(size) = i32::try_from(buffer.len()) else {
+        return -1;
+    };
+    // SAFETY: the exclusive BIO handle and mutable slice remain live for the
+    // synchronous call; `size` is exactly the writable buffer length.
+    unsafe { ffi::BIO_gets(bio.as_mut_ptr(), buffer.as_mut_ptr().cast(), size) }
+}
+
+/// Wraps: BIO_indent
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_indent(mut bio: BioMut<'_>, indent: i32, maximum: i32) -> bool {
+    // SAFETY: the exclusive handle keeps the output BIO live while OpenSSL writes spaces.
+    unsafe { ffi::BIO_indent(bio.as_mut_ptr(), indent, maximum) == 1 }
+}
+
+/// Wraps: BIO_int_ctrl
+///
+/// # Safety
+///
+/// `command` must be one whose BIO method interprets the control pointer as a
+/// live `int`; choosing a command with a different pointer contract can make
+/// the C method access the temporary integer with the wrong type or extent.
+#[allow(non_snake_case)]
+pub unsafe fn BIO_int_ctrl(mut bio: BioMut<'_>, command: i32, long_arg: i64, int_arg: i32) -> i64 {
+    // SAFETY: OpenSSL creates the command's temporary integer argument itself;
+    // the wrapper passes no untyped caller memory.
+    unsafe { ffi::BIO_int_ctrl(bio.as_mut_ptr(), command, long_arg, int_arg) }
+}
+
+/// Wraps: BIO_method_name
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_method_name(bio: BioRef<'_>) -> &CStr {
+    // SAFETY: a live BIO always has a live method whose immutable name is
+    // NUL-terminated and remains valid for the BIO borrow.
+    unsafe { CStr::from_ptr(ffi::BIO_method_name(bio.as_ptr())) }
+}
+
+/// Wraps: BIO_method_type
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_method_type(bio: BioRef<'_>) -> i32 {
+    // SAFETY: the shared handle keeps the BIO and method table live.
+    unsafe { ffi::BIO_method_type(bio.as_ptr()) }
+}
+
+/// Wraps: BIO_new
+/// Constructs a BIO borrowing its method table for the owner's lifetime.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_new<'a>(method: BioMethodRef<'a>) -> Option<BorrowedBio<'a>> {
+    // SAFETY: the method handle is live and the returned owner is lifetime-tied
+    // to it; the constructor returns one new BIO reference or null.
+    unsafe { BorrowedBio::from_raw(ffi::BIO_new(method.as_ptr())) }
+}
+
+/// Wraps: BIO_new_ex
+/// Constructs a BIO borrowing both its method and optional library context.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_new_ex<'a>(
+    context: Option<OsslLibCtxRef<'a>>,
+    method: BioMethodRef<'a>,
+) -> Option<BorrowedBio<'a>> {
+    let context = context.map_or(core::ptr::null_mut(), |ctx| ctx.as_ptr().cast_mut());
+    // SAFETY: non-null arguments are protected by `'a`; the returned owner
+    // retains that lifetime and adopts the constructor's fresh reference.
+    unsafe { BorrowedBio::from_raw(ffi::BIO_new_ex(context, method.as_ptr())) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -204,5 +393,25 @@ mod tests {
     #[test]
     fn explicit_free_consumes_the_owner() {
         assert!(BIO_free(new_null_bio()));
+    }
+    #[test]
+    fn scalar_queries_and_retry_view_use_borrowed_handles() {
+        let bio = new_null_bio();
+        assert_eq!(BIO_get_init(bio.as_ref()), 1);
+        assert_eq!(BIO_get_shutdown(bio.as_ref()), 1);
+        assert!(!BIO_method_name(bio.as_ref()).is_empty());
+
+        let (retry, reason) = BIO_get_retry_BIO(bio.as_ref());
+        assert_eq!(retry.as_ptr(), bio.as_ptr().cast_const());
+        assert_eq!(reason, BIO_get_retry_reason(bio.as_ref()));
+    }
+
+    #[test]
+    fn writable_operations_accept_bounded_slices() {
+        let mut bio = new_null_bio();
+        let mut line = [0_u8; 16];
+        assert!(BIO_get_line(bio.as_mut(), &mut line) <= 0);
+        assert!(BIO_gets(bio.as_mut(), &mut line) <= 0);
+        assert!(BIO_indent(bio.as_mut(), 4, 2));
     }
 }

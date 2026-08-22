@@ -2,11 +2,13 @@
 
 #[cfg(feature = "deprecated-1-1-0")]
 use core::ffi::CStr;
-use core::ffi::c_void;
+use core::ffi::{c_int, c_void};
 use core::marker::PhantomData;
 #[cfg(feature = "deprecated-1-1-0")]
 use core::ptr;
 use core::ptr::{NonNull, addr_of};
+#[cfg(feature = "deprecated-1-1-0")]
+use std::sync::{Mutex, MutexGuard};
 
 use ffibox::{CCell, CPtr, CSlice, CSliceMut, CType, CVal, CValued};
 use libcrypto_sys as ffi;
@@ -14,12 +16,22 @@ use libcrypto_sys as ffi;
 use super::bio_bio_local::BioMut;
 #[cfg(feature = "deprecated-3-0")]
 use super::bio_bio_local::BioRef;
+#[cfg(feature = "deprecated-3-5")]
+use super::bio_meth::{
+    BioMethodCallbackCtrl, BioMethodCreateCallback, BioMethodCtrlCallback,
+    BioMethodDestroyCallback, BioMethodGetsCallback, BioMethodPutsCallback, BioMethodReadCallback,
+    BioMethodReadExCallback, BioMethodWriteCallback, BioMethodWriteExCallback,
+};
 
 #[cfg(feature = "deprecated-1-1-0")]
 use super::bio_sock2::BioSocket;
+#[cfg(feature = "deprecated-3-5")]
+use super::internal_bio::BioMethodRef;
 use super::internal_bio_addr::{BioAddr, BioAddrMut, BioAddrRef};
 #[cfg(feature = "deprecated-1-1-0")]
 use crate::mem::CryptoString;
+#[cfg(feature = "deprecated-1-1-0")]
+use libc::netdb::HostEntRef;
 
 /// Wraps: BIO_hostserv_priorities
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -1123,4 +1135,173 @@ pub fn BIO_get_callback(bio: &BioRef<'_>) -> Option<BioCallbackFn> {
     // SAFETY: the shared handle supplies one live BIO for the field getter.
     let raw = unsafe { ffi::BIO_get_callback(bio.as_ptr()) };
     BioCallbackFn::from_raw(raw)
+}
+
+type RawBioInfoCallback = unsafe extern "C" fn(*mut ffi::BIO, c_int, c_int) -> c_int;
+
+/// Wraps: BIO_info_cb
+/// Callable handle for the legacy three-argument BIO information callback.
+#[derive(Clone, Copy)]
+pub struct BioInfoCallback(RawBioInfoCallback);
+
+impl BioInfoCallback {
+    /// Adopt a raw callback obeying the `BIO_info_cb` contract.
+    ///
+    /// # Safety
+    ///
+    /// The callback must accept every live BIO and scalar command/value pair
+    /// OpenSSL may supply, must not unwind, and must obey C thread-safety rules.
+    #[must_use]
+    pub unsafe fn from_raw(callback: RawBioInfoCallback) -> Self {
+        Self(callback)
+    }
+
+    pub(crate) fn as_raw(self) -> ffi::BIO_info_cb {
+        Some(self.0)
+    }
+
+    /// Invoke the callback with a live BIO.
+    pub fn call(self, mut bio: BioMut<'_>, command: i32, value: i32) -> i32 {
+        // SAFETY: construction establishes the callback contract and the
+        // exclusive handle supplies a live BIO for the synchronous call.
+        unsafe { (self.0)(bio.as_mut_ptr(), command, value) }
+    }
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+static HOST_LOOKUP_LOCK: Mutex<()> = Mutex::new(());
+
+/// A locked view of resolver-owned host data.
+#[cfg(feature = "deprecated-1-1-0")]
+pub struct BioHostEntGuard {
+    raw: NonNull<ffi::hostent>,
+    lock: MutexGuard<'static, ()>,
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+impl BioHostEntGuard {
+    /// Borrow the host entry while preventing another wrapper lookup from
+    /// replacing the resolver's static storage.
+    #[must_use]
+    pub fn as_ref(&self) -> HostEntRef<'_> {
+        let _keep_locked = &self.lock;
+        // SAFETY: the guard serializes calls that replace the resolver-owned
+        // static entry, and its borrow bounds the returned typed view.
+        unsafe { HostEntRef::from_ptr(self.raw.as_ptr().cast()) }
+            .expect("BIO_gethostbyname returned a stored non-null pointer")
+    }
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+/// Wraps: BIO_gethostbyname
+/// Performs a serialized legacy host lookup.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_gethostbyname(name: &CStr) -> Option<BioHostEntGuard> {
+    let lock = HOST_LOOKUP_LOCK.lock().ok()?;
+    // SAFETY: `name` remains live and NUL-terminated; the mutex prevents a
+    // competing safe wrapper call from replacing the returned static entry.
+    let raw = unsafe { ffi::BIO_gethostbyname(name.as_ptr()) };
+    NonNull::new(raw).map(|raw| BioHostEntGuard { raw, lock })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_callback_ctrl
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_callback_ctrl(method: BioMethodRef<'_>) -> Option<BioMethodCallbackCtrl> {
+    // SAFETY: the method handle is live; a returned function pointer is static
+    // method code obeying the callback-control contract.
+    unsafe { ffi::BIO_meth_get_callback_ctrl(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodCallbackCtrl::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_create
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_create(method: BioMethodRef<'_>) -> Option<BioMethodCreateCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_create(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodCreateCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_ctrl
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_ctrl(method: BioMethodRef<'_>) -> Option<BioMethodCtrlCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_ctrl(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodCtrlCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_destroy
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_destroy(method: BioMethodRef<'_>) -> Option<BioMethodDestroyCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_destroy(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodDestroyCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_gets
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_gets(method: BioMethodRef<'_>) -> Option<BioMethodGetsCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_gets(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodGetsCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_puts
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_puts(method: BioMethodRef<'_>) -> Option<BioMethodPutsCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_puts(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodPutsCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_read
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_read(method: BioMethodRef<'_>) -> Option<BioMethodReadCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_read(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodReadCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_read_ex
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_read_ex(method: BioMethodRef<'_>) -> Option<BioMethodReadExCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_read_ex(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodReadExCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_write
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_write(method: BioMethodRef<'_>) -> Option<BioMethodWriteCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_write(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodWriteCallback::from_raw(raw) })
+}
+
+#[cfg(feature = "deprecated-3-5")]
+/// Wraps: BIO_meth_get_write_ex
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_write_ex(method: BioMethodRef<'_>) -> Option<BioMethodWriteExCallback> {
+    // SAFETY: the method handle is live and the returned code pointer is static.
+    unsafe { ffi::BIO_meth_get_write_ex(method.as_ptr()) }
+        .map(|raw| unsafe { BioMethodWriteExCallback::from_raw(raw) })
 }

@@ -2859,6 +2859,45 @@
    }
   },
   {
+   "name": "BIO_get_ex_data",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads the BIO ex-data table without taking ownership."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Opaque application pointer; nullable and governed by application lifetime."
+    }
+   }
+  },
+  {
    "name": "BIO_get_host_ip",
    "defined_in": null,
    "ptr_args": [
@@ -2892,6 +2931,69 @@
       "nullable": false,
       "mutable": false,
       "note": "Required NUL-terminated host name read for the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_get_init",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Scalar flag read from a live BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_get_line",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reading advances BIO state."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller buffer sized by size and written with a trailing NUL."
      }
     }
    ]
@@ -2935,6 +3037,429 @@
    ]
   },
   {
+   "name": "BIO_get_retry_BIO",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Walks the borrowed BIO chain without refcount changes."
+     }
+    },
+    {
+     "name": "reason",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:reason"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional scalar output slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:bio"
+     },
+     "nullable": false,
+     "mutable": true,
+     "note": "Returns one node borrowed from the input BIO chain."
+    }
+   }
+  },
+  {
+   "name": "BIO_get_retry_reason",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads the retry reason scalar."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_get_shutdown",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Scalar flag read from a live BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_gethostbyname",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed lookup name."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": null,
+     "note": "Resolver-owned static host entry, replaced by later lookups."
+    }
+   }
+  },
+  {
+   "name": "BIO_gets",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Method input advances BIO state."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable buffer whose extent is size."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_hex_string",
+   "defined_in": "crypto/bio/bio_dump.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads datalen bytes; null is valid only for zero length."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Output BIO is written."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_indent",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writes spaces to the output BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_info_cb",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Callback receives a transient live BIO and may inspect or update it."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_int_ctrl",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Control commands may mutate BIO state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_listen",
+   "defined_in": "crypto/bio/bio_sock2.c",
+   "ptr_args": [
+    {
+     "name": "addr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:addr"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Socket address is read only during listen."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_lookup",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "host",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:host"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed host string."
+     }
+    },
+    {
+     "name": "res",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:res"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Output slot receives an owned address-info list on success."
+     }
+    },
+    {
+     "name": "service",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:service"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed service string."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_lookup_ex",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "host",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:host"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed host string."
+     }
+    },
+    {
+     "name": "res",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:res"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Output slot receives an owned address-info list on success."
+     }
+    },
+    {
+     "name": "service",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:service"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed service string."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_meth_free",
    "defined_in": "crypto/bio/bio_meth.c",
    "lifetime": {
@@ -2960,6 +3485,396 @@
      }
     }
    ]
+  },
+  {
+   "name": "BIO_meth_get_callback_ctrl",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_create",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "bion",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bion"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_ctrl",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_destroy",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_gets",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_puts",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_read",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_read_ex",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_write",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_write_ex",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads an immutable method callback slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static function pointer stored in the method table."
+    }
+   }
   },
   {
    "name": "BIO_meth_new",
@@ -2997,6 +3912,466 @@
    }
   },
   {
+   "name": "BIO_meth_set_callback_ctrl",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "callback_ctrl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_create",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "create",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_ctrl",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "ctrl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_destroy",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "destroy",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_gets",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "bgets",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    },
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_puts",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "bputs",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_read",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "bread",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_read_ex",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "bread",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_write",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "bwrite",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_write_ex",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Exclusively updates the dynamic method table."
+     }
+    },
+    {
+     "name": "bwrite",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_method_name",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads the immutable method descriptor."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:b"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "NUL-terminated method name retained by the BIO method."
+    }
+   }
+  },
+  {
+   "name": "BIO_method_type",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads the method type scalar."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_new",
    "defined_in": "crypto/bio/bio_lib.c",
    "ptr_args": [
@@ -3030,6 +4405,399 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns one newly constructed BIO reference or null on failure."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_accept",
+   "defined_in": "crypto/bio/bss_acpt.c",
+   "ptr_args": [
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Host/service string copied into the new BIO."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh accepting BIO or null."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_bio_dgram_pair",
+   "defined_in": "crypto/bio/bss_dgram_pair.c",
+   "ptr_args": [
+    {
+     "name": "pbio1",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pbio1"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Receives one owned BIO endpoint on success."
+     }
+    },
+    {
+     "name": "pbio2",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pbio2"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Receives the other owned BIO endpoint on success."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_new_bio_pair",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio1_p",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio1_p"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Receives one owned BIO endpoint on success."
+     }
+    },
+    {
+     "name": "bio2_p",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio2_p"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Receives the other owned BIO endpoint on success."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_new_connect",
+   "defined_in": "crypto/bio/bss_conn.c",
+   "ptr_args": [
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Host/service string copied into the new BIO."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh connecting BIO or null."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_dgram",
+   "defined_in": "crypto/bio/bss_dgram.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh BIO taking descriptor ownership according to close_flag."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_ex",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional context retained by the returned BIO."
+     }
+    },
+    {
+     "name": "method",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:method"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Method descriptor retained by the returned BIO."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh BIO reference or null."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_fd",
+   "defined_in": "crypto/bio/bss_fd.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh BIO taking descriptor ownership according to close_flag."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_file",
+   "defined_in": "crypto/bio/bss_file.c",
+   "ptr_args": [
+    {
+     "name": "filename",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:filename"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed filename used only to open the stream."
+     }
+    },
+    {
+     "name": "mode",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mode"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed mode used only during open."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh BIO owning the opened file stream."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_fp",
+   "defined_in": "crypto/bio/bss_file.c",
+   "ptr_args": [
+    {
+     "name": "stream",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Stream is retained; close_flag determines whether its ownership transfers to the BIO."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh BIO retaining the supplied stream."
+    }
+   }
+  },
+  {
+   "name": "BIO_new_from_core_bio",
+   "defined_in": "crypto/bio/bss_core.c",
+   "ptr_args": [
+    {
+     "name": "corebio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:corebio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Core BIO is up-refed, not consumed."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Context is retained by the wrapper BIO."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh wrapper BIO owning an added core-BIO reference."
     }
    }
   },
