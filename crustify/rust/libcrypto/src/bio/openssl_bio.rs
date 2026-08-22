@@ -2,13 +2,17 @@
 
 #[cfg(feature = "deprecated-1-1-0")]
 use core::ffi::CStr;
+use core::marker::PhantomData;
 #[cfg(feature = "deprecated-1-1-0")]
 use core::ptr;
+use core::ptr::{NonNull, addr_of};
 
+use ffibox::{CCell, CPtr, CType, CVal, CValued};
 use libcrypto_sys as ffi;
 
 #[cfg(feature = "deprecated-1-1-0")]
 use super::bio_sock2::BioSocket;
+use super::internal_bio_addr::{BioAddr, BioAddrMut, BioAddrRef};
 #[cfg(feature = "deprecated-1-1-0")]
 use crate::mem::CryptoString;
 
@@ -97,9 +101,195 @@ impl BioSockInfoType {
     }
 }
 
+/// Wraps: BIO_sock_info_u
+///
+/// Layout-compatible storage for the socket-information argument union. The
+/// lifetime parameter records the mutable `BIO_ADDR` borrow stored in its sole
+/// published variant; OpenSSL writes that address but does not retain it.
+#[repr(transparent)]
+pub struct BioSockInfo<'addr> {
+    inner: CType<ffi::BIO_sock_info_u>,
+    address: PhantomData<&'addr mut BioAddr>,
+}
+
+/// Shared borrowed handle to a socket-information union.
+#[repr(transparent)]
+pub struct BioSockInfoRef<'view, 'addr>(CPtr<'view, BioSockInfo<'addr>>);
+
+impl Clone for BioSockInfoRef<'_, '_> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl Copy for BioSockInfoRef<'_, '_> {}
+
+/// Exclusive borrowed handle to a socket-information union.
+#[repr(transparent)]
+pub struct BioSockInfoMut<'view, 'addr>(BioSockInfoRef<'view, 'addr>);
+
+// SAFETY: `BioSockInfo` is transparent over `CType<BIO_sock_info_u>`; its
+// lifetime marker is zero-sized. Both handles are transparent over a `CPtr`,
+// and the shared handle exposes no operation that writes through its pointer.
+unsafe impl<'addr> CCell for BioSockInfo<'addr> {
+    type C = ffi::BIO_sock_info_u;
+    type Ref<'view>
+        = BioSockInfoRef<'view, 'addr>
+    where
+        'addr: 'view;
+    type Mut<'view>
+        = BioSockInfoMut<'view, 'addr>
+    where
+        'addr: 'view;
+
+    unsafe fn ref_from_raw<'view>(ptr: NonNull<Self>) -> Self::Ref<'view>
+    where
+        'addr: 'view,
+    {
+        // SAFETY: the caller guarantees that the union is live for `'view`.
+        BioSockInfoRef(unsafe { CPtr::new(ptr) })
+    }
+
+    unsafe fn mut_from_raw<'view>(ptr: NonNull<Self>) -> Self::Mut<'view>
+    where
+        'addr: 'view,
+    {
+        // SAFETY: the caller additionally guarantees exclusive access.
+        BioSockInfoMut(BioSockInfoRef(unsafe { CPtr::new(ptr) }))
+    }
+}
+
+impl<'addr> BioSockInfo<'addr> {
+    /// Creates inline union storage borrowing an address for OpenSSL to fill.
+    #[must_use]
+    pub fn for_address(mut address: BioAddrMut<'addr>) -> CVal<Self> {
+        let address = address.as_mut_ptr();
+        CVal::new(Self {
+            inner: CType::new(ffi::BIO_sock_info_u { addr: address }),
+            address: PhantomData,
+        })
+    }
+}
+
+// SAFETY: the union only borrows its address. Disposing the inline union has
+// no resource to release and deliberately leaves the borrowed address alone.
+unsafe impl CValued for BioSockInfo<'_> {
+    unsafe fn c_dispose(_this: NonNull<Self>) {}
+}
+
+impl<'view, 'addr> BioSockInfoRef<'view, 'addr> {
+    /// Borrows raw union storage, returning `None` for null.
+    ///
+    /// # Safety
+    ///
+    /// A non-null pointer must address a live `BIO_sock_info_u` for `'view`.
+    /// Its `addr`, when non-null, must remain a live shared `BIO_ADDR` for that
+    /// lifetime and must originate from mutable storage borrowed for `'addr`.
+    pub unsafe fn from_ptr(ptr: *mut ffi::BIO_sock_info_u) -> Option<Self> {
+        NonNull::new(ptr.cast::<BioSockInfo<'addr>>()).map(|ptr| {
+            // SAFETY: the caller supplies the required liveness and invariants.
+            Self(unsafe { CPtr::new(ptr) })
+        })
+    }
+
+    /// Read-only pointer for the raw FFI seam.
+    #[must_use]
+    pub fn as_ptr(&self) -> *const ffi::BIO_sock_info_u {
+        self.0.as_non_null().as_ptr().cast()
+    }
+
+    /// Wraps: BIO_sock_info_u.addr
+    #[must_use]
+    pub fn address(&self) -> Option<BioAddrRef<'view>> {
+        // SAFETY: the handle carries a live shared borrow; raw-place projection
+        // copies the union field without forming a reference to its storage.
+        let address = unsafe { addr_of!((*self.as_ptr()).addr).read() };
+        // SAFETY: the constructor contract requires a non-null field to remain
+        // a live shared BIO_ADDR for the returned handle's lifetime.
+        unsafe { BioAddrRef::from_ptr(address) }
+    }
+}
+
+impl<'view, 'addr> BioSockInfoMut<'view, 'addr> {
+    /// Exclusively borrows raw union storage, returning `None` for null.
+    ///
+    /// # Safety
+    ///
+    /// As [`BioSockInfoRef::from_ptr`], except the stored address must be
+    /// exclusively borrowed and no competing union handle may be used.
+    pub unsafe fn from_ptr(ptr: *mut ffi::BIO_sock_info_u) -> Option<Self> {
+        NonNull::new(ptr.cast::<BioSockInfo<'addr>>()).map(|ptr| {
+            // SAFETY: the caller supplies liveness, invariants and exclusivity.
+            Self(BioSockInfoRef(unsafe { CPtr::new(ptr) }))
+        })
+    }
+
+    /// Writable pointer for a `BIO_sock_info` call.
+    #[must_use]
+    pub fn as_mut_ptr(&mut self) -> *mut ffi::BIO_sock_info_u {
+        self.0.0.as_non_null().as_ptr().cast()
+    }
+
+    /// Reborrows this exclusive handle without write access.
+    #[must_use]
+    pub fn as_ref(&self) -> BioSockInfoRef<'_, 'addr> {
+        self.0
+    }
+
+    /// Exclusively reborrows the address stored in the active union variant.
+    #[must_use]
+    pub fn address_mut(&mut self) -> Option<BioAddrMut<'_>> {
+        // SAFETY: the exclusive union handle guarantees that its borrowed
+        // address has no competing handle during this reborrow.
+        let address = unsafe { addr_of!((*self.as_mut_ptr()).addr).read() };
+        // SAFETY: the constructor contract supplies liveness and exclusivity.
+        unsafe { BioAddrMut::from_ptr(address) }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn socket_info_union_preserves_layout() {
+        assert_eq!(
+            core::mem::size_of::<BioSockInfo<'static>>(),
+            core::mem::size_of::<ffi::BIO_sock_info_u>()
+        );
+        assert_eq!(
+            core::mem::align_of::<BioSockInfo<'static>>(),
+            core::mem::align_of::<ffi::BIO_sock_info_u>()
+        );
+        assert_eq!(
+            core::mem::size_of::<BioSockInfoRef<'static, 'static>>(),
+            core::mem::size_of::<*mut ffi::BIO_sock_info_u>()
+        );
+    }
+
+    #[test]
+    fn socket_info_union_binds_and_reborrows_address() {
+        let mut storage = BioAddr::zeroed();
+        let raw = core::ptr::addr_of_mut!(storage).cast::<ffi::bio_addr_st>();
+        // SAFETY: `storage` is initialized layout-compatible address storage
+        // and is exclusively available for the union's lifetime.
+        let address = unsafe { BioAddrMut::from_ptr(raw) }.expect("live BIO_ADDR");
+        let mut info = BioSockInfo::for_address(address);
+
+        assert_eq!(
+            info.as_ref().address().expect("address variant").as_ptr(),
+            raw.cast_const()
+        );
+        let mut info_mut = info.as_mut();
+        assert_eq!(info_mut.as_mut_ptr(), info_mut.as_ref().as_ptr().cast_mut());
+        assert_eq!(
+            info_mut
+                .address_mut()
+                .expect("address variant")
+                .as_mut_ptr(),
+            raw
+        );
+    }
 
     #[test]
     fn hostserv_priorities_validate_raw_values() {
