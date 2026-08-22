@@ -1336,3 +1336,146 @@ pub fn BIO_set_callback(bio: &mut super::bio_bio_local::BioMut<'_>, callback: Op
         )
     }
 }
+/// Opaque in/out state passed between an ASN.1 prefix/suffix setup callback
+/// and its paired cleanup callback.
+pub struct Asn1PsBuffer {
+    buffer: *mut u8,
+    length: i32,
+    argument: *mut c_void,
+}
+
+impl Asn1PsBuffer {
+    /// Creates the null state expected before a setup callback runs.
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self {
+            buffer: core::ptr::null_mut(),
+            length: 0,
+            argument: core::ptr::null_mut(),
+        }
+    }
+
+    /// Returns the current non-negative byte count.
+    #[must_use]
+    pub fn len(&self) -> Option<usize> {
+        usize::try_from(self.length).ok()
+    }
+
+    /// Reports whether the current callback buffer length is zero.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.length == 0
+    }
+}
+
+fn call_asn1_ps(
+    callback: ffi::asn1_ps_func,
+    bio: &mut BioMut<'_>,
+    state: &mut Asn1PsBuffer,
+) -> i32 {
+    let callback = callback.expect("constructor rejects null callbacks");
+    // SAFETY: the callback wrapper's constructor establishes the setup or
+    // cleanup contract. All three in/out slots and the exclusive BIO handle
+    // remain live for this synchronous invocation.
+    unsafe {
+        callback(
+            bio.as_mut_ptr(),
+            &mut state.buffer,
+            &mut state.length,
+            core::ptr::from_mut(&mut state.argument).cast(),
+        )
+    }
+}
+
+/// Wraps: asn1_ps_func
+/// Setup variant: produces a prefix/suffix buffer owned by the ASN.1 BIO until
+/// its paired cleanup callback runs.
+#[derive(Clone, Copy)]
+pub struct Asn1PsSetupFunc(ffi::asn1_ps_func);
+
+impl Asn1PsSetupFunc {
+    /// Validates a raw callback as the setup variant.
+    ///
+    /// # Safety
+    ///
+    /// The callback must accept a live exclusive BIO, initialize a coherent
+    /// buffer/length pair on success, use the argument as a `void **` context
+    /// slot, retain nothing beyond that state, accept every state passed to
+    /// [`Self::call`] (including [`Asn1PsBuffer::empty`]), and must not unwind.
+    pub unsafe fn from_raw(raw: ffi::asn1_ps_func) -> Option<Self> {
+        raw.map(|function| Self(Some(function)))
+    }
+
+    /// Invokes this setup callback with its opaque state slots.
+    pub fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
+        call_asn1_ps(self.0, bio, state)
+    }
+}
+
+/// Wraps: asn1_ps_func
+/// Cleanup variant paired with an [`Asn1PsSetupFunc`].
+#[derive(Clone, Copy)]
+pub struct Asn1PsCleanupFunc(ffi::asn1_ps_func);
+
+impl Asn1PsCleanupFunc {
+    /// Validates a raw callback as the cleanup variant.
+    ///
+    /// # Safety
+    ///
+    /// The callback must accept state produced by its paired setup callback,
+    /// release the owned buffer/context resources it consumes, leave the slots
+    /// coherent for any later cleanup, safely accept empty/already-cleaned
+    /// state, and must not unwind.
+    pub unsafe fn from_raw(raw: ffi::asn1_ps_func) -> Option<Self> {
+        raw.map(|function| Self(Some(function)))
+    }
+
+    /// Invokes this cleanup callback with its opaque state slots.
+    pub fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
+        call_asn1_ps(self.0, bio, state)
+    }
+}
+
+#[cfg(test)]
+mod asn1_ps_tests {
+    use ffibox::CBox;
+
+    use super::*;
+    use crate::bio::bio_bio_local::Bio;
+
+    unsafe extern "C" fn empty_setup(
+        bio: *mut ffi::BIO,
+        buffer: *mut *mut u8,
+        length: *mut i32,
+        argument: *mut c_void,
+    ) -> i32 {
+        assert!(!bio.is_null());
+        assert!(!buffer.is_null());
+        assert!(!length.is_null());
+        assert!(!argument.is_null());
+        // SAFETY: the wrapper supplies live writable output slots.
+        unsafe {
+            buffer.write(core::ptr::null_mut());
+            length.write(0);
+        }
+        1
+    }
+
+    #[test]
+    fn setup_callback_receives_opaque_in_out_state() {
+        // SAFETY: `BIO_s_null` is a process-lifetime method and a successful
+        // `BIO_new` transfers one complete BIO reference.
+        let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
+        // SAFETY: the returned reference is uniquely adopted by its matching
+        // `BIO_free` owner.
+        let mut bio = unsafe { CBox::<Bio>::from_raw(raw) }.expect("BIO_new");
+        // SAFETY: `empty_setup` accepts the wrapper's slots and never retains
+        // them or unwinds.
+        let callback = unsafe { Asn1PsSetupFunc::from_raw(Some(empty_setup)) }.unwrap();
+        let mut state = Asn1PsBuffer::empty();
+
+        assert_eq!(callback.call(&mut bio.as_mut(), &mut state), 1);
+        assert!(state.is_empty());
+        assert_eq!(state.len(), Some(0));
+    }
+}

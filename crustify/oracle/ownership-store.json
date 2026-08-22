@@ -8072,6 +8072,1127 @@
      }
     }
    ]
+  },
+  {
+   "name": "OBJ_NAME_do_all",
+   "defined_in": "crypto/objects/o_names.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque caller context is passed through to the synchronous callback and may be mutated there."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Non-null callback code is invoked synchronously and is not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_NAME_do_all_sorted",
+   "defined_in": "crypto/objects/o_names.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque caller context is passed through to the synchronous callback and may be mutated there."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Non-null callback code is invoked synchronously and is not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_create_objects",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed BIO is read and advances during line parsing; it is not retained or released."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_copyfunc_thunk",
+   "defined_in": null,
+   "lifetime": {
+    "for": "arg1",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed copy callback is invoked by the thunk and not retained by that invocation."
+     }
+    },
+    {
+     "name": "arg1",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg1"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Non-null source element is read only for this copy invocation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh copied element ownership transfers to the caller; NULL reports copy failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_delete",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returned optional element pointer remains externally owned; the stack never owned the element allocation."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_delete_ptr",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is inspected only for this call and is not retained."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returned optional element pointer remains externally owned; the stack never owned the element allocation."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_find",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is inspected only for this call and is not retained."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared stack borrow read only for this call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_find_all",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is inspected only for this call and is not retained."
+     }
+    },
+    {
+     "name": "pnum",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pnum"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional borrowed output slot receives the number of matches; NULL requests only the first index."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared stack borrow read only for this call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_find_ex",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is inspected only for this call and is not retained."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared stack borrow read only for this call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_freefunc_thunk",
+   "defined_in": null,
+   "lifetime": {
+    "for": "arg1",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed destructor callback is invoked by the thunk and not retained by that invocation."
+     }
+    },
+    {
+     "name": "arg1",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "The thunk consumes the non-null element allocation through the supplied destructor."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_insert",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is retained in the stack; its allocation remains caller-owned and must outlive storage."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_is_sorted",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared stack borrow read only for this call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_num",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared stack borrow read only for this call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_pop",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returned optional element pointer remains externally owned; the stack never owned the element allocation."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_push",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is retained in the stack; its allocation remains caller-owned and must outlive storage."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_reserve",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_set",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is retained in the stack; its allocation remains caller-owned and must outlive storage."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:data"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "The routine returns the same newly stored optional element pointer; element ownership remains external."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_set_cmp_func",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional comparator code is stored in the stack and therefore has static executable lifetime."
+     }
+    },
+    {
+     "name": "sk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sk"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient non-null exclusive stack borrow; the routine mutates stack metadata or storage."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Previous optional stored comparator has static executable lifetime."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_set_cmp_thunks",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "c_thunk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional comparator adapter is stored in the stack and therefore has static executable lifetime."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:st"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns the same optional borrowed stack pointer after updating its thunk; NULL input returns NULL."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_shift",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returned optional element pointer remains externally owned; the stack never owned the element allocation."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_sort",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_unshift",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional element pointer is retained in the stack; its allocation remains caller-owned and must outlive storage."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_value",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared stack borrow read only for this call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:st"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Optional element borrow is valid only while the external element and stack entry remain live."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_zero",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "asn1_ps_func",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO is borrowed mutably for callback duration."
+     }
+    },
+    {
+     "name": "arg1",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg1"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed output slot receives ownership of a newly allocated prefix/suffix byte buffer."
+     }
+    },
+    {
+     "name": "arg2",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg2"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed output slot receives the buffer length."
+     }
+    },
+    {
+     "name": "arg3",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg3"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Actually points at the BIO context void-pointer slot; callback may inspect or replace that slot."
+     }
+    }
+   ]
+  },
+  {
+   "name": "asn1_ps_func",
+   "defined_in": null,
+   "variant": 1,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO is borrowed mutably for callback duration."
+     }
+    },
+    {
+     "name": "arg1",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg1"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed in/out slot holds an owned buffer which the cleanup callback consumes and normally nulls."
+     }
+    },
+    {
+     "name": "arg2",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg2"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed in/out length slot is normally reset by cleanup."
+     }
+    },
+    {
+     "name": "arg3",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg3"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Actually points at the BIO context void-pointer slot; cleanup may consume and null its pointee."
+     }
+    }
+   ],
+   "callsites": [
+    "asn1_bio_flush_ex",
+    "asn1_bio_free"
+   ]
   }
  ]
 }

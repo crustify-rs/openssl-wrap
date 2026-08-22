@@ -7,6 +7,7 @@ use std::ffi::CString;
 
 use libcrypto_sys as ffi;
 
+use crate::bio::bio_bio_local::BioMut;
 use crate::stack::openssl_stack::OpenSslSkCompFunc;
 
 fn bsearch_result<T>(base: &[T], result: *const c_void) -> Option<&T> {
@@ -151,6 +152,15 @@ pub fn OBJ_nid2sn(nid: i32) -> Option<CString> {
 pub fn OBJ_sn2nid(short_name: &CStr) -> i32 {
     // SAFETY: `short_name` is a live immutable C string for the call.
     unsafe { ffi::OBJ_sn2nid(short_name.as_ptr()) }
+}
+
+/// Wraps: OBJ_create_objects
+/// Reads textual object definitions from `input` and returns the number added.
+#[allow(non_snake_case)]
+pub fn OBJ_create_objects(input: &mut BioMut<'_>) -> i32 {
+    // SAFETY: the exclusive handle supplies a live BIO for the synchronous
+    // parser call. OpenSSL advances it but neither retains nor releases it.
+    unsafe { ffi::OBJ_create_objects(input.as_mut_ptr()) }
 }
 
 #[cfg(test)]
