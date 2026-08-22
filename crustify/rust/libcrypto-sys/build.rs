@@ -213,6 +213,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "BIO_debug_callback",
     "BIO_debug_callback_ex",
     "BIO_do_connect_retry",
+    "BIO_dup_chain",
     "BIO_dump",
     "BIO_dump_fp",
     "BIO_dump_indent",

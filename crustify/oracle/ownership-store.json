@@ -3275,6 +3275,54 @@
    ]
   },
   {
+   "name": "BIO_dup_chain",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "lifetime": {
+    "for": "in",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The function traverses the input chain without consuming it, but BIO_CTRL_DUP and ex-data duplication invoke callbacks that may mutate source state. NULL is accepted and produces NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:in"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "A non-NULL result is a freshly allocated deep-copied BIO chain owned by the caller and released with BIO_free_all. Method, callback-argument, and ex-data pointers may remain coupled to state reachable from the input, so the safe owner is lifetime-tied to it."
+    }
+   }
+  },
+  {
    "name": "BIO_eof",
    "defined_in": "crypto/bio/bio_lib.c",
    "ptr_args": [

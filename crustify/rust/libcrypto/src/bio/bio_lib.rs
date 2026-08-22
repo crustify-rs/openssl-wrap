@@ -4,7 +4,7 @@ use core::ffi::{CStr, c_long, c_void};
 use core::marker::PhantomData;
 use core::ptr::{self, NonNull};
 
-use ffibox::{CBox, CSliceMut, CType};
+use ffibox::{CBox, CBoxWith, CDropper, CSliceMut, CType};
 use libcrypto_sys as ffi;
 
 use super::bio_bio_local::{Bio, BioMut, BioRef};
@@ -835,5 +835,111 @@ pub fn BIO_set_callback_ex(bio: &mut BioMut<'_>, callback: Option<BioCallbackFnE
     // static code pointers satisfying OpenSSL's extended callback ABI.
     unsafe {
         ffi::BIO_set_callback_ex(bio.as_mut_ptr(), callback.and_then(BioCallbackFnEx::as_raw))
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+struct BioFreeAll;
+
+// SAFETY: `BIO_free_all` accepts a uniquely owned chain head and releases each
+// successive owned link, stopping when a shared reference retains a node.
+unsafe impl CDropper<Bio> for BioFreeAll {
+    unsafe fn c_drop(&self, chain: NonNull<Bio>) {
+        // SAFETY: the strategy contract transfers the complete uniquely owned
+        // chain represented by this head to OpenSSL's chain destructor.
+        unsafe { ffi::BIO_free_all(chain.as_ptr().cast()) }
+    }
+}
+
+/// An owned BIO chain whose duplicated state may borrow from another chain.
+#[must_use = "dropping the owner releases the complete BIO chain"]
+pub struct BioChain<'a> {
+    inner: CBoxWith<Bio, BioFreeAll>,
+    borrow: PhantomData<&'a CType<c_void>>,
+}
+
+impl BioChain<'_> {
+    unsafe fn from_raw(raw: *mut ffi::BIO) -> Option<Self> {
+        // SAFETY: the caller transfers the head of one newly constructed chain
+        // whose links must collectively be released with `BIO_free_all`.
+        unsafe { CBoxWith::from_raw(raw, BioFreeAll) }.map(|inner| Self {
+            inner,
+            borrow: PhantomData,
+        })
+    }
+
+    /// Borrow the chain head without write access.
+    #[must_use]
+    pub fn as_ref(&self) -> BioRef<'_> {
+        self.inner.as_ref()
+    }
+
+    /// Exclusively borrow the chain head.
+    #[must_use]
+    pub fn as_mut(&mut self) -> BioMut<'_> {
+        self.inner.as_mut()
+    }
+}
+
+/// Wraps: BIO_dup_chain
+///
+/// Deep-copies every node. The returned owner remains lifetime-bound to the
+/// input because BIO methods, callback arguments, and application data may
+/// retain shared state even after their duplication callbacks run.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_dup_chain<'a>(input: Option<&mut BioMut<'a>>) -> Option<BioChain<'a>> {
+    let input = input.map_or(ptr::null_mut(), |input| input.as_mut_ptr());
+    // SAFETY: a non-null input is exclusively borrowed for the operation. The
+    // returned chain adopts OpenSSL's fresh ownership and cannot outlive state
+    // reachable through the input chain.
+    let duplicate = unsafe { ffi::BIO_dup_chain(input) };
+    // SAFETY: a non-null result is a newly allocated, fully constructed chain
+    // transferred to the caller and requiring `BIO_free_all` for teardown.
+    unsafe { BioChain::from_raw(duplicate) }
+}
+
+#[cfg(test)]
+mod dup_chain_tests {
+    use super::*;
+
+    fn new_null_bio() -> CBox<Bio> {
+        let method = super::super::bss_null::BIO_s_null().expect("null method");
+        // SAFETY: the process-lifetime method descriptor is live and the
+        // constructor returns one fresh BIO reference or null.
+        let raw = unsafe { ffi::BIO_new(method.as_ptr()) };
+        // SAFETY: ownership of the fresh BIO reference transfers to this owner.
+        unsafe { CBox::from_raw(raw) }.expect("BIO_new")
+    }
+
+    fn new_two_node_chain() -> BioChain<'static> {
+        let head = new_null_bio();
+        let tail = new_null_bio();
+        let tail = tail.into_raw();
+        // SAFETY: both BIOs are uniquely owned and live; ownership of `tail`
+        // becomes part of the chain rooted at `head`.
+        let linked = unsafe { ffi::BIO_push(head.as_ptr(), tail) };
+        assert_eq!(linked, head.as_ptr());
+        let head = head.into_raw();
+        // SAFETY: the complete linked chain is now transferred to one owner.
+        unsafe { BioChain::from_raw(head) }.expect("non-null chain")
+    }
+
+    #[test]
+    fn duplicates_and_owns_the_complete_chain() {
+        assert!(BIO_dup_chain(None).is_none());
+
+        let mut source = new_two_node_chain();
+        let source_head = source.as_ref().as_ptr();
+        let source_tail = BIO_next(&source.as_ref()).expect("source tail").as_ptr();
+
+        let mut source_handle = source.as_mut();
+        let duplicate = BIO_dup_chain(Some(&mut source_handle)).expect("BIO_dup_chain");
+        let duplicate_head = duplicate.as_ref();
+        let duplicate_tail = BIO_next(&duplicate_head).expect("duplicate tail");
+
+        assert_ne!(duplicate_head.as_ptr(), source_head);
+        assert_ne!(duplicate_tail.as_ptr(), source_tail);
+        assert!(BIO_next(&duplicate_tail).is_none());
     }
 }
