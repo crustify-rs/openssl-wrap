@@ -19,6 +19,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_secure_clear_free",
     "CRYPTO_secure_free",
     "CRYPTO_secure_zalloc",
+    "CRYPTO_strdup",
 ];
 const AGENT_ALLOWED_VARS: &[&str] = &[];
 const AGENT_BLOCKLIST: &[&str] = &[];

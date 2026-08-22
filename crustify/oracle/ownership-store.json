@@ -260,6 +260,123 @@
    ]
   },
   {
+   "name": "CRYPTO_strdup",
+   "defined_in": "crypto/o_str.c",
+   "lifetime": {
+    "for": "str",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to the OpenSSL allocator."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient NUL-terminated source string; NULL is accepted and yields NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh NUL-terminated copy allocated by the active OpenSSL allocator and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
+    }
+   }
+  },
+  {
+   "name": "CRYPTO_strndup",
+   "defined_in": "crypto/o_str.c",
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to the OpenSSL allocator."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient source buffer readable for up to s bytes; no NUL is required within that bound, and NULL yields NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh NUL-terminated copy of at most s source bytes, allocated by OpenSSL and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
+    }
+   }
+  },
+  {
    "name": "free",
    "defined_in": null,
    "lifetime": {
@@ -314,6 +431,52 @@
      }
     }
    ]
+  },
+  {
+   "name": "strdup",
+   "defined_in": null,
+   "lifetime": {
+    "for": "__s",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "__s",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:__s"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Transient non-null NUL-terminated source string; passing NULL is outside strdup's contract."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
+    }
+   }
   }
  ]
 }
