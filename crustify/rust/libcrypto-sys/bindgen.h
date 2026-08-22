@@ -17,3 +17,10 @@ typedef long (*crustify_BIO_callback_fn)(BIO *b, int oper,
 void BIO_set_callback(BIO *b, crustify_BIO_callback_fn callback);
 #endif
 /* crustify:macros:end */
+
+/* crustify:compat-shims:start */
+int crustify_ASN1_STRING_length(const ASN1_STRING *string);
+void crustify_ASN1_STRING_length_set(ASN1_STRING *string, int length);
+int crustify_ASN1_STRING_set(ASN1_STRING *string, const unsigned char *data,
+    size_t length);
+/* crustify:compat-shims:end */

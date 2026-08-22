@@ -1647,6 +1647,86 @@
    ]
   },
   {
+   "name": "ASN1_STRING_cmp",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared ASN.1 string read only during comparison."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared ASN.1 string read only during comparison."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_copy",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "dst",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dst"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required destination is mutated in place and remains caller-owned."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable shared source; NULL is rejected without changing ownership."
+     }
+    }
+   ]
+  },
+  {
    "name": "ASN1_STRING_dup",
    "defined_in": "crypto/asn1/asn1_lib.c",
    "lifetime": {
@@ -1720,6 +1800,504 @@
    ]
   },
   {
+   "name": "ASN1_STRING_get0_data",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared ASN.1 string whose data pointer is observed."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:x"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed data buffer aliases x, has ASN1_STRING_get_length(x) bytes, and may be NULL for an empty value."
+    }
+   }
+  },
+  {
+   "name": "ASN1_STRING_get_length",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared ASN.1 string read for its logical byte length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_length",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Deprecated required shared ASN.1 string length getter."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_length_set",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required mutable ASN.1 string; writes its logical length without reallocating storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_new",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh fully initialized ASN.1 string, or NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "ASN1_STRING_new_not_owned",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required nonempty borrowed byte buffer retained by the returned header and never freed by it."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh owned ASN.1 header or NULL; its data field borrows arg:data for the header lifetime."
+    }
+   }
+  },
+  {
+   "name": "ASN1_STRING_print",
+   "defined_in": "crypto/asn1/a_print.c",
+   "ptr_args": [
+    {
+     "name": "bp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required BIO borrowed mutably while output bytes are written."
+     }
+    },
+    {
+     "name": "v",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:v"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable shared ASN.1 string; NULL produces failure without dereference."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_print_ex",
+   "defined_in": "crypto/asn1/a_strex.c",
+   "ptr_args": [
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required BIO borrowed mutably for formatted output."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared ASN.1 string read during formatting."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_print_ex_fp",
+   "defined_in": "crypto/asn1/a_strex.c",
+   "ptr_args": [
+    {
+     "name": "fp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required FILE stream borrowed mutably for formatted output."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared ASN.1 string read during formatting."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_set",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient input bytes; len==-1 selects NUL termination, explicit zero length permits NULL."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required ASN.1 string mutated in place; existing owned data may be released."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_set0",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Ownership of the len-byte OpenSSL allocation transfers into str; NULL with length zero clears it."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required ASN.1 string receives and later releases the replacement data."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_set1_data",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient len-byte source; NULL is only meaningful for zero length in the safe surface."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required ASN.1 string is mutated only after validation/allocation succeeds."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_set1_string",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "c_string",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:c_string"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required borrowed NUL-terminated input string."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required ASN.1 string receives a deep copy of the source bytes."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_set_by_NID",
+   "defined_in": "crypto/asn1/a_strnid.c",
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Transient input; inlen==-1 selects NUL termination, otherwise exactly inlen bytes are read."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional borrowed in/out slot: a NULL pointee is filled with a new owned string; a non-NULL caller-owned string is reused in place."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:out"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "On success returns the newly owned string when out is NULL, or aliases the caller-owned *out when a slot was supplied; safe wrappers split these contracts."
+    }
+   }
+  },
+  {
    "name": "ASN1_STRING_set_default_mask_asc",
    "defined_in": "crypto/asn1/a_strnid.c",
    "ptr_args": [
@@ -1739,6 +2317,90 @@
      }
     }
    ]
+  },
+  {
+   "name": "ASN1_STRING_to_UTF8",
+   "defined_in": "crypto/asn1/a_strex.c",
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable shared ASN.1 string; NULL is rejected with a negative result."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required output slot receives a newly OpenSSL-allocated byte buffer on nonnegative success."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_type",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared ASN.1 string read for its type tag."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_type_new",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh fully initialized ASN.1 string with the requested type, or NULL on allocation failure."
+    }
+   }
   },
   {
    "name": "ASN1_TYPE_free",

@@ -107,3 +107,75 @@ pub fn ASN1_STRING_TABLE_get(nid: i32) -> Option<Asn1StringTableValues> {
         flags: table.flags(),
     })
 }
+
+/// Wraps: ASN1_STRING_set_by_NID
+/// Allocates a new constrained ASN.1 string for `input`.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn ASN1_STRING_set_by_NID(
+    input: &[u8],
+    input_format: i32,
+    nid: i32,
+) -> Option<ffibox::CBox<crate::asn1::asn1::Asn1String>> {
+    let input_length = i32::try_from(input.len()).ok()?;
+    // SAFETY: a null output slot requests a new allocation. `input` supplies
+    // exactly `input_length` readable bytes for this synchronous conversion.
+    let raw = unsafe {
+        ffi::ASN1_STRING_set_by_NID(
+            core::ptr::null_mut(),
+            input.as_ptr(),
+            input_length,
+            input_format,
+            nid,
+        )
+    };
+    // SAFETY: with no caller-provided output slot, a non-null success result is
+    // a fresh fully initialized string transferred to the caller.
+    unsafe { ffibox::CBox::from_raw(raw) }
+}
+
+/// Reuses an existing owned ASN.1 string for the constrained conversion.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn ASN1_STRING_set_by_NID_into(
+    output: &mut crate::asn1::asn1::Asn1StringMut<'_>,
+    input: &[u8],
+    input_format: i32,
+    nid: i32,
+) -> bool {
+    let Ok(input_length) = i32::try_from(input.len()) else {
+        return false;
+    };
+    let expected = output.as_mut_ptr();
+    let mut slot = expected;
+    // SAFETY: the in/out slot contains the exclusively borrowed live string,
+    // which OpenSSL reuses rather than replacing. `input` supplies its reported
+    // number of readable bytes for the conversion.
+    let result = unsafe {
+        ffi::ASN1_STRING_set_by_NID(&mut slot, input.as_ptr(), input_length, input_format, nid)
+    };
+    debug_assert_eq!(slot, expected);
+    result == expected
+}
+
+#[cfg(test)]
+mod set_by_nid_tests {
+    use super::*;
+
+    #[test]
+    fn creates_and_reuses_constrained_strings() {
+        let nid = crate::objects::obj_dat::OBJ_sn2nid(c"CN");
+        let mut string = ASN1_STRING_set_by_NID(b"example", ffi::MBSTRING_ASC as i32, nid)
+            .expect("constrained common name");
+        assert!(ASN1_STRING_set_by_NID_into(
+            &mut string.as_mut(),
+            b"updated",
+            ffi::MBSTRING_ASC as i32,
+            nid,
+        ));
+        assert_eq!(
+            crate::asn1::asn1_lib::ASN1_STRING_get_length(string.as_ref()),
+            7
+        );
+    }
+}

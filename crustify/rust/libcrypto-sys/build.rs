@@ -5,6 +5,7 @@ use std::process::Command;
 // crustify:allowlist-agent:start
 const AGENT_CLANG_ARGS: &[&str] = &[];
 const AGENT_LINK_ARGS: &[&str] = &[
+    "rustc-link-lib=static=crustify_libcrypto_shims",
     "rustc-link-lib=static=crypto",
     "rustc-link-lib=ubsan",
     "rustc-link-lib=dl",
@@ -91,9 +92,27 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "OPENSSL_sk_set_thunks",
     "ASN1_OBJECT_free",
     "ASN1_STRING_clear_free",
+    "crustify_ASN1_STRING_length",
+    "crustify_ASN1_STRING_length_set",
+    "crustify_ASN1_STRING_set",
+    "ASN1_STRING_cmp",
+    "ASN1_STRING_copy",
     "ASN1_STRING_dup",
     "ASN1_STRING_free",
+    "ASN1_STRING_get0_data",
+    "ASN1_STRING_get_length",
     "ASN1_STRING_new",
+    "ASN1_STRING_new_not_owned",
+    "ASN1_STRING_print",
+    "ASN1_STRING_print_ex",
+    "ASN1_STRING_print_ex_fp",
+    "ASN1_STRING_set0",
+    "ASN1_STRING_set1_data",
+    "ASN1_STRING_set1_string",
+    "ASN1_STRING_set_by_NID",
+    "ASN1_STRING_to_UTF8",
+    "ASN1_STRING_type",
+    "ASN1_STRING_type_new",
     "ASN1_TYPE_free",
     "ASN1_TYPE_new",
     "ASN1_TYPE_set",
@@ -351,6 +370,7 @@ const AGENT_ALLOWED_VARS: &[&str] = &[
     "V_ASN1_UTCTIME",
     "V_ASN1_UTF8STRING",
     "V_ASN1_VISIBLESTRING",
+    "MBSTRING_ASC",
     "BIO_CTRL_SET_CALLBACK",
     "BIO_POLL_DESCRIPTOR_CUSTOM_START",
     "BIO_POLL_DESCRIPTOR_TYPE_NONE",
@@ -404,6 +424,35 @@ fn main() {
     let status = command.status().expect("failed to invoke bindgen-cli");
     assert!(status.success(), "bindgen-cli failed");
 
+    let shim_object = output.with_file_name("compat_shims.o");
+    let shim_archive = output.with_file_name("libcrustify_libcrypto_shims.a");
+    let status = Command::new("cc")
+        .arg("-c")
+        .arg(manifest_dir.join("compat_shims.c"))
+        .arg("-o")
+        .arg(&shim_object)
+        .arg(format!("-I{}", repo_root.join("include").display()))
+        .status()
+        .expect("failed to compile libcrypto compatibility shims");
+    assert!(
+        status.success(),
+        "libcrypto compatibility shim compile failed"
+    );
+    let status = Command::new("ar")
+        .args(["crus"])
+        .arg(&shim_archive)
+        .arg(&shim_object)
+        .status()
+        .expect("failed to archive libcrypto compatibility shims");
+    assert!(
+        status.success(),
+        "libcrypto compatibility shim archive failed"
+    );
+    println!(
+        "cargo:rustc-link-search=native={}",
+        output.parent().unwrap().display()
+    );
+
     for argument in AGENT_LINK_ARGS {
         println!("cargo:{argument}");
     }
@@ -411,6 +460,7 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", repo_root.display());
     }
     println!("cargo:rerun-if-changed=bindgen.h");
+    println!("cargo:rerun-if-changed=compat_shims.c");
 }
 
 fn resolve_include(repo_root: &Path, argument: &str) -> String {

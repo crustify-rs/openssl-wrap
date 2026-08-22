@@ -7,7 +7,7 @@ use ffibox::{CBox, define_ctype, impl_dropped};
 
 use libcrypto_sys as ffi;
 
-use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef, Asn1StringRef};
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef, Asn1StringMut, Asn1StringRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 
 define_ctype!(
@@ -659,4 +659,64 @@ mod asn1_type_tests {
 #[allow(non_snake_case)]
 pub fn ASN1_OBJECT_new() -> Option<ffibox::CBox<crate::asn1::asn1::Asn1Object>> {
     None
+}
+
+/// Wraps: ASN1_STRING_length
+/// Compatibility getter for OpenSSL's signed legacy length API.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn ASN1_STRING_length(string: Asn1StringRef<'_>) -> c_int {
+    // SAFETY: the shared handle is live; the compatibility shim only copies
+    // the initialized signed length field.
+    unsafe { ffi::crustify_ASN1_STRING_length(string.as_ptr()) }
+}
+
+/// Wraps: ASN1_STRING_length_set
+/// Shrinks the logical string length without changing its allocation.
+///
+/// Unlike the deprecated C entry point, this safe surface rejects growth:
+/// OpenSSL does not track the allocation capacity needed to prove such a write
+/// leaves later reads and destruction in bounds.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn ASN1_STRING_length_set(string: &mut Asn1StringMut<'_>, new_length: usize) -> bool {
+    let current = crate::asn1::asn1_lib::ASN1_STRING_get_length(string.as_ref());
+    let Ok(new_length) = c_int::try_from(new_length) else {
+        return false;
+    };
+    if usize::try_from(new_length).expect("nonnegative length") > current {
+        return false;
+    }
+    // SAFETY: the exclusive handle permits the scalar update, and the safe
+    // precondition restricts the new logical extent to initialized old bytes.
+    unsafe { ffi::crustify_ASN1_STRING_length_set(string.as_mut_ptr(), new_length) }
+    true
+}
+
+/// Wraps: ASN1_STRING_set
+/// Deep-copies bytes and retains the legacy extra NUL byte after the data.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn ASN1_STRING_set(string: &mut Asn1StringMut<'_>, data: &[u8]) -> bool {
+    if c_int::try_from(data.len()).is_err() {
+        return false;
+    }
+    // SAFETY: the exclusive string is live and `data` supplies its reported
+    // initialized bytes. The shim copies them into an OpenSSL allocation.
+    unsafe { ffi::crustify_ASN1_STRING_set(string.as_mut_ptr(), data.as_ptr(), data.len()) == 1 }
+}
+
+#[cfg(test)]
+mod legacy_string_tests {
+    use super::*;
+
+    #[test]
+    fn legacy_setter_copies_and_safe_length_setter_only_shrinks() {
+        let mut string = crate::asn1::asn1_lib::ASN1_STRING_new().expect("ASN1_STRING_new");
+        assert!(ASN1_STRING_set(&mut string.as_mut(), b"legacy"));
+        assert_eq!(ASN1_STRING_length(string.as_ref()), 6);
+        assert!(!ASN1_STRING_length_set(&mut string.as_mut(), 7));
+        assert!(ASN1_STRING_length_set(&mut string.as_mut(), 3));
+        assert_eq!(ASN1_STRING_length(string.as_ref()), 3);
+    }
 }
