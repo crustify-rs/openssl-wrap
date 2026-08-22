@@ -728,6 +728,101 @@
      }
     }
    ]
+  },
+  {
+   "name": "stack_st",
+   "defined_in": "crypto/stack/stack.c",
+   "_comment_agent": "The public OPENSSL_STACK is opaque. Its private data field owns the resizable pointer array, while each type-erased element is either caller-borrowed or transferred for later OPENSSL_sk_pop_free according to the API path. Plain OPENSSL_sk_free never frees elements. Comparator and thunk fields are optional borrowed executable-code pointers with static lifetime.",
+   "fields": [
+    {
+     "name": "cmp_thunk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparison thunk installed by OPENSSL_sk_set_cmp_thunks."
+     }
+    },
+    {
+     "name": "comp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparator callback, installed at construction or by OPENSSL_sk_set_cmp_func and invoked only while stored."
+     }
+    },
+    {
+     "name": "copy_thunk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed element-copy thunk installed by OPENSSL_sk_set_copy_thunks."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "other"
+        }
+       }
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned allocation of num_alloc type-erased pointer slots, nullable until capacity is reserved. Stack operations resize it and replace/move slots. Elements are borrowed on ordinary stack paths, but callers may transfer them to an owning stack that is consumed with OPENSSL_sk_pop_free. The const element pointees are not mutated through this field."
+     }
+    },
+    {
+     "name": "free_thunk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed element-free thunk installed by OPENSSL_sk_set_thunks."
+     }
+    }
+   ]
   }
  ],
  "symbols": [
@@ -1727,6 +1822,295 @@
      "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
     }
    }
+  },
+  {
+   "name": "OPENSSL_sk_deep_copy",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "sk",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "copy_func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed element-copy callback. NULL selects a shallow element-pointer copy; otherwise it is called only during this operation."
+     }
+    },
+    {
+     "name": "free_func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed cleanup callback for already-copied elements after a copy failure. It may be NULL only for the shallow-copy mode or when failure cleanup cannot call it."
+     }
+    },
+    {
+     "name": "sk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source stack; NULL produces a new empty stack."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh stack owned by the caller; with a copy callback it owns independent copied elements, while NULL copy_func produces a shallow pointer copy."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_dup",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "sk",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "sk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source stack. The routine reads it during the call; NULL produces a new empty stack."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh stack and pointer-array allocation owned by the caller and releasable with OPENSSL_sk_free; element pointers are copied but remain unowned."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_free",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "st",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a complete nullable OPENSSL_STACK allocation and its pointer array; elements are deliberately not freed."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_new",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparator stored in the returned stack; callback code has static executable lifetime."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "New initialized stack owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_new_null",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "New initialized stack without a comparator, owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_new_reserve",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparator stored in the returned stack; callback code has static executable lifetime."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "New initialized stack with requested initial capacity, owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_pop_free",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "st",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed element destructor callback. It must be callable whenever a non-null element is present and is used only during this call."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable stack, releases each non-null element through func or the stored thunk, then releases the stack."
+     }
+    }
+   ]
   }
  ]
 }

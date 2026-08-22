@@ -19,13 +19,14 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "OBJ_NAME",
     "OPENSSL_INIT_SETTINGS",
     "OPENSSL_LHASH",
+    "OPENSSL_STACK",
     "asn1_string_table_st",
     "bio_addr_st",
     "bio_method_st",
     "bio_st",
     "ossl_lib_ctx_st",
 ];
-const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st", "ossl_init_settings_st"];
+const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st", "ossl_init_settings_st", "stack_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "BIO_free",
     "BIO_meth_free",
@@ -42,6 +43,8 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_strdup",
     "OPENSSL_INIT_free",
     "OPENSSL_LH_free",
+    "OPENSSL_sk_dup",
+    "OPENSSL_sk_free",
     "OSSL_LIB_CTX_free",
     "OSSL_LIB_CTX_new",
 ];
