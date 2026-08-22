@@ -16,6 +16,8 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "BIO_hostserv_priorities",
     "BIO_lookup_type",
     "BIO_sock_info_type",
+    "OBJ_NAME",
+    "OPENSSL_INIT_SETTINGS",
     "OPENSSL_LHASH",
     "asn1_string_table_st",
     "bio_addr_st",
@@ -23,7 +25,7 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "bio_st",
     "ossl_lib_ctx_st",
 ];
-const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st"];
+const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st", "ossl_init_settings_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "BIO_free",
     "BIO_meth_free",
@@ -38,6 +40,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_secure_free",
     "CRYPTO_secure_zalloc",
     "CRYPTO_strdup",
+    "OPENSSL_INIT_free",
     "OPENSSL_LH_free",
     "OSSL_LIB_CTX_free",
     "OSSL_LIB_CTX_new",

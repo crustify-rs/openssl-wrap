@@ -658,6 +658,76 @@
      }
     }
    ]
+  },
+  {
+   "name": "obj_name_st",
+   "defined_in": "include/openssl/objects.h",
+   "_comment_agent": "OBJ_NAME records own only their header allocation inside o_names.c. Their public name/data fields borrow caller-managed immutable NUL strings; there is no public per-record destructor or clone operation.",
+   "fields": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "OBJ_NAME_add stores caller-managed const data without copying it. Non-alias entries may carry NULL; optional type-specific free callbacks, not OBJ_NAME itself, govern any external storage."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "OBJ_NAME_add stores the caller's const NUL-terminated name without copying it; registered callbacks receive that borrowed pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ossl_init_settings_st",
+   "defined_in": "include/internal/conf.h",
+   "_comment_agent": "Both optional string fields are independently owned malloc-family strings. OPENSSL_INIT_free releases both and then the settings allocation.",
+   "fields": [
+    {
+     "name": "appname",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "OPENSSL_INIT_set_config_appname duplicates the input with strdup, replaces and frees the old allocation; OPENSSL_INIT_free frees it."
+     }
+    },
+    {
+     "name": "filename",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "OPENSSL_INIT_set_config_filename duplicates the input with strdup, replaces and frees the old allocation; OPENSSL_INIT_free frees it."
+     }
+    }
+   ]
   }
  ],
  "symbols": [
@@ -1283,6 +1353,150 @@
      "note": "Fresh NUL-terminated copy of at most s source bytes, allocated by OpenSSL and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
     }
    }
+  },
+  {
+   "name": "OPENSSL_INIT_free",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "lifetime": {
+    "for": "settings",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Consumes the settings allocation when non-NULL, freeing both owned strings and the header."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_INIT_new",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a newly malloc-allocated, initialized settings object or NULL."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_INIT_set_config_appname",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_args": [
+    {
+     "name": "appname",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:appname"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional input string is copied with strdup and remains caller-owned."
+     }
+    },
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:settings"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows settings for the call and replaces its owned appname."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_INIT_set_config_file_flags",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_args": [
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:settings"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows settings for the call and writes flags."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_INIT_set_config_filename",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_args": [
+    {
+     "name": "filename",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:filename"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional input string is copied with strdup and remains caller-owned."
+     }
+    },
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:settings"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows settings for the call and replaces its owned filename."
+     }
+    }
+   ]
   },
   {
    "name": "OPENSSL_LH_free",
