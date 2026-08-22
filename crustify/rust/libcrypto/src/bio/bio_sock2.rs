@@ -1,1 +1,56 @@
 //! Wrappers assigned from `crypto/bio/bio_sock2.c`.
+
+use core::mem::ManuallyDrop;
+
+use libcrypto_sys as ffi;
+
+/// An owned socket returned by OpenSSL's BIO socket helpers.
+#[derive(Debug)]
+pub struct BioSocket {
+    fd: i32,
+}
+
+impl BioSocket {
+    pub(crate) fn from_result(fd: i32) -> Option<Self> {
+        (fd >= 0).then_some(Self { fd })
+    }
+
+    /// Returns the socket number without transferring ownership.
+    #[must_use]
+    pub const fn as_raw_socket(&self) -> i32 {
+        self.fd
+    }
+
+    /// Transfers responsibility for closing the socket to the caller.
+    #[must_use]
+    pub fn into_raw_socket(self) -> i32 {
+        let this = ManuallyDrop::new(self);
+        this.fd
+    }
+}
+
+impl Drop for BioSocket {
+    fn drop(&mut self) {
+        // SAFETY: this owner holds the socket exactly once and Drop cannot run again.
+        unsafe { ffi::BIO_closesocket(self.fd) };
+    }
+}
+
+/// Wraps: BIO_closesocket
+/// Consumes and closes an OpenSSL socket immediately.
+#[allow(non_snake_case)]
+pub fn BIO_closesocket(socket: BioSocket) -> i32 {
+    let fd = socket.into_raw_socket();
+    // SAFETY: ownership of the live descriptor was consumed above.
+    unsafe { ffi::BIO_closesocket(fd) }
+}
+
+/// Wraps: BIO_socket
+/// Creates an owned socket, returning `None` when OpenSSL reports failure.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_socket(domain: i32, socket_type: i32, protocol: i32, options: i32) -> Option<BioSocket> {
+    // SAFETY: all arguments are by-value socket configuration scalars.
+    let fd = unsafe { ffi::BIO_socket(domain, socket_type, protocol, options) };
+    BioSocket::from_result(fd)
+}

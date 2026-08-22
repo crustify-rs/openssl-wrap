@@ -7,6 +7,9 @@ publish = false
 [lib]
 crate-type = ["rlib", "staticlib"]
 
+[features]
+deprecated-1-1-0 = []
+
 [dependencies]
 ffibox.workspace = true
 libc = { path = "../libc" }

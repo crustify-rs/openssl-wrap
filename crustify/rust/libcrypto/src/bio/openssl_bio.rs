@@ -1,6 +1,16 @@
 //! Wrappers assigned from `include/openssl/bio.h`.
 
+#[cfg(feature = "deprecated-1-1-0")]
+use core::ffi::CStr;
+#[cfg(feature = "deprecated-1-1-0")]
+use core::ptr;
+
 use libcrypto_sys as ffi;
+
+#[cfg(feature = "deprecated-1-1-0")]
+use super::bio_sock2::BioSocket;
+#[cfg(feature = "deprecated-1-1-0")]
+use crate::mem::CryptoString;
 
 /// Wraps: BIO_hostserv_priorities
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -145,4 +155,75 @@ mod tests {
             core::mem::align_of::<ffi::BIO_lookup_type>()
         );
     }
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+/// The three outcomes distinguished by legacy `BIO_accept`.
+#[derive(Debug)]
+pub enum BioAcceptResult {
+    /// A connected socket and, when requested, its allocated host/service text.
+    Accepted {
+        socket: BioSocket,
+        peer: Option<CryptoString>,
+    },
+    /// The listening socket is nonblocking and the operation should be retried.
+    Retry,
+    /// OpenSSL reported an error.
+    Error,
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+/// Wraps: BIO_accept
+#[allow(non_snake_case)]
+pub fn BIO_accept(listener: &BioSocket, include_peer: bool) -> BioAcceptResult {
+    let mut peer = ptr::null_mut();
+    let peer_out = include_peer
+        .then_some(&mut peer)
+        .map_or(ptr::null_mut(), ptr::from_mut);
+    // SAFETY: the listening socket remains open and `peer_out`, when non-null,
+    // is a live output slot. OpenSSL transfers any allocated string to it.
+    let result = unsafe { ffi::BIO_accept(listener.as_raw_socket(), peer_out) };
+    if result == -2 {
+        return BioAcceptResult::Retry;
+    }
+    let Some(socket) = BioSocket::from_result(result) else {
+        return BioAcceptResult::Error;
+    };
+    // SAFETY: a non-null value written on success is a fresh NUL-terminated
+    // allocation whose ownership OpenSSL transfers to the caller.
+    let peer = unsafe { CryptoString::from_raw(peer) };
+    BioAcceptResult::Accepted { socket, peer }
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+/// Wraps: BIO_get_accept_socket
+#[allow(non_snake_case)]
+pub fn BIO_get_accept_socket(host_service: &CStr, reuse_address: bool) -> Option<BioSocket> {
+    // SAFETY: the legacy API does not mutate the live input C string despite
+    // its non-const declaration; the other argument is a scalar.
+    let result = unsafe {
+        ffi::BIO_get_accept_socket(host_service.as_ptr().cast_mut(), i32::from(reuse_address))
+    };
+    BioSocket::from_result(result)
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+/// Wraps: BIO_get_host_ip
+#[allow(non_snake_case)]
+pub fn BIO_get_host_ip(host: &CStr) -> Option<[u8; 4]> {
+    let mut address = [0_u8; 4];
+    // SAFETY: `host` is a live C string and `address` supplies the four writable
+    // bytes required for an IPv4 result.
+    let ok = unsafe { ffi::BIO_get_host_ip(host.as_ptr(), address.as_mut_ptr()) };
+    (ok == 1).then_some(address)
+}
+
+#[cfg(feature = "deprecated-1-1-0")]
+/// Wraps: BIO_get_port
+#[allow(non_snake_case)]
+pub fn BIO_get_port(service: &CStr) -> Option<u16> {
+    let mut port = 0_u16;
+    // SAFETY: `service` is a live C string and `port` is a live output slot.
+    let ok = unsafe { ffi::BIO_get_port(service.as_ptr(), &mut port) };
+    (ok == 1).then_some(port)
 }
