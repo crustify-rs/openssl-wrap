@@ -179,10 +179,88 @@
    ]
   },
   {
+   "name": "asn1_object_st",
+   "defined_in": "include/crypto/asn1.h",
+   "_comment_agent": "ASN1_OBJECT conditionally owns its names and encoded bytes according to ASN1_OBJECT_FLAG_DYNAMIC_STRINGS/DATA. Built-in objects borrow immutable static tables, while transient non-dynamic objects may borrow caller storage; all three pointers are nullable.",
+   "fields": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "A length-byte immutable OID buffer. DYNAMIC_DATA selects owned storage; built-in objects borrow static table bytes. The source states data remains const after initialization."
+     }
+    },
+    {
+     "name": "ln",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned and freed when DYNAMIC_STRINGS is set; otherwise built-in objects borrow immutable process-lifetime names. Transient stack objects may also borrow caller strings only for the enclosing call."
+     }
+    },
+    {
+     "name": "sn",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned and freed when DYNAMIC_STRINGS is set; otherwise built-in objects borrow immutable process-lifetime names. Transient stack objects may also borrow caller strings only for the enclosing call."
+     }
+    }
+   ]
+  },
+  {
    "name": "asn1_string_table_st",
    "defined_in": "include/openssl/asn1.h",
    "_comment_agent": "This is a plain scalar table record. ASN1_STRING_TABLE_get returns library-owned borrowed storage, and individual records have no unconditional public destructor because the global dynamic table and the static standard table own them.",
    "fields": []
+  },
+  {
+   "name": "bignum_st",
+   "defined_in": "crypto/bn/bn_local.h",
+   "_comment_agent": "bignum_st.d is a mutable dmax-word buffer. Normal expanded BIGNUMs own it, while BN_FLG_STATIC_DATA covers static tables and borrowed word buffers such as BN_with_flags/bn_set_static_words.",
+   "fields": [
+    {
+     "name": "d",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned dynamic or secure dmax-word allocation unless BN_FLG_STATIC_DATA is set; static and view BIGNUMs borrow the buffer. Empty BIGNUMs may have null d."
+     }
+    }
+   ]
   },
   {
    "name": "bio_method_st",
@@ -1008,6 +1086,35 @@
  ],
  "symbols": [
   {
+   "name": "ASN1_OBJECT_free",
+   "defined_in": "crypto/asn1/a_object.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a dynamic object and its conditional fields; for a built-in static object the destructor is intentionally a no-op. NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
    "name": "ASN1_STRING_set_default_mask_asc",
    "defined_in": "crypto/asn1/a_strnid.c",
    "ptr_args": [
@@ -1533,6 +1640,106 @@
       "nullable": false,
       "mutable": true,
       "note": "Transient live BIO borrow whose reference counter is incremented; zero reports failure."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BN_clear_free",
+   "defined_in": "crypto/bn/bn_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a caller-owned BIGNUM, clearing its dynamic words and malloced header before release; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BN_dup",
+   "defined_in": "crypto/bn/bn_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads a live source for this call; NULL is accepted and returns NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh independently owned deep copy preserving secure allocation, or NULL on input/allocation failure."
+    }
+   }
+  },
+  {
+   "name": "BN_free",
+   "defined_in": "crypto/bn/bn_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a caller-owned BIGNUM allocation and its non-static word buffer; NULL is accepted."
      }
     }
    ]
@@ -2144,6 +2351,54 @@
      }
     }
    ]
+  },
+  {
+   "name": "OBJ_dup",
+   "defined_in": "crypto/objects/obj_lib.c",
+   "lifetime": {
+    "for": "o",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "o",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:o"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads the source for this call; NULL is accepted and produces NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:o"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Dynamic inputs produce a fresh deep copy; non-dynamic inputs return the same source pointer. Either non-null result may be passed to ASN1_OBJECT_free, but the same-pointer case remains borrowed from o."
+    }
+   }
   },
   {
    "name": "OBJ_find_sigid_algs",

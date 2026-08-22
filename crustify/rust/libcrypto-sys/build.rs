@@ -12,8 +12,10 @@ const AGENT_LINK_ARGS: &[&str] = &[
 ];
 const AGENT_ALLOWED_TYPES: &[&str] = &[
     "ASN1_ITEM",
+    "ASN1_OBJECT",
     "ASN1_TEMPLATE",
     "ASN1_VALUE",
+    "BIGNUM",
     "BIO_hostserv_priorities",
     "BIO_lookup_type",
     "BIO_sock_info_type",
@@ -35,12 +37,17 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
 ];
 const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st", "ossl_init_settings_st", "stack_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
+    "ASN1_OBJECT_free",
     "BIO_free",
     "BIO_meth_free",
     "BIO_meth_new",
     "BIO_new",
     "BIO_s_null",
     "BIO_up_ref",
+    "BN_clear_free",
+    "BN_dup",
+    "BN_free",
+    "BN_new",
     "CRYPTO_clear_free",
     "CRYPTO_free",
     "CRYPTO_memdup",
@@ -81,12 +88,14 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "BIO_socket_wait",
     "OBJ_NAME_get",
     "OBJ_NAME_init",
+    "OBJ_dup",
     "OBJ_bsearch_",
     "OBJ_bsearch_ex_",
     "OBJ_create",
     "OBJ_find_sigid_algs",
     "OBJ_ln2nid",
     "OBJ_new_nid",
+    "OBJ_txt2obj",
     "OBJ_nid2ln",
     "OBJ_nid2sn",
     "OBJ_sn2nid",
