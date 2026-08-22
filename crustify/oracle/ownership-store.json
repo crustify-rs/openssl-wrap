@@ -3,6 +3,97 @@
  "types": [],
  "symbols": [
   {
+   "name": "BIO_ADDR_dup",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "lifetime": {
+    "for": "ap",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "BIO_ADDR_dup only reads the source during the call and accepts NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "A non-NULL result is a fresh deep copy owned by the caller; allocation or copy failure yields NULL."
+    }
+   }
+  },
+  {
+   "name": "BIO_ADDR_free",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "lifetime": {
+    "for": "ap",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "BIO_ADDR_free consumes one BIO_ADDR allocation; NULL is accepted through OPENSSL_free."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDR_new",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "BIO_ADDR_new returns a fresh initialized allocation owned by the caller, or NULL on allocation failure."
+    }
+   }
+  },
+  {
    "name": "CRYPTO_clear_free",
    "defined_in": "crypto/mem.c",
    "lifetime": {
