@@ -11,6 +11,8 @@ const AGENT_LINK_ARGS: &[&str] = &[
     "rustc-link-lib=pthread",
 ];
 const AGENT_ALLOWED_TYPES: &[&str] = &[
+    "ASN1_TEMPLATE",
+    "ASN1_VALUE",
     "BIO_hostserv_priorities",
     "BIO_lookup_type",
     "BIO_sock_info_type",

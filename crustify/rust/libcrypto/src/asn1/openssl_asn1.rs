@@ -14,6 +14,18 @@ define_ctype!(
     ffi::asn1_string_table_st
 );
 
+define_ctype!(
+    /// Wraps: ASN1_VALUE_st
+    ///
+    /// OpenSSL deliberately leaves this tag undefined and uses its pointers as
+    /// type-erased ASN.1 value handles. The borrowed handles therefore carry only
+    /// pointer provenance and a Rust lifetime; they never expose a layout.
+    Asn1Value,
+    Asn1ValueRef,
+    Asn1ValueMut,
+    ffi::ASN1_VALUE_st
+);
+
 impl Asn1StringTableRef<'_> {
     /// Wraps: asn1_string_table_st.flags
     #[must_use]
@@ -120,5 +132,30 @@ mod tests {
         assert_eq!(shared.max_size(), 64);
         assert_eq!(shared.mask(), 0x1234);
         assert_eq!(shared.flags(), 0x2);
+    }
+
+    #[test]
+    fn erased_value_borrows_are_pointer_sized() {
+        assert_eq!(
+            core::mem::size_of::<Asn1ValueRef<'static>>(),
+            core::mem::size_of::<*mut ffi::ASN1_VALUE_st>()
+        );
+        assert_eq!(
+            core::mem::size_of::<Asn1ValueMut<'static>>(),
+            core::mem::size_of::<*mut ffi::ASN1_VALUE_st>()
+        );
+
+        let mut storage = 0_u8;
+        let raw = ptr::addr_of_mut!(storage).cast::<ffi::ASN1_VALUE_st>();
+        // SAFETY: the opaque ASN1_VALUE pointer denotes the live byte of
+        // type-erased storage for the duration of this handle.
+        let shared = unsafe { Asn1ValueRef::from_ptr(raw) }.expect("non-null value");
+        assert_eq!(shared.as_ptr(), raw.cast_const());
+        let _ = shared;
+
+        // SAFETY: the same live erased storage is now borrowed exclusively.
+        let mut exclusive = unsafe { Asn1ValueMut::from_ptr(raw) }.expect("non-null value");
+        assert_eq!(exclusive.as_mut_ptr(), raw);
+        assert_eq!(exclusive.as_ref().as_ptr(), raw.cast_const());
     }
 }
