@@ -4,10 +4,22 @@ use std::process::Command;
 
 // crustify:allowlist-agent:start
 const AGENT_CLANG_ARGS: &[&str] = &[];
-const AGENT_LINK_ARGS: &[&str] = &[];
+const AGENT_LINK_ARGS: &[&str] = &[
+    "rustc-link-lib=static=crypto",
+    "rustc-link-lib=ubsan",
+    "rustc-link-lib=dl",
+    "rustc-link-lib=pthread",
+];
 const AGENT_ALLOWED_TYPES: &[&str] = &[];
 const AGENT_OPAQUE_TYPES: &[&str] = &[];
-const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[];
+const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
+    "CRYPTO_clear_free",
+    "CRYPTO_free",
+    "CRYPTO_memdup",
+    "CRYPTO_secure_clear_free",
+    "CRYPTO_secure_free",
+    "CRYPTO_secure_zalloc",
+];
 const AGENT_ALLOWED_VARS: &[&str] = &[];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end
@@ -55,6 +67,9 @@ fn main() {
 
     for argument in AGENT_LINK_ARGS {
         println!("cargo:{argument}");
+    }
+    if !AGENT_LINK_ARGS.is_empty() {
+        println!("cargo:rustc-link-search=native={}", repo_root.display());
     }
     println!("cargo:rerun-if-changed=bindgen.h");
 }

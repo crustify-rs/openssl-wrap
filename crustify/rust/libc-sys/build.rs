@@ -7,7 +7,7 @@ const AGENT_CLANG_ARGS: &[&str] = &[];
 const AGENT_LINK_ARGS: &[&str] = &[];
 const AGENT_ALLOWED_TYPES: &[&str] = &[];
 const AGENT_OPAQUE_TYPES: &[&str] = &[];
-const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[];
+const AGENT_ALLOWED_FUNCTIONS: &[&str] = &["free", "malloc"];
 const AGENT_ALLOWED_VARS: &[&str] = &[];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end

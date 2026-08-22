@@ -1,0 +1,319 @@
+{
+ "_comment": "Authored analysis: ownership, lifecycle, refcount and locking judgements that no composer can derive, keyed to the C entities they describe. The structural half of each record (field layout, signatures, footprints, casts) is composed from the CodeQL tables on demand and merged in at read time, so a re-extract rewrites nothing here. Written only by `crustify-oracle <target> query {types,symbols} --update`; read through crustify.manifests. Hand-edit at your own risk: `--update` validates a submission against the composed skeleton (unknown field, wrong kind, ptr-invariant violation) and this file does not.",
+ "types": [],
+ "symbols": [
+  {
+   "name": "CRYPTO_clear_free",
+   "defined_in": "crypto/mem.c",
+   "lifetime": {
+    "for": "str",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to CRYPTO_free."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable OpenSSL allocation after cleansing the supplied byte length; applicable to scalar storage, buffers, and strings."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_free",
+   "defined_in": "crypto/mem.c",
+   "lifetime": {
+    "for": "str",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string used only by a configured free callback."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Consumes a nullable allocation obtained from the active OpenSSL allocator; used for scalars, counted buffers, and strings."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_memdup",
+   "defined_in": "crypto/o_str.c",
+   "lifetime": {
+    "for": "data",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient source byte buffer of the supplied size; NULL is rejected."
+     }
+    },
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to the allocator."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh byte-for-byte copy of siz bytes, owned by the caller and releasable with CRYPTO_free; NULL on invalid input or allocation failure."
+    }
+   }
+  },
+  {
+   "name": "CRYPTO_secure_clear_free",
+   "defined_in": "crypto/mem_sec.c",
+   "lifetime": {
+    "for": "ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
+     }
+    },
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure storage is cleansed by actual size and ordinary storage by num bytes."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_secure_free",
+   "defined_in": "crypto/mem_sec.c",
+   "lifetime": {
+    "for": "ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
+     }
+    },
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure allocations are cleansed using their recorded actual size before release."
+     }
+    }
+   ]
+  },
+  {
+   "name": "free",
+   "defined_in": null,
+   "lifetime": {
+    "for": "__ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "__ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Generic allocator release: accepts nullable scalar, buffer, or NUL-string allocations and consumes them."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ossl_public_param_free",
+   "defined_in": "include/internal/zeroization.h",
+   "lifetime": {
+    "for": "ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable OpenSSL byte buffer, cleansing size bytes when pedantic zeroization is configured and otherwise releasing directly."
+     }
+    }
+   ]
+  }
+ ]
+}

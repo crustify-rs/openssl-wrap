@@ -6,7 +6,80 @@
       "crate_path": "crustify/rust/libcrypto",
       "sys_crate": "crustify/rust/libcrypto-sys",
       "depends_on": ["libc"],
-      "modules": {}
+      "modules": {
+        "mem": {
+          "rust_path": "src",
+          "rs": {
+            "src/mem.rs": {
+              "tu": "crypto/mem.c",
+              "headers": [
+                "include/openssl/crypto.h"
+              ],
+              "members": {
+                "functions": [
+                  "CRYPTO_free",
+                  "CRYPTO_clear_free"
+                ],
+                "globals": [],
+                "types": [],
+                "callbacks": [],
+                "macros": []
+              }
+            },
+            "src/mem_sec.rs": {
+              "tu": "crypto/mem_sec.c",
+              "headers": [
+                "include/openssl/crypto.h"
+              ],
+              "members": {
+                "functions": [
+                  "CRYPTO_secure_free",
+                  "CRYPTO_secure_clear_free"
+                ],
+                "globals": [],
+                "types": [],
+                "callbacks": [],
+                "macros": []
+              }
+            },
+            "src/o_str.rs": {
+              "tu": "crypto/o_str.c",
+              "headers": [
+                "include/openssl/crypto.h"
+              ],
+              "members": {
+                "functions": [
+                  "CRYPTO_memdup"
+                ],
+                "globals": [],
+                "types": [],
+                "callbacks": [],
+                "macros": []
+              }
+            }
+          }
+        },
+        "zeroization": {
+          "rust_path": "src",
+          "rs": {
+            "src/zeroization.rs": {
+              "tu": null,
+              "headers": [
+                "include/internal/zeroization.h"
+              ],
+              "members": {
+                "functions": [
+                  "ossl_public_param_free"
+                ],
+                "globals": [],
+                "types": [],
+                "callbacks": [],
+                "macros": []
+              }
+            }
+          }
+        }
+      }
     },
     "libc": {
       "kind": "library",
@@ -14,7 +87,28 @@
       "crate_path": "crustify/rust/libc",
       "sys_crate": "crustify/rust/libc-sys",
       "depends_on": [],
-      "modules": {}
+      "modules": {
+        "stdlib": {
+          "rust_path": "src",
+          "rs": {
+            "src/stdlib.rs": {
+              "tu": null,
+              "headers": [
+                "stdlib.h"
+              ],
+              "members": {
+                "functions": [
+                  "free"
+                ],
+                "globals": [],
+                "types": [],
+                "callbacks": [],
+                "macros": []
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
