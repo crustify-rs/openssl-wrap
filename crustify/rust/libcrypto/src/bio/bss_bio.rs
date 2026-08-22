@@ -59,35 +59,6 @@ pub fn BIO_new_bio_pair(
     Some((first, second))
 }
 
-#[cfg(test)]
-mod tests {
-    use ffibox::CBox;
-
-    use super::super::bio_bio_local::Bio;
-    use super::*;
-
-    fn new_pair_bio() -> CBox<Bio> {
-        // SAFETY: both called constructors have no caller-owned pointer inputs.
-        let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
-        // SAFETY: a non-null result transfers one owned BIO reference.
-        unsafe { CBox::from_raw(raw) }.expect("BIO_new")
-    }
-
-    #[test]
-    fn pair_controls_use_exclusive_handle() {
-        let mut bio = new_pair_bio();
-        let mut view = bio.as_mut();
-        let _ = BIO_ctrl_get_read_request(&mut view);
-        let _ = BIO_ctrl_get_write_guarantee(&mut view);
-        let _ = BIO_ctrl_reset_read_request(&mut view);
-    }
-    #[test]
-    fn pair_returns_two_independent_owners() {
-        let (first, second) = BIO_new_bio_pair(0, 0).expect("BIO pair");
-        assert_ne!(first.as_ptr(), second.as_ptr());
-    }
-}
-
 fn shared_region<'a>(bio: &'a mut BioMut<'_>, amount: Option<i32>) -> Result<CSlice<'a, u8>, i32> {
     let mut ptr = core::ptr::null_mut();
     // SAFETY: `bio` is exclusive and `ptr` is a live output slot. The selected
@@ -161,4 +132,33 @@ pub fn BIO_s_bio() -> Option<BioMethodRef<'static>> {
     // SAFETY: this function has no caller-side memory obligations and returns
     // a process-lifetime static method table or null.
     static_bio_method(unsafe { ffi::BIO_s_bio() })
+}
+
+#[cfg(test)]
+mod tests {
+    use ffibox::CBox;
+
+    use super::super::bio_bio_local::Bio;
+    use super::*;
+
+    fn new_pair_bio() -> CBox<Bio> {
+        // SAFETY: both called constructors have no caller-owned pointer inputs.
+        let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
+        // SAFETY: a non-null result transfers one owned BIO reference.
+        unsafe { CBox::from_raw(raw) }.expect("BIO_new")
+    }
+
+    #[test]
+    fn pair_controls_use_exclusive_handle() {
+        let mut bio = new_pair_bio();
+        let mut view = bio.as_mut();
+        let _ = BIO_ctrl_get_read_request(&mut view);
+        let _ = BIO_ctrl_get_write_guarantee(&mut view);
+        let _ = BIO_ctrl_reset_read_request(&mut view);
+    }
+    #[test]
+    fn pair_returns_two_independent_owners() {
+        let (first, second) = BIO_new_bio_pair(0, 0).expect("BIO pair");
+        assert_ne!(first.as_ptr(), second.as_ptr());
+    }
 }

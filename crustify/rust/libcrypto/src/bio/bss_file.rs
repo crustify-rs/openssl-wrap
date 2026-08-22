@@ -36,6 +36,15 @@ pub fn BIO_new_fp<'a>(mut stream: IoFileMut<'a>) -> Option<BorrowedBio<'a>> {
     }
 }
 
+/// Wraps: BIO_s_file
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_s_file() -> Option<BioMethodRef<'static>> {
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // a process-lifetime static method table or null.
+    static_bio_method(unsafe { ffi::BIO_s_file() })
+}
+
 #[cfg(test)]
 mod tests {
     use std::ffi::CString;
@@ -51,13 +60,4 @@ mod tests {
         drop(bio);
         std::fs::remove_file(path).expect("remove fixture");
     }
-}
-
-/// Wraps: BIO_s_file
-#[must_use]
-#[allow(non_snake_case)]
-pub fn BIO_s_file() -> Option<BioMethodRef<'static>> {
-    // SAFETY: the selector has no caller-side memory obligations and returns
-    // a process-lifetime static method table or null.
-    static_bio_method(unsafe { ffi::BIO_s_file() })
 }

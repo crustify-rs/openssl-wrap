@@ -165,46 +165,6 @@ pub fn OBJ_create_objects(input: &mut BioMut<'_>) -> i32 {
     unsafe { ffi::OBJ_create_objects(input.as_mut_ptr()) }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    unsafe extern "C" fn compare_i32(left: *const c_void, right: *const c_void) -> i32 {
-        // SAFETY: the test associates this callback only with live `i32` values.
-        let (left, right) = unsafe { (*(left.cast::<i32>()), *(right.cast::<i32>())) };
-        left.cmp(&right) as i32
-    }
-
-    #[test]
-    fn typed_bsearch_ties_result_to_the_input_slice() {
-        // SAFETY: `compare_i32` reads two live `i32` values and does not retain them.
-        let comparator = unsafe { OpenSslSkCompFunc::from_raw(Some(compare_i32)) }.unwrap();
-        let values = [1, 3, 5, 7];
-        assert_eq!(OBJ_bsearch_(&5, &values, comparator), Some(&5));
-        assert_eq!(OBJ_bsearch_(&4, &values, comparator), None);
-    }
-
-    #[test]
-    fn nid_names_are_copied() {
-        let common_name = OBJ_sn2nid(c"CN");
-        assert_ne!(common_name, 0);
-        assert_eq!(OBJ_nid2sn(common_name).unwrap().as_c_str(), c"CN");
-    }
-
-    #[test]
-    fn object_lookups_and_text_parsing_return_detached_owners() {
-        let rsa_nid = OBJ_txt2nid(c"rsaEncryption");
-        let by_nid = OBJ_nid2obj(rsa_nid).expect("registered object");
-        assert_eq!(OBJ_obj2nid(Some(by_nid.as_ref())), rsa_nid);
-
-        let parsed = OBJ_txt2obj(c"1.2.840.113549.1.1.1", true).expect("numeric OID");
-        assert_eq!(OBJ_obj2nid(Some(parsed.as_ref())), rsa_nid);
-        let mut output = [0_u8; 64];
-        let length = OBJ_obj2txt(&mut output, parsed.as_ref(), true).expect("OID text");
-        assert_eq!(&output[..length], b"1.2.840.113549.1.1.1");
-    }
-}
-
 fn detached_object(raw: *mut ffi::ASN1_OBJECT) -> Option<CBox<Asn1Object>> {
     if raw.is_null() {
         return None;
@@ -324,4 +284,44 @@ pub fn OBJ_txt2obj(text: &CStr, numeric_only: bool) -> Option<CBox<Asn1Object>> 
     // releaser; it is a no-op for the borrowed registry/static case.
     unsafe { ffi::ASN1_OBJECT_free(raw) };
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    unsafe extern "C" fn compare_i32(left: *const c_void, right: *const c_void) -> i32 {
+        // SAFETY: the test associates this callback only with live `i32` values.
+        let (left, right) = unsafe { (*(left.cast::<i32>()), *(right.cast::<i32>())) };
+        left.cmp(&right) as i32
+    }
+
+    #[test]
+    fn typed_bsearch_ties_result_to_the_input_slice() {
+        // SAFETY: `compare_i32` reads two live `i32` values and does not retain them.
+        let comparator = unsafe { OpenSslSkCompFunc::from_raw(Some(compare_i32)) }.unwrap();
+        let values = [1, 3, 5, 7];
+        assert_eq!(OBJ_bsearch_(&5, &values, comparator), Some(&5));
+        assert_eq!(OBJ_bsearch_(&4, &values, comparator), None);
+    }
+
+    #[test]
+    fn nid_names_are_copied() {
+        let common_name = OBJ_sn2nid(c"CN");
+        assert_ne!(common_name, 0);
+        assert_eq!(OBJ_nid2sn(common_name).unwrap().as_c_str(), c"CN");
+    }
+
+    #[test]
+    fn object_lookups_and_text_parsing_return_detached_owners() {
+        let rsa_nid = OBJ_txt2nid(c"rsaEncryption");
+        let by_nid = OBJ_nid2obj(rsa_nid).expect("registered object");
+        assert_eq!(OBJ_obj2nid(Some(by_nid.as_ref())), rsa_nid);
+
+        let parsed = OBJ_txt2obj(c"1.2.840.113549.1.1.1", true).expect("numeric OID");
+        assert_eq!(OBJ_obj2nid(Some(parsed.as_ref())), rsa_nid);
+        let mut output = [0_u8; 64];
+        let length = OBJ_obj2txt(&mut output, parsed.as_ref(), true).expect("OID text");
+        assert_eq!(&output[..length], b"1.2.840.113549.1.1.1");
+    }
 }

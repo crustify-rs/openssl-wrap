@@ -350,39 +350,6 @@ setter!(
     BIO_meth_set_write_ex
 );
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::bio::bio_lib::{BIO_method_name, BIO_method_type, BIO_new};
-
-    #[test]
-    fn dynamic_method_is_owned_and_constructs_a_borrowing_bio() {
-        let method = BIO_meth_new(73, c"rust method").expect("BIO_meth_new");
-        let bio = BIO_new(method.as_ref()).expect("BIO_new");
-        assert_eq!(BIO_method_type(bio.as_ref()), 73);
-        assert_eq!(BIO_method_name(bio.as_ref()), c"rust method");
-    }
-
-    #[test]
-    fn callback_slots_accept_explicit_absence() {
-        let mut method = BIO_meth_new(74, c"empty callbacks").expect("BIO_meth_new");
-        assert!(BIO_meth_set_write(method.as_mut(), None));
-        assert!(BIO_meth_set_write_ex(method.as_mut(), None));
-        assert!(BIO_meth_set_read(method.as_mut(), None));
-        assert!(BIO_meth_set_read_ex(method.as_mut(), None));
-        assert!(BIO_meth_set_puts(method.as_mut(), None));
-        assert!(BIO_meth_set_gets(method.as_mut(), None));
-        assert!(BIO_meth_set_ctrl(method.as_mut(), None));
-        assert!(BIO_meth_set_create(method.as_mut(), None));
-        assert!(BIO_meth_set_destroy(method.as_mut(), None));
-        assert!(BIO_meth_set_callback_ctrl(method.as_mut(), None));
-        assert!(BIO_meth_set_recvmmsg(method.as_mut(), None));
-        assert!(BIO_meth_set_sendmmsg(method.as_mut(), None));
-        assert!(crate::bio::openssl_bio::BIO_meth_get_recvmmsg(method.as_ref()).is_none());
-        assert!(crate::bio::openssl_bio::BIO_meth_get_sendmmsg(method.as_ref()).is_none());
-    }
-}
-
 /// Wraps: BIO_meth_set_recvmmsg
 #[must_use]
 #[allow(non_snake_case)]
@@ -413,5 +380,38 @@ pub fn BIO_meth_set_sendmmsg(
             method.as_mut_ptr(),
             callback.map(BioMethodMmsgCallback::raw),
         ) == 1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bio::bio_lib::{BIO_method_name, BIO_method_type, BIO_new};
+
+    #[test]
+    fn dynamic_method_is_owned_and_constructs_a_borrowing_bio() {
+        let method = BIO_meth_new(73, c"rust method").expect("BIO_meth_new");
+        let bio = BIO_new(method.as_ref()).expect("BIO_new");
+        assert_eq!(BIO_method_type(bio.as_ref()), 73);
+        assert_eq!(BIO_method_name(bio.as_ref()), c"rust method");
+    }
+
+    #[test]
+    fn callback_slots_accept_explicit_absence() {
+        let mut method = BIO_meth_new(74, c"empty callbacks").expect("BIO_meth_new");
+        assert!(BIO_meth_set_write(method.as_mut(), None));
+        assert!(BIO_meth_set_write_ex(method.as_mut(), None));
+        assert!(BIO_meth_set_read(method.as_mut(), None));
+        assert!(BIO_meth_set_read_ex(method.as_mut(), None));
+        assert!(BIO_meth_set_puts(method.as_mut(), None));
+        assert!(BIO_meth_set_gets(method.as_mut(), None));
+        assert!(BIO_meth_set_ctrl(method.as_mut(), None));
+        assert!(BIO_meth_set_create(method.as_mut(), None));
+        assert!(BIO_meth_set_destroy(method.as_mut(), None));
+        assert!(BIO_meth_set_callback_ctrl(method.as_mut(), None));
+        assert!(BIO_meth_set_recvmmsg(method.as_mut(), None));
+        assert!(BIO_meth_set_sendmmsg(method.as_mut(), None));
+        assert!(crate::bio::openssl_bio::BIO_meth_get_recvmmsg(method.as_ref()).is_none());
+        assert!(crate::bio::openssl_bio::BIO_meth_get_sendmmsg(method.as_ref()).is_none());
     }
 }

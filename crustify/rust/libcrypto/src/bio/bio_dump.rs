@@ -98,6 +98,27 @@ pub fn BIO_dump_indent_fp(file: &mut IoFileMut<'_>, data: &[u8], indent: i32) ->
     unsafe { ffi::BIO_dump_indent_fp(file.as_mut_ptr().cast(), data.as_ptr().cast(), len, indent) }
 }
 
+/// Wraps: BIO_hex_string
+/// Writes `data` as colon-separated hexadecimal bytes.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_hex_string(mut output: BioMut<'_>, indent: i32, width: i32, data: &[u8]) -> bool {
+    let Ok(length) = i32::try_from(data.len()) else {
+        return false;
+    };
+    // SAFETY: the exclusive BIO handle remains live and `data` supplies
+    // exactly `length` readable bytes for this synchronous formatting call.
+    unsafe {
+        ffi::BIO_hex_string(
+            output.as_mut_ptr(),
+            indent,
+            width,
+            data.as_ptr().cast(),
+            length,
+        ) == 1
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -121,26 +142,5 @@ mod tests {
         let mut bio: ffibox::CBox<super::super::bio_bio_local::Bio> =
             unsafe { ffibox::CBox::from_raw(raw) }.expect("BIO_new");
         assert!(BIO_dump(&mut bio.as_mut(), b"ABC") > 0);
-    }
-}
-
-/// Wraps: BIO_hex_string
-/// Writes `data` as colon-separated hexadecimal bytes.
-#[must_use]
-#[allow(non_snake_case)]
-pub fn BIO_hex_string(mut output: BioMut<'_>, indent: i32, width: i32, data: &[u8]) -> bool {
-    let Ok(length) = i32::try_from(data.len()) else {
-        return false;
-    };
-    // SAFETY: the exclusive BIO handle remains live and `data` supplies
-    // exactly `length` readable bytes for this synchronous formatting call.
-    unsafe {
-        ffi::BIO_hex_string(
-            output.as_mut_ptr(),
-            indent,
-            width,
-            data.as_ptr().cast(),
-            length,
-        ) == 1
     }
 }
