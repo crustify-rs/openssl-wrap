@@ -13,6 +13,7 @@ const AGENT_LINK_ARGS: &[&str] = &[
 const AGENT_ALLOWED_TYPES: &[&str] = &[
     "ASN1_ITEM",
     "ASN1_OBJECT",
+    "ASN1_STRING",
     "ASN1_TEMPLATE",
     "ASN1_TYPE",
     "ASN1_VALUE",
@@ -89,6 +90,10 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "OPENSSL_sk_set_copy_thunks",
     "OPENSSL_sk_set_thunks",
     "ASN1_OBJECT_free",
+    "ASN1_STRING_clear_free",
+    "ASN1_STRING_dup",
+    "ASN1_STRING_free",
+    "ASN1_STRING_new",
     "ASN1_TYPE_free",
     "ASN1_TYPE_new",
     "ASN1_TYPE_set",

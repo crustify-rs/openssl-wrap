@@ -1,6 +1,8 @@
 //! Wrappers assigned from `include/crypto/asn1.h`.
 
-use ffibox::{CBox, define_ctype, impl_dropped};
+use core::ptr::NonNull;
+
+use ffibox::{CBox, CCloner, CDropper, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -103,5 +105,83 @@ mod tests {
         unsafe { ffi::ASN1_OBJECT_free(raw) };
 
         assert!(is_borrowed);
+    }
+}
+
+define_ctype!(
+    /// Wraps: asn1_string_st
+    ///
+    /// All of OpenSSL's public ASN.1 string typedefs share this representation.
+    /// The concrete body remains private to OpenSSL, while owned and borrowed
+    /// Rust handles preserve its C allocation and pointer ABI.
+    Asn1String,
+    Asn1StringRef,
+    Asn1StringMut,
+    ffi::asn1_string_st
+);
+
+impl_dropped!(Asn1String, ffi::asn1_string_st, ffi::ASN1_STRING_free);
+impl_cloned!(Asn1String, ffi::asn1_string_st, dup = ffi::ASN1_STRING_dup);
+
+/// Selects `ASN1_STRING_clear_free` for an owned ASN.1 string.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Asn1StringClearFree;
+
+// SAFETY: `ASN1_STRING_clear_free` is the public clearing destructor for a
+// fully initialized, uniquely owned ASN.1 string allocation.
+unsafe impl CDropper<Asn1String> for Asn1StringClearFree {
+    unsafe fn c_drop(&self, object: NonNull<Asn1String>) {
+        // SAFETY: the `CDropper` contract supplies unique ownership and the
+        // layout wrapper is pointer-compatible with `ffi::asn1_string_st`.
+        unsafe { ffi::ASN1_STRING_clear_free(object.as_ptr().cast()) }
+    }
+}
+
+// SAFETY: `ASN1_STRING_dup` returns a fresh independent allocation without
+// modifying its source, and that allocation may be clearing-freed.
+unsafe impl CCloner<Asn1String> for Asn1StringClearFree {
+    unsafe fn c_clone(&self, object: NonNull<Asn1String>) -> Option<NonNull<Asn1String>> {
+        // SAFETY: the `CCloner` contract supplies a live source and OpenSSL
+        // returns either null or a fully initialized independent duplicate.
+        let duplicate = unsafe { ffi::ASN1_STRING_dup(object.as_ptr().cast()) };
+        NonNull::new(duplicate.cast())
+    }
+}
+
+/// An owning ASN.1 string that clears its contents before releasing storage.
+pub type ClearAsn1String = ffibox::CBoxWith<Asn1String, Asn1StringClearFree>;
+
+#[cfg(test)]
+mod string_tests {
+    use ffibox::{CBox, CBoxWith};
+
+    use super::*;
+
+    #[test]
+    fn owned_string_clones_and_borrows() {
+        // SAFETY: OpenSSL returns either null or a fully initialized string.
+        let raw = unsafe { ffi::ASN1_STRING_new() };
+        // SAFETY: ownership of the fresh allocation transfers exactly once to
+        // the owner whose registered destructor is `ASN1_STRING_free`.
+        let mut string = unsafe { CBox::<Asn1String>::from_raw(raw) }.expect("ASN1_STRING_new");
+
+        assert_eq!(string.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(string.as_mut().as_mut_ptr(), raw);
+
+        let duplicate = string.try_clone().expect("ASN1_STRING_dup");
+        assert_ne!(duplicate.as_ptr(), raw);
+    }
+
+    #[test]
+    fn clearing_owner_preserves_its_drop_policy_when_cloned() {
+        // SAFETY: OpenSSL returns either null or a fully initialized string.
+        let raw = unsafe { ffi::ASN1_STRING_new() };
+        // SAFETY: the fresh allocation is uniquely transferred to the
+        // clearing policy, whose destructor accepts every ASN.1 string.
+        let string: ClearAsn1String =
+            unsafe { CBoxWith::from_raw(raw, Asn1StringClearFree) }.expect("ASN1_STRING_new");
+
+        let duplicate = string.try_clone().expect("ASN1_STRING_dup");
+        assert_ne!(duplicate.as_ptr(), raw);
     }
 }

@@ -7,7 +7,7 @@ use ffibox::{CBox, define_ctype, impl_dropped};
 
 use libcrypto_sys as ffi;
 
-use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef, Asn1StringRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 
 define_ctype!(
@@ -340,7 +340,7 @@ impl Asn1TypeKind {
 /// using an incompatible ASN.1 discriminator.
 #[derive(Clone, Copy)]
 pub struct Asn1TypeStringRef<'a> {
-    value: Asn1ValueRef<'a>,
+    value: Asn1StringRef<'a>,
     kind: Asn1TypeKind,
 }
 
@@ -351,9 +351,9 @@ impl<'a> Asn1TypeStringRef<'a> {
         self.kind
     }
 
-    /// Returns the same borrow through OpenSSL's erased ASN.1 value type.
+    /// Returns the typed borrow of the common ASN.1 string representation.
     #[must_use]
-    pub const fn as_erased(self) -> Asn1ValueRef<'a> {
+    pub const fn as_string(self) -> Asn1StringRef<'a> {
         self.value
     }
 }
@@ -435,9 +435,9 @@ impl<'a> Asn1TypeRef<'a> {
         // of the `asn1_string_st`-compatible arms. Reading the common union
         // pointer does not dereference it or form a reference to C storage.
         let raw = unsafe { ptr::addr_of!((*self.as_ptr()).value.asn1_string).read() };
-        // SAFETY: a non-null active string arm denotes a live ASN.1 value for
-        // this handle's lifetime; the erased handle preserves that lifetime.
-        let value = unsafe { Asn1ValueRef::from_ptr(raw.cast()) }?;
+        // SAFETY: a non-null active string arm denotes a live ASN.1 string for
+        // this handle's lifetime; the typed handle preserves that lifetime.
+        let value = unsafe { Asn1StringRef::from_ptr(raw) }?;
         Some(Asn1TypeStringRef { value, kind })
     }
 
@@ -618,11 +618,15 @@ mod asn1_type_tests {
 
     #[test]
     fn string_and_erased_union_arms_stay_lifetime_bound() {
-        let mut storage = 0_u8;
-        let string = ptr::addr_of_mut!(storage).cast::<ffi::ASN1_STRING>();
+        // SAFETY: OpenSSL returns either null or a fresh initialized string.
+        let string =
+            unsafe { CBox::<crate::asn1::asn1::Asn1String>::from_raw(ffi::ASN1_STRING_new()) }
+                .expect("ASN1_STRING_new");
         let mut raw = ffi::asn1_type_st {
             type_: ffi::V_ASN1_BMPSTRING as c_int,
-            value: ffi::asn1_type_st__bindgen_ty_1 { bmpstring: string },
+            value: ffi::asn1_type_st__bindgen_ty_1 {
+                bmpstring: string.as_ptr(),
+            },
         };
         // SAFETY: `raw` is initialized and its non-null opaque payload remains
         // live for the returned handle's use in this scope.
@@ -631,11 +635,14 @@ mod asn1_type_tests {
             panic!("BMP string arm");
         };
         assert_eq!(string_value.kind(), Asn1TypeKind::BmpString);
-        assert_eq!(string_value.as_erased().as_ptr(), string.cast());
+        assert_eq!(
+            string_value.as_string().as_ptr(),
+            string.as_ptr().cast_const()
+        );
 
         raw.type_ = ffi::V_ASN1_OTHER;
         raw.value = ffi::asn1_type_st__bindgen_ty_1 {
-            asn1_value: string.cast(),
+            asn1_value: string.as_ptr().cast(),
         };
         // SAFETY: the prior handle is no longer used; `raw` and its erased
         // payload remain initialized and live for this new shared borrow.

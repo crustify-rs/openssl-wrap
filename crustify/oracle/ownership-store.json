@@ -233,6 +233,30 @@
    ]
   },
   {
+   "name": "asn1_string_st",
+   "defined_in": "include/crypto/asn1.h",
+   "_comment_agent": "The data field has runtime-conditional ownership selected by ASN1_STRING_FLAG_DATA_NOT_OWNED; length is authoritative and contents are not generally NUL-terminated.",
+   "fields": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Length-delimited byte buffer. Normally owned and released by the ASN1_STRING destructor; ASN1_STRING_FLAG_DATA_NOT_OWNED makes it a borrowed external buffer. Zero-length strings may carry NULL. Mutating APIs can replace or write the buffer."
+     }
+    }
+   ]
+  },
+  {
    "name": "asn1_string_table_st",
    "defined_in": "include/openssl/asn1.h",
    "_comment_agent": "This is a plain scalar table record. ASN1_STRING_TABLE_get returns library-owned borrowed storage, and individual records have no unconditional public destructor because the global dynamic table and the static standard table own them.",
@@ -1594,6 +1618,106 @@
      "note": "Borrowed global/static entry invalidated by ASN1_STRING_TABLE_cleanup when dynamically configured."
     }
    }
+  },
+  {
+   "name": "ASN1_STRING_clear_free",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and releases a fully initialized ASN1_STRING; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_STRING_dup",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "lifetime": {
+    "for": "str",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads a nullable ASN1_STRING and leaves it unchanged while making a deep copy."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL on null input or allocation failure, otherwise a fresh independently owned ASN1_STRING."
+    }
+   }
+  },
+  {
+   "name": "ASN1_STRING_free",
+   "defined_in": "crypto/asn1/asn1_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and releases a fully initialized ASN1_STRING; NULL is accepted."
+     }
+    }
+   ]
   },
   {
    "name": "ASN1_STRING_set_default_mask_asc",
