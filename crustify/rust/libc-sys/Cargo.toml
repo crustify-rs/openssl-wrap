@@ -1,0 +1,9 @@
+[package]
+name = "libc-sys"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+links = "c"
+
+[lib]
+path = "src/lib.rs"

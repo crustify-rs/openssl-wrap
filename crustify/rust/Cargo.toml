@@ -1,0 +1,21 @@
+[workspace]
+resolver = "3"
+members = [
+    "libc",
+    "libc-sys",
+    "libcrypto",
+    "libcrypto-sys",
+]
+
+[workspace.package]
+edition = "2024"
+
+[workspace.dependencies]
+ffibox = { path = "/opt/ffibox" }
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+module_inception = "allow"
+undocumented_unsafe_blocks = "deny"

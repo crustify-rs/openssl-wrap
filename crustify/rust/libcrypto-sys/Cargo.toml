@@ -1,0 +1,9 @@
+[package]
+name = "libcrypto-sys"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+links = "crypto"
+
+[lib]
+path = "src/lib.rs"

@@ -1,0 +1,66 @@
+{
+  "libraries": {
+    "libssl": {
+      "kind": "shared",
+      "target": "libssl.so",
+      "source_dirs": ["ssl/"],
+      "include_dirs": ["include/openssl/", "include/internal/"],
+      "link_dependencies": ["libcrypto", "libc"]
+    },
+    "libcrypto": {
+      "kind": "shared",
+      "target": "libcrypto.so",
+      "source_dirs": ["crypto/"],
+      "include_dirs": ["include/openssl/", "include/internal/", "include/crypto/"],
+      "link_dependencies": ["libc"]
+    },
+    "libc": {
+      "kind": "system",
+      "target": null,
+      "source_dirs": [],
+      "include_dirs": ["/usr/include/", "/usr/include/x86_64-linux-gnu/"],
+      "link_dependencies": []
+    }
+  },
+  "executables": {
+    "openssl": {
+      "source_dirs": ["apps/"],
+      "link_dependencies": ["libssl", "libcrypto", "libc"]
+    }
+  },
+  "features": {
+    "all": [
+      {
+        "name": "OPENSSL_THREADS",
+        "role": "Enables thread-safe global state and per-context locks; enabled by default on supported threaded targets per INSTALL.md.",
+        "default_value": true,
+        "enabled": true
+      },
+      {
+        "name": "OPENSSL_PIC",
+        "role": "Builds position-independent objects for shared libraries; selected by the default shared build per Configure.",
+        "default_value": true,
+        "enabled": true
+      },
+      {
+        "name": "OPENSSL_NO_DEPRECATED",
+        "role": "Removes deprecated APIs through the current configured API level; selected by the no-deprecated option documented in INSTALL.md.",
+        "default_value": false,
+        "enabled": true
+      },
+      {
+        "name": "OPENSSL_NO_ASM",
+        "role": "Disables assembly implementations; no-asm is documented in INSTALL.md as a debugging and portability option.",
+        "default_value": false,
+        "enabled": false
+      }
+    ]
+  },
+  "test_baseline": "PASS: 4463/4463 assertions across 386 recipes. Disabled baseline failure: 90-test_quic_memfail.t (UBSAN reports a misaligned struct in_addr load at crypto/bio/bio_addr.c:148 on the unmodified C tree).",
+  "build_commands": {
+    "configure": "./Configure no-deprecated enable-ubsan --strict-warnings",
+    "build": "make -j32",
+    "test": "HARNESS_JOBS=32 make test TESTS=-test_quic_memfail",
+    "clean": "make distclean"
+  }
+}
