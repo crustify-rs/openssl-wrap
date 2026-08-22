@@ -3,6 +3,7 @@
 use libcrypto_sys as ffi;
 
 use super::bio_sock2::BioSocket;
+use super::internal_bio_addr::BioAddrMut;
 
 /// Wraps: BIO_set_tcp_ndelay
 #[must_use]
@@ -63,4 +64,23 @@ pub fn BIO_socket_nbio(socket: &BioSocket, enabled: bool) -> bool {
 pub fn BIO_socket_wait(socket: &BioSocket, for_read: bool, deadline: i64) -> i32 {
     // SAFETY: the borrowed owner keeps the socket open; the remaining values are scalars.
     unsafe { ffi::BIO_socket_wait(socket.as_raw_socket(), i32::from(for_read), deadline) }
+}
+
+/// Wraps: BIO_sock_info
+/// Queries the socket's bound address into initialized BIO address storage.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_sock_info(socket: &BioSocket, address: &mut BioAddrMut<'_>) -> bool {
+    let mut info = ffi::BIO_sock_info_u {
+        addr: address.as_mut_ptr(),
+    };
+    // SAFETY: the socket remains owned and open; the exclusive address handle
+    // supplies the union's live writable address arm for this synchronous call.
+    unsafe {
+        ffi::BIO_sock_info(
+            socket.as_raw_socket(),
+            ffi::BIO_sock_info_type_BIO_SOCK_INFO_ADDRESS,
+            &mut info,
+        ) == 1
+    }
 }

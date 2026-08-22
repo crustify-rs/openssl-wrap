@@ -1434,6 +1434,77 @@
  ],
  "symbols": [
   {
+   "name": "ASN1_OBJECT_create",
+   "defined_in": "crypto/asn1/a_object.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads len bytes synchronously and deep-copies them into the returned object; null is valid only when len is zero."
+     }
+    },
+    {
+     "name": "ln",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ln"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated long name copied before return."
+     }
+    },
+    {
+     "name": "sn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sn"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated short name copied before return."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh dynamic ASN1_OBJECT released by ASN1_OBJECT_free; null reports allocation failure."
+    }
+   }
+  },
+  {
    "name": "ASN1_OBJECT_free",
    "defined_in": "crypto/asn1/a_object.c",
    "lifetime": {
@@ -1461,6 +1532,68 @@
      }
     }
    ]
+  },
+  {
+   "name": "ASN1_OBJECT_it",
+   "defined_in": "crypto/asn1/tasn_typ.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Immutable process-lifetime generated ASN1_ITEM."
+    }
+   }
+  },
+  {
+   "name": "ASN1_OBJECT_new",
+   "defined_in": null,
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Deprecated constructor always returns null in the current implementation."
+    }
+   }
+  },
+  {
+   "name": "ASN1_STRING_TABLE_cleanup",
+   "defined_in": "crypto/asn1/a_strnid.c"
+  },
+  {
+   "name": "ASN1_STRING_TABLE_get",
+   "defined_in": "crypto/asn1/a_strnid.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "global:asn1_string_table"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Borrowed global/static entry invalidated by ASN1_STRING_TABLE_cleanup when dynamically configured."
+    }
+   }
   },
   {
    "name": "ASN1_STRING_set_default_mask_asc",
@@ -2168,6 +2301,234 @@
    ]
   },
   {
+   "name": "BIO_asn1_get_prefix",
+   "defined_in": "crypto/asn1/bio_asn1.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO for synchronous control call."
+     }
+    },
+    {
+     "name": "pprefix",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pprefix"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable callback-pointer output slot."
+     }
+    },
+    {
+     "name": "pprefix_free",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pprefix_free"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable callback-pointer output slot."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_asn1_get_suffix",
+   "defined_in": "crypto/asn1/bio_asn1.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO for synchronous control call."
+     }
+    },
+    {
+     "name": "psuffix",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:psuffix"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable callback-pointer output slot."
+     }
+    },
+    {
+     "name": "psuffix_free",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:psuffix_free"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable callback-pointer output slot."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_asn1_set_prefix",
+   "defined_in": "crypto/asn1/bio_asn1.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO whose callback slots are updated."
+     }
+    },
+    {
+     "name": "prefix",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static setup callback stored by the BIO."
+     }
+    },
+    {
+     "name": "prefix_free",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static cleanup callback stored by the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_asn1_set_suffix",
+   "defined_in": "crypto/asn1/bio_asn1.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO whose callback slots are updated."
+     }
+    },
+    {
+     "name": "suffix",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static setup callback stored by the BIO."
+     }
+    },
+    {
+     "name": "suffix_free",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static cleanup callback stored by the BIO."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_bind",
    "defined_in": "crypto/bio/bio_sock2.c",
    "ptr_args": [
@@ -2186,6 +2547,46 @@
       "nullable": false,
       "mutable": false,
       "note": "Reads one non-null socket address during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_callback_ctrl",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "BIO is used synchronously; null returns an error."
+     }
+    },
+    {
+     "name": "fp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static information callback passed to the method control hook."
      }
     }
    ]
@@ -3211,6 +3612,45 @@
    }
   },
   {
+   "name": "BIO_get_callback_ex",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live shared BIO for field access."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static callback stored in the BIO."
+    }
+   }
+  },
+  {
    "name": "BIO_get_data",
    "defined_in": "crypto/bio/bio_lib.c",
    "ptr_args": [
@@ -3509,6 +3949,46 @@
    ]
   },
   {
+   "name": "BIO_get_rpoll_descriptor",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO for synchronous control call."
+     }
+    },
+    {
+     "name": "desc",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:desc"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable initialized descriptor output."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_get_shutdown",
    "defined_in": "crypto/bio/bio_lib.c",
    "ptr_args": [
@@ -3527,6 +4007,46 @@
       "nullable": false,
       "mutable": false,
       "note": "Scalar flag read from a live BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_get_wpoll_descriptor",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live BIO for synchronous control call."
+     }
+    },
+    {
+     "name": "desc",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:desc"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable initialized descriptor output."
      }
     }
    ]
@@ -4192,6 +4712,84 @@
    }
   },
   {
+   "name": "BIO_meth_get_recvmmsg",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live shared method table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static method callback."
+    }
+   }
+  },
+  {
+   "name": "BIO_meth_get_sendmmsg",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live shared method table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional static method callback."
+    }
+   }
+  },
+  {
    "name": "BIO_meth_get_write",
    "defined_in": null,
    "ptr_args": [
@@ -4620,6 +5218,86 @@
       "nullable": true,
       "mutable": false,
       "note": "Optional static callback pointer retained in the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_recvmmsg",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive method table whose callback slot is updated."
+     }
+    },
+    {
+     "name": "brecvmmsg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback retained by the method table."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_meth_set_sendmmsg",
+   "defined_in": "crypto/bio/bio_meth.c",
+   "ptr_args": [
+    {
+     "name": "biom",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:biom"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive method table whose callback slot is updated."
+     }
+    },
+    {
+     "name": "bsendmmsg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static callback retained by the method table."
      }
     }
    ]
@@ -5883,6 +6561,63 @@
    ]
   },
   {
+   "name": "BIO_recvmmsg",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "BIO used synchronously; null reports failure."
+     }
+    },
+    {
+     "name": "msg",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:msg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "In/out message run described by stride and count."
+     }
+    },
+    {
+     "name": "msgs_processed",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:msgs_processed"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required writable processed-count output slot."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_s_accept",
    "defined_in": "crypto/bio/bss_acpt.c",
    "ptr_ret": {
@@ -6163,6 +6898,63 @@
    }
   },
   {
+   "name": "BIO_sendmmsg",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "BIO used synchronously; null reports failure."
+     }
+    },
+    {
+     "name": "msg",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:msg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "In/out message run described by stride and count."
+     }
+    },
+    {
+     "name": "msgs_processed",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:msgs_processed"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required writable processed-count output slot."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_set_callback",
    "defined_in": null,
    "ptr_args": [
@@ -6238,6 +7030,46 @@
       "nullable": false,
       "mutable": true,
       "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_set_callback_ex",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive BIO whose callback slot is updated."
+     }
+    },
+    {
+     "name": "cb",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static extended callback stored in the BIO."
      }
     }
    ]
@@ -6511,6 +7343,29 @@
       "nullable": false,
       "mutable": false,
       "note": "Required NUL-terminated format string read during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_sock_info",
+   "defined_in": "crypto/bio/bio_sock.c",
+   "ptr_args": [
+    {
+     "name": "info",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:info"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required writable tagged union; ADDRESS selects a live BIO_ADDR pointer."
      }
     }
    ]
@@ -7291,6 +8146,50 @@
    }
   },
   {
+   "name": "OBJ_NAME_add",
+   "defined_in": "crypto/objects/o_names.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "global:obj_name_registry"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL string payload retained without copying until removal/cleanup."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "global:obj_name_registry"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL string retained without copying until removal/cleanup."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_NAME_cleanup",
+   "defined_in": "crypto/objects/o_names.c"
+  },
+  {
    "name": "OBJ_NAME_do_all",
    "defined_in": "crypto/objects/o_names.c",
    "ptr_args": [
@@ -7406,6 +8305,113 @@
      "note": "Optional borrowed registry payload. Although declared char*, the payload is type-erased and may be an object pointer; it remains registry-owned and may be invalidated by removal/cleanup."
     }
    }
+  },
+  {
+   "name": "OBJ_NAME_new_index",
+   "defined_in": "crypto/objects/o_names.c",
+   "ptr_args": [
+    {
+     "name": "cmp_func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static comparison callback retained globally."
+     }
+    },
+    {
+     "name": "free_func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static disposal callback retained globally."
+     }
+    },
+    {
+     "name": "hash_func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static hash callback retained globally."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_NAME_remove",
+   "defined_in": "crypto/objects/o_names.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL string read only during synchronized lookup/removal."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_add_object",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Source object read and normally deep-copied into the global registry before return."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_add_sigid",
+   "defined_in": "crypto/objects/obj_xref.c"
   },
   {
    "name": "OBJ_bsearch_",
@@ -7552,6 +8558,46 @@
      "note": "Optional pointer to one element within the borrowed base array; never independently owned."
     }
    }
+  },
+  {
+   "name": "OBJ_cmp",
+   "defined_in": "crypto/objects/obj_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live shared object read synchronously."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live shared object read synchronously."
+     }
+    }
+   ]
   },
   {
    "name": "OBJ_create",
@@ -7716,6 +8762,91 @@
    ]
   },
   {
+   "name": "OBJ_find_sigid_by_algs",
+   "defined_in": "crypto/objects/obj_xref.c",
+   "ptr_args": [
+    {
+     "name": "psignid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:psignid"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional writable scalar output populated on success."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_get0_data",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared object."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:obj"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed object data run of OBJ_length bytes."
+    }
+   }
+  },
+  {
+   "name": "OBJ_length",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared object."
+     }
+    }
+   ]
+  },
+  {
    "name": "OBJ_ln2nid",
    "defined_in": "crypto/objects/obj_dat.c",
    "ptr_args": [
@@ -7755,6 +8886,26 @@
    }
   },
   {
+   "name": "OBJ_nid2obj",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "global:object_registry"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Borrowed built-in or registry object; must not be freed as owned storage."
+    }
+   }
+  },
+  {
    "name": "OBJ_nid2sn",
    "defined_in": "crypto/objects/obj_dat.c",
    "ptr_ret": {
@@ -7771,6 +8922,73 @@
      "note": "Optional library/registry-owned NUL string; dynamic entries can be invalidated by registry cleanup, so safe wrappers copy it."
     }
    }
+  },
+  {
+   "name": "OBJ_obj2nid",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared object read synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_obj2txt",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared object read synchronously."
+     }
+    },
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Writable buf_len-byte output; null supports length query."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_sigid_free",
+   "defined_in": "crypto/objects/obj_xref.c"
   },
   {
    "name": "OBJ_sn2nid",
@@ -7792,6 +9010,68 @@
      }
     }
    ]
+  },
+  {
+   "name": "OBJ_txt2nid",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL string read synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_txt2obj",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL string read synchronously."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "global:object_registry"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Numeric input yields fresh ownership; a registered name may return borrowed static/registry storage; ASN1_OBJECT_free is a no-op for that branch."
+    }
+   }
   },
   {
    "name": "OPENSSL_INIT_free",
@@ -9116,6 +10396,118 @@
    }
   },
   {
+   "name": "OPENSSL_sk_set_copy_thunks",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "cp_thunk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static adapter callback stored by the stack."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack whose thunk slot is updated."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:st"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns the same stack pointer, including null."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_set_thunks",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "f_thunk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional static adapter callback stored by the stack."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:st"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional stack whose thunk slot is updated."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:st"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns the same stack pointer, including null."
+    }
+   }
+  },
+  {
    "name": "OPENSSL_sk_shift",
    "defined_in": "crypto/stack/stack.c",
    "ptr_args": [
@@ -9325,83 +10717,6 @@
      "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
     }
    }
-  },
-  {
-   "name": "asn1_ps_func",
-   "defined_in": null,
-   "ptr_args": [
-    {
-     "name": "arg0",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg0"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Live BIO is borrowed mutably for callback duration."
-     }
-    },
-    {
-     "name": "arg1",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": true,
-        "borrowed": null
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg1"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Borrowed output slot receives ownership of a newly allocated prefix/suffix byte buffer."
-     }
-    },
-    {
-     "name": "arg2",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg2"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Borrowed output slot receives the buffer length."
-     }
-    },
-    {
-     "name": "arg3",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg3"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Actually points at the BIO context void-pointer slot; callback may inspect or replace that slot."
-     }
-    }
-   ]
   },
   {
    "name": "asn1_ps_func",

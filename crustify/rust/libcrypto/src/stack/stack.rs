@@ -7,7 +7,10 @@ use core::ptr::NonNull;
 use ffibox::{CBox, CBoxWith, CCell, CCloned, CDropped, CDropper, CPtr, CType};
 use libcrypto_sys as ffi;
 
-use super::openssl_stack::{OpenSslSkCopyFunc, OpenSslSkFreeFunc, OpenSslSkStackCompFunc};
+use super::openssl_stack::{
+    OpenSslSkCopyFunc, OpenSslSkCopyFuncThunk, OpenSslSkFreeFunc, OpenSslSkFreeFuncThunk,
+    OpenSslSkStackCompFunc,
+};
 
 /// Wraps: stack_st
 ///
@@ -212,6 +215,8 @@ mod tests {
             let mut exclusive = stack.as_mut();
             assert_eq!(exclusive.as_mut_ptr(), raw);
             assert_eq!(exclusive.as_ref().as_ptr(), raw.cast_const());
+            OPENSSL_sk_set_copy_thunks(&mut exclusive, None);
+            OPENSSL_sk_set_thunks(&mut exclusive, None);
         }
 
         let duplicate = stack.try_clone().expect("duplicate OpenSSL stack");
@@ -695,4 +700,28 @@ pub fn OPENSSL_sk_zero<T>(stack: Option<&mut StackMut<'_, T>>) {
     // SAFETY: the optional exclusive handle supplies null or a live stack; the routine clears
     // pointer slots without touching the pointed-to elements.
     unsafe { ffi::OPENSSL_sk_zero(stack_mut_ptr(stack)) }
+}
+
+/// Wraps: OPENSSL_sk_set_copy_thunks
+#[allow(non_snake_case)]
+pub fn OPENSSL_sk_set_copy_thunks<T>(
+    stack: &mut StackMut<'_, T>,
+    thunk: Option<OpenSslSkCopyFuncThunk<T>>,
+) {
+    let raw = thunk.and_then(OpenSslSkCopyFuncThunk::as_raw);
+    // SAFETY: the exclusive typed stack handle permits replacing the slot and
+    // the thunk wrapper binds its stored adapter to the same element type.
+    unsafe { ffi::OPENSSL_sk_set_copy_thunks(stack.as_mut_ptr(), raw) };
+}
+
+/// Wraps: OPENSSL_sk_set_thunks
+#[allow(non_snake_case)]
+pub fn OPENSSL_sk_set_thunks<T>(
+    stack: &mut StackMut<'_, T>,
+    thunk: Option<OpenSslSkFreeFuncThunk<T>>,
+) {
+    let raw = thunk.and_then(OpenSslSkFreeFuncThunk::as_raw);
+    // SAFETY: the exclusive typed stack handle permits replacing the slot and
+    // the thunk wrapper binds its stored adapter to this stack's element type.
+    unsafe { ffi::OPENSSL_sk_set_thunks(stack.as_mut_ptr(), raw) };
 }

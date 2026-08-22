@@ -2,11 +2,13 @@
 
 use core::ffi::{CStr, c_void};
 use core::mem::size_of;
-use core::ptr;
+use core::ptr::{self, NonNull};
 use std::ffi::CString;
 
+use ffibox::{CBox, CSlice};
 use libcrypto_sys as ffi;
 
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
 use crate::bio::bio_bio_local::BioMut;
 use crate::stack::openssl_stack::OpenSslSkCompFunc;
 
@@ -188,4 +190,138 @@ mod tests {
         assert_ne!(common_name, 0);
         assert_eq!(OBJ_nid2sn(common_name).unwrap().as_c_str(), c"CN");
     }
+
+    #[test]
+    fn object_lookups_and_text_parsing_return_detached_owners() {
+        let rsa_nid = OBJ_txt2nid(c"rsaEncryption");
+        let by_nid = OBJ_nid2obj(rsa_nid).expect("registered object");
+        assert_eq!(OBJ_obj2nid(Some(by_nid.as_ref())), rsa_nid);
+
+        let parsed = OBJ_txt2obj(c"1.2.840.113549.1.1.1", true).expect("numeric OID");
+        assert_eq!(OBJ_obj2nid(Some(parsed.as_ref())), rsa_nid);
+        let mut output = [0_u8; 64];
+        let length = OBJ_obj2txt(&mut output, parsed.as_ref(), true).expect("OID text");
+        assert_eq!(&output[..length], b"1.2.840.113549.1.1.1");
+    }
+}
+
+fn detached_object(raw: *mut ffi::ASN1_OBJECT) -> Option<CBox<Asn1Object>> {
+    if raw.is_null() {
+        return None;
+    }
+    // SAFETY: `raw` is a live object for these synchronous scalar/pointer
+    // getters; the creator immediately deep-copies the reported byte run.
+    let (nid, length, data) = unsafe {
+        (
+            ffi::OBJ_obj2nid(raw),
+            ffi::OBJ_length(raw),
+            ffi::OBJ_get0_data(raw),
+        )
+    };
+    let length = i32::try_from(length).ok()?;
+    // SAFETY: the source object guarantees `data` describes `length` bytes;
+    // null names are supported and a non-null result is a fresh dynamic object.
+    unsafe {
+        CBox::from_raw(ffi::ASN1_OBJECT_create(
+            nid,
+            data.cast_mut(),
+            length,
+            ptr::null(),
+            ptr::null(),
+        ))
+    }
+}
+
+/// Wraps: OBJ_add_object
+/// Registers a detached copy, so the supplied borrow is never retained.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_add_object(object: Asn1ObjectRef<'_>) -> Option<i32> {
+    let copy = detached_object(object.as_ptr().cast_mut())?;
+    // SAFETY: `copy` is a live dynamic object. OpenSSL deep-copies it into the
+    // registry before returning and does not consume this temporary owner.
+    let nid = unsafe { ffi::OBJ_add_object(copy.as_ptr()) };
+    (nid != 0).then_some(nid)
+}
+
+/// Wraps: OBJ_get0_data
+/// Returns the object's non-owning byte run tied to the source borrow.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_get0_data<'a>(object: Asn1ObjectRef<'a>) -> Option<CSlice<'a, u8>> {
+    // SAFETY: the shared object handle is live and the getter does not mutate it.
+    let data = unsafe { ffi::OBJ_get0_data(object.as_ptr()) }.cast_mut();
+    // SAFETY: a non-null object data pointer addresses `OBJ_length` initialized
+    // bytes for the source handle's lifetime.
+    NonNull::new(data)
+        .map(|data| unsafe { CSlice::from_raw_parts(data, ffi::OBJ_length(object.as_ptr())) })
+}
+
+/// Wraps: OBJ_length
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_length(object: Option<Asn1ObjectRef<'_>>) -> usize {
+    let raw = object.map_or(ptr::null(), |object| object.as_ptr());
+    // SAFETY: the optional handle supplies null or a live shared object.
+    unsafe { ffi::OBJ_length(raw) }
+}
+
+/// Wraps: OBJ_nid2obj
+/// Returns a dynamic detached copy rather than borrowing cleanup-sensitive
+/// process-global registry storage.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_nid2obj(nid: i32) -> Option<CBox<Asn1Object>> {
+    // SAFETY: the lookup takes a scalar and returns null or borrowed registry storage.
+    let raw = unsafe { ffi::OBJ_nid2obj(nid) };
+    detached_object(raw)
+}
+
+/// Wraps: OBJ_obj2nid
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_obj2nid(object: Option<Asn1ObjectRef<'_>>) -> i32 {
+    let raw = object.map_or(ptr::null(), |object| object.as_ptr());
+    // SAFETY: the optional handle supplies null or a live shared object.
+    unsafe { ffi::OBJ_obj2nid(raw) }
+}
+
+/// Wraps: OBJ_obj2txt
+/// Returns the full output length reported by OpenSSL; the buffer is always
+/// passed with its exact writable extent.
+#[allow(non_snake_case)]
+pub fn OBJ_obj2txt(output: &mut [u8], object: Asn1ObjectRef<'_>, numeric: bool) -> Option<usize> {
+    let length = i32::try_from(output.len()).ok()?;
+    let output = if output.is_empty() {
+        ptr::null_mut()
+    } else {
+        output.as_mut_ptr().cast()
+    };
+    // SAFETY: the output pointer describes exactly `length` writable bytes and
+    // the object remains shared and live for the synchronous conversion.
+    let written = unsafe { ffi::OBJ_obj2txt(output, length, object.as_ptr(), i32::from(numeric)) };
+    usize::try_from(written).ok()
+}
+
+/// Wraps: OBJ_txt2nid
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_txt2nid(text: &CStr) -> i32 {
+    // SAFETY: `text` is a live immutable NUL-terminated string for this call.
+    unsafe { ffi::OBJ_txt2nid(text.as_ptr()) }
+}
+
+/// Wraps: OBJ_txt2obj
+/// Parses either names or numeric OIDs and returns a detached dynamic owner.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_txt2obj(text: &CStr, numeric_only: bool) -> Option<CBox<Asn1Object>> {
+    // SAFETY: the string remains live for parsing. The raw result may be a
+    // fresh dynamic object or borrowed registry storage.
+    let raw = unsafe { ffi::OBJ_txt2obj(text.as_ptr(), i32::from(numeric_only)) };
+    let result = detached_object(raw);
+    // SAFETY: the C API permits every non-null result to be passed to this
+    // releaser; it is a no-op for the borrowed registry/static case.
+    unsafe { ffi::ASN1_OBJECT_free(raw) };
+    result
 }

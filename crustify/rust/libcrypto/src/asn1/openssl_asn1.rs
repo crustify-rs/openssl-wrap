@@ -643,3 +643,13 @@ mod asn1_type_tests {
         assert!(matches!(value.value(), Asn1TypeValue::Other(Some(_))));
     }
 }
+
+/// Wraps: ASN1_OBJECT_new
+///
+/// OpenSSL 4.0 deprecated this compatibility constructor and its retained C
+/// implementation always returns null. Use `ASN1_OBJECT_create` for a value.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn ASN1_OBJECT_new() -> Option<ffibox::CBox<crate::asn1::asn1::Asn1Object>> {
+    None
+}

@@ -25,7 +25,6 @@ use super::bio_meth::{
 
 #[cfg(feature = "deprecated-1-1-0")]
 use super::bio_sock2::BioSocket;
-#[cfg(feature = "deprecated-3-5")]
 use super::internal_bio::BioMethodRef;
 use super::internal_bio_addr::{BioAddr, BioAddrMut, BioAddrRef};
 #[cfg(feature = "deprecated-1-1-0")]
@@ -367,8 +366,10 @@ mod tests {
 
     #[test]
     fn extended_callback_handle_is_callable() {
-        let callback =
-            BioCallbackFnEx::from_raw(Some(echo_extended_callback)).expect("non-null callback");
+        // SAFETY: this callback ignores pointer payloads, is thread-safe, and
+        // never unwinds.
+        let callback = unsafe { BioCallbackFnEx::from_raw(Some(echo_extended_callback)) }
+            .expect("non-null callback");
         // SAFETY: both constructors have no caller-side pointer inputs.
         let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
         // SAFETY: a non-null result transfers one owned BIO reference.
@@ -1023,8 +1024,12 @@ pub struct BioCallbackFnEx(ffi::BIO_callback_fn_ex);
 
 impl BioCallbackFnEx {
     /// Wrap a raw callback, returning `None` for the null function pointer.
+    ///
+    /// # Safety
+    /// A non-null callback must accept every operation-specific payload that
+    /// OpenSSL may supply, obey its thread-safety rules, and never unwind.
     #[must_use]
-    pub fn from_raw(raw: ffi::BIO_callback_fn_ex) -> Option<Self> {
+    pub unsafe fn from_raw(raw: ffi::BIO_callback_fn_ex) -> Option<Self> {
         raw.map(|callback| Self(Some(callback)))
     }
 
@@ -1406,6 +1411,10 @@ impl Asn1PsSetupFunc {
         raw.map(|function| Self(Some(function)))
     }
 
+    pub(crate) const fn as_raw(self) -> ffi::asn1_ps_func {
+        self.0
+    }
+
     /// Invokes this setup callback with its opaque state slots.
     pub fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
         call_asn1_ps(self.0, bio, state)
@@ -1430,9 +1439,75 @@ impl Asn1PsCleanupFunc {
         raw.map(|function| Self(Some(function)))
     }
 
+    pub(crate) const fn as_raw(self) -> ffi::asn1_ps_func {
+        self.0
+    }
+
     /// Invokes this cleanup callback with its opaque state slots.
     pub fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
         call_asn1_ps(self.0, bio, state)
+    }
+}
+
+/// A setup/cleanup pair that may safely share one ASN.1 BIO state slot.
+#[derive(Clone, Copy)]
+pub struct Asn1PsCallbacks {
+    setup: Option<Asn1PsSetupFunc>,
+    cleanup: Option<Asn1PsCleanupFunc>,
+}
+
+impl Asn1PsCallbacks {
+    /// Creates a pair with both callbacks disabled.
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self {
+            setup: None,
+            cleanup: None,
+        }
+    }
+
+    /// Couples independently validated callback handles.
+    ///
+    /// # Safety
+    /// `cleanup`, when present, must accept every successful state produced by
+    /// `setup`, when present. Their ownership protocol must release each state
+    /// exactly once without retaining any stack slots or unwinding.
+    #[must_use]
+    pub unsafe fn new(setup: Option<Asn1PsSetupFunc>, cleanup: Option<Asn1PsCleanupFunc>) -> Self {
+        Self { setup, cleanup }
+    }
+
+    pub(crate) const fn setup_raw(self) -> ffi::asn1_ps_func {
+        match self.setup {
+            Some(setup) => setup.as_raw(),
+            None => None,
+        }
+    }
+
+    pub(crate) const fn cleanup_raw(self) -> ffi::asn1_ps_func {
+        match self.cleanup {
+            Some(cleanup) => cleanup.as_raw(),
+            None => None,
+        }
+    }
+
+    pub(crate) const fn from_valid_slots(
+        setup: Option<Asn1PsSetupFunc>,
+        cleanup: Option<Asn1PsCleanupFunc>,
+    ) -> Self {
+        Self { setup, cleanup }
+    }
+
+    /// Returns the optional setup callback.
+    #[must_use]
+    pub const fn setup(self) -> Option<Asn1PsSetupFunc> {
+        self.setup
+    }
+
+    /// Returns the optional cleanup callback.
+    #[must_use]
+    pub const fn cleanup(self) -> Option<Asn1PsCleanupFunc> {
+        self.cleanup
     }
 }
 
@@ -1478,4 +1553,30 @@ mod asn1_ps_tests {
         assert!(state.is_empty());
         assert_eq!(state.len(), Some(0));
     }
+}
+
+/// Wraps: BIO_meth_get_recvmmsg
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_recvmmsg(
+    method: BioMethodRef<'_>,
+) -> Option<super::bio_meth::BioMethodMmsgCallback> {
+    // SAFETY: this is the exact operation of the deprecated C getter: copy the
+    // initialized function-pointer field from a live shared method handle.
+    let raw = unsafe { core::ptr::addr_of!((*method.as_ptr()).brecvmmsg).read() };
+    // SAFETY: any callback installed in a valid BIO_METHOD obeys that method
+    // slot's static C contract.
+    unsafe { super::bio_meth::BioMethodMmsgCallback::from_raw(raw) }
+}
+
+/// Wraps: BIO_meth_get_sendmmsg
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_get_sendmmsg(
+    method: BioMethodRef<'_>,
+) -> Option<super::bio_meth::BioMethodMmsgCallback> {
+    // SAFETY: as `BIO_meth_get_recvmmsg`, for the send slot.
+    let raw = unsafe { core::ptr::addr_of!((*method.as_ptr()).bsendmmsg).read() };
+    // SAFETY: valid method tables contain callbacks obeying the slot contract.
+    unsafe { super::bio_meth::BioMethodMmsgCallback::from_raw(raw) }
 }

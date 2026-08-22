@@ -215,6 +215,10 @@ impl<T> OpenSslSkCopyFuncThunk<T> {
         })
     }
 
+    pub(crate) const fn as_raw(self) -> ffi::OPENSSL_sk_copyfunc_thunk {
+        self.raw
+    }
+
     /// Copies one element through the thunk and binds the result to its
     /// matching destructor.
     pub fn copy_owned(
@@ -258,6 +262,10 @@ impl<T> OpenSslSkFreeFuncThunk<T> {
             raw: Some(function),
             marker: PhantomData,
         })
+    }
+
+    pub(crate) const fn as_raw(self) -> ffi::OPENSSL_sk_freefunc_thunk {
+        self.raw
     }
 
     /// Consumes an owned element through the thunk.

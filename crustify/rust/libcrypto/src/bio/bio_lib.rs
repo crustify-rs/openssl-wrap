@@ -4,12 +4,13 @@ use core::ffi::{CStr, c_long, c_void};
 use core::marker::PhantomData;
 use core::ptr::{self, NonNull};
 
-use ffibox::{CBox, CType};
+use ffibox::{CBox, CSliceMut, CType};
 use libcrypto_sys as ffi;
 
 use super::bio_bio_local::{Bio, BioMut, BioRef};
 use super::context::OsslLibCtxRef;
 use super::internal_bio::BioMethodRef;
+use super::openssl_bio::{BioCallbackFnEx, BioInfoCallback, BioMsg, BioPollDescriptorMut};
 
 /// Wraps: BIO_err_is_non_fatal
 #[must_use]
@@ -720,5 +721,119 @@ mod scheduled_tests {
         let mut extra = BIO_up_ref(&bio.as_ref()).expect("reference increment");
         BIO_vfree(Some(bio));
         assert_eq!(BIO_write(&mut extra.as_mut(), b"x"), 1);
+    }
+
+    #[test]
+    fn extended_callback_slot_round_trips_absence() {
+        let mut bio = null_bio();
+        BIO_set_callback_ex(&mut bio.as_mut(), None);
+        assert!(BIO_get_callback_ex(bio.as_ref()).is_none());
+    }
+}
+
+/// Wraps: BIO_callback_ctrl
+/// Installs a legacy information callback through the method control hook.
+#[allow(non_snake_case)]
+pub fn BIO_callback_ctrl(bio: &mut BioMut<'_>, callback: Option<BioInfoCallback>) -> c_long {
+    // SAFETY: the BIO is exclusively borrowed and the only supported command
+    // is selected here. Callback handles carry static compatible code pointers.
+    unsafe {
+        ffi::BIO_callback_ctrl(
+            bio.as_mut_ptr(),
+            ffi::BIO_CTRL_SET_CALLBACK as i32,
+            callback.and_then(BioInfoCallback::as_raw),
+        )
+    }
+}
+
+/// Wraps: BIO_get_callback_ex
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_callback_ex(bio: BioRef<'_>) -> Option<BioCallbackFnEx> {
+    // SAFETY: callbacks stored in a valid BIO obey OpenSSL's extended callback
+    // contract; the shared handle is live for this field getter.
+    unsafe { BioCallbackFnEx::from_raw(ffi::BIO_get_callback_ex(bio.as_ptr())) }
+}
+
+/// Wraps: BIO_get_rpoll_descriptor
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_rpoll_descriptor(
+    bio: &mut BioMut<'_>,
+    descriptor: &mut BioPollDescriptorMut<'_>,
+) -> bool {
+    // SAFETY: both exclusive handles supply initialized writable storage for
+    // the synchronous control operation.
+    unsafe { ffi::BIO_get_rpoll_descriptor(bio.as_mut_ptr(), descriptor.as_mut_ptr()) > 0 }
+}
+
+/// Wraps: BIO_get_wpoll_descriptor
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_get_wpoll_descriptor(
+    bio: &mut BioMut<'_>,
+    descriptor: &mut BioPollDescriptorMut<'_>,
+) -> bool {
+    // SAFETY: as `BIO_get_rpoll_descriptor`, for the write descriptor.
+    unsafe { ffi::BIO_get_wpoll_descriptor(bio.as_mut_ptr(), descriptor.as_mut_ptr()) > 0 }
+}
+
+/// Wraps: BIO_recvmmsg
+/// Receives into a tightly packed run of initialized message descriptors.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_recvmmsg(
+    bio: &mut BioMut<'_>,
+    messages: &mut CSliceMut<'_, BioMsg>,
+    flags: u64,
+) -> Option<usize> {
+    let mut processed = 0;
+    // SAFETY: the BIO and message run are exclusive, the exact descriptor
+    // stride and count describe the contiguous run, and the output slot lives.
+    let ok = unsafe {
+        ffi::BIO_recvmmsg(
+            bio.as_mut_ptr(),
+            messages.as_ptr(),
+            core::mem::size_of::<ffi::BIO_MSG>(),
+            messages.len(),
+            flags,
+            &mut processed,
+        )
+    };
+    (ok > 0).then_some(processed)
+}
+
+/// Wraps: BIO_sendmmsg
+/// Sends a tightly packed run of initialized message descriptors.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_sendmmsg(
+    bio: &mut BioMut<'_>,
+    messages: &mut CSliceMut<'_, BioMsg>,
+    flags: u64,
+) -> Option<usize> {
+    let mut processed = 0;
+    // SAFETY: as `BIO_recvmmsg`; the send method receives the same in/out
+    // descriptor layout and live processed-count slot.
+    let ok = unsafe {
+        ffi::BIO_sendmmsg(
+            bio.as_mut_ptr(),
+            messages.as_ptr(),
+            core::mem::size_of::<ffi::BIO_MSG>(),
+            messages.len(),
+            flags,
+            &mut processed,
+        )
+    };
+    (ok > 0).then_some(processed)
+}
+
+/// Wraps: BIO_set_callback_ex
+#[allow(non_snake_case)]
+pub fn BIO_set_callback_ex(bio: &mut BioMut<'_>, callback: Option<BioCallbackFnEx>) {
+    // SAFETY: the BIO is exclusively borrowed and callback handles carry
+    // static code pointers satisfying OpenSSL's extended callback ABI.
+    unsafe {
+        ffi::BIO_set_callback_ex(bio.as_mut_ptr(), callback.and_then(BioCallbackFnEx::as_raw))
     }
 }

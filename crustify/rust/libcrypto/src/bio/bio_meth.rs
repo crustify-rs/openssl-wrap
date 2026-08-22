@@ -3,12 +3,12 @@
 use core::ffi::{CStr, c_char, c_int, c_long, c_void};
 use core::ptr;
 
-use ffibox::CBox;
+use ffibox::{CBox, CSliceMut};
 use libcrypto_sys as ffi;
 
 use super::bio_bio_local::BioMut;
 use super::internal_bio::{BioMethod, BioMethodMut};
-use super::openssl_bio::BioInfoCallback;
+use super::openssl_bio::{BioInfoCallback, BioMsg};
 
 type RawWrite = unsafe extern "C" fn(*mut ffi::BIO, *const c_char, c_int) -> c_int;
 type RawWriteEx = unsafe extern "C" fn(*mut ffi::BIO, *const c_char, usize, *mut usize) -> c_int;
@@ -20,6 +20,8 @@ type RawCtrl = unsafe extern "C" fn(*mut ffi::BIO, c_int, c_long, *mut c_void) -
 type RawCreate = unsafe extern "C" fn(*mut ffi::BIO) -> c_int;
 type RawDestroy = unsafe extern "C" fn(*mut ffi::BIO) -> c_int;
 type RawCallbackCtrl = unsafe extern "C" fn(*mut ffi::BIO, c_int, ffi::BIO_info_cb) -> c_long;
+type RawMmsg =
+    unsafe extern "C" fn(*mut ffi::BIO, *mut ffi::BIO_MSG, usize, usize, u64, *mut usize) -> c_int;
 
 macro_rules! callback_handle {
     ($name:ident, $raw:ty) => {
@@ -55,6 +57,50 @@ callback_handle!(BioMethodCtrlCallback, RawCtrl);
 callback_handle!(BioMethodCreateCallback, RawCreate);
 callback_handle!(BioMethodDestroyCallback, RawDestroy);
 callback_handle!(BioMethodCallbackCtrl, RawCallbackCtrl);
+
+/// Callable handle for the sendmmsg/recvmmsg BIO method slots.
+#[derive(Clone, Copy)]
+pub struct BioMethodMmsgCallback(RawMmsg);
+
+impl BioMethodMmsgCallback {
+    /// Adopts a callback obeying the BIO multi-message method contract.
+    ///
+    /// # Safety
+    /// The callback must accept every well-formed BIO/message run supplied to
+    /// this method slot, initialize `msgs_processed`, and must not unwind.
+    #[must_use]
+    pub unsafe fn from_raw(raw: Option<RawMmsg>) -> Option<Self> {
+        raw.map(Self)
+    }
+
+    const fn raw(self) -> RawMmsg {
+        self.0
+    }
+
+    /// Calls the method on a tightly packed run of message descriptors.
+    #[must_use]
+    pub fn call(
+        self,
+        bio: &mut BioMut<'_>,
+        messages: &mut CSliceMut<'_, BioMsg>,
+        flags: u64,
+    ) -> Option<usize> {
+        let mut processed = 0;
+        // SAFETY: the callback contract, exclusive BIO, contiguous initialized
+        // message run, exact stride, and live output slot satisfy the raw ABI.
+        let ok = unsafe {
+            (self.0)(
+                bio.as_mut_ptr(),
+                messages.as_ptr(),
+                core::mem::size_of::<ffi::BIO_MSG>(),
+                messages.len(),
+                flags,
+                &mut processed,
+            )
+        };
+        (ok > 0).then_some(processed)
+    }
+}
 
 impl BioMethodWriteCallback {
     /// Invoke the method callback with a readable byte buffer.
@@ -330,5 +376,42 @@ mod tests {
         assert!(BIO_meth_set_create(method.as_mut(), None));
         assert!(BIO_meth_set_destroy(method.as_mut(), None));
         assert!(BIO_meth_set_callback_ctrl(method.as_mut(), None));
+        assert!(BIO_meth_set_recvmmsg(method.as_mut(), None));
+        assert!(BIO_meth_set_sendmmsg(method.as_mut(), None));
+        assert!(crate::bio::openssl_bio::BIO_meth_get_recvmmsg(method.as_ref()).is_none());
+        assert!(crate::bio::openssl_bio::BIO_meth_get_sendmmsg(method.as_ref()).is_none());
+    }
+}
+
+/// Wraps: BIO_meth_set_recvmmsg
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_set_recvmmsg(
+    mut method: BioMethodMut<'_>,
+    callback: Option<BioMethodMmsgCallback>,
+) -> bool {
+    // SAFETY: the exclusive method handle permits replacing this static code
+    // pointer and the callback wrapper establishes the slot contract.
+    unsafe {
+        ffi::BIO_meth_set_recvmmsg(
+            method.as_mut_ptr(),
+            callback.map(BioMethodMmsgCallback::raw),
+        ) == 1
+    }
+}
+
+/// Wraps: BIO_meth_set_sendmmsg
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_set_sendmmsg(
+    mut method: BioMethodMut<'_>,
+    callback: Option<BioMethodMmsgCallback>,
+) -> bool {
+    // SAFETY: as `BIO_meth_set_recvmmsg`, for the send slot.
+    unsafe {
+        ffi::BIO_meth_set_sendmmsg(
+            method.as_mut_ptr(),
+            callback.map(BioMethodMmsgCallback::raw),
+        ) == 1
     }
 }

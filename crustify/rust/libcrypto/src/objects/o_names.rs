@@ -10,6 +10,51 @@ use libcrypto_sys as ffi;
 
 use super::openssl_objects::ObjNameRef;
 
+type RawNameHash = unsafe extern "C" fn(*const core::ffi::c_char) -> core::ffi::c_ulong;
+type RawNameCompare =
+    unsafe extern "C" fn(*const core::ffi::c_char, *const core::ffi::c_char) -> core::ffi::c_int;
+type RawNameFree =
+    unsafe extern "C" fn(*const core::ffi::c_char, core::ffi::c_int, *const core::ffi::c_char);
+
+/// Static hash callback installed for an OBJ_NAME class.
+#[derive(Clone, Copy)]
+pub struct ObjNameHashCallback(RawNameHash);
+
+impl ObjNameHashCallback {
+    /// # Safety
+    /// The callback must accept every live NUL-terminated name supplied by
+    /// OpenSSL, retain nothing, remain thread-safe, and never unwind.
+    pub unsafe fn from_raw(raw: RawNameHash) -> Self {
+        Self(raw)
+    }
+}
+
+/// Static comparison callback installed for an OBJ_NAME class.
+#[derive(Clone, Copy)]
+pub struct ObjNameCompareCallback(RawNameCompare);
+
+impl ObjNameCompareCallback {
+    /// # Safety
+    /// The callback must implement a total ordering for all live C strings
+    /// supplied by OpenSSL, retain nothing, and never unwind.
+    pub unsafe fn from_raw(raw: RawNameCompare) -> Self {
+        Self(raw)
+    }
+}
+
+/// Static disposal callback installed for an OBJ_NAME class.
+#[derive(Clone, Copy)]
+pub struct ObjNameFreeCallback(RawNameFree);
+
+impl ObjNameFreeCallback {
+    /// # Safety
+    /// The callback must accept every stored name/data pair in this class,
+    /// dispose only resources it owns, remain thread-safe, and never unwind.
+    pub unsafe fn from_raw(raw: RawNameFree) -> Self {
+        Self(raw)
+    }
+}
+
 /// An opaque, registry-owned payload returned by `OBJ_NAME_get`.
 pub struct ObjNameValue<'a> {
     ptr: NonNull<c_void>,
@@ -134,4 +179,58 @@ where
     F: for<'a> FnMut(ObjNameRef<'a>),
 {
     do_all(type_id, true, callback);
+}
+
+/// Wraps: OBJ_NAME_add
+///
+/// # Safety
+/// `name` and `data` are stored without copying. They must remain live and
+/// immutable until this entry is removed or its class is cleaned up, and they
+/// must satisfy the registered class disposal callback's ownership contract.
+#[must_use]
+#[allow(non_snake_case)]
+pub unsafe fn OBJ_NAME_add(name: &CStr, type_id: i32, data: &CStr) -> bool {
+    // SAFETY: the caller supplies the otherwise-unexpressible stored lifetimes
+    // and disposal contract for both strings.
+    unsafe { ffi::OBJ_NAME_add(name.as_ptr(), type_id, data.as_ptr()) == 1 }
+}
+
+/// Wraps: OBJ_NAME_cleanup
+///
+/// # Safety
+/// No C or Rust code may concurrently traverse or use entries in the selected
+/// class. A negative class tears down the complete process-global registry.
+#[allow(non_snake_case)]
+pub unsafe fn OBJ_NAME_cleanup(type_id: i32) {
+    // SAFETY: the caller excludes all registry users invalidated by cleanup.
+    unsafe { ffi::OBJ_NAME_cleanup(type_id) }
+}
+
+/// Wraps: OBJ_NAME_new_index
+/// Allocates a new object-name class and installs optional static callbacks.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_NAME_new_index(
+    hash: Option<ObjNameHashCallback>,
+    compare: Option<ObjNameCompareCallback>,
+    free: Option<ObjNameFreeCallback>,
+) -> Option<i32> {
+    // SAFETY: callback wrappers establish their stored static contracts.
+    let index = unsafe {
+        ffi::OBJ_NAME_new_index(
+            hash.map(|callback| callback.0),
+            compare.map(|callback| callback.0),
+            free.map(|callback| callback.0),
+        )
+    };
+    (index > 0).then_some(index)
+}
+
+/// Wraps: OBJ_NAME_remove
+#[must_use]
+#[allow(non_snake_case)]
+pub fn OBJ_NAME_remove(name: &CStr, type_id: i32) -> bool {
+    // SAFETY: the string is live for the lookup; OpenSSL synchronizes removal
+    // and invokes any registered static disposer before returning.
+    unsafe { ffi::OBJ_NAME_remove(name.as_ptr(), type_id) == 1 }
 }
