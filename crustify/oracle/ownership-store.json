@@ -239,6 +239,315 @@
    "fields": []
   },
   {
+   "name": "asn1_type_st",
+   "defined_in": "include/openssl/asn1.h",
+   "_comment_agent": "The value union is discriminator-controlled. Heap ASN1_TYPE values created by OpenSSL own active pointer payloads; ASN1_TYPE_free dispatches their release. The common ptr view also appears in non-owning stack temporaries. Pointer arms are nullable; string-shaped payloads are mutable internally, while ASN1_OBJECT payloads are observed immutably.",
+   "fields": [
+    {
+     "name": "value.asn1_string",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.asn1_value",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.bit_string",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.bmpstring",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.enumerated",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.generalizedtime",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.generalstring",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.ia5string",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.integer",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.object",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.octet_string",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.printablestring",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The common pointer arm usually carries the owned active payload, but stack temporaries also borrow an external ASN1_STRING for encoding; the discriminator and construction context select the contract."
+     }
+    },
+    {
+     "name": "value.sequence",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.set",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.t61string",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.universalstring",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.utctime",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.utf8string",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    },
+    {
+     "name": "value.visiblestring",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+     }
+    }
+   ]
+  },
+  {
    "name": "bignum_st",
    "defined_in": "crypto/bn/bn_local.h",
    "_comment_agent": "bignum_st.d is a mutable dmax-word buffer. Normal expanded BIGNUMs own it, while BN_FLG_STATIC_DATA covers static tables and borrowed word buffers such as BN_with_flags/bn_set_static_words.",
@@ -1134,6 +1443,51 @@
      }
     }
    ]
+  },
+  {
+   "name": "ASN1_TYPE_free",
+   "defined_in": "crypto/asn1/tasn_typ.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and releases the ASN1_TYPE allocation and its active owned payload; null is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_TYPE_new",
+   "defined_in": "crypto/asn1/tasn_typ.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh fully initialized ASN1_TYPE allocation, or null on allocation failure."
+    }
+   }
   },
   {
    "name": "BIO_ADDRINFO_address",
@@ -4802,1711 +5156,6 @@
    }
   },
   {
-   "name": "BIO_socket_ioctl",
-   "defined_in": "crypto/bio/bio_sock.c",
-   "ptr_args": [
-    {
-     "name": "arg",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Command-specific in/out scalar. In-tree callers pass a live int/unsigned-long slot for FIONBIO; type and request coupling is a caller obligation."
-     }
-    }
-   ]
-  },
-  {
-   "name": "BIO_up_ref",
-   "defined_in": "crypto/bio/bio_lib.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": false,
-     "upref": true
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:a"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Transient live BIO borrow whose reference counter is incremented; zero reports failure."
-     }
-    }
-   ]
-  },
-  {
-   "name": "BN_clear_free",
-   "defined_in": "crypto/bn/bn_lib.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes a caller-owned BIGNUM, clearing its dynamic words and malloced header before release; NULL is accepted."
-     }
-    }
-   ]
-  },
-  {
-   "name": "BN_dup",
-   "defined_in": "crypto/bn/bn_lib.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:a"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Reads a live source for this call; NULL is accepted and returns NULL."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Returns a fresh independently owned deep copy preserving secure allocation, or NULL on input/allocation failure."
-    }
-   }
-  },
-  {
-   "name": "BN_free",
-   "defined_in": "crypto/bn/bn_lib.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes a caller-owned BIGNUM allocation and its non-static word buffer; NULL is accepted."
-     }
-    }
-   ]
-  },
-  {
-   "name": "CRYPTO_clear_free",
-   "defined_in": "crypto/mem.c",
-   "lifetime": {
-    "for": "str",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "file",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:file"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source-file string forwarded to CRYPTO_free."
-     }
-    },
-    {
-     "name": "str",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes a nullable OpenSSL allocation after cleansing the supplied byte length; applicable to scalar storage, buffers, and strings."
-     }
-    }
-   ]
-  },
-  {
-   "name": "CRYPTO_free",
-   "defined_in": "crypto/mem.c",
-   "lifetime": {
-    "for": "str",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "file",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:file"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source-file string used only by a configured free callback."
-     }
-    },
-    {
-     "name": "str",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": false,
-      "note": "Consumes a nullable allocation obtained from the active OpenSSL allocator; used for scalars, counted buffers, and strings."
-     }
-    }
-   ]
-  },
-  {
-   "name": "CRYPTO_memdup",
-   "defined_in": "crypto/o_str.c",
-   "lifetime": {
-    "for": "data",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "data",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:data"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient source byte buffer of the supplied size; NULL is rejected."
-     }
-    },
-    {
-     "name": "file",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:file"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source-file string forwarded to the allocator."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": null,
-     "array": {
-      "by_val": true
-     },
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Fresh byte-for-byte copy of siz bytes, owned by the caller and releasable with CRYPTO_free; NULL on invalid input or allocation failure."
-    }
-   }
-  },
-  {
-   "name": "CRYPTO_secure_clear_free",
-   "defined_in": "crypto/mem_sec.c",
-   "lifetime": {
-    "for": "ptr",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "file",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:file"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
-     }
-    },
-    {
-     "name": "ptr",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure storage is cleansed by actual size and ordinary storage by num bytes."
-     }
-    }
-   ]
-  },
-  {
-   "name": "CRYPTO_secure_free",
-   "defined_in": "crypto/mem_sec.c",
-   "lifetime": {
-    "for": "ptr",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "file",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:file"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
-     }
-    },
-    {
-     "name": "ptr",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure allocations are cleansed using their recorded actual size before release."
-     }
-    }
-   ]
-  },
-  {
-   "name": "CRYPTO_strdup",
-   "defined_in": "crypto/o_str.c",
-   "lifetime": {
-    "for": "str",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "file",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:file"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source-file string forwarded to the OpenSSL allocator."
-     }
-    },
-    {
-     "name": "str",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:str"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient NUL-terminated source string; NULL is accepted and yields NULL."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": null,
-     "array": {
-      "by_val": true
-     },
-     "string": true,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Fresh NUL-terminated copy allocated by the active OpenSSL allocator and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
-    }
-   }
-  },
-  {
-   "name": "CRYPTO_strndup",
-   "defined_in": "crypto/o_str.c",
-   "ptr_args": [
-    {
-     "name": "file",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:file"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source-file string forwarded to the OpenSSL allocator."
-     }
-    },
-    {
-     "name": "str",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:str"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient source buffer readable for up to s bytes; no NUL is required within that bound, and NULL yields NULL."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": null,
-     "array": {
-      "by_val": true
-     },
-     "string": true,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Fresh NUL-terminated copy of at most s source bytes, allocated by OpenSSL and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
-    }
-   }
-  },
-  {
-   "name": "OBJ_NAME_get",
-   "defined_in": "crypto/objects/o_names.c",
-   "ptr_args": [
-    {
-     "name": "name",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:name"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional lookup name; NULL returns NULL without dereference."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "static"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Optional borrowed registry payload. Although declared char*, the payload is type-erased and may be an object pointer; it remains registry-owned and may be invalidated by removal/cleanup."
-    }
-   }
-  },
-  {
-   "name": "OBJ_bsearch_",
-   "defined_in": "crypto/objects/obj_dat.c",
-   "ptr_args": [
-    {
-     "name": "base",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:base"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required sorted array of num fixed-size records; read only."
-     }
-    },
-    {
-     "name": "cmp",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:cmp"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required comparator invoked synchronously and never retained."
-     }
-    },
-    {
-     "name": "key",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:key"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required single search key read by the comparator."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:base"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Optional pointer to one element within the borrowed base array; never independently owned."
-    }
-   }
-  },
-  {
-   "name": "OBJ_bsearch_ex_",
-   "defined_in": "crypto/objects/obj_dat.c",
-   "ptr_args": [
-    {
-     "name": "base",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:base"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required sorted array of num fixed-size records; read only."
-     }
-    },
-    {
-     "name": "cmp",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:cmp"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required comparator invoked synchronously and never retained."
-     }
-    },
-    {
-     "name": "key",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:key"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required single search key read by the comparator."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:base"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Optional pointer to one element within the borrowed base array; never independently owned."
-    }
-   }
-  },
-  {
-   "name": "OBJ_create",
-   "defined_in": "crypto/objects/obj_dat.c",
-   "ptr_args": [
-    {
-     "name": "ln",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ln"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional NUL-terminated input copied into the global object registry on success and never retained directly."
-     }
-    },
-    {
-     "name": "oid",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:oid"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional NUL-terminated input copied into the global object registry on success and never retained directly."
-     }
-    },
-    {
-     "name": "sn",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:sn"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional NUL-terminated input copied into the global object registry on success and never retained directly."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OBJ_dup",
-   "defined_in": "crypto/objects/obj_lib.c",
-   "lifetime": {
-    "for": "o",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "o",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:o"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Reads the source for this call; NULL is accepted and produces NULL."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": {
-      "lifetime": "arg:o"
-     },
-     "nullable": true,
-     "mutable": true,
-     "note": "Dynamic inputs produce a fresh deep copy; non-dynamic inputs return the same source pointer. Either non-null result may be passed to ASN1_OBJECT_free, but the same-pointer case remains borrowed from o."
-    }
-   }
-  },
-  {
-   "name": "OBJ_find_sigid_algs",
-   "defined_in": "crypto/objects/obj_xref.c",
-   "ptr_args": [
-    {
-     "name": "pdig_nid",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pdig_nid"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional digest-NID output slot written on success."
-     }
-    },
-    {
-     "name": "ppkey_nid",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ppkey_nid"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional public-key-NID output slot written on success."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OBJ_ln2nid",
-   "defined_in": "crypto/objects/obj_dat.c",
-   "ptr_args": [
-    {
-     "name": "s",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:s"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required NUL-terminated object name read during lookup."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OBJ_nid2ln",
-   "defined_in": "crypto/objects/obj_dat.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": null,
-     "array": null,
-     "string": true,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "static"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Optional library/registry-owned NUL string; dynamic entries can be invalidated by registry cleanup, so safe wrappers copy it."
-    }
-   }
-  },
-  {
-   "name": "OBJ_nid2sn",
-   "defined_in": "crypto/objects/obj_dat.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": null,
-     "array": null,
-     "string": true,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "static"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Optional library/registry-owned NUL string; dynamic entries can be invalidated by registry cleanup, so safe wrappers copy it."
-    }
-   }
-  },
-  {
-   "name": "OBJ_sn2nid",
-   "defined_in": "crypto/objects/obj_dat.c",
-   "ptr_args": [
-    {
-     "name": "s",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:s"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required NUL-terminated object name read during lookup."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_INIT_free",
-   "defined_in": "crypto/conf/conf_lib.c",
-   "lifetime": {
-    "for": "settings",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "settings",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": false,
-      "note": "Consumes the settings allocation when non-NULL, freeing both owned strings and the header."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_INIT_new",
-   "defined_in": "crypto/conf/conf_lib.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Returns a newly malloc-allocated, initialized settings object or NULL."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_INIT_set_config_appname",
-   "defined_in": "crypto/conf/conf_lib.c",
-   "ptr_args": [
-    {
-     "name": "appname",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:appname"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional input string is copied with strdup and remains caller-owned."
-     }
-    },
-    {
-     "name": "settings",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:settings"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Mutably borrows settings for the call and replaces its owned appname."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_INIT_set_config_file_flags",
-   "defined_in": "crypto/conf/conf_lib.c",
-   "ptr_args": [
-    {
-     "name": "settings",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:settings"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Mutably borrows settings for the call and writes flags."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_INIT_set_config_filename",
-   "defined_in": "crypto/conf/conf_lib.c",
-   "ptr_args": [
-    {
-     "name": "filename",
-     "ptr": {
-      "scalar": null,
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:filename"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional input string is copied with strdup and remains caller-owned."
-     }
-    },
-    {
-     "name": "settings",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:settings"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Mutably borrows settings for the call and replaces its owned filename."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_LH_free",
-   "defined_in": "crypto/lhash/lhash.c",
-   "lifetime": {
-    "for": "lh",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "lh",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes and frees a complete OPENSSL_LHASH allocation after flushing owned nodes; null is accepted as a no-op."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_LH_new",
-   "defined_in": "crypto/lhash/lhash.c",
-   "ptr_args": [
-    {
-     "name": "c",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional borrowed comparison callback; null selects strcmp. The callback code has static executable lifetime."
-     }
-    },
-    {
-     "name": "h",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional borrowed hash callback; null selects OPENSSL_LH_strhash. The callback code has static executable lifetime."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Returns a newly allocated, initialized table on success; caller releases it with OPENSSL_LH_free."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_sk_compfunc",
-   "defined_in": null,
-   "ptr_args": [
-    {
-     "name": "arg0",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg0"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Borrowed type-erased first element, valid only for the callback invocation."
-     }
-    },
-    {
-     "name": "arg1",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg1"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Borrowed type-erased second element, valid only for the callback invocation."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_sk_copyfunc",
-   "defined_in": null,
-   "lifetime": {
-    "for": "arg0",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "arg0",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:arg0"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Borrowed type-erased source element read during deep copy."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Returns a fresh independently owned element allocation, or NULL on copy failure."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_sk_deep_copy",
-   "defined_in": "crypto/stack/stack.c",
-   "lifetime": {
-    "for": "sk",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "copy_func",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional borrowed element-copy callback. NULL selects a shallow element-pointer copy; otherwise it is called only during this operation."
-     }
-    },
-    {
-     "name": "free_func",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Borrowed cleanup callback for already-copied elements after a copy failure. It may be NULL only for the shallow-copy mode or when failure cleanup cannot call it."
-     }
-    },
-    {
-     "name": "sk",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:sk"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source stack; NULL produces a new empty stack."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Fresh stack owned by the caller; with a copy callback it owns independent copied elements, while NULL copy_func produces a shallow pointer copy."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_sk_dup",
-   "defined_in": "crypto/stack/stack.c",
-   "lifetime": {
-    "for": "sk",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "sk",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:sk"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Transient optional source stack. The routine reads it during the call; NULL produces a new empty stack."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Fresh stack and pointer-array allocation owned by the caller and releasable with OPENSSL_sk_free; element pointers are copied but remain unowned."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_sk_free",
-   "defined_in": "crypto/stack/stack.c",
-   "lifetime": {
-    "for": "st",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "st",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes a complete nullable OPENSSL_STACK allocation and its pointer array; elements are deliberately not freed."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_sk_freefunc",
-   "defined_in": null,
-   "lifetime": {
-    "for": "arg0",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "arg0",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes an optional type-erased element allocation exactly once when invoked by stack cleanup."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OPENSSL_sk_new",
-   "defined_in": "crypto/stack/stack.c",
-   "ptr_args": [
-    {
-     "name": "c",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional borrowed comparator stored in the returned stack; callback code has static executable lifetime."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "New initialized stack owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_sk_new_null",
-   "defined_in": "crypto/stack/stack.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "New initialized stack without a comparator, owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_sk_new_reserve",
-   "defined_in": "crypto/stack/stack.c",
-   "ptr_args": [
-    {
-     "name": "c",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional borrowed comparator stored in the returned stack; callback code has static executable lifetime."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "New initialized stack with requested initial capacity, owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
-    }
-   }
-  },
-  {
-   "name": "OPENSSL_sk_pop_free",
-   "defined_in": "crypto/stack/stack.c",
-   "lifetime": {
-    "for": "st",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "func",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Borrowed element destructor callback. It must be callable whenever a non-null element is present and is used only during this call."
-     }
-    },
-    {
-     "name": "st",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes a nullable stack, releases each non-null element through func or the stored thunk, then releases the stack."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OSSL_LIB_CTX_free",
-   "defined_in": "crypto/context.c",
-   "lifetime": {
-    "for": "ctx",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": {
-       "lifetime": "static"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "For a heap context, OSSL_LIB_CTX_free deinitializes and releases the allocation. NULL and the process-global default context are accepted and retained, so the general C contract also has a static borrowed path; Rust owners only adopt constructor results."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OSSL_LIB_CTX_new",
-   "defined_in": "crypto/context.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
-    }
-   }
-  },
-  {
-   "name": "free",
-   "defined_in": null,
-   "lifetime": {
-    "for": "__ptr",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "__ptr",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": false,
-      "note": "Generic allocator release: accepts nullable scalar, buffer, or NUL-string allocations and consumes them."
-     }
-    }
-   ]
-  },
-  {
-   "name": "ossl_public_param_free",
-   "defined_in": "include/internal/zeroization.h",
-   "lifetime": {
-    "for": "ptr",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "ptr",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes a nullable OpenSSL byte buffer, cleansing size bytes when pedantic zeroization is configured and otherwise releasing directly."
-     }
-    }
-   ]
-  },
-  {
-   "name": "strdup",
-   "defined_in": null,
-   "lifetime": {
-    "for": "__s",
-    "is_dropper": false,
-    "is_disposer": false,
-    "is_cloner": {
-     "deep": true,
-     "upref": false
-    }
-   },
-   "ptr_args": [
-    {
-     "name": "__s",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:__s"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Transient non-null NUL-terminated source string; passing NULL is outside strdup's contract."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": null,
-     "array": {
-      "by_val": true
-     },
-     "string": true,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
-    }
-   }
-  },
-  {
    "name": "BIO_new_mem_buf",
    "defined_in": "crypto/bio/bss_mem.c",
    "ptr_args": [
@@ -7828,6 +6477,29 @@
    ]
   },
   {
+   "name": "BIO_socket_ioctl",
+   "defined_in": "crypto/bio/bio_sock.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Command-specific in/out scalar. In-tree callers pass a live int/unsigned-long slot for FIONBIO; type and request coupling is a caller obligation."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_test_flags",
    "defined_in": "crypto/bio/bio_lib.c",
    "ptr_args": [
@@ -7846,6 +6518,38 @@
       "nullable": false,
       "mutable": false,
       "note": "Transient live BIO borrow for this operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_up_ref",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Transient live BIO borrow whose reference counter is incremented; zero reports failure."
      }
     }
    ]
@@ -8074,6 +6778,480 @@
    ]
   },
   {
+   "name": "BN_clear_free",
+   "defined_in": "crypto/bn/bn_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a caller-owned BIGNUM, clearing its dynamic words and malloced header before release; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BN_dup",
+   "defined_in": "crypto/bn/bn_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads a live source for this call; NULL is accepted and returns NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh independently owned deep copy preserving secure allocation, or NULL on input/allocation failure."
+    }
+   }
+  },
+  {
+   "name": "BN_free",
+   "defined_in": "crypto/bn/bn_lib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a caller-owned BIGNUM allocation and its non-static word buffer; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_clear_free",
+   "defined_in": "crypto/mem.c",
+   "lifetime": {
+    "for": "str",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to CRYPTO_free."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable OpenSSL allocation after cleansing the supplied byte length; applicable to scalar storage, buffers, and strings."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_free",
+   "defined_in": "crypto/mem.c",
+   "lifetime": {
+    "for": "str",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string used only by a configured free callback."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Consumes a nullable allocation obtained from the active OpenSSL allocator; used for scalars, counted buffers, and strings."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_memdup",
+   "defined_in": "crypto/o_str.c",
+   "lifetime": {
+    "for": "data",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient source byte buffer of the supplied size; NULL is rejected."
+     }
+    },
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to the allocator."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh byte-for-byte copy of siz bytes, owned by the caller and releasable with CRYPTO_free; NULL on invalid input or allocation failure."
+    }
+   }
+  },
+  {
+   "name": "CRYPTO_secure_clear_free",
+   "defined_in": "crypto/mem_sec.c",
+   "lifetime": {
+    "for": "ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
+     }
+    },
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure storage is cleansed by actual size and ordinary storage by num bytes."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_secure_free",
+   "defined_in": "crypto/mem_sec.c",
+   "lifetime": {
+    "for": "ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
+     }
+    },
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure allocations are cleansed using their recorded actual size before release."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRYPTO_strdup",
+   "defined_in": "crypto/o_str.c",
+   "lifetime": {
+    "for": "str",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to the OpenSSL allocator."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient NUL-terminated source string; NULL is accepted and yields NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh NUL-terminated copy allocated by the active OpenSSL allocator and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
+    }
+   }
+  },
+  {
+   "name": "CRYPTO_strndup",
+   "defined_in": "crypto/o_str.c",
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source-file string forwarded to the OpenSSL allocator."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient source buffer readable for up to s bytes; no NUL is required within that bound, and NULL yields NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh NUL-terminated copy of at most s source bytes, allocated by OpenSSL and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
+    }
+   }
+  },
+  {
    "name": "OBJ_NAME_do_all",
    "defined_in": "crypto/objects/o_names.c",
    "ptr_args": [
@@ -8154,6 +7332,240 @@
    ]
   },
   {
+   "name": "OBJ_NAME_get",
+   "defined_in": "crypto/objects/o_names.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional lookup name; NULL returns NULL without dereference."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional borrowed registry payload. Although declared char*, the payload is type-erased and may be an object pointer; it remains registry-owned and may be invalidated by removal/cleanup."
+    }
+   }
+  },
+  {
+   "name": "OBJ_bsearch_",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "base",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:base"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required sorted array of num fixed-size records; read only."
+     }
+    },
+    {
+     "name": "cmp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cmp"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required comparator invoked synchronously and never retained."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required single search key read by the comparator."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:base"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional pointer to one element within the borrowed base array; never independently owned."
+    }
+   }
+  },
+  {
+   "name": "OBJ_bsearch_ex_",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "base",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:base"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required sorted array of num fixed-size records; read only."
+     }
+    },
+    {
+     "name": "cmp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cmp"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required comparator invoked synchronously and never retained."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required single search key read by the comparator."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:base"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional pointer to one element within the borrowed base array; never independently owned."
+    }
+   }
+  },
+  {
+   "name": "OBJ_create",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "ln",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ln"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated input copied into the global object registry on success and never retained directly."
+     }
+    },
+    {
+     "name": "oid",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:oid"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated input copied into the global object registry on success and never retained directly."
+     }
+    },
+    {
+     "name": "sn",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sn"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated input copied into the global object registry on success and never retained directly."
+     }
+    }
+   ]
+  },
+  {
    "name": "OBJ_create_objects",
    "defined_in": "crypto/objects/obj_dat.c",
    "ptr_args": [
@@ -8175,6 +7587,483 @@
      }
     }
    ]
+  },
+  {
+   "name": "OBJ_dup",
+   "defined_in": "crypto/objects/obj_lib.c",
+   "lifetime": {
+    "for": "o",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "o",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:o"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads the source for this call; NULL is accepted and produces NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:o"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Dynamic inputs produce a fresh deep copy; non-dynamic inputs return the same source pointer. Either non-null result may be passed to ASN1_OBJECT_free, but the same-pointer case remains borrowed from o."
+    }
+   }
+  },
+  {
+   "name": "OBJ_find_sigid_algs",
+   "defined_in": "crypto/objects/obj_xref.c",
+   "ptr_args": [
+    {
+     "name": "pdig_nid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pdig_nid"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional digest-NID output slot written on success."
+     }
+    },
+    {
+     "name": "ppkey_nid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppkey_nid"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional public-key-NID output slot written on success."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_ln2nid",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated object name read during lookup."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OBJ_nid2ln",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional library/registry-owned NUL string; dynamic entries can be invalidated by registry cleanup, so safe wrappers copy it."
+    }
+   }
+  },
+  {
+   "name": "OBJ_nid2sn",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional library/registry-owned NUL string; dynamic entries can be invalidated by registry cleanup, so safe wrappers copy it."
+    }
+   }
+  },
+  {
+   "name": "OBJ_sn2nid",
+   "defined_in": "crypto/objects/obj_dat.c",
+   "ptr_args": [
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated object name read during lookup."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_INIT_free",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "lifetime": {
+    "for": "settings",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Consumes the settings allocation when non-NULL, freeing both owned strings and the header."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_INIT_new",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a newly malloc-allocated, initialized settings object or NULL."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_INIT_set_config_appname",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_args": [
+    {
+     "name": "appname",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:appname"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional input string is copied with strdup and remains caller-owned."
+     }
+    },
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:settings"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows settings for the call and replaces its owned appname."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_INIT_set_config_file_flags",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_args": [
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:settings"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows settings for the call and writes flags."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_INIT_set_config_filename",
+   "defined_in": "crypto/conf/conf_lib.c",
+   "ptr_args": [
+    {
+     "name": "filename",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:filename"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional input string is copied with strdup and remains caller-owned."
+     }
+    },
+    {
+     "name": "settings",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:settings"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows settings for the call and replaces its owned filename."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_LH_free",
+   "defined_in": "crypto/lhash/lhash.c",
+   "lifetime": {
+    "for": "lh",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "lh",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and frees a complete OPENSSL_LHASH allocation after flushing owned nodes; null is accepted as a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_LH_new",
+   "defined_in": "crypto/lhash/lhash.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparison callback; null selects strcmp. The callback code has static executable lifetime."
+     }
+    },
+    {
+     "name": "h",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed hash callback; null selects OPENSSL_LH_strhash. The callback code has static executable lifetime."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a newly allocated, initialized table on success; caller releases it with OPENSSL_LH_free."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_compfunc",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed type-erased first element, valid only for the callback invocation."
+     }
+    },
+    {
+     "name": "arg1",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg1"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed type-erased second element, valid only for the callback invocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_copyfunc",
+   "defined_in": null,
+   "lifetime": {
+    "for": "arg0",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed type-erased source element read during deep copy."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh independently owned element allocation, or NULL on copy failure."
+    }
+   }
   },
   {
    "name": "OPENSSL_sk_copyfunc_thunk",
@@ -8236,6 +8125,86 @@
      "nullable": true,
      "mutable": true,
      "note": "Fresh copied element ownership transfers to the caller; NULL reports copy failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_deep_copy",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "sk",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "copy_func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed element-copy callback. NULL selects a shallow element-pointer copy; otherwise it is called only during this operation."
+     }
+    },
+    {
+     "name": "free_func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed cleanup callback for already-copied elements after a copy failure. It may be NULL only for the shallow-copy mode or when failure cleanup cannot call it."
+     }
+    },
+    {
+     "name": "sk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source stack; NULL produces a new empty stack."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh stack owned by the caller; with a copy callback it owns independent copied elements, while NULL copy_func produces a shallow pointer copy."
     }
    }
   },
@@ -8331,6 +8300,52 @@
      "nullable": true,
      "mutable": true,
      "note": "Returned optional element pointer remains externally owned; the stack never owned the element allocation."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_dup",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "sk",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "sk",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient optional source stack. The routine reads it during the call; NULL produces a new empty stack."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh stack and pointer-array allocation owned by the caller and releasable with OPENSSL_sk_free; element pointers are copied but remain unowned."
     }
    }
   },
@@ -8472,6 +8487,60 @@
    ]
   },
   {
+   "name": "OPENSSL_sk_free",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "st",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a complete nullable OPENSSL_STACK allocation and its pointer array; elements are deliberately not freed."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OPENSSL_sk_freefunc",
+   "defined_in": null,
+   "lifetime": {
+    "for": "arg0",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes an optional type-erased element allocation exactly once when invoked by stack cleanup."
+     }
+    }
+   ]
+  },
+  {
    "name": "OPENSSL_sk_freefunc_thunk",
    "defined_in": null,
    "lifetime": {
@@ -8579,6 +8648,98 @@
    ]
   },
   {
+   "name": "OPENSSL_sk_new",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparator stored in the returned stack; callback code has static executable lifetime."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "New initialized stack owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_new_null",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "New initialized stack without a comparator, owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "OPENSSL_sk_new_reserve",
+   "defined_in": "crypto/stack/stack.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional borrowed comparator stored in the returned stack; callback code has static executable lifetime."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "New initialized stack with requested initial capacity, owned by the caller and releasable with OPENSSL_sk_free; NULL on allocation failure."
+    }
+   }
+  },
+  {
    "name": "OPENSSL_sk_num",
    "defined_in": "crypto/stack/stack.c",
    "ptr_args": [
@@ -8639,6 +8800,50 @@
      "note": "Returned optional element pointer remains externally owned; the stack never owned the element allocation."
     }
    }
+  },
+  {
+   "name": "OPENSSL_sk_pop_free",
+   "defined_in": "crypto/stack/stack.c",
+   "lifetime": {
+    "for": "st",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "func",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed element destructor callback. It must be callable whenever a non-null element is present and is used only during this call."
+     }
+    },
+    {
+     "name": "st",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable stack, releases each non-null element through func or the stored thunk, then releases the stack."
+     }
+    }
+   ]
   },
   {
    "name": "OPENSSL_sk_push",
@@ -9036,6 +9241,53 @@
    ]
   },
   {
+   "name": "OSSL_LIB_CTX_free",
+   "defined_in": "crypto/context.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "For a heap context, OSSL_LIB_CTX_free deinitializes and releases the allocation. NULL and the process-global default context are accepted and retained, so the general C contract also has a static borrowed path; Rust owners only adopt constructor results."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_LIB_CTX_new",
+   "defined_in": "crypto/context.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
+    }
+   }
+  },
+  {
    "name": "asn1_ps_func",
    "defined_in": null,
    "ptr_args": [
@@ -9193,6 +9445,108 @@
     "asn1_bio_flush_ex",
     "asn1_bio_free"
    ]
+  },
+  {
+   "name": "free",
+   "defined_in": null,
+   "lifetime": {
+    "for": "__ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "__ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Generic allocator release: accepts nullable scalar, buffer, or NUL-string allocations and consumes them."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ossl_public_param_free",
+   "defined_in": "include/internal/zeroization.h",
+   "lifetime": {
+    "for": "ptr",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable OpenSSL byte buffer, cleansing size bytes when pedantic zeroization is configured and otherwise releasing directly."
+     }
+    }
+   ]
+  },
+  {
+   "name": "strdup",
+   "defined_in": null,
+   "lifetime": {
+    "for": "__s",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "__s",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:__s"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Transient non-null NUL-terminated source string; passing NULL is outside strdup's contract."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
+    }
+   }
   }
  ]
 }
