@@ -6,6 +6,10 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use libcrypto_sys as ffi;
 
+use libc::x86_64_linux_gnu_bits_types_struct_file::IoFileMut;
+
+use super::bio_bio_local::BioMut;
+
 unsafe extern "C" fn dump_trampoline<F>(
     data: *const c_void,
     len: usize,
@@ -59,6 +63,41 @@ where
     }
 }
 
+/// Wraps: BIO_dump
+#[allow(non_snake_case)]
+pub fn BIO_dump(bio: &mut BioMut<'_>, data: &[u8]) -> i32 {
+    BIO_dump_indent(bio, data, 0)
+}
+
+/// Wraps: BIO_dump_fp
+#[allow(non_snake_case)]
+pub fn BIO_dump_fp(file: &mut IoFileMut<'_>, data: &[u8]) -> i32 {
+    BIO_dump_indent_fp(file, data, 0)
+}
+
+/// Wraps: BIO_dump_indent
+#[allow(non_snake_case)]
+pub fn BIO_dump_indent(bio: &mut BioMut<'_>, data: &[u8], indent: i32) -> i32 {
+    let Ok(len) = i32::try_from(data.len()) else {
+        return -1;
+    };
+    // SAFETY: the exclusive BIO stays live and `data` supplies exactly `len`
+    // readable bytes for the synchronous formatting call.
+    unsafe { ffi::BIO_dump_indent(bio.as_mut_ptr(), data.as_ptr().cast(), len, indent) }
+}
+
+/// Wraps: BIO_dump_indent_fp
+#[allow(non_snake_case)]
+pub fn BIO_dump_indent_fp(file: &mut IoFileMut<'_>, data: &[u8], indent: i32) -> i32 {
+    let Ok(len) = i32::try_from(data.len()) else {
+        return -1;
+    };
+    // SAFETY: the exclusive FILE handle stays live and `data` supplies exactly
+    // `len` readable bytes. The independently generated FILE bindings describe
+    // the same C ABI type.
+    unsafe { ffi::BIO_dump_indent_fp(file.as_mut_ptr().cast(), data.as_ptr().cast(), len, indent) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -72,5 +111,15 @@ mod tests {
         });
         assert_eq!(usize::try_from(result).unwrap(), output.len());
         assert!(output.ends_with(b"ABC\n"));
+    }
+
+    #[test]
+    fn dump_to_bio_accepts_a_byte_slice() {
+        // SAFETY: both called constructors have no caller-side pointer inputs.
+        let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
+        // SAFETY: a non-null result transfers one owned BIO reference.
+        let mut bio: ffibox::CBox<super::super::bio_bio_local::Bio> =
+            unsafe { ffibox::CBox::from_raw(raw) }.expect("BIO_new");
+        assert!(BIO_dump(&mut bio.as_mut(), b"ABC") > 0);
     }
 }

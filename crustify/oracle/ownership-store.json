@@ -1136,6 +1136,249 @@
    ]
   },
   {
+   "name": "BIO_ADDRINFO_address",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "bai",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bai"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "NULL is accepted; a non-null node is read during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:bai->ai_addr"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "The address is an embedded/owned child of the address-info list and cannot outlive it."
+    }
+   }
+  },
+  {
+   "name": "BIO_ADDRINFO_family",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "bai",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bai"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "NULL is accepted; a non-null address-info node is read only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDRINFO_free",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "lifetime": {
+    "for": "bai",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "bai",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and releases the complete address-info list; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDRINFO_next",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "bai",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bai"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "NULL is accepted; a non-null node is read during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:bai->ai_next"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "The next node belongs to the same address-info list and cannot outlive it."
+    }
+   }
+  },
+  {
+   "name": "BIO_ADDRINFO_protocol",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "bai",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bai"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "NULL is accepted; a non-null address-info node is read only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDRINFO_socktype",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "bai",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bai"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "NULL is accepted; a non-null address-info node is read only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDR_clear",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "lifetime": {
+    "for": "ap",
+    "is_dropper": false,
+    "is_disposer": true,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Resets one non-null address in place without releasing its storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDR_copy",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "dst",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dst"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Nullable destination is mutated only on success."
+     }
+    },
+    {
+     "name": "src",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:src"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable source is read only during the call."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_ADDR_dup",
    "defined_in": "crypto/bio/bio_addr.c",
    "lifetime": {
@@ -1182,6 +1425,29 @@
    }
   },
   {
+   "name": "BIO_ADDR_family",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null address during the call."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_ADDR_free",
    "defined_in": "crypto/bio/bio_addr.c",
    "lifetime": {
@@ -1209,6 +1475,43 @@
    ]
   },
   {
+   "name": "BIO_ADDR_hostname_string",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null address during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh OpenSSL-allocated NUL-terminated string, or NULL on failure."
+    }
+   }
+  },
+  {
    "name": "BIO_ADDR_new",
    "defined_in": "crypto/bio/bio_addr.c",
    "ptr_ret": {
@@ -1223,6 +1526,202 @@
      "nullable": true,
      "mutable": true,
      "note": "BIO_ADDR_new returns a fresh initialized allocation owned by the caller, or NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "BIO_ADDR_path_string",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null address during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh path string for AF_UNIX, otherwise NULL."
+    }
+   }
+  },
+  {
+   "name": "BIO_ADDR_rawaddress",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null address during the call."
+     }
+    },
+    {
+     "name": "l",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:l"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receiving the address byte length."
+     }
+    },
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output byte buffer; its required length depends on the address family."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDR_rawmake",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Initializes one non-null address in place."
+     }
+    },
+    {
+     "name": "where",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:where"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Family-dependent input: fixed-size address bytes or a NUL-terminated Unix path, borrowed during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDR_rawport",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null address during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ADDR_service_string",
+   "defined_in": "crypto/bio/bio_addr.c",
+   "ptr_args": [
+    {
+     "name": "ap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ap"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null address during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": true,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh OpenSSL-allocated NUL-terminated string, or NULL on failure."
     }
    }
   },
@@ -1248,6 +1747,501 @@
       "nullable": true,
       "mutable": true,
       "note": "Optional borrowed output slot. On successful accept it receives a newly allocated OpenSSL-owned NUL string; failure may write NULL."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_accept_ex",
+   "defined_in": "crypto/bio/bio_sock2.c",
+   "ptr_args": [
+    {
+     "name": "addr_",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:addr_"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional peer-address output written synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_bind",
+   "defined_in": "crypto/bio/bio_sock2.c",
+   "ptr_args": [
+    {
+     "name": "addr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:addr"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null socket address during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_callback_fn_ex",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The callback temporarily borrows the live BIO."
+     }
+    },
+    {
+     "name": "arg2",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg2"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Operation-dependent input: a nullable buffer/string/control payload borrowed only for the callback."
+     }
+    },
+    {
+     "name": "arg7",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg7"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional processed-count slot borrowed for the callback."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_clear_flags",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_connect",
+   "defined_in": "crypto/bio/bio_sock2.c",
+   "ptr_args": [
+    {
+     "name": "addr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:addr"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null socket address during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_copy_next_retry",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ctrl",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL is accepted; otherwise the selected control may mutate the BIO."
+     }
+    },
+    {
+     "name": "parg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:parg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Operation-dependent scalar/buffer/control payload borrowed for the synchronous call; command defines validity and direction."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ctrl_get_read_request",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL is accepted by BIO_ctrl; otherwise the operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ctrl_get_write_guarantee",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL is accepted by BIO_ctrl; otherwise the operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ctrl_pending",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL is accepted by BIO_ctrl; otherwise the operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ctrl_reset_read_request",
+   "defined_in": "crypto/bio/bss_bio.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL is accepted by BIO_ctrl; otherwise the operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_ctrl_wpending",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL is accepted by BIO_ctrl; otherwise the operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_debug_callback",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "argp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:argp"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional operation payload borrowed for the call; argi supplies its operation-dependent length."
+     }
+    },
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The debug callback temporarily borrows the live BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_debug_callback_ex",
+   "defined_in": "crypto/bio/bio_cb.c",
+   "ptr_args": [
+    {
+     "name": "argp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:argp"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional operation payload borrowed for the call."
+     }
+    },
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The callback reads BIO state and may write to the configured callback BIO."
+     }
+    },
+    {
+     "name": "processed",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:processed"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional processed-count slot read during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_do_connect_retry",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_dump",
+   "defined_in": "crypto/bio/bio_dump.c",
+   "ptr_args": [
+    {
+     "name": "bp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writes formatted output to the borrowed BIO."
+     }
+    },
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads len bytes synchronously; NULL is tolerated when len is non-positive."
      }
     }
    ]
@@ -1310,6 +2304,86 @@
    ]
   },
   {
+   "name": "BIO_dump_fp",
+   "defined_in": "crypto/bio/bio_dump.c",
+   "ptr_args": [
+    {
+     "name": "fp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writes formatted output to the borrowed FILE stream."
+     }
+    },
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads len bytes synchronously; NULL is tolerated when len is non-positive."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_dump_indent",
+   "defined_in": "crypto/bio/bio_dump.c",
+   "ptr_args": [
+    {
+     "name": "bp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writes formatted output to the borrowed BIO."
+     }
+    },
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads len bytes synchronously; NULL is tolerated when len is non-positive."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_dump_indent_cb",
    "defined_in": "crypto/bio/bio_dump.c",
    "ptr_args": [
@@ -1367,6 +2441,228 @@
    ]
   },
   {
+   "name": "BIO_dump_indent_fp",
+   "defined_in": "crypto/bio/bio_dump.c",
+   "ptr_args": [
+    {
+     "name": "fp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writes formatted output to the borrowed FILE stream."
+     }
+    },
+    {
+     "name": "s",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:s"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads len bytes synchronously; NULL is tolerated when len is non-positive."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_eof",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The operation temporarily borrows and may mutate the BIO."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BIO_f_buffer",
+   "defined_in": "crypto/bio/bf_buff.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns a non-null process-lifetime static BIO method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_f_linebuffer",
+   "defined_in": "crypto/bio/bf_lbuf.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns a non-null process-lifetime static BIO method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_f_nbio_test",
+   "defined_in": "crypto/bio/bf_nbio.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns a non-null process-lifetime static BIO method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_f_null",
+   "defined_in": "crypto/bio/bf_null.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns a non-null process-lifetime static BIO method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_f_prefix",
+   "defined_in": "crypto/bio/bf_prefix.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns a non-null process-lifetime static BIO method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_f_readbuffer",
+   "defined_in": "crypto/bio/bf_readbuff.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns a non-null process-lifetime static BIO method table."
+    }
+   }
+  },
+  {
+   "name": "BIO_find_type",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bio"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Traverses the mutable BIO chain; NULL is accepted and reported as failure."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:bio->next_bio"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Borrowed matching node from the input chain, or NULL."
+    }
+   }
+  },
+  {
    "name": "BIO_free",
    "defined_in": "crypto/bio/bio_lib.c",
    "lifetime": {
@@ -1394,6 +2690,33 @@
    ]
   },
   {
+   "name": "BIO_free_all",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "lifetime": {
+    "for": "bio",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "bio",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the head and successive owned BIO chain nodes; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_get_accept_socket",
    "defined_in": null,
    "ptr_args": [
@@ -1413,6 +2736,127 @@
      }
     }
    ]
+  },
+  {
+   "name": "BIO_get_callback",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The BIO is read during the getter call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Nullable function pointer stored by the BIO; code has static lifetime."
+    }
+   }
+  },
+  {
+   "name": "BIO_get_callback_arg",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one non-null BIO during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:b->cb_arg"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Opaque nullable mutable application cookie borrowed from the BIO; it is not necessarily a string."
+    }
+   }
+  },
+  {
+   "name": "BIO_get_data",
+   "defined_in": "crypto/bio/bio_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows one non-null BIO to project its mutable opaque data slot."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:a->ptr"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Opaque nullable method data borrowed from the BIO; concrete type and extent are method-specific."
+    }
+   }
   },
   {
    "name": "BIO_get_host_ip",

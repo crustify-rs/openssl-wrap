@@ -9,6 +9,7 @@ crate-type = ["rlib", "staticlib"]
 
 [features]
 deprecated-1-1-0 = []
+deprecated-3-0 = []
 
 [dependencies]
 ffibox.workspace = true

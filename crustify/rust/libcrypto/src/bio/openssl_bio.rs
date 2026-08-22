@@ -11,6 +11,10 @@ use core::ptr::{NonNull, addr_of};
 use ffibox::{CCell, CPtr, CSlice, CSliceMut, CType, CVal, CValued};
 use libcrypto_sys as ffi;
 
+use super::bio_bio_local::BioMut;
+#[cfg(feature = "deprecated-3-0")]
+use super::bio_bio_local::BioRef;
+
 #[cfg(feature = "deprecated-1-1-0")]
 use super::bio_sock2::BioSocket;
 use super::internal_bio_addr::{BioAddr, BioAddrMut, BioAddrRef};
@@ -334,6 +338,47 @@ mod tests {
             Some(BioSockInfoType::ADDRESS)
         );
         assert_eq!(BioSockInfoType::from_raw(1), None);
+    }
+
+    unsafe extern "C" fn echo_extended_callback(
+        _bio: *mut ffi::BIO,
+        _operation: i32,
+        _argp: *const core::ffi::c_char,
+        _len: usize,
+        _argi: i32,
+        _argl: core::ffi::c_long,
+        result: i32,
+        _processed: *mut usize,
+    ) -> core::ffi::c_long {
+        core::ffi::c_long::from(result)
+    }
+
+    #[test]
+    fn extended_callback_handle_is_callable() {
+        let callback =
+            BioCallbackFnEx::from_raw(Some(echo_extended_callback)).expect("non-null callback");
+        // SAFETY: both constructors have no caller-side pointer inputs.
+        let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
+        // SAFETY: a non-null result transfers one owned BIO reference.
+        let mut bio: ffibox::CBox<super::super::bio_bio_local::Bio> =
+            unsafe { ffibox::CBox::from_raw(raw) }.expect("BIO_new");
+        let mut processed = 0_usize;
+        // SAFETY: the test callback ignores every operation-specific payload,
+        // so the null pointer and zero-valued metadata satisfy its contract.
+        let result = unsafe {
+            callback.call(
+                &mut bio.as_mut(),
+                0,
+                core::ptr::null(),
+                0,
+                0,
+                0,
+                7,
+                Some(&mut processed),
+            )
+        };
+        assert_eq!(result, 7);
+        assert_eq!(processed, 0);
     }
 
     #[test]
@@ -957,4 +1002,125 @@ impl<'a> BioPollDescriptorMut<'a> {
                 .write(ffi::BIO_POLL_DESCRIPTOR_TYPE_SSL);
         }
     }
+}
+
+/// Wraps: BIO_callback_fn_ex
+/// A nullable-checked handle to OpenSSL's extended BIO callback ABI.
+#[derive(Clone, Copy)]
+pub struct BioCallbackFnEx(ffi::BIO_callback_fn_ex);
+
+impl BioCallbackFnEx {
+    /// Wrap a raw callback, returning `None` for the null function pointer.
+    #[must_use]
+    pub fn from_raw(raw: ffi::BIO_callback_fn_ex) -> Option<Self> {
+        raw.map(|callback| Self(Some(callback)))
+    }
+
+    /// Return the callback representation used by OpenSSL.
+    #[must_use]
+    pub const fn as_raw(self) -> ffi::BIO_callback_fn_ex {
+        self.0
+    }
+
+    /// Invoke the callback with an operation-specific payload.
+    ///
+    /// # Safety
+    /// `argp`, `len`, `argi`, `processed`, and `operation` must satisfy the
+    /// selected callback's operation-specific contract. Any pointed-to storage
+    /// must remain live for the synchronous invocation.
+    #[allow(clippy::too_many_arguments)]
+    pub unsafe fn call(
+        self,
+        bio: &mut BioMut<'_>,
+        operation: i32,
+        argp: *const core::ffi::c_char,
+        len: usize,
+        argi: i32,
+        argl: core::ffi::c_long,
+        result: i32,
+        processed: Option<&mut usize>,
+    ) -> core::ffi::c_long {
+        let callback = self.0.expect("BioCallbackFnEx is non-null");
+        let processed = processed.map_or(core::ptr::null_mut(), core::ptr::from_mut);
+        // SAFETY: the caller establishes the operation-specific callback
+        // payload contract; the BIO and optional output slot are live.
+        unsafe {
+            callback(
+                bio.as_mut_ptr(),
+                operation,
+                argp,
+                len,
+                argi,
+                argl,
+                result,
+                processed,
+            )
+        }
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// A nullable-checked handle to OpenSSL's legacy BIO callback ABI.
+#[derive(Clone, Copy)]
+pub struct BioCallbackFn(ffi::BIO_callback_fn);
+
+#[cfg(feature = "deprecated-3-0")]
+impl BioCallbackFn {
+    #[must_use]
+    pub fn from_raw(raw: ffi::BIO_callback_fn) -> Option<Self> {
+        raw.map(|callback| Self(Some(callback)))
+    }
+
+    #[must_use]
+    pub const fn as_raw(self) -> ffi::BIO_callback_fn {
+        self.0
+    }
+
+    /// # Safety
+    /// The operation and payload must satisfy the selected callback's legacy
+    /// operation-specific contract for the synchronous invocation.
+    #[allow(clippy::too_many_arguments)]
+    pub unsafe fn call(
+        self,
+        bio: &mut BioMut<'_>,
+        operation: i32,
+        argp: *const core::ffi::c_char,
+        argi: i32,
+        argl: core::ffi::c_long,
+        result: core::ffi::c_long,
+    ) -> core::ffi::c_long {
+        let callback = self.0.expect("BioCallbackFn is non-null");
+        // SAFETY: delegated to the caller as documented above.
+        unsafe { callback(bio.as_mut_ptr(), operation, argp, argi, argl, result) }
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: BIO_debug_callback
+///
+/// # Safety
+/// `argp`, `argi`, and `operation` must describe a valid operation-specific
+/// callback payload. The BIO's callback argument must be null or a live BIO.
+#[allow(non_snake_case)]
+#[allow(clippy::too_many_arguments)]
+pub unsafe fn BIO_debug_callback(
+    bio: &mut BioMut<'_>,
+    operation: i32,
+    argp: *const core::ffi::c_char,
+    argi: i32,
+    argl: core::ffi::c_long,
+    result: core::ffi::c_long,
+) -> core::ffi::c_long {
+    // SAFETY: the caller establishes the operation-specific payload and
+    // callback-argument invariants; the exclusive BIO handle is live.
+    unsafe { ffi::BIO_debug_callback(bio.as_mut_ptr(), operation, argp, argi, argl, result) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: BIO_get_callback
+#[allow(non_snake_case)]
+pub fn BIO_get_callback(bio: &BioRef<'_>) -> Option<BioCallbackFn> {
+    // SAFETY: the shared handle supplies one live BIO for the field getter.
+    let raw = unsafe { ffi::BIO_get_callback(bio.as_ptr()) };
+    BioCallbackFn::from_raw(raw)
 }
