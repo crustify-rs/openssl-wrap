@@ -1561,9 +1561,9 @@ mod asn1_ps_tests {
 pub fn BIO_meth_get_recvmmsg(
     method: BioMethodRef<'_>,
 ) -> Option<super::bio_meth::BioMethodMmsgCallback> {
-    // SAFETY: this is the exact operation of the deprecated C getter: copy the
-    // initialized function-pointer field from a live shared method handle.
-    let raw = unsafe { core::ptr::addr_of!((*method.as_ptr()).brecvmmsg).read() };
+    // SAFETY: the borrowed handle guarantees a live shared BIO_METHOD for the
+    // duration of this synchronous getter call.
+    let raw = unsafe { ffi::crustify_BIO_meth_get_recvmmsg(method.as_ptr()) };
     // SAFETY: any callback installed in a valid BIO_METHOD obeys that method
     // slot's static C contract.
     unsafe { super::bio_meth::BioMethodMmsgCallback::from_raw(raw) }
@@ -1576,7 +1576,54 @@ pub fn BIO_meth_get_sendmmsg(
     method: BioMethodRef<'_>,
 ) -> Option<super::bio_meth::BioMethodMmsgCallback> {
     // SAFETY: as `BIO_meth_get_recvmmsg`, for the send slot.
-    let raw = unsafe { core::ptr::addr_of!((*method.as_ptr()).bsendmmsg).read() };
+    let raw = unsafe { ffi::crustify_BIO_meth_get_sendmmsg(method.as_ptr()) };
     // SAFETY: valid method tables contain callbacks obeying the slot contract.
     unsafe { super::bio_meth::BioMethodMmsgCallback::from_raw(raw) }
+}
+
+#[cfg(test)]
+mod mmsg_method_getter_tests {
+    use super::*;
+    use crate::bio::bio_lib::BIO_new;
+    use crate::bio::bio_meth::{
+        BIO_meth_new, BIO_meth_set_recvmmsg, BIO_meth_set_sendmmsg, BioMethodMmsgCallback,
+    };
+
+    unsafe extern "C" fn process_one(
+        _bio: *mut ffi::BIO,
+        _messages: *mut ffi::BIO_MSG,
+        _stride: usize,
+        count: usize,
+        _flags: u64,
+        processed: *mut usize,
+    ) -> c_int {
+        if count == 0 || processed.is_null() {
+            return 0;
+        }
+        // SAFETY: the BIO method callback contract supplies one live output
+        // slot, and this branch has rejected a null pointer.
+        unsafe { processed.write(1) };
+        1
+    }
+
+    #[test]
+    fn getters_return_callable_installed_callbacks() {
+        let mut method = BIO_meth_new(75, c"mmsg getters").expect("BIO_meth_new");
+        // SAFETY: `process_one` accepts every well-formed message run, writes
+        // at most one processed entry, is thread-safe, and never unwinds.
+        let callback = unsafe { BioMethodMmsgCallback::from_raw(Some(process_one)) }.unwrap();
+        assert!(BIO_meth_set_recvmmsg(method.as_mut(), Some(callback)));
+        assert!(BIO_meth_set_sendmmsg(method.as_mut(), Some(callback)));
+
+        let receive = BIO_meth_get_recvmmsg(method.as_ref()).expect("receive callback");
+        let send = BIO_meth_get_sendmmsg(method.as_ref()).expect("send callback");
+        let mut bio = BIO_new(method.as_ref()).expect("BIO_new");
+        let mut message = BioMsg::zeroed();
+        // SAFETY: `message` is initialized layout-compatible storage and the
+        // one-element mutable view cannot outlive or alias its stack slot.
+        let mut messages = unsafe { CSliceMut::from_raw_parts(NonNull::from(&mut message), 1) };
+
+        assert_eq!(receive.call(&mut bio.as_mut(), &mut messages, 0), Some(1));
+        assert_eq!(send.call(&mut bio.as_mut(), &mut messages, 0), Some(1));
+    }
 }
