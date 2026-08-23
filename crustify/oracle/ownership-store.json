@@ -7495,7 +7495,7 @@
        "by_ref": {
         "owned": null,
         "borrowed": {
-         "lifetime": "arg:bio"
+         "lifetime": "other"
         }
        }
       },
@@ -7503,11 +7503,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "other"
+       "lifetime": "arg:buf"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": true,
-      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+      "note": "Optional output slot, written only when non-null. The region it receives lies inside the PEER endpoint's ring buffer -- bss_bio.c's bio_nread0 reads bio->ptr->peer and returns peer_b->buf + peer_b->offset -- not inside bio, so its lifetime is NOT arg:bio: bio_free on the peer releases that buffer through bio_destroy_pair while bio itself stays valid. The peer is not an argument, hence 'other'. The region is additionally invalidated in place by any later operation on either endpoint, which reuses the same ring."
      }
     }
    ]
@@ -7540,7 +7540,7 @@
        "by_ref": {
         "owned": null,
         "borrowed": {
-         "lifetime": "arg:bio"
+         "lifetime": "other"
         }
        }
       },
@@ -7548,11 +7548,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "other"
+       "lifetime": "arg:buf"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": true,
-      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+      "note": "Optional output slot, written only when non-null. The region it receives lies inside the PEER endpoint's ring buffer -- bss_bio.c's bio_nread0 reads bio->ptr->peer and returns peer_b->buf + peer_b->offset -- not inside bio, so its lifetime is NOT arg:bio: bio_free on the peer releases that buffer through bio_destroy_pair while bio itself stays valid. The peer is not an argument, hence 'other'. The region is additionally invalidated in place by any later operation on either endpoint, which reuses the same ring."
      }
     }
    ]
@@ -7639,11 +7639,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "other"
+       "lifetime": "arg:buf"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": true,
-      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+      "note": "Optional output slot, written only when non-null. The region it receives lies inside bio's OWN ring buffer -- bss_bio.c's bio_nwrite0 returns b->buf + write_offset -- so it lives exactly as long as bio. It is invalidated in place by any later operation on either endpoint, which reuses the same ring."
      }
     }
    ]
@@ -7684,11 +7684,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "other"
+       "lifetime": "arg:buf"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": true,
-      "note": "Required output slot receiving a borrowed region inside the BIO pair; the region is invalidated by subsequent pair operations."
+      "note": "Optional output slot, written only when non-null. The region it receives lies inside bio's OWN ring buffer -- bss_bio.c's bio_nwrite0 returns b->buf + write_offset -- so it lives exactly as long as bio. It is invalidated in place by any later operation on either endpoint, which reuses the same ring."
      }
     }
    ]
@@ -8732,11 +8732,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "arg:next"
+       "lifetime": "other"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": true,
-      "note": "Transient live BIO borrow for this operation."
+      "note": "Successor stored in b->next_bio verbatim, with no reference count taken, so the borrow OUTLIVES the call and is not arg:next-transient. Null is valid and clears the link. The pointee must stay live until the link is replaced or the chain detached, and the two linked BIOs must not be freed independently."
      }
     }
    ]

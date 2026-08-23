@@ -59,7 +59,14 @@ pub fn BIO_new_bio_pair(
     Some((first, second))
 }
 
-fn shared_region<'a>(bio: &'a mut BioMut<'_>, amount: Option<i32>) -> Result<CSlice<'a, u8>, i32> {
+/// # Safety
+///
+/// The readable region belongs to the peer endpoint, not to `bio`: see
+/// [`BIO_nread0`]. The caller keeps that peer alive for `'a`.
+unsafe fn shared_region<'a>(
+    bio: &'a mut BioMut<'_>,
+    amount: Option<i32>,
+) -> Result<CSlice<'a, u8>, i32> {
     let mut ptr = core::ptr::null_mut();
     // SAFETY: `bio` is exclusive and `ptr` is a live output slot. The selected
     // pair-BIO routine returns the region length and pointer together.
@@ -72,12 +79,18 @@ fn shared_region<'a>(bio: &'a mut BioMut<'_>, amount: Option<i32>) -> Result<CSl
     if result < 0 {
         return Err(result);
     }
+    // A zero-length result leaves the output slot untouched, so the pointer is
+    // only meaningful when `result > 0`.
     let ptr = NonNull::new(ptr.cast::<u8>()).unwrap_or_else(NonNull::dangling);
-    // SAFETY: OpenSSL returned `result` initialized bytes tied to the exclusive
-    // borrow of the BIO; `CSlice` forms no reference over C-owned storage.
+    // SAFETY: OpenSSL returned `result` initialized bytes inside the peer's
+    // write buffer, which the caller keeps alive for `'a`; `CSlice` forms no
+    // reference over C-owned storage, so a concurrent C write is not aliasing.
     Ok(unsafe { CSlice::from_raw_parts(ptr, result as usize) })
 }
 
+/// Unlike [`shared_region`], the writable region is `bio`'s own buffer, which
+/// the exclusive borrow already keeps alive, so this helper needs no extra
+/// caller obligation.
 fn exclusive_region<'a>(
     bio: &'a mut BioMut<'_>,
     amount: Option<i32>,
@@ -95,31 +108,71 @@ fn exclusive_region<'a>(
     if result < 0 {
         return Err(result);
     }
+    // A zero-length result leaves the output slot untouched, so the pointer is
+    // only meaningful when `result > 0`.
     let ptr = NonNull::new(ptr.cast::<u8>()).unwrap_or_else(NonNull::dangling);
-    // SAFETY: OpenSSL returned `result` writable bytes tied to the exclusive
-    // BIO borrow; the move-only handle forms no Rust slice reference.
+    // SAFETY: OpenSSL returned `result` writable bytes inside `bio`'s own ring
+    // buffer, which the exclusive borrow keeps alive for `'a`; the move-only
+    // handle forms no Rust slice reference.
     Ok(unsafe { CSliceMut::from_raw_parts(ptr, result as usize) })
 }
 
 /// Wraps: BIO_nread
+///
+/// Reports at most `amount` readable bytes and advances the read index past
+/// them. Negative amounts are clamped to zero, since C reinterprets the count
+/// as a `size_t`.
+///
+/// # Safety
+///
+/// As [`BIO_nread0`]: the returned region is storage owned by the peer
+/// endpoint, so the peer must outlive it.
 #[allow(non_snake_case)]
-pub fn BIO_nread<'a>(bio: &'a mut BioMut<'_>, amount: i32) -> Result<CSlice<'a, u8>, i32> {
-    shared_region(bio, Some(amount.max(0)))
+pub unsafe fn BIO_nread<'a>(bio: &'a mut BioMut<'_>, amount: i32) -> Result<CSlice<'a, u8>, i32> {
+    // SAFETY: forwarded verbatim to this function's own caller obligation.
+    unsafe { shared_region(bio, Some(amount.max(0))) }
 }
 
 /// Wraps: BIO_nread0
+///
+/// Reports the readable region without consuming it.
+///
+/// # Safety
+///
+/// `bss_bio.c` reads through `bio->ptr->peer`: the region handed back is a
+/// window into the *peer* endpoint's ring buffer, and `bio_free` on that peer
+/// releases the buffer while leaving `bio` itself perfectly valid. The
+/// exclusive borrow of `bio` therefore cannot keep the region alive, and no
+/// safe signature can name the peer, which is not an argument. The caller must
+/// keep the peer endpoint alive for as long as the returned handle is used.
+///
+/// The region is also invalidated in place by any later operation on either
+/// endpoint, which reuses the same ring buffer. That is a correctness rule
+/// rather than a soundness one: [`CSlice`] holds a raw pointer and forms no
+/// Rust reference, so a concurrent C write is not aliasing UB.
 #[allow(non_snake_case)]
-pub fn BIO_nread0<'a>(bio: &'a mut BioMut<'_>) -> Result<CSlice<'a, u8>, i32> {
-    shared_region(bio, None)
+pub unsafe fn BIO_nread0<'a>(bio: &'a mut BioMut<'_>) -> Result<CSlice<'a, u8>, i32> {
+    // SAFETY: forwarded verbatim to this function's own caller obligation.
+    unsafe { shared_region(bio, None) }
 }
 
 /// Wraps: BIO_nwrite
+///
+/// Reserves at most `amount` writable bytes and advances the write index past
+/// them. Negative amounts are clamped to zero, since C reinterprets the count
+/// as a `size_t`.
+///
+/// The region is `bio`'s own ring buffer, so unlike [`BIO_nread`] the
+/// exclusive borrow already keeps it alive and this is a safe operation.
 #[allow(non_snake_case)]
 pub fn BIO_nwrite<'a>(bio: &'a mut BioMut<'_>, amount: i32) -> Result<CSliceMut<'a, u8>, i32> {
     exclusive_region(bio, Some(amount.max(0)))
 }
 
 /// Wraps: BIO_nwrite0
+///
+/// Reports the writable region without reserving it. As [`BIO_nwrite`], the
+/// region is `bio`'s own buffer and the borrow is enough to keep it alive.
 #[allow(non_snake_case)]
 pub fn BIO_nwrite0<'a>(bio: &'a mut BioMut<'_>) -> Result<CSliceMut<'a, u8>, i32> {
     exclusive_region(bio, None)
@@ -161,5 +214,44 @@ mod tests {
     fn pair_returns_two_independent_owners() {
         let (first, second) = BIO_new_bio_pair(0, 0).expect("BIO pair");
         assert_ne!(first.as_ptr(), second.as_ptr());
+    }
+
+    #[test]
+    fn the_non_copying_interface_moves_bytes_between_the_endpoints() {
+        let (mut writer, mut reader) = BIO_new_bio_pair(32, 32).expect("BIO pair");
+
+        {
+            let mut view = writer.as_mut();
+            // The reservation is inside `writer`'s own ring buffer.
+            assert_eq!(BIO_nwrite0(&mut view).expect("write region").len(), 32);
+            let mut region = BIO_nwrite(&mut view, 5).expect("write region");
+            assert_eq!(region.len(), 5);
+            assert!(region.copy_from_slice(b"hello"));
+        }
+
+        let mut view = reader.as_mut();
+        // SAFETY: `writer` owns the storage behind both regions below and
+        // outlives them; nothing writes to the pair in between.
+        let peeked = unsafe { BIO_nread0(&mut view) }.expect("peek region");
+        assert_eq!(peeked.len(), 5);
+        drop(peeked);
+
+        // SAFETY: as above.
+        let region = unsafe { BIO_nread(&mut view, 5) }.expect("read region");
+        let mut seen = [0_u8; 5];
+        assert!(region.copy_to_slice(&mut seen));
+        assert_eq!(&seen, b"hello");
+    }
+
+    #[test]
+    fn a_reservation_is_limited_by_the_configured_buffer() {
+        let (mut writer, _reader) = BIO_new_bio_pair(8, 8).expect("BIO pair");
+        let mut view = writer.as_mut();
+        // `bio_nwrite0` never wraps the ring, so the request is clamped to the
+        // contiguous space rather than satisfied in full.
+        assert_eq!(BIO_nwrite(&mut view, 64).expect("write region").len(), 8);
+        // A negative request is clamped to zero instead of becoming a huge
+        // `size_t`, and the buffer is full anyway.
+        assert!(BIO_nwrite(&mut view, -1).is_err());
     }
 }

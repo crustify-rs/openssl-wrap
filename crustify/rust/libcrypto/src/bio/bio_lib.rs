@@ -484,14 +484,18 @@ pub unsafe fn BIO_ptr_ctrl<T>(
 
 /// Wraps: BIO_push
 ///
+/// Links `append` after the last node currently reachable from `head`. C
+/// returns the resulting chain head, which for a non-null `head` is always
+/// `head` itself, so this wrapper reports nothing the caller does not hold.
+///
 /// # Safety
 /// `append` must remain live until it is detached from `head`, and the caller
 /// must prevent either linked BIO from being independently freed meanwhile.
 #[allow(non_snake_case)]
-pub unsafe fn BIO_push(head: &mut BioMut<'_>, append: &mut BioMut<'_>) -> bool {
+pub unsafe fn BIO_push(head: &mut BioMut<'_>, append: &mut BioMut<'_>) {
     // SAFETY: both handles are exclusive and the caller guarantees the stored
     // cross-object lifetime and chain ownership rules.
-    !unsafe { ffi::BIO_push(head.as_mut_ptr(), append.as_mut_ptr()) }.is_null()
+    unsafe { ffi::BIO_push(head.as_mut_ptr(), append.as_mut_ptr()) };
 }
 
 /// Wraps: BIO_puts
@@ -502,6 +506,9 @@ pub fn BIO_puts(bio: &mut BioMut<'_>, text: &CStr) -> i32 {
 }
 
 /// Wraps: BIO_read
+///
+/// C takes the length as an `int`, so a longer `output` is offered to the BIO
+/// only up to `i32::MAX` bytes; the result reports what was actually read.
 #[allow(non_snake_case)]
 pub fn BIO_read(bio: &mut BioMut<'_>, output: &mut [u8]) -> i32 {
     let len = output.len().min(i32::MAX as usize) as i32;
@@ -644,16 +651,32 @@ pub fn BIO_test_flags(bio: &BioRef<'_>, flags: i32) -> i32 {
 }
 
 /// Wraps: BIO_up_ref
+///
+/// The extra count is an owner, but it cannot be a free-standing
+/// [`CBox<Bio>`]: a shared handle does not say what the BIO depends on.
+/// [`BIO_new`] hands out a [`BorrowedBio<'a>`](BorrowedBio) whose method table
+/// is only borrowed for `'a`, and [`BIO_new_mem_buf`] a BIO reading a Rust
+/// slice for as long as it lives, so an owner detached from `'a` would let
+/// safe code drop the method table or the buffer while the BIO still addresses
+/// it. The result is therefore bound to the borrow it was raised from.
+///
+/// A [`CBox<Bio>`] is by construction a BIO with no borrowed dependency, so an
+/// owner that needs no lifetime bound is reached with
+/// [`CBox::try_clone`](ffibox::CBox::try_clone), which is the same `BIO_up_ref`
+/// through [`CCloned`](ffibox::CCloned).
+///
+/// [`BIO_new_mem_buf`]: super::bss_mem::BIO_new_mem_buf
 #[must_use]
 #[allow(non_snake_case)]
-pub fn BIO_up_ref(bio: &BioRef<'_>) -> Option<CBox<Bio>> {
+pub fn BIO_up_ref<'a>(bio: &BioRef<'a>) -> Option<BorrowedBio<'a>> {
     // SAFETY: `bio` is a live reference; success creates one independently
-    // owned count settled by `CBox<Bio>`'s destructor.
+    // owned count settled by the returned owner's destructor.
     if unsafe { ffi::BIO_up_ref(bio.as_ptr().cast_mut()) } == 0 {
         None
     } else {
-        // SAFETY: the successful increment transferred one BIO reference.
-        unsafe { CBox::from_raw(bio.as_ptr().cast_mut()) }
+        // SAFETY: the successful increment transferred one BIO reference, and
+        // `'a` outlives everything this BIO borrows.
+        unsafe { BorrowedBio::from_raw(bio.as_ptr().cast_mut()) }
     }
 }
 
@@ -671,6 +694,9 @@ pub fn BIO_wait(bio: &mut BioMut<'_>, max_time: ffi::time_t, nap_milliseconds: u
 }
 
 /// Wraps: BIO_write
+///
+/// C takes the length as an `int`, so a longer `input` is offered to the BIO
+/// only up to `i32::MAX` bytes; the result reports what was actually written.
 #[allow(non_snake_case)]
 pub fn BIO_write(bio: &mut BioMut<'_>, input: &[u8]) -> i32 {
     let len = input.len().min(i32::MAX as usize) as i32;
@@ -721,10 +747,24 @@ mod scheduled_tests {
 
     #[test]
     fn up_ref_returns_an_independently_owned_count() {
-        let bio = null_bio();
-        let mut extra = BIO_up_ref(&bio.as_ref()).expect("reference increment");
+        let mut bio = null_bio();
+        {
+            let mut extra = BIO_up_ref(&bio.as_ref()).expect("reference increment");
+            assert_eq!(BIO_write(&mut extra.as_mut(), b"x"), 1);
+            // `extra` releases its own count here and the BIO survives it.
+        }
+        assert_eq!(BIO_write(&mut bio.as_mut(), b"x"), 1);
+        assert_eq!(BIO_number_written(&bio.as_ref()), 2);
         BIO_vfree(Some(bio));
-        assert_eq!(BIO_write(&mut extra.as_mut(), b"x"), 1);
+    }
+
+    #[test]
+    fn up_ref_of_an_owner_still_yields_a_detached_owner_through_clone() {
+        // The bound on `BIO_up_ref` is about borrowed dependencies, not about
+        // reference counting: a `CBox<Bio>` has none, so its `Clone` hands out
+        // an owner that outlives the original.
+        let extra = null_bio().try_clone().expect("reference increment");
+        assert_eq!(BIO_get_init(extra.as_ref()), 1);
     }
 
     #[test]
