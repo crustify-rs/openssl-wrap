@@ -13184,6 +13184,45 @@
    ]
   },
   {
+   "name": "X509_NAME_ENTRY_get_object",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "ne",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ne"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared entry; NULL returns NULL without dereferencing."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ne"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed mandatory object child retained by the entry; NULL only when the input is NULL."
+    }
+   }
+  },
+  {
    "name": "X509_NAME_ENTRY_new",
    "defined_in": "crypto/x509/x_name.c",
    "ptr_ret": {
@@ -13200,6 +13239,46 @@
      "note": "Returns null on allocation/field initialization failure or a fresh fully initialized entry owned by the caller."
     }
    }
+  },
+  {
+   "name": "X509_NAME_cmp",
+   "defined_in": "crypto/x509/x509_cmp.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL participates in the documented null ordering."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL participates in the documented null ordering."
+     }
+    }
+   ]
   },
   {
    "name": "X509_NAME_dup",
@@ -13248,6 +13327,29 @@
    }
   },
   {
+   "name": "X509_NAME_entry_count",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL reports zero entries."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_NAME_free",
    "defined_in": "crypto/x509/x_name.c",
    "lifetime": {
@@ -13275,6 +13377,267 @@
    ]
   },
   {
+   "name": "X509_NAME_get0_der",
+   "defined_in": "crypto/x509/x_name.c",
+   "ptr_args": [
+    {
+     "name": "nm",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:nm"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared name retaining the returned internal DER buffer."
+     }
+    },
+    {
+     "name": "pder",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:nm"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pder"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional out-slot receives a DER byte run borrowed from nm."
+     }
+    },
+    {
+     "name": "pderlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pderlen"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional writable length out-slot for the returned DER run."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_NAME_get_entry",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL has no entries."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:name"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Internal entry borrowed from name; NULL for a null name or invalid index."
+    }
+   }
+  },
+  {
+   "name": "X509_NAME_get_index_by_NID",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL has no matching entry."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_NAME_get_index_by_OBJ",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL has no matching entry."
+     }
+    },
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared object identifier read during synchronous comparisons."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_NAME_get_text_by_NID",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller-owned output array of len bytes; receives a truncated NUL-terminated field value."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL has no matching entry."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_NAME_get_text_by_OBJ",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller-owned output array of len bytes; receives a truncated NUL-terminated field value."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared name; NULL has no matching entry."
+     }
+    },
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared object identifier read during lookup."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_NAME_new",
    "defined_in": "crypto/x509/x_name.c",
    "ptr_ret": {
@@ -13291,6 +13654,46 @@
      "note": "Returns NULL on allocation failure or a fresh initialized X509_NAME owed to X509_NAME_free."
     }
    }
+  },
+  {
+   "name": "X509_NAME_print_ex",
+   "defined_in": "crypto/asn1/a_strex.c",
+   "ptr_args": [
+    {
+     "name": "nm",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:nm"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared name read synchronously during formatting."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required live BIO mutated synchronously by formatted writes."
+     }
+    }
+   ]
   },
   {
    "name": "X509_PUBKEY_dup",
@@ -14964,6 +15367,134 @@
    }
   },
   {
+   "name": "d2i_X509_NAME",
+   "defined_in": "crypto/x509/x_name.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "arg:a"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional in/out owner slot: NULL requests a fresh allocation; an existing owned pointee may be reused, replaced, or cleared on failure."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:in"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required cursor slot over a borrowed DER byte run; the cursor advances while bytes remain read-only."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "On success returns the destination owner, owed to X509_NAME_free; NULL reports failure."
+    }
+   }
+  },
+  {
+   "name": "d2i_X509_NAME_ENTRY",
+   "defined_in": "crypto/x509/x_name.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "arg:a"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional in/out owner slot: NULL requests a fresh allocation; an existing owned pointee may be reused, replaced, or cleared on failure."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:in"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required cursor slot over a borrowed DER byte run; the cursor advances while bytes remain read-only."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "On success returns the destination owner, owed to X509_NAME_ENTRY_free; NULL reports failure."
+    }
+   }
+  },
+  {
    "name": "d2i_X509_PUBKEY",
    "defined_in": "crypto/x509/x_pubkey.c",
    "ptr_args": [
@@ -15140,6 +15671,96 @@
       "nullable": true,
       "mutable": true,
       "note": "NULL performs a length query; otherwise the slot either receives an allocated DER buffer or supplies a caller-owned writable buffer, and its cursor advances."
+     }
+    }
+   ]
+  },
+  {
+   "name": "i2d_X509_NAME",
+   "defined_in": "crypto/x509/x_name.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared X509_NAME read during DER encoding."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "arg:out"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL performs a length query; otherwise the slot receives or addresses writable DER storage and its cursor advances."
+     }
+    }
+   ]
+  },
+  {
+   "name": "i2d_X509_NAME_ENTRY",
+   "defined_in": "crypto/x509/x_name.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared X509_NAME_ENTRY read during DER encoding."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "arg:out"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL performs a length query; otherwise the slot receives or addresses writable DER storage and its cursor advances."
      }
     }
    ]

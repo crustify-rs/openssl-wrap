@@ -149,6 +149,7 @@ pub fn X509_get_serialNumber<'a>(certificate: &'a mut X509Mut<'_>) -> Asn1String
 #[cfg(test)]
 mod scheduled_tests {
     use super::*;
+    use crate::x509::x_name::{X509_NAME_free, X509_NAME_new};
     use crate::x509::x_x509::{X509_free, X509_new};
 
     #[test]
@@ -161,4 +162,41 @@ mod scheduled_tests {
         assert!(!exclusive.as_mut_ptr().is_null());
         X509_free(certificate);
     }
+
+    #[test]
+    fn name_comparison_preserves_null_ordering_and_reports_success() {
+        let first = X509_NAME_new().expect("first name");
+        let second = X509_NAME_new().expect("second name");
+        assert_eq!(
+            X509_NAME_cmp(Some(first.as_ref()), Some(second.as_ref())),
+            Some(Ordering::Equal)
+        );
+        assert_eq!(X509_NAME_cmp(None, None), Some(Ordering::Equal));
+        assert_eq!(
+            X509_NAME_cmp(None, Some(second.as_ref())),
+            Some(Ordering::Less)
+        );
+        assert_eq!(
+            X509_NAME_cmp(Some(first.as_ref()), None),
+            Some(Ordering::Greater)
+        );
+        X509_NAME_free(first);
+        X509_NAME_free(second);
+    }
+}
+
+/// Wraps: X509_NAME_cmp
+/// Orders optional distinguished names after refreshing their canonical forms.
+///
+/// `None` reports an encoding failure; null names themselves participate in
+/// the ordinary ordering and are represented by the optional arguments.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_NAME_cmp(a: Option<X509NameRef<'_>>, b: Option<X509NameRef<'_>>) -> Option<Ordering> {
+    let a = a.map_or(ptr::null(), |name| name.as_ptr());
+    let b = b.map_or(ptr::null(), |name| name.as_ptr());
+    // SAFETY: each input is null or a live shared name. OpenSSL may refresh
+    // internal encoding caches but retains both allocations and their fields.
+    let comparison = unsafe { ffi::X509_NAME_cmp(a, b) };
+    (comparison != -2).then(|| comparison.cmp(&0))
 }

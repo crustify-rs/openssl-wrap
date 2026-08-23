@@ -11,6 +11,7 @@ use libc::x86_64_linux_gnu_bits_types_struct_file::IoFileMut;
 use crate::asn1::asn1::Asn1StringRef;
 use crate::bio::bio_bio_local::BioMut;
 use crate::mem::CryptoFree;
+use crate::x509::x509_internal::X509NameRef;
 
 /// Wraps: ASN1_STRING_print_ex
 #[must_use]
@@ -100,6 +101,7 @@ mod tests {
     use super::*;
     use crate::asn1::asn1::Asn1String;
     use crate::asn1::asn1_lib::{ASN1_STRING_set1_data, ASN1_STRING_type_new};
+    use crate::x509::x_name::{X509_NAME_free, d2i_X509_NAME};
 
     /// A fresh owned string of `string_type` carrying exactly `data`.
     fn typed_string(string_type: i32, data: &[u8]) -> CBox<Asn1String> {
@@ -210,4 +212,39 @@ mod tests {
             .expect("formatted output");
         assert_eq!(&buffer[..read], b"a\\0Ab");
     }
+
+    #[test]
+    fn distinguished_name_printing_writes_through_the_typed_bio() {
+        const NAME_DER: &[u8] = b"\x30\x0c\x31\x0a\x30\x08\x06\x03\x55\x04\x03\x0c\x01x";
+        // XN_FLAG_SEP_COMMA_PLUS chooses the normal non-compatibility path.
+        const SEP_COMMA_PLUS: c_ulong = 1 << 16;
+
+        let mut input = NAME_DER;
+        let name = d2i_X509_NAME(&mut input).expect("name DER");
+        let mut bio = memory_bio();
+        assert_eq!(
+            X509_NAME_print_ex(&mut bio.as_mut(), name.as_ref(), 0, SEP_COMMA_PLUS),
+            4
+        );
+        let mut buffer = [0_u8; 16];
+        let read = crate::bio::bio_lib::BIO_read_ex(&mut bio.as_mut(), &mut buffer)
+            .expect("formatted name");
+        assert_eq!(&buffer[..read], b"CN=x");
+        X509_NAME_free(name);
+    }
+}
+
+/// Wraps: X509_NAME_print_ex
+/// Formats a distinguished name into a BIO.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_NAME_print_ex(
+    output: &mut BioMut<'_>,
+    name: X509NameRef<'_>,
+    indent: i32,
+    flags: c_ulong,
+) -> i32 {
+    // SAFETY: the BIO is exclusively borrowed for synchronous writes and the
+    // name remains live and shared throughout formatting.
+    unsafe { ffi::X509_NAME_print_ex(output.as_mut_ptr(), name.as_ptr(), indent, flags) }
 }

@@ -176,9 +176,7 @@ impl X509NameEntry {
     /// Allocates one fully initialized, empty distinguished-name entry.
     #[must_use]
     pub fn new() -> Option<ffibox::CBox<Self>> {
-        // SAFETY: a non-null result is a fresh, fully initialized allocation
-        // carrying one `X509_NAME_ENTRY_free` ownership obligation.
-        unsafe { ffibox::CBox::from_raw(ffi::X509_NAME_ENTRY_new()) }
+        crate::x509::x_name::X509_NAME_ENTRY_new()
     }
 }
 

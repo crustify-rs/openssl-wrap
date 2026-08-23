@@ -29,4 +29,10 @@ typedef int (*crustify_BIO_mmsg_fn)(BIO *, BIO_MSG *, size_t, size_t,
     uint64_t, size_t *);
 crustify_BIO_mmsg_fn crustify_BIO_meth_get_recvmmsg(const BIO_METHOD *method);
 crustify_BIO_mmsg_fn crustify_BIO_meth_get_sendmmsg(const BIO_METHOD *method);
+#if defined(OPENSSL_NO_DEPRECATED_4_0)
+int X509_NAME_get_text_by_NID(const X509_NAME *name, int nid,
+    char *buf, int len);
+int X509_NAME_get_text_by_OBJ(const X509_NAME *name, const ASN1_OBJECT *obj,
+    char *buf, int len);
+#endif
 /* crustify:compat-shims:end */
