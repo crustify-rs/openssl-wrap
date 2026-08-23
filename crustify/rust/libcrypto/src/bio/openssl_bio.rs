@@ -477,20 +477,25 @@ mod tests {
             core::mem::align_of::<ffi::bio_poll_descriptor_st>()
         );
 
-        let mut descriptor = BioPollDescriptor::zeroed();
-        let raw = core::ptr::addr_of_mut!(descriptor).cast::<ffi::bio_poll_descriptor_st>();
+        // The safe constructor owns the storage inline; no unsafe seam is
+        // needed to obtain either handle, and the zero value reads back as the
+        // NONE descriptor.
+        let mut descriptor = BioPollDescriptor::new();
+        assert_eq!(
+            descriptor.as_ref().value(),
+            Some(BioPollDescriptorValue::None)
+        );
         {
-            // SAFETY: `raw` addresses initialized descriptor storage and this
-            // is its only active handle.
-            let mut descriptor_mut = unsafe { BioPollDescriptorMut::from_ptr(raw) }.unwrap();
+            let mut descriptor_mut = descriptor.as_mut();
             descriptor_mut.set_socket_fd(17);
             assert_eq!(
                 descriptor_mut.as_ref().value(),
                 Some(BioPollDescriptorValue::SocketFd(17))
             );
 
-            let custom_type = ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START + 7;
-            assert!(descriptor_mut.set_custom_integer(custom_type, 0x1234));
+            let custom_type = BioPollCustomType::new(ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START + 7)
+                .expect("application-defined tag");
+            descriptor_mut.set_custom_integer(custom_type, 0x1234);
             assert_eq!(
                 descriptor_mut.as_ref().value(),
                 Some(BioPollDescriptorValue::Custom {
@@ -501,7 +506,6 @@ mod tests {
                     },
                 })
             );
-            assert!(!descriptor_mut.set_custom_integer(3, 0));
             descriptor_mut.set_none();
             assert_eq!(
                 descriptor_mut.as_ref().value(),
@@ -509,14 +513,65 @@ mod tests {
             );
         }
 
+        // A reserved discriminant is rejected at the tag type, so no custom
+        // arm can round-trip through a value `from_raw` would refuse.
+        assert!(BioPollCustomType::new(3).is_none());
+        assert!(BioPollCustomType::new(ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START).is_some());
+        assert_eq!(BioPollDescriptorType::from_raw(3), None);
+
+        let raw = descriptor.as_mut().as_mut_ptr();
         // SAFETY: the raw-place write only installs an invalid scalar tag for
-        // validating that the safe view rejects reserved discriminants.
+        // validating that the safe view rejects reserved discriminants. The
+        // storage stays live and owned by `descriptor`.
         unsafe { core::ptr::addr_of_mut!((*raw).type_).write(3) };
-        // SAFETY: the descriptor storage is still live and no mutable handle is
-        // in use. Invalid tags are explicitly represented by `None`.
-        let descriptor_ref = unsafe { BioPollDescriptorRef::from_ptr(raw) }.unwrap();
-        assert_eq!(descriptor_ref.kind(), None);
-        assert_eq!(descriptor_ref.value(), None);
+        assert_eq!(descriptor.as_ref().kind(), None);
+        assert_eq!(descriptor.as_ref().value(), None);
+    }
+
+    #[test]
+    fn socket_bio_reports_its_borrowed_descriptor_through_the_safe_surface() {
+        /// Linux `AF_INET` / `SOCK_STREAM`, as in the `bio_sock2` tests.
+        const AF_INET: i32 = 2;
+        const SOCK_STREAM: i32 = 1;
+
+        let socket = crate::bio::bio_sock2::BIO_socket(AF_INET, SOCK_STREAM, 0, 0)
+            .expect("allocate a TCP socket");
+        let expected = socket.as_raw_socket();
+        // The BIO adopts the socket and keeps its close responsibility; the
+        // descriptor below only reports the number.
+        let mut bio = crate::bio::bss_sock::BIO_new_socket(socket).expect("socket BIO");
+
+        let mut read = BioPollDescriptor::new();
+        assert!(crate::bio::bio_lib::BIO_get_rpoll_descriptor(
+            &mut bio.as_mut(),
+            &mut read.as_mut()
+        ));
+        assert_eq!(
+            read.as_ref().value(),
+            Some(BioPollDescriptorValue::SocketFd(expected))
+        );
+
+        let mut write = BioPollDescriptor::new();
+        assert!(crate::bio::bio_lib::BIO_get_wpoll_descriptor(
+            &mut bio.as_mut(),
+            &mut write.as_mut()
+        ));
+        assert_eq!(write.as_ref().value(), read.as_ref().value());
+
+        // A BIO that publishes no poll descriptor leaves the caller's storage
+        // untouched rather than reporting a kind.
+        let method = crate::bio::bss_null::BIO_s_null().expect("null method");
+        let mut null_bio = crate::bio::bio_lib::BIO_new(method).expect("null BIO");
+        let mut none = BioPollDescriptor::new();
+        assert!(!crate::bio::bio_lib::BIO_get_rpoll_descriptor(
+            &mut null_bio.as_mut(),
+            &mut none.as_mut()
+        ));
+        assert_eq!(
+            none.as_ref().value(),
+            Some(BioPollDescriptorValue::None),
+            "an unsupported control operation must not fabricate a descriptor"
+        );
     }
 }
 
@@ -940,11 +995,70 @@ ffibox::define_ctype!(
     /// Wraps: bio_poll_descriptor_st
     ///
     /// Layout-compatible storage for OpenSSL's tagged poll-descriptor union.
+    ///
+    /// The descriptor is always caller-allocated: `BIO_get_rpoll_descriptor`
+    /// and `BIO_get_wpoll_descriptor` fill storage the caller supplies, and
+    /// every union arm is a borrow. `bss_sock.c`, `bss_dgram.c` and
+    /// `bss_conn.c` report the BIO's own socket, so the socket arm stays a
+    /// plain descriptor number rather than the owning `BioSocket`; the SSL
+    /// arm belongs to libssl and the custom arm to the application that
+    /// registered the tag. Nothing here owns storage, so
+    /// [`BioPollDescriptor::new`] hands out inline storage whose teardown
+    /// releases nothing.
     BioPollDescriptor,
     BioPollDescriptorRef,
     BioPollDescriptorMut,
     ffi::bio_poll_descriptor_st
 );
+
+impl BioPollDescriptor {
+    /// Creates inline descriptor storage for OpenSSL to fill.
+    ///
+    /// The all-zero descriptor is the `BIO_POLL_DESCRIPTOR_TYPE_NONE` value,
+    /// so the result is immediately readable through its shared handle. This
+    /// is the safe way to reach `BIO_get_rpoll_descriptor` and
+    /// `BIO_get_wpoll_descriptor`, which write through a caller-owned
+    /// `BIO_POLL_DESCRIPTOR *`.
+    #[must_use]
+    pub fn new() -> CVal<Self> {
+        CVal::new(Self::zeroed())
+    }
+}
+
+// SAFETY: every union arm is a borrowed descriptor, a scalar, or an
+// application-defined value. The struct owns no storage of its own, so
+// disposing the inline value has nothing to release and deliberately leaves
+// the borrowed socket, SSL object and custom cookie alone.
+unsafe impl CValued for BioPollDescriptor {
+    unsafe fn c_dispose(_this: NonNull<Self>) {}
+}
+
+/// An application-defined poll-descriptor tag.
+///
+/// OpenSSL reserves every value below `BIO_POLL_DESCRIPTOR_CUSTOM_START` for
+/// the descriptor kinds it defines itself, so the tag is validated on
+/// construction and safe code cannot present a reserved discriminant as a
+/// custom one.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct BioPollCustomType(u32);
+
+impl BioPollCustomType {
+    /// Validates an application-defined tag, rejecting OpenSSL's reserved range.
+    #[must_use]
+    pub const fn new(raw: u32) -> Option<Self> {
+        if raw < ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START {
+            None
+        } else {
+            Some(Self(raw))
+        }
+    }
+
+    /// Returns the ABI tag used by OpenSSL.
+    #[must_use]
+    pub const fn as_raw(self) -> u32 {
+        self.0
+    }
+}
 
 /// Wraps: bio_poll_descriptor_st.type
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -956,7 +1070,7 @@ pub enum BioPollDescriptorType {
     /// A borrowed SSL object.
     Ssl,
     /// An application-defined descriptor kind.
-    Custom(u32),
+    Custom(BioPollCustomType),
 }
 
 impl BioPollDescriptorType {
@@ -967,7 +1081,7 @@ impl BioPollDescriptorType {
             ffi::BIO_POLL_DESCRIPTOR_TYPE_NONE => Some(Self::None),
             ffi::BIO_POLL_DESCRIPTOR_TYPE_SOCK_FD => Some(Self::SocketFd),
             ffi::BIO_POLL_DESCRIPTOR_TYPE_SSL => Some(Self::Ssl),
-            ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START.. => Some(Self::Custom(raw)),
+            ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START.. => Some(Self::Custom(BioPollCustomType(raw))),
             _ => None,
         }
     }
@@ -979,7 +1093,7 @@ impl BioPollDescriptorType {
             Self::None => ffi::BIO_POLL_DESCRIPTOR_TYPE_NONE,
             Self::SocketFd => ffi::BIO_POLL_DESCRIPTOR_TYPE_SOCK_FD,
             Self::Ssl => ffi::BIO_POLL_DESCRIPTOR_TYPE_SSL,
-            Self::Custom(raw) => raw,
+            Self::Custom(custom) => custom.as_raw(),
         }
     }
 }
@@ -1034,13 +1148,16 @@ pub enum BioPollDescriptorValue<'a> {
     /// The union has no active value.
     None,
     /// Wraps: bio_poll_descriptor_st.value.fd
-    SocketFd(i32),
+    ///
+    /// The socket the reporting BIO polls. It is borrowed: the BIO retains
+    /// the close responsibility it was created with.
+    SocketFd(c_int),
     /// Wraps: bio_poll_descriptor_st.value.ssl
     Ssl(Option<BioPollSslRef<'a>>),
     /// An application-defined value and its custom tag.
     Custom {
-        /// Custom tag, always at least `BIO_POLL_DESCRIPTOR_CUSTOM_START`.
-        type_id: u32,
+        /// The validated application-defined tag.
+        type_id: BioPollCustomType,
         /// The common pointer/integer representation.
         value: BioPollCustomValue<'a>,
     },
@@ -1106,7 +1223,10 @@ impl<'a> BioPollDescriptorMut<'a> {
     }
 
     /// Selects a socket file descriptor.
-    pub fn set_socket_fd(&mut self, fd: i32) {
+    ///
+    /// The descriptor is borrowed: storing it transfers no close
+    /// responsibility, matching what OpenSSL's socket BIOs report.
+    pub fn set_socket_fd(&mut self, fd: c_int) {
         // SAFETY: this exclusive handle permits both writes; publishing the tag
         // after its union payload keeps the final descriptor well formed.
         unsafe {
@@ -1117,19 +1237,13 @@ impl<'a> BioPollDescriptorMut<'a> {
     }
 
     /// Selects an integer-valued custom descriptor.
-    ///
-    /// Returns `false` without modifying the descriptor for a reserved tag.
-    pub fn set_custom_integer(&mut self, type_id: u32, value: usize) -> bool {
-        if type_id < ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START {
-            return false;
-        }
-        // SAFETY: this exclusive handle permits both writes and `type_id` is a
-        // validated custom discriminator.
+    pub fn set_custom_integer(&mut self, type_id: BioPollCustomType, value: usize) {
+        // SAFETY: this exclusive handle permits both writes and the tag type
+        // has already rejected OpenSSL's reserved discriminants.
         unsafe {
             core::ptr::addr_of_mut!((*self.as_mut_ptr()).value.custom_ui).write(value);
-            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(type_id);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(type_id.as_raw());
         }
-        true
     }
 
     /// Selects a pointer-valued custom descriptor.
@@ -1139,10 +1253,11 @@ impl<'a> BioPollDescriptorMut<'a> {
     /// A non-null value must remain live, with whatever access discipline the
     /// custom descriptor implementation requires, until this descriptor is no
     /// longer usable or is replaced. The custom tag must denote that `T`.
-    pub unsafe fn set_custom_pointer<T>(&mut self, type_id: u32, value: Option<&'a mut T>) -> bool {
-        if type_id < ffi::BIO_POLL_DESCRIPTOR_CUSTOM_START {
-            return false;
-        }
+    pub unsafe fn set_custom_pointer<T>(
+        &mut self,
+        type_id: BioPollCustomType,
+        value: Option<&'a mut T>,
+    ) {
         let value = value.map_or(core::ptr::null_mut(), |value| {
             core::ptr::from_mut(value).cast::<c_void>()
         });
@@ -1150,9 +1265,8 @@ impl<'a> BioPollDescriptorMut<'a> {
         // exclusive handle permits both writes.
         unsafe {
             core::ptr::addr_of_mut!((*self.as_mut_ptr()).value.custom).write(value);
-            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(type_id);
+            core::ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(type_id.as_raw());
         }
-        true
     }
 
     /// Copies an existing borrowed SSL token into this descriptor.

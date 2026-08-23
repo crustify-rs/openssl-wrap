@@ -10,7 +10,16 @@ use crate::bio::context::OsslLibCtxRef;
 use crate::stack::stack::{Stack, StackMut, StackRef};
 
 /// Wraps: stack_st_void
-/// Type-erased instance of OpenSSL's generic stack representation.
+///
+/// Type-erased instance of OpenSSL's generic stack. `DEFINE_STACK_OF` only
+/// forward-declares the tag and casts every operation to `OPENSSL_STACK *`,
+/// and the element type is `void`, so nothing about a stored element is
+/// recoverable from the container.
+///
+/// It owns its pointer array and never its elements. `crypto/ex_data.c`
+/// depends on exactly that split: `CRYPTO_free_ex_data` releases each slot
+/// through the `free_func` its extra-data class registered and only then
+/// calls `sk_void_free` on the container itself.
 pub type VoidStack = Stack<c_void>;
 
 /// Shared borrowed handle to a type-erased OpenSSL stack.
@@ -140,20 +149,17 @@ mod tests {
 
     use super::*;
     use crate::bio::context::OsslLibCtx;
+    use crate::stack::stack::{
+        OPENSSL_sk_new_null, OPENSSL_sk_num, OPENSSL_sk_push, OPENSSL_sk_value, StackElement,
+    };
 
     fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
 
     #[test]
     fn void_stack_uses_the_generic_stack_representation() {
         assert_owned_cloneable_cell::<VoidStack>();
-        assert_eq!(
-            core::mem::size_of::<VoidStack>(),
-            core::mem::size_of::<ffi::OPENSSL_STACK>()
-        );
-        assert_eq!(
-            core::mem::align_of::<VoidStack>(),
-            core::mem::align_of::<ffi::OPENSSL_STACK>()
-        );
+        // The owner and both handles are one pointer wide: the generated tag
+        // adds nothing to `OPENSSL_STACK`'s representation.
         assert_eq!(
             core::mem::size_of::<CBox<VoidStack>>(),
             core::mem::size_of::<*mut ffi::OPENSSL_STACK>()
@@ -182,6 +188,55 @@ mod tests {
         assert_eq!(shared.as_ptr(), raw.cast_const());
         let mut exclusive: VoidStackMut<'_> = stack.as_mut();
         assert_eq!(exclusive.as_mut_ptr(), raw);
+    }
+
+    #[test]
+    fn void_stack_keeps_erased_slots_and_never_releases_them() {
+        // The elements are opaque `void *` slots. A stack keeps their
+        // addresses and, like `CRYPTO_free_ex_data`'s final `sk_void_free`,
+        // hands them back without ever releasing them.
+        let first = Box::new(0xC3_u8);
+        let second = Box::new(0x3C_u8);
+        // SAFETY: both boxes outlive every stack below, and a type-erased
+        // stack has no comparator or destructor that could dereference them.
+        let (first_element, second_element) = unsafe {
+            (
+                StackElement::<c_void>::from_raw(ptr::from_ref(&*first).cast_mut().cast())
+                    .expect("non-null element address"),
+                StackElement::<c_void>::from_raw(ptr::from_ref(&*second).cast_mut().cast())
+                    .expect("non-null element address"),
+            )
+        };
+
+        let mut stack = OPENSSL_sk_new_null::<c_void>().expect("allocate type-erased stack");
+        {
+            let mut exclusive: VoidStackMut<'_> = stack.as_mut();
+            // SAFETY: both boxes outlive the stack, as established above.
+            unsafe {
+                assert_eq!(
+                    OPENSSL_sk_push(Some(&mut exclusive), Some(first_element)),
+                    Some(1)
+                );
+                assert_eq!(
+                    OPENSSL_sk_push(Some(&mut exclusive), Some(second_element)),
+                    Some(2)
+                );
+                // `CRYPTO_set_ex_data` grows the stack with null slots, which
+                // the wrapper represents as an absent element.
+                assert_eq!(OPENSSL_sk_push(Some(&mut exclusive), None), Some(3));
+            }
+        }
+        let shared: VoidStackRef<'_> = stack.as_ref();
+        assert_eq!(OPENSSL_sk_num(Some(shared)), Some(3));
+        assert_eq!(
+            OPENSSL_sk_value(Some(shared), 0).map(StackElement::as_non_null),
+            Some(first_element.as_non_null())
+        );
+        assert!(OPENSSL_sk_value(Some(shared), 2).is_none());
+
+        drop(stack);
+        assert_eq!(*first, 0xC3);
+        assert_eq!(*second, 0x3C);
     }
 
     #[test]

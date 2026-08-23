@@ -244,9 +244,17 @@ mod tests {
 
 /// Wraps: stack_st_ASN1_STRING_TABLE
 ///
-/// Typed view of OpenSSL's `STACK_OF(ASN1_STRING_TABLE)`. The generated C
-/// type erases to the common `OPENSSL_STACK` representation while this alias
-/// retains the element type.
+/// Typed view of OpenSSL's `STACK_OF(ASN1_STRING_TABLE)`. `DEFINE_STACK_OF`
+/// only forward-declares the tag and casts every operation to
+/// `OPENSSL_STACK *`, so the instance is the generic container with
+/// [`Asn1StringTable`] retained as its element type.
+///
+/// The container owns its pointer array and not the records in it. That is
+/// the ownership `a_strnid.c` relies on: the process-global `stable` holds
+/// both heap records created by `ASN1_STRING_TABLE_add` and, after a lookup,
+/// nothing else — it is released with `sk_ASN1_STRING_TABLE_pop_free` and its
+/// `st_free` callback, which [`Stack::into_pop_free`] models, never with the
+/// plain destructor bound here.
 pub type Asn1StringTableStack = Stack<Asn1StringTable>;
 
 /// Shared borrowed handle to a `STACK_OF(ASN1_STRING_TABLE)`.
@@ -263,16 +271,18 @@ mod stack_tests {
     use ffibox::{CBox, CCell, CCloned, CDropped};
 
     use super::*;
+    use crate::stack::stack::{
+        OPENSSL_sk_new_null, OPENSSL_sk_num, OPENSSL_sk_pop, OPENSSL_sk_push, OPENSSL_sk_value,
+        StackElement,
+    };
 
     fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
 
     #[test]
     fn string_table_stack_keeps_its_typed_erased_surface() {
         assert_owned_cloneable_cell::<Asn1StringTableStack>();
-        assert_eq!(
-            size_of::<Asn1StringTableStack>(),
-            size_of::<ffi::OPENSSL_STACK>()
-        );
+        // The owner and both handles are one pointer wide: the generated tag
+        // adds nothing to `OPENSSL_STACK`'s representation.
         assert_eq!(
             size_of::<CBox<Asn1StringTableStack>>(),
             size_of::<*mut ffi::OPENSSL_STACK>()
@@ -302,6 +312,65 @@ mod stack_tests {
 
         let duplicate = stack.try_clone().expect("duplicate typed stack");
         assert_ne!(duplicate.as_ptr(), raw);
+    }
+
+    #[test]
+    fn string_table_stack_hands_back_typed_record_handles() {
+        let mut record = Asn1StringTable::zeroed();
+        {
+            // SAFETY: `record` is caller-owned writable storage, live for this
+            // handle, and no other handle to it is in use.
+            let mut writable =
+                unsafe { Asn1StringTableMut::from_ptr(ptr::from_mut(&mut record).cast()) }
+                    .expect("address of local storage is non-null");
+            writable.set_nid(1234);
+            writable.set_mask(0x5A);
+        }
+        // SAFETY: the address has the container's element type and `record`
+        // outlives every stack below.
+        let element = unsafe { StackElement::from_raw(ptr::from_mut(&mut record)) }
+            .expect("address of local storage is non-null");
+
+        let mut stack =
+            OPENSSL_sk_new_null::<Asn1StringTable>().expect("allocate ASN1_STRING_TABLE stack");
+        {
+            let mut exclusive = stack.as_mut();
+            // SAFETY: `record` outlives the stack and no comparator is set, so
+            // nothing dereferences the element during storage.
+            unsafe {
+                assert_eq!(
+                    OPENSSL_sk_push(Some(&mut exclusive), Some(element)),
+                    Some(1)
+                );
+            }
+        }
+        assert_eq!(OPENSSL_sk_num(Some(stack.as_ref())), Some(1));
+
+        let stored = OPENSSL_sk_value(Some(stack.as_ref()), 0).expect("stored record");
+        assert_eq!(stored.as_non_null(), element.as_non_null());
+        // SAFETY: the slot holds the still-live `record`, which no handle is
+        // mutating for the duration of this shared borrow.
+        let stored_ref =
+            unsafe { Asn1StringTableRef::from_ptr(stored.as_non_null().as_ptr().cast()) }
+                .expect("non-null stored record");
+        assert_eq!(stored_ref.nid(), 1234);
+        assert_eq!(stored_ref.mask(), 0x5A);
+        assert!(!stored_ref.is_heap_allocated());
+
+        assert_eq!(
+            OPENSSL_sk_pop(Some(&mut stack.as_mut())).map(StackElement::as_non_null),
+            Some(element.as_non_null())
+        );
+
+        // `OPENSSL_sk_free` releases the pointer array only; the record is
+        // still the caller's, which is why `ASN1_STRING_TABLE_cleanup` needs
+        // the pop-free form to reclaim the heap entries as well.
+        drop(stack);
+        // SAFETY: `record` is still live, caller-owned storage and no other
+        // handle to it exists at this point.
+        let survivor = unsafe { Asn1StringTableRef::from_ptr(ptr::from_mut(&mut record).cast()) }
+            .expect("address of local storage is non-null");
+        assert_eq!(survivor.nid(), 1234);
     }
 }
 
