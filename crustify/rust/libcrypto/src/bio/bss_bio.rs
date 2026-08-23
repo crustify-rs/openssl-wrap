@@ -190,26 +190,43 @@ pub fn BIO_s_bio() -> Option<BioMethodRef<'static>> {
 
 #[cfg(test)]
 mod tests {
-    use ffibox::CBox;
-
-    use super::super::bio_bio_local::Bio;
     use super::*;
+    use crate::bio::bio_lib::{BIO_read, BIO_write};
 
-    fn new_pair_bio() -> CBox<Bio> {
-        // SAFETY: both called constructors have no caller-owned pointer inputs.
-        let raw = unsafe { ffi::BIO_new(ffi::BIO_s_null()) };
-        // SAFETY: a non-null result transfers one owned BIO reference.
-        unsafe { CBox::from_raw(raw) }.expect("BIO_new")
-    }
+    /// Both halves of a pair with a small, explicitly sized ring buffer, so the
+    /// write guarantee is a number the test can predict.
+    const BUFFER: usize = 128;
 
     #[test]
-    fn pair_controls_use_exclusive_handle() {
-        let mut bio = new_pair_bio();
-        let mut view = bio.as_mut();
-        let _ = BIO_ctrl_get_read_request(&mut view);
-        let _ = BIO_ctrl_get_write_guarantee(&mut view);
-        let _ = BIO_ctrl_reset_read_request(&mut view);
+    fn pair_controls_track_the_ring_buffer_and_the_peer_read_request() {
+        let (mut first, mut second) = BIO_new_bio_pair(BUFFER, BUFFER).expect("BIO pair");
+
+        assert_eq!(BIO_ctrl_get_write_guarantee(&mut first.as_mut()), BUFFER);
+        assert_eq!(BIO_ctrl_get_read_request(&mut first.as_mut()), 0);
+
+        // A read on the empty pipe fails and records the size the reader
+        // wanted on the half that would have to supply it.
+        let mut buffer = [0_u8; 32];
+        assert!(BIO_read(&mut second.as_mut(), &mut buffer) < 0);
+        assert_eq!(BIO_ctrl_get_read_request(&mut first.as_mut()), buffer.len());
+
+        // Resetting clears the recorded request without moving any data.
+        assert!(BIO_ctrl_reset_read_request(&mut first.as_mut()));
+        assert_eq!(BIO_ctrl_get_read_request(&mut first.as_mut()), 0);
+        assert_eq!(BIO_ctrl_get_write_guarantee(&mut first.as_mut()), BUFFER);
+
+        // Buffered bytes come out of the writer's guarantee and go back into it
+        // once the peer has taken them.
+        assert_eq!(BIO_write(&mut first.as_mut(), b"hello"), 5);
+        assert_eq!(
+            BIO_ctrl_get_write_guarantee(&mut first.as_mut()),
+            BUFFER - 5
+        );
+        assert_eq!(BIO_read(&mut second.as_mut(), &mut buffer), 5);
+        assert_eq!(&buffer[..5], b"hello");
+        assert_eq!(BIO_ctrl_get_write_guarantee(&mut first.as_mut()), BUFFER);
     }
+
     #[test]
     fn pair_returns_two_independent_owners() {
         let (first, second) = BIO_new_bio_pair(0, 0).expect("BIO pair");

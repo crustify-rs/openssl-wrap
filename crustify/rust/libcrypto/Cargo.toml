@@ -17,5 +17,10 @@ ffibox.workspace = true
 libc = { path = "../libc" }
 libcrypto-sys = { path = "../libcrypto-sys" }
 
+# Tests for the `FILE *` wrappers need a real stream; the `libc` crate models a
+# stream as a borrowed handle only, because C owns every stream this tree sees.
+[dev-dependencies]
+libc-sys = { path = "../libc-sys" }
+
 [lints]
 workspace = true

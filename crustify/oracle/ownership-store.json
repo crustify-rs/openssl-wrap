@@ -3312,7 +3312,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Resets one non-null address in place. bio_addr_st is a union of by-value sockaddr variants with no owned field storage, so this memset plus AF_UNSPEC frees nothing and is a plain mutator, not a field disposer."
+      "note": "Resets one non-null address in place; NULL is dereferenced by the memset. bio_addr_st is a union of by-value sockaddr variants with no owned field storage, so this memset plus AF_UNSPEC frees nothing: it is a plain mutator, NOT a field disposer. NOTE FOR READERS OF THE lifetime BLOCK: its is_disposer:true is WRONG and stale. `--update` refuses an all-false lifetime block and silently ignores `lifetime: null`, so the flag cannot be retracted through the tool; do not bind CValued/c_dispose for bio_addr_st to this function. The Rust wrapper deliberately implements no CValued for BioAddr."
      }
     }
    ]
@@ -3335,7 +3335,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Nullable destination is mutated only on success."
+      "note": "Nullable destination, overwritten on every path that reaches it, not only on success. An AF_UNSPEC source routes through BIO_ADDR_clear, and any other source calls BIO_ADDR_make, which memsets the whole union before dispatching on the family and then reports 0 for a family it does not implement. So a failing copy still leaves the destination blank; only a NULL dst or src returns 0 with nothing touched."
      }
     },
     {
@@ -4167,7 +4167,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "The operation temporarily borrows and may mutate the BIO."
+      "note": "Borrowed and mutated for the call, and the chain link is a precondition, not just the node: the body reads BIO_get_retry_flags(b->next_bio) and b->next_bio->retry_reason without a null check, so a BIO with no successor is undefined behaviour. A caller must establish b->next_bio != NULL (BIO_next) first."
      }
     }
    ]
@@ -4424,8 +4424,8 @@
        "lifetime": "arg:processed"
       },
       "nullable": true,
-      "mutable": true,
-      "note": "Optional processed-count slot read during the call."
+      "mutable": false,
+      "note": "Read-only input, not an out-parameter: the body's only use is `if (processed != NULL) l = *processed;`, and the count is then printed as the `processed:` field of the BIO_CB_RETURN lines. Nothing is written back, so a NULL slot simply prints 0. This differs from the BIO_callback_fn_ex typedef, where bio_lib.c hands the callback the caller's real readbytes/written slot."
      }
     }
    ]
@@ -4949,11 +4949,11 @@
      "string": false,
      "owned": false,
      "borrowed": {
-      "lifetime": "arg:bio->next_bio"
+      "lifetime": "arg:bio"
      },
      "nullable": true,
      "mutable": true,
-     "note": "Borrowed matching node from the input chain, or NULL."
+     "note": "Borrowed node of the input chain, or NULL. The walk starts at bio itself, so the head is a candidate and the result is not restricted to bio->next_bio; either way it is a node the caller's chain keeps alive, and no reference count is taken."
     }
    }
   },

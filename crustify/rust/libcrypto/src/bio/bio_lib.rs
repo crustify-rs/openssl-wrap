@@ -1026,3 +1026,129 @@ mod dup_chain_tests {
         assert!(BIO_next(&duplicate_tail).is_none());
     }
 }
+
+#[cfg(test)]
+mod chain_and_control_tests {
+    use super::*;
+    use crate::bio::bf_null::BIO_f_null;
+    use crate::bio::bss_null::BIO_s_null;
+
+    /// `<openssl/bio.h>` method identifiers and the one control command a null
+    /// BIO answers with 1.
+    const BIO_TYPE_NULL: i32 = 6 | 0x0400;
+    const BIO_TYPE_NULL_FILTER: i32 = 17 | 0x0200;
+    const BIO_CTRL_EOF: i32 = 2;
+
+    fn new_bio(method: BioMethodRef<'static>) -> CBox<Bio> {
+        // SAFETY: the method table has process lifetime and the constructor
+        // returns one fresh BIO reference or null.
+        let raw = unsafe { ffi::BIO_new(method.as_ptr()) };
+        // SAFETY: a non-null result transfers that reference to this owner.
+        unsafe { CBox::from_raw(raw) }.expect("BIO_new")
+    }
+
+    /// A `null filter -> null sink` chain, collapsed into a single owner. The
+    /// two nodes are linked with the unsafe `BIO_push`, which is where the
+    /// obligation to free them together is taken on.
+    fn two_node_chain() -> (CBox<Bio>, *mut ffi::BIO) {
+        let head = new_bio(BIO_f_null());
+        let tail = new_bio(BIO_s_null().expect("null method"));
+        let head_raw = head.into_raw();
+        let tail_raw = tail.into_raw();
+        // SAFETY: both pointers are live, uniquely owned BIOs. Linking them
+        // makes the tail part of the head's chain, and the single
+        // `BIO_free_all` below is the only release of either node.
+        unsafe {
+            let mut head_handle = BioMut::from_ptr(head_raw).expect("live head");
+            let mut tail_handle = BioMut::from_ptr(tail_raw).expect("live tail");
+            BIO_push(&mut head_handle, &mut tail_handle);
+        }
+        // SAFETY: the head now represents the whole chain's ownership.
+        let head = unsafe { CBox::from_raw(head_raw) }.expect("live head");
+        (head, tail_raw)
+    }
+
+    #[test]
+    fn find_type_walks_the_chain_and_borrows_the_matching_node() {
+        let (mut chain, tail_raw) = two_node_chain();
+        let head_raw = chain.as_ptr();
+
+        // The head itself is a candidate, not just its successors.
+        let mut view = chain.as_mut();
+        let found =
+            BIO_find_type(&mut view, BIO_TYPE_NULL_FILTER).expect("the filter head matches");
+        assert_eq!(found.as_ref().as_ptr(), head_raw.cast_const());
+
+        let mut found = BIO_find_type(&mut view, BIO_TYPE_NULL).expect("the sink tail matches");
+        assert_eq!(found.as_mut_ptr(), tail_raw);
+
+        // An unlisted type is simply absent from the chain.
+        assert!(BIO_find_type(&mut view, 0x0007).is_none());
+
+        BIO_free_all(chain);
+    }
+
+    #[test]
+    fn free_all_releases_every_link_of_the_chain() {
+        let (chain, _tail) = two_node_chain();
+        // Nothing else holds a reference, so this is the single release of
+        // both nodes; the sanitizer build fails the test on a leak or a
+        // double free.
+        BIO_free_all(chain);
+    }
+
+    #[test]
+    fn copy_next_retry_reports_the_absence_of_a_successor() {
+        let mut lone = new_bio(BIO_f_null());
+        // A filter with no next node cannot copy retry state: the C routine
+        // would dereference `next_bio` unconditionally.
+        assert!(!BIO_copy_next_retry(&mut lone.as_mut()));
+
+        let (mut chain, _tail) = two_node_chain();
+        assert!(BIO_copy_next_retry(&mut chain.as_mut()));
+        BIO_free_all(chain);
+    }
+
+    #[test]
+    fn ctrl_reports_the_null_bio_and_the_method_answer() {
+        // A null BIO argument is the documented -1 result, not a crash.
+        // SAFETY: `BIO_CTRL_EOF` takes no pointer payload.
+        let absent = unsafe { BIO_ctrl(None, BIO_CTRL_EOF, 0, ptr::null_mut()) };
+        assert_eq!(absent, -1);
+
+        let mut bio = new_bio(BIO_s_null().expect("null method"));
+        // SAFETY: as above; the exclusive handle supplies a live BIO.
+        let answer = unsafe { BIO_ctrl(Some(&mut bio.as_mut()), BIO_CTRL_EOF, 0, ptr::null_mut()) };
+        assert_eq!(answer, 1);
+        assert_eq!(answer != 0, BIO_eof(&mut bio.as_mut()));
+    }
+
+    #[test]
+    fn the_callback_cookie_round_trips_through_the_bio() {
+        let mut bio = new_bio(BIO_s_null().expect("null method"));
+        assert!(BIO_get_callback_arg(&mut bio.as_mut()).is_none());
+
+        let mut cookie = 0x5A5A_u32;
+        let cookie_ptr = NonNull::from(&mut cookie);
+        // SAFETY: `cookie` outlives every use of `bio` below, so the stored
+        // borrow stays live for as long as OpenSSL can hand it back.
+        unsafe { BIO_set_callback_arg(&mut bio.as_mut(), Some(cookie_ptr)) };
+
+        let mut view = bio.as_mut();
+        let mut stored = BIO_get_callback_arg(&mut view).expect("stored cookie");
+        assert_eq!(stored.as_mut_ptr(), cookie_ptr.as_ptr().cast());
+        assert_eq!(
+            stored.as_ref().as_ptr(),
+            cookie_ptr.as_ptr().cast_const().cast()
+        );
+    }
+
+    #[test]
+    fn connect_retry_reports_failure_for_a_bio_that_cannot_connect() {
+        let mut bio = new_bio(BIO_s_null().expect("null method"));
+        // A null BIO has no connect state machine, and a negative timeout
+        // disables the retry loop, so this fails immediately instead of
+        // sleeping.
+        assert_eq!(BIO_do_connect_retry(&mut bio.as_mut(), -1, 0), -1);
+    }
+}

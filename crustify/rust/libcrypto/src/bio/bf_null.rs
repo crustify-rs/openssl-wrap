@@ -16,9 +16,14 @@ pub fn BIO_f_null() -> BioMethodRef<'static> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bio::bio_lib::{BIO_method_name, BIO_new};
 
     #[test]
-    fn method_table_is_static() {
+    fn the_selector_names_this_file_s_filter_method() {
+        // A non-null table is not enough: the selector has to hand back this
+        // filter's table and not a neighbouring one.
         assert!(!BIO_f_null().as_ptr().is_null());
+        let bio = BIO_new(BIO_f_null()).expect("filter BIO");
+        assert_eq!(BIO_method_name(bio.as_ref()), c"NULL filter");
     }
 }

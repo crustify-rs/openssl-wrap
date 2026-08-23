@@ -29,6 +29,15 @@ unsafe impl CDropper<AddrInfo> for BioAddrInfoFree {
 }
 
 /// Wraps: BIO_ADDRINFO_address
+///
+/// The handle is a shared view, never an exclusive one, because the storage
+/// behind it is only as large as the node's `ai_addrlen`: OpenSSL casts the
+/// node's `struct sockaddr *` to a `BIO_ADDR *`, and a node produced by
+/// `getaddrinfo` carries a `sockaddr_in`/`sockaddr_in6`, not the full union.
+/// Every `BIO_ADDR_*` reader dispatches on the family first and so stays
+/// inside that storage; a whole-union operation such as `BIO_ADDR_clear`, which
+/// writes `sizeof(BIO_ADDR)` bytes, would not, and cannot be reached from
+/// [`BioAddrRef`].
 #[allow(non_snake_case)]
 pub fn BIO_ADDRINFO_address<'a>(address_info: &AddrInfoRef<'a>) -> Option<BioAddrRef<'a>> {
     // SAFETY: the address-info handle keeps the node and its child address live.
@@ -443,6 +452,27 @@ pub fn BIO_parse_hostserv(
 mod scheduled_tests {
     use super::*;
 
+    /// Linux `<sys/socket.h>` / `<netinet/in.h>` values that OpenSSL forwards
+    /// to `getaddrinfo`, and the wildcard family a blank address carries.
+    const AF_UNSPEC: i32 = 0;
+    const SOCK_STREAM: i32 = 1;
+    const IPPROTO_TCP: i32 = 6;
+
+    fn family(value: u32) -> i32 {
+        i32::try_from(value).expect("an address family fits in a C int")
+    }
+
+    fn loopback_v4(port: u16) -> CBox<BioAddr> {
+        let mut address = BIO_ADDR_new().expect("BIO_ADDR_new");
+        assert!(BIO_ADDR_rawmake(
+            &mut address.as_mut(),
+            family(ffi::AF_INET),
+            &[127, 0, 0, 1],
+            port.to_be(),
+        ));
+        address
+    }
+
     #[test]
     fn parses_host_and_service_into_owned_strings() {
         let parsed = BIO_parse_hostserv(c"localhost:443", BioHostservPriorities::HOST)
@@ -452,5 +482,102 @@ mod scheduled_tests {
             Some(c"localhost")
         );
         assert_eq!(parsed.service.as_ref().map(|s| s.as_c_str()), Some(c"443"));
+    }
+
+    #[test]
+    fn a_looked_up_list_walks_its_nodes_and_borrows_each_address() {
+        let list = BIO_lookup(
+            Some(c"127.0.0.1"),
+            Some(c"443"),
+            BioLookupType::CLIENT,
+            family(ffi::AF_INET),
+            SOCK_STREAM,
+        )
+        .expect("numeric loopback lookup");
+
+        let mut node = list.as_ref();
+        let mut visited = 0_usize;
+        loop {
+            visited += 1;
+            assert_eq!(BIO_ADDRINFO_family(&node), family(ffi::AF_INET));
+            assert_eq!(BIO_ADDRINFO_socktype(&node), SOCK_STREAM);
+            assert_eq!(BIO_ADDRINFO_protocol(&node), IPPROTO_TCP);
+
+            // The node's address is borrowed from the list, not owned.
+            let address = BIO_ADDRINFO_address(&node).expect("node address");
+            assert_eq!(BIO_ADDR_family(&address), family(ffi::AF_INET));
+            assert_eq!(BIO_ADDR_rawport(&address), 443_u16.to_be());
+
+            let Some(next) = BIO_ADDRINFO_next(&node) else {
+                break;
+            };
+            node = next;
+        }
+        assert!(visited >= 1, "a numeric lookup yields at least one node");
+
+        // The scheduled destructor consumes the whole list at once.
+        BIO_ADDRINFO_free(list);
+    }
+
+    #[test]
+    fn copying_an_address_reproduces_its_numeric_strings() {
+        let source = loopback_v4(443);
+        let mut destination = BIO_ADDR_new().expect("BIO_ADDR_new");
+        assert!(BIO_ADDR_copy(&mut destination.as_mut(), &source.as_ref()));
+
+        assert_eq!(BIO_ADDR_family(&destination.as_ref()), family(ffi::AF_INET));
+        assert_eq!(BIO_ADDR_rawport(&destination.as_ref()), 443_u16.to_be());
+        assert_eq!(
+            BIO_ADDR_hostname_string(&destination.as_ref(), true)
+                .expect("numeric host")
+                .as_c_str(),
+            c"127.0.0.1"
+        );
+        assert_eq!(
+            BIO_ADDR_service_string(&destination.as_ref(), true)
+                .expect("numeric service")
+                .as_c_str(),
+            c"443"
+        );
+        // An Internet address has no filesystem path to publish.
+        assert!(BIO_ADDR_path_string(&destination.as_ref()).is_none());
+
+        BIO_ADDR_free(destination);
+        BIO_ADDR_free(source);
+    }
+
+    #[test]
+    fn copying_a_blank_source_clears_the_destination_in_place() {
+        // `BIO_ADDR_copy` reports success for an AF_UNSPEC source, but it
+        // still overwrites the destination -- it routes through
+        // `BIO_ADDR_clear`, so the previous contents do not survive.
+        let mut destination = loopback_v4(443);
+        let blank = BIO_ADDR_new().expect("BIO_ADDR_new");
+        assert!(BIO_ADDR_copy(&mut destination.as_mut(), &blank.as_ref()));
+        assert_eq!(BIO_ADDR_family(&destination.as_ref()), AF_UNSPEC);
+        assert_eq!(BIO_ADDR_rawport(&destination.as_ref()), 0);
+
+        BIO_ADDR_free(blank);
+        BIO_ADDR_free(destination);
+    }
+
+    #[test]
+    fn a_unix_address_publishes_its_path_and_no_port() {
+        let mut address = BIO_ADDR_new().expect("BIO_ADDR_new");
+        assert!(BIO_ADDR_rawmake(
+            &mut address.as_mut(),
+            family(ffi::AF_UNIX),
+            b"/tmp/crustify-review.sock",
+            0,
+        ));
+        assert_eq!(
+            BIO_ADDR_path_string(&address.as_ref())
+                .expect("AF_UNIX path")
+                .as_c_str(),
+            c"/tmp/crustify-review.sock"
+        );
+        assert_eq!(BIO_ADDR_rawport(&address.as_ref()), 0);
+
+        BIO_ADDR_free(address);
     }
 }

@@ -178,6 +178,25 @@ mod tests {
         let _ = BIO_dump_cb(b"ABC", &mut |_: &[u8]| panic!("dump callback failed"));
     }
 
+    /// The lines `BIO_dump_indent_cb` produces for `data`, concatenated.
+    fn expected_dump(data: &[u8], indent: i32) -> Vec<u8> {
+        let mut text = Vec::new();
+        let written = BIO_dump_indent_cb(data, indent, &mut |line: &[u8]| {
+            text.extend_from_slice(line);
+            i32::try_from(line.len()).expect("a dump line is short")
+        });
+        assert_eq!(
+            usize::try_from(written).expect("a non-negative dump"),
+            text.len()
+        );
+        text
+    }
+
+    fn memory_bio() -> crate::bio::bio_lib::BorrowedBio<'static> {
+        crate::bio::bio_lib::BIO_new(crate::bio::bss_mem::BIO_s_mem().expect("memory method"))
+            .expect("memory BIO")
+    }
+
     #[test]
     fn dump_to_bio_accepts_a_byte_slice() {
         // SAFETY: both called constructors have no caller-side pointer inputs.
@@ -186,5 +205,67 @@ mod tests {
         let mut bio: ffibox::CBox<super::super::bio_bio_local::Bio> =
             unsafe { ffibox::CBox::from_raw(raw) }.expect("BIO_new");
         assert!(BIO_dump(&mut bio.as_mut(), b"ABC") > 0);
+    }
+
+    #[test]
+    fn dump_to_bio_writes_the_same_bytes_as_the_callback_form() {
+        let data = b"the quick brown fox jumps over the lazy dog";
+
+        let mut plain = memory_bio();
+        assert!(BIO_dump(&mut plain.as_mut(), data) > 0);
+        let mut written = [0_u8; 512];
+        let len = crate::bio::bio_lib::BIO_read_ex(&mut plain.as_mut(), &mut written)
+            .expect("dumped output");
+        assert_eq!(&written[..len], expected_dump(data, 0).as_slice());
+
+        let mut indented = memory_bio();
+        assert!(BIO_dump_indent(&mut indented.as_mut(), data, 4) > 0);
+        let mut written = [0_u8; 512];
+        let len = crate::bio::bio_lib::BIO_read_ex(&mut indented.as_mut(), &mut written)
+            .expect("dumped output");
+        assert_eq!(&written[..len], expected_dump(data, 4).as_slice());
+    }
+
+    #[test]
+    fn dump_to_a_stream_writes_the_same_bytes_as_the_callback_form() {
+        let data = b"the quick brown fox jumps over the lazy dog";
+
+        for indent in [0, 4] {
+            // SAFETY: `tmpfile` takes no arguments and returns a new stream or
+            // null; the process owns it until the `fclose` below.
+            let raw = unsafe { libc_sys::tmpfile() };
+            // SAFETY: a non-null result is a live stream, exclusively ours for
+            // the handle's lifetime.
+            let mut stream = unsafe { IoFileMut::from_ptr(raw) }.expect("temporary stream");
+
+            let written = if indent == 0 {
+                BIO_dump_fp(&mut stream, data)
+            } else {
+                BIO_dump_indent_fp(&mut stream, data, indent)
+            };
+            // `write_fp` returns fwrite's item count (1 per line), so the
+            // stream form reports lines where the BIO form reports bytes.
+            assert!(written > 0);
+            // The handle only borrows the stream; `raw` stays valid below.
+
+            let expected = expected_dump(data, indent);
+            let mut readback = vec![0_u8; expected.len() + 1];
+            // SAFETY: `raw` is still the live stream opened above, and
+            // `readback` supplies its declared number of writable bytes.
+            let read = unsafe {
+                libc_sys::rewind(raw);
+                libc_sys::fread(
+                    readback.as_mut_ptr().cast(),
+                    1,
+                    core::ffi::c_ulong::try_from(readback.len()).expect("a small buffer"),
+                    raw,
+                )
+            };
+            let read = usize::try_from(read).expect("a byte count fits in a usize");
+            // SAFETY: `raw` is the live stream and no handle to it survives.
+            assert_eq!(unsafe { libc_sys::fclose(raw) }, 0);
+
+            assert_eq!(&readback[..read], expected.as_slice());
+        }
     }
 }
