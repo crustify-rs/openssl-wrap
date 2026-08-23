@@ -479,6 +479,43 @@
    ]
   },
   {
+   "name": "USERNOTICE_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "The ASN.1 sequence declaration marks both pointer fields optional and USERNOTICE_free delegates to ASN1_item_free, which recursively owns and releases both children.",
+   "fields": [
+    {
+     "name": "exptext",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "ASN1_OPT(USERNOTICE, exptext, DISPLAYTEXT) makes this an optional uniquely owned ASN1_STRING; USERNOTICE_free releases it and notice_section writes its contents."
+     }
+    },
+    {
+     "name": "noticeref",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "ASN1_OPT(USERNOTICE, noticeref, NOTICEREF) makes this an optional uniquely owned child record; USERNOTICE_free recursively releases it and notice_section mutates its fields."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_algor_st",
    "defined_in": "include/openssl/x509.h",
    "_comment_agent": "X509_ALGOR owns both pointer fields through its ASN.1 SEQUENCE template. X509_ALGOR_set0 transfers the algorithm object and parameter payload on success; sequence teardown releases algorithm with ASN1_OBJECT_free and the optional parameter with ASN1_TYPE_free. Direct code writes through parameter, while algorithm objects are treated as immutable after installation. Both slots can be null.",
@@ -14043,6 +14080,51 @@
      "nullable": true,
      "mutable": true,
      "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
+    }
+   }
+  },
+  {
+   "name": "USERNOTICE_free",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Generated ASN.1 full destructor; consumes a nullable USERNOTICE allocation and recursively releases its fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "USERNOTICE_new",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Generated ASN.1 constructor returns null on failure or a fresh mutable USERNOTICE whose optional fields start null."
     }
    }
   },

@@ -2420,3 +2420,201 @@ mod notice_ref_tests {
         assert_eq!(OPENSSL_sk_num(notice.as_ref().notice_numbers()), Some(0));
     }
 }
+
+define_ctype!(
+    /// Wraps: USERNOTICE_st
+    ///
+    /// Layout-compatible storage for an ASN.1 user-notice record. The record
+    /// owns its optional notice reference and explicit-text string; borrowed
+    /// access is carried by [`UserNoticeRef`] and [`UserNoticeMut`] without
+    /// forming Rust references over OpenSSL storage.
+    UserNotice,
+    UserNoticeRef,
+    UserNoticeMut,
+    ffi::USERNOTICE_st
+);
+
+// `USERNOTICE_free` is the generated ASN.1 sequence destructor: it releases
+// both optional children before releasing the record allocation.
+impl_dropped!(UserNotice, ffi::USERNOTICE_st, ffi::USERNOTICE_free);
+
+impl UserNotice {
+    /// Allocates a complete empty user-notice record.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: OpenSSL returns null or a fresh, fully initialized record
+        // carrying one matching `USERNOTICE_free` obligation.
+        unsafe { CBox::from_raw(ffi::USERNOTICE_new()) }
+    }
+}
+
+impl<'a> UserNoticeRef<'a> {
+    /// Wraps: USERNOTICE_st.exptext
+    ///
+    /// Borrows the optional explicit-text string owned by this record.
+    #[must_use]
+    pub fn explicit_text(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer from the live shared
+        // handle without forming a reference to C storage. A non-null string
+        // remains owned by this record for the handle's `'a`.
+        unsafe {
+            let explicit_text = ptr::addr_of!((*self.as_ptr()).exptext).read();
+            Asn1StringRef::from_ptr(explicit_text)
+        }
+    }
+
+    /// Wraps: USERNOTICE_st.noticeref
+    ///
+    /// Borrows the optional notice-reference record owned by this record.
+    #[must_use]
+    pub fn notice_ref(&self) -> Option<NoticeRefRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer from the live shared
+        // handle without forming a reference to C storage. A non-null child
+        // remains owned by this record for the handle's `'a`.
+        unsafe {
+            let notice_ref = ptr::addr_of!((*self.as_ptr()).noticeref).read();
+            NoticeRefRef::from_ptr(notice_ref)
+        }
+    }
+}
+
+impl UserNoticeMut<'_> {
+    /// Exclusively reborrows the optional explicit-text string.
+    #[must_use]
+    pub fn explicit_text_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive user-notice handle supplies exclusive access
+        // to its owned string for the duration of this reborrow.
+        unsafe {
+            let explicit_text = ptr::addr_of!((*self.as_mut_ptr()).exptext).read();
+            Asn1StringMut::from_ptr(explicit_text)
+        }
+    }
+
+    /// Exclusively reborrows the optional notice-reference record.
+    #[must_use]
+    pub fn notice_ref_mut(&mut self) -> Option<NoticeRefMut<'_>> {
+        // SAFETY: the exclusive user-notice handle supplies exclusive access
+        // to its owned child for the duration of this reborrow.
+        unsafe {
+            let notice_ref = ptr::addr_of!((*self.as_mut_ptr()).noticeref).read();
+            NoticeRefMut::from_ptr(notice_ref)
+        }
+    }
+
+    /// Replaces the owned explicit-text string and releases its predecessor.
+    pub fn set_explicit_text(&mut self, explicit_text: Option<CBox<Asn1String>>) {
+        let explicit_text = explicit_text.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // the old value's release obligation transfers to the owner below.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).exptext).replace(explicit_text) };
+        // SAFETY: a detached non-null string was uniquely owned by this record
+        // and remains a complete heap-allocated ASN.1 string.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned explicit-text string, leaving the slot empty.
+    #[must_use]
+    pub fn take_explicit_text(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let explicit_text =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).exptext).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null string remains fully initialized and
+        // carries exactly one `ASN1_STRING_free` obligation.
+        unsafe { CBox::from_raw(explicit_text) }
+    }
+
+    /// Replaces the owned notice-reference record and releases its predecessor.
+    pub fn set_notice_ref(&mut self, notice_ref: Option<CBox<NoticeRef>>) {
+        let notice_ref = notice_ref.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // the old value's release obligation transfers to the owner below.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).noticeref).replace(notice_ref) };
+        // SAFETY: a detached non-null child was uniquely owned by this record
+        // and remains a complete heap-allocated notice-reference record.
+        drop(unsafe { CBox::<NoticeRef>::from_raw(previous) });
+    }
+
+    /// Takes the owned notice-reference record, leaving the slot empty.
+    #[must_use]
+    pub fn take_notice_ref(&mut self) -> Option<CBox<NoticeRef>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let notice_ref =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).noticeref).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null child remains fully initialized and
+        // carries exactly one `NOTICEREF_free` obligation.
+        unsafe { CBox::from_raw(notice_ref) }
+    }
+}
+
+#[cfg(test)]
+mod user_notice_tests {
+    use core::mem::{align_of, size_of};
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+    use crate::asn1::asn1_lib::ASN1_STRING_new;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn constructor_preserves_layout_and_starts_with_optional_fields_empty() {
+        assert_owned_cell::<UserNotice>();
+        assert_eq!(size_of::<UserNotice>(), size_of::<ffi::USERNOTICE_st>());
+        assert_eq!(align_of::<UserNotice>(), align_of::<ffi::USERNOTICE_st>());
+        assert_eq!(
+            size_of::<CBox<UserNotice>>(),
+            size_of::<*mut ffi::USERNOTICE_st>()
+        );
+
+        let mut notice = UserNotice::new().expect("USERNOTICE_new");
+        assert!(notice.as_ref().explicit_text().is_none());
+        assert!(notice.as_ref().notice_ref().is_none());
+        assert!(notice.as_mut().explicit_text_mut().is_none());
+        assert!(notice.as_mut().notice_ref_mut().is_none());
+    }
+
+    #[test]
+    fn owned_fields_can_be_installed_taken_and_replaced() {
+        let mut notice = UserNotice::new().expect("USERNOTICE_new");
+        let explicit_text = ASN1_STRING_new().expect("ASN1_STRING_new");
+        let explicit_text_ptr = explicit_text.as_ptr();
+        notice.as_mut().set_explicit_text(Some(explicit_text));
+        assert_eq!(
+            notice.as_ref().explicit_text().map(|value| value.as_ptr()),
+            Some(explicit_text_ptr.cast_const())
+        );
+
+        let notice_ref = NoticeRef::new().expect("NOTICEREF_new");
+        let notice_ref_ptr = notice_ref.as_ptr();
+        notice.as_mut().set_notice_ref(Some(notice_ref));
+        assert_eq!(
+            notice.as_ref().notice_ref().map(|value| value.as_ptr()),
+            Some(notice_ref_ptr.cast_const())
+        );
+
+        let explicit_text = notice
+            .as_mut()
+            .take_explicit_text()
+            .expect("installed explicit text");
+        let notice_ref = notice
+            .as_mut()
+            .take_notice_ref()
+            .expect("installed notice reference");
+        assert!(notice.as_ref().explicit_text().is_none());
+        assert!(notice.as_ref().notice_ref().is_none());
+
+        notice.as_mut().set_explicit_text(Some(explicit_text));
+        notice.as_mut().set_notice_ref(Some(notice_ref));
+        notice
+            .as_mut()
+            .set_explicit_text(Some(ASN1_STRING_new().expect("replacement string")));
+        notice.as_mut().set_notice_ref(Some(
+            NoticeRef::new().expect("replacement notice reference"),
+        ));
+    }
+}
