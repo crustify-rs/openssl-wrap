@@ -211,10 +211,14 @@ impl BorrowedBio<'_> {
 }
 
 /// An opaque application-data pointer stored in a BIO.
+///
+/// The borrow marker names an erased pointee rather than [`Bio`]: no reference
+/// to a wrapped C object is ever formed, matching [`BorrowedBio`] and
+/// [`BioChain`].
 #[derive(Clone, Copy)]
 pub struct BioExData<'a> {
     ptr: NonNull<c_void>,
-    borrow: PhantomData<&'a Bio>,
+    borrow: PhantomData<&'a CType<c_void>>,
 }
 
 impl BioExData<'_> {
