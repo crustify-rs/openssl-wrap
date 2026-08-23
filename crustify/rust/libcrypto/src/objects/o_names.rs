@@ -460,8 +460,8 @@ mod tests {
 
         // The alias arm is only reachable through the discriminator: asking
         // for the alias entry itself hands back its target name instead.
-        let raw = OBJ_NAME_get(c"crustify-review-method-alias", class | ALIAS_FLAG)
-            .expect("alias entry");
+        let raw =
+            OBJ_NAME_get(c"crustify-review-method-alias", class | ALIAS_FLAG).expect("alias entry");
         // SAFETY: an alias entry's payload is the name literal stored above.
         let target = unsafe { CStr::from_ptr(raw.cast::<core::ffi::c_char>().as_ptr()) };
         assert_eq!(target, c"crustify-review-method");

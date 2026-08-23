@@ -123,10 +123,12 @@ mod tests {
         let mut enable: i32 = 1;
         // SAFETY: `FIONBIO` takes a live writable `int`, which is exactly what
         // this argument supplies for the duration of the call.
-        assert_eq!(unsafe { BIO_socket_ioctl(&socket, FIONBIO, &mut enable) }, 0);
+        let enabled = unsafe { BIO_socket_ioctl(&socket, FIONBIO, &mut enable) };
+        assert_eq!(enabled, 0);
         let mut disable: i32 = 0;
         // SAFETY: as above.
-        assert_eq!(unsafe { BIO_socket_ioctl(&socket, FIONBIO, &mut disable) }, 0);
+        let disabled = unsafe { BIO_socket_ioctl(&socket, FIONBIO, &mut disable) };
+        assert_eq!(disabled, 0);
     }
 
     #[test]

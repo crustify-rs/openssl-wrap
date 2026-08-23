@@ -251,7 +251,6 @@ mod tests {
         // outlives them; nothing writes to the pair in between.
         let peeked = unsafe { BIO_nread0(&mut view) }.expect("peek region");
         assert_eq!(peeked.len(), 5);
-        drop(peeked);
 
         // SAFETY: as above.
         let region = unsafe { BIO_nread(&mut view, 5) }.expect("read region");
