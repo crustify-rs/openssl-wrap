@@ -326,22 +326,10 @@ setter!(
     BIO_meth_set_puts
 );
 setter!(
-    /// Wraps: BIO_meth_set_read
-    BIO_meth_set_read,
-    BioMethodReadCallback,
-    BIO_meth_set_read
-);
-setter!(
     /// Wraps: BIO_meth_set_read_ex
     BIO_meth_set_read_ex,
     BioMethodReadExCallback,
     BIO_meth_set_read_ex
-);
-setter!(
-    /// Wraps: BIO_meth_set_write
-    BIO_meth_set_write,
-    BioMethodWriteCallback,
-    BIO_meth_set_write
 );
 setter!(
     /// Wraps: BIO_meth_set_write_ex
@@ -349,6 +337,37 @@ setter!(
     BioMethodWriteExCallback,
     BIO_meth_set_write_ex
 );
+
+/// Wraps: BIO_meth_set_read
+/// Installs the legacy read callback the method's conversion thunk dispatches to.
+///
+/// The callback is mandatory. `BIO_meth_set_read` stores `bread_conv` in the
+/// extended slot whatever it is passed, and that thunk calls this pointer
+/// without checking it, so a null callback would leave a method table whose
+/// first non-empty `BIO_read` calls a null function pointer. Clear the pair
+/// with [`BIO_meth_set_read_ex(method, None)`](BIO_meth_set_read_ex) instead.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_set_read(mut method: BioMethodMut<'_>, callback: BioMethodReadCallback) -> bool {
+    // SAFETY: the exclusive method handle permits updating this slot, and the
+    // callback handle carries the static C contract the thunk dispatches under.
+    unsafe { ffi::BIO_meth_set_read(method.as_mut_ptr(), Some(callback.raw())) == 1 }
+}
+
+/// Wraps: BIO_meth_set_write
+/// Installs the legacy write callback the method's conversion thunk dispatches to.
+///
+/// The callback is mandatory. `BIO_meth_set_write` stores `bwrite_conv` in the
+/// extended slot whatever it is passed, and that thunk calls this pointer
+/// without checking it, so a null callback would leave a method table whose
+/// first `BIO_write` calls a null function pointer. Clear the pair with
+/// [`BIO_meth_set_write_ex(method, None)`](BIO_meth_set_write_ex) instead.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn BIO_meth_set_write(mut method: BioMethodMut<'_>, callback: BioMethodWriteCallback) -> bool {
+    // SAFETY: as `BIO_meth_set_read`, for the legacy write slot.
+    unsafe { ffi::BIO_meth_set_write(method.as_mut_ptr(), Some(callback.raw())) == 1 }
+}
 
 /// Wraps: BIO_meth_set_recvmmsg
 #[must_use]
@@ -386,7 +405,7 @@ pub fn BIO_meth_set_sendmmsg(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bio::bio_lib::{BIO_method_name, BIO_method_type, BIO_new};
+    use crate::bio::bio_lib::{BIO_method_name, BIO_method_type, BIO_new, BIO_write};
 
     #[test]
     fn dynamic_method_is_owned_and_constructs_a_borrowing_bio() {
@@ -394,6 +413,40 @@ mod tests {
         let bio = BIO_new(method.as_ref()).expect("BIO_new");
         assert_eq!(BIO_method_type(bio.as_ref()), 73);
         assert_eq!(BIO_method_name(bio.as_ref()), c"rust method");
+    }
+
+    unsafe extern "C" fn accept_every_write(
+        _bio: *mut ffi::BIO,
+        _data: *const c_char,
+        length: c_int,
+    ) -> c_int {
+        length
+    }
+
+    #[test]
+    fn the_legacy_write_slot_dispatches_through_its_conversion_thunk() {
+        let mut method = BIO_meth_new(BIO_get_new_index(), c"rust writer").expect("BIO_meth_new");
+        // SAFETY: the callback consumes no buffer, never unwinds, and reports
+        // the whole run as written, which is the legacy write contract.
+        let callback = unsafe { BioMethodWriteCallback::from_raw(accept_every_write) };
+        assert!(BIO_meth_set_write(method.as_mut(), callback));
+
+        let mut bio = BIO_new(method.as_ref()).expect("BIO_new");
+        assert_eq!(BIO_write(&mut bio.as_mut(), b"abc"), 3);
+    }
+
+    #[test]
+    fn clearing_a_legacy_slot_goes_through_its_extended_setter() {
+        let mut method = BIO_meth_new(BIO_get_new_index(), c"rust writer").expect("BIO_meth_new");
+        // SAFETY: as in the test above.
+        let callback = unsafe { BioMethodWriteCallback::from_raw(accept_every_write) };
+        assert!(BIO_meth_set_write(method.as_mut(), callback));
+        assert!(BIO_meth_set_write_ex(method.as_mut(), None));
+
+        let mut bio = BIO_new(method.as_ref()).expect("BIO_new");
+        // An absent method reports "unsupported" rather than calling a thunk
+        // whose legacy slot is null.
+        assert_eq!(BIO_write(&mut bio.as_mut(), b"abc"), -2);
     }
 
     #[test]
@@ -407,9 +460,7 @@ mod tests {
     #[test]
     fn callback_slots_accept_explicit_absence() {
         let mut method = BIO_meth_new(74, c"empty callbacks").expect("BIO_meth_new");
-        assert!(BIO_meth_set_write(method.as_mut(), None));
         assert!(BIO_meth_set_write_ex(method.as_mut(), None));
-        assert!(BIO_meth_set_read(method.as_mut(), None));
         assert!(BIO_meth_set_read_ex(method.as_mut(), None));
         assert!(BIO_meth_set_puts(method.as_mut(), None));
         assert!(BIO_meth_set_gets(method.as_mut(), None));

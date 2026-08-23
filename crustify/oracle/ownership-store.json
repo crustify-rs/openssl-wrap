@@ -5624,7 +5624,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Writable buffer whose extent is size."
+      "note": "Writable buffer whose extent is size, which must be at least 1: BIO_gets rejects only size < 0, and a bgets method writes the terminating NUL regardless of size (mem_gets does so before it consults the length)."
      }
     }
    ]
@@ -5777,7 +5777,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Optional borrowed host string."
+      "note": "Optional borrowed host string for every family that reaches getaddrinfo. NOT optional for AF_UNIX: that branch of BIO_lookup_ex calls strlen(host) before inspecting anything, so a null host is a null dereference inside C."
      }
     },
     {
@@ -5833,7 +5833,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Optional borrowed host string."
+      "note": "Optional borrowed host string for every family that reaches getaddrinfo. NOT optional for AF_UNIX: that branch of BIO_lookup_ex calls strlen(host) before inspecting anything, so a null host is a null dereference inside C."
      }
     },
     {
@@ -6676,9 +6676,9 @@
       "borrowed": {
        "lifetime": "static"
       },
-      "nullable": true,
+      "nullable": false,
       "mutable": false,
-      "note": "Optional static callback pointer retained in the method table."
+      "note": "Legacy callback retained in the method table. NOT optional: the setter stores its conversion thunk (bread_conv) in the extended slot whatever is passed, and that thunk calls this pointer unconditionally, so a null argument leaves a table whose first non-empty BIO_read calls a null function pointer."
      }
     }
    ]
@@ -6836,9 +6836,9 @@
       "borrowed": {
        "lifetime": "static"
       },
-      "nullable": true,
+      "nullable": false,
       "mutable": false,
-      "note": "Optional static callback pointer retained in the method table."
+      "note": "Legacy callback retained in the method table. NOT optional: the setter stores its conversion thunk (bwrite_conv) in the extended slot whatever is passed, and that thunk calls this pointer unconditionally, so a null argument leaves a table whose first BIO_write calls a null function pointer."
      }
     }
    ]
@@ -6957,11 +6957,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "other"
+       "lifetime": "arg:method"
       },
       "nullable": false,
       "mutable": false,
-      "note": "BIO_new retains the method descriptor, so it must outlive the returned BIO."
+      "note": "BIO_new_ex retains the method descriptor in the returned BIO, so it must outlive that BIO."
      }
     }
    ],
@@ -7352,9 +7352,9 @@
       "borrowed": {
        "lifetime": "arg:libctx"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": false,
-      "note": "Context is retained by the wrapper BIO."
+      "note": "Optional context retained by the wrapper BIO; null selects the default context through ossl_lib_ctx_get_concrete, exactly as in BIO_new_ex."
      }
     }
    ],

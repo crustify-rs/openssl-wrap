@@ -273,6 +273,28 @@ mod tests {
     }
 
     #[test]
+    fn a_unix_lookup_without_a_host_never_reaches_c() {
+        let family = i32::try_from(ffi::AF_UNIX).expect("AF_UNIX fits an int");
+        assert!(BIO_lookup(None, None, BioLookupType::CLIENT, family, 0).is_none());
+        assert!(BIO_lookup_ex(None, None, BioLookupType::CLIENT, family, 0, 0).is_none());
+    }
+
+    #[test]
+    fn a_unix_lookup_with_a_host_resolves_that_path() {
+        let family = i32::try_from(ffi::AF_UNIX).expect("AF_UNIX fits an int");
+        let path = Some(c"/tmp/crustify.sock");
+        let list = BIO_lookup(path, None, BioLookupType::CLIENT, family, 0)
+            .expect("AF_UNIX lookups wrap the path without touching the filesystem");
+        assert_eq!(BIO_ADDRINFO_family(&list.as_ref()), family);
+    }
+
+    #[test]
+    fn an_internet_lookup_still_accepts_an_absent_host() {
+        let family = i32::try_from(ffi::AF_INET).expect("AF_INET fits an int");
+        assert!(BIO_lookup(None, Some(c"80"), BioLookupType::SERVER, family, 0).is_some());
+    }
+
+    #[test]
     fn invalid_family_has_no_raw_address() {
         let address = BIO_ADDR_new().expect("BIO_ADDR_new");
         let mut output = [0_u8; 16];
@@ -287,6 +309,17 @@ fn input_ptr(value: Option<&CStr>) -> *const core::ffi::c_char {
     value.map_or(ptr::null(), CStr::as_ptr)
 }
 
+/// Reports whether OpenSSL's lookup path for `family` dereferences `host`
+/// without checking it.
+///
+/// Every family but `AF_UNIX` reaches `getaddrinfo`, which documents a null
+/// node name. The `AF_UNIX` branch of `BIO_lookup_ex` instead calls
+/// `strlen(host)` before it inspects anything, so an absent host would be a
+/// null dereference inside C.
+fn family_requires_host(family: i32) -> bool {
+    u32::try_from(family) == Ok(ffi::AF_UNIX)
+}
+
 unsafe fn adopt_result(raw: *mut ffi::BIO_ADDRINFO) -> Option<BioAddrInfo> {
     let raw = raw.cast::<<AddrInfo as CCell>::C>();
     // SAFETY: the caller passes the unique head returned by a successful
@@ -296,6 +329,9 @@ unsafe fn adopt_result(raw: *mut ffi::BIO_ADDRINFO) -> Option<BioAddrInfo> {
 
 /// Wraps: BIO_lookup
 /// Resolves an optional host/service pair into an owned address list.
+///
+/// Returns `None` without calling C for an `AF_UNIX` lookup with no host, the
+/// one combination whose C path dereferences `host` unconditionally.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_lookup(
@@ -305,8 +341,12 @@ pub fn BIO_lookup(
     family: i32,
     socket_type: i32,
 ) -> Option<BioAddrInfo> {
+    if host.is_none() && family_requires_host(family) {
+        return None;
+    }
     let mut result = ptr::null_mut();
-    // SAFETY: input strings remain live; `result` is a writable output slot.
+    // SAFETY: input strings remain live and the check above supplies the host
+    // the `AF_UNIX` path dereferences; `result` is a writable output slot.
     let ok = unsafe {
         ffi::BIO_lookup(
             input_ptr(host),
@@ -326,6 +366,9 @@ pub fn BIO_lookup(
 
 /// Wraps: BIO_lookup_ex
 /// Resolves an optional host/service pair with an explicit protocol.
+///
+/// Returns `None` without calling C for an `AF_UNIX` lookup with no host, the
+/// one combination whose C path dereferences `host` unconditionally.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_lookup_ex(
@@ -336,11 +379,15 @@ pub fn BIO_lookup_ex(
     socket_type: i32,
     protocol: i32,
 ) -> Option<BioAddrInfo> {
+    if host.is_none() && family_requires_host(family) {
+        return None;
+    }
     let mut result = ptr::null_mut();
     let Ok(lookup_type) = i32::try_from(lookup_type.as_raw()) else {
         return None;
     };
-    // SAFETY: input strings remain live; `result` is a writable output slot.
+    // SAFETY: input strings remain live and the check above supplies the host
+    // the `AF_UNIX` path dereferences; `result` is a writable output slot.
     let ok = unsafe {
         ffi::BIO_lookup_ex(
             input_ptr(host),

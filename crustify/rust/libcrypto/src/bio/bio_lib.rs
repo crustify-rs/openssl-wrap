@@ -299,8 +299,15 @@ pub fn BIO_get_shutdown(bio: BioRef<'_>) -> i32 {
 
 /// Wraps: BIO_gets
 /// Reads a method-defined line or record into `buffer`.
+///
+/// Rejects an empty buffer instead of calling C. `BIO_gets` validates only
+/// `size < 0`, and a `bgets` method reached with `size == 0` still writes the
+/// terminating NUL — `mem_gets` does so before it looks at the length at all.
 #[allow(non_snake_case)]
 pub fn BIO_gets(mut bio: BioMut<'_>, buffer: &mut [u8]) -> i32 {
+    if buffer.is_empty() {
+        return -1;
+    }
     let Ok(size) = i32::try_from(buffer.len()) else {
         return -1;
     };
@@ -418,6 +425,23 @@ mod tests {
         assert!(BIO_get_line(bio.as_mut(), &mut line) <= 0);
         assert!(BIO_gets(bio.as_mut(), &mut line) <= 0);
         assert!(BIO_indent(bio.as_mut(), 4, 2));
+    }
+
+    #[test]
+    fn line_readers_reject_a_buffer_with_no_room_for_the_terminator() {
+        // SAFETY: the constructor copies the literal and has no pointer
+        // obligations beyond it staying live for the call.
+        let raw = unsafe { ffi::BIO_new_mem_buf(c"hello\n".as_ptr().cast(), 6) };
+        // SAFETY: a non-null result transfers one owned BIO reference.
+        let mut bio = unsafe { CBox::<Bio>::from_raw(raw) }.expect("BIO_new_mem_buf");
+
+        assert_eq!(BIO_gets(bio.as_mut(), &mut []), -1);
+        assert_eq!(BIO_get_line(bio.as_mut(), &mut []), -1);
+
+        // The buffer was untouched, so the record is still readable.
+        let mut line = [0_u8; 16];
+        assert_eq!(BIO_gets(bio.as_mut(), &mut line), 6);
+        assert_eq!(&line[..6], b"hello\n");
     }
 }
 
