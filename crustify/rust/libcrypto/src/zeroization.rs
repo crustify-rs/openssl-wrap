@@ -7,9 +7,23 @@ use crate::mem::CryptoClearFree;
 /// Replaces: ossl_public_param_free
 /// Length-aware strategy that always takes the helper's zeroizing branch.
 ///
-/// OpenSSL's C helper cleanses only when pedantic zeroization is configured.
-/// Rust owners use the stronger cleanup unconditionally, preserving allocator
-/// compatibility while ensuring public security-parameter bytes are erased.
+/// The C helper is `static ossl_inline` in `include/internal/zeroization.h`,
+/// so it exposes no symbol to call: this is a native translation of the branch
+/// it selects rather than a wrapper over it. C picks that branch at build time
+/// — `OPENSSL_clear_free(ptr, size)` when `OPENSSL_PEDANTIC_ZEROIZATION` is
+/// defined and plain `OPENSSL_free(ptr)` otherwise — and Rust owners take the
+/// cleansing one unconditionally.
+///
+/// Choosing it independently of how the C library was configured is sound
+/// because both branches release through `CRYPTO_free`. The buffer is an
+/// ordinary OpenSSL allocation either way, so one C allocated can be dropped
+/// here and one dropped by C is released exactly as it always was; only how
+/// much of it is erased first differs, and this direction erases more.
+///
+/// The byte length an owner reports is what reaches `OPENSSL_cleanse`, so it
+/// must be the buffer's live extent. That is the shape OpenSSL's own callers
+/// already have: `params->seed` is an `OPENSSL_memdup` of exactly
+/// `params->seedlen` bytes (`crypto/ffc/ffc_params.c`).
 #[derive(Debug, Clone, Copy, Default)]
 pub struct PublicParamFree;
 
@@ -44,5 +58,15 @@ mod tests {
         let owned = unsafe { CVec::<u8, PublicParamFree>::from_raw_parts(raw, source.len()) }
             .expect("CRYPTO_memdup allocation");
         assert_eq!(owned.as_slice(), source);
+    }
+
+    #[test]
+    fn absent_public_parameter_has_no_owner() {
+        // The C helper accepts the NULL/0 pair `ossl_ffc_params_init` leaves
+        // behind and does nothing with it; that state is the absent owner here.
+        // SAFETY: `from_raw_parts` explicitly admits a null pointer, which it
+        // reports rather than adopting.
+        let absent = unsafe { CVec::<u8, PublicParamFree>::from_raw_parts(ptr::null_mut(), 0) };
+        assert!(absent.is_none());
     }
 }

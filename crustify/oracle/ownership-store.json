@@ -8631,7 +8631,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Transient optional source-file string forwarded to CRYPTO_free."
+      "note": "Transient optional source-file string. CRYPTO_clear_free never reads the (file, line) pair itself; it forwards it to CRYPTO_free, which forwards it verbatim to an application-installed CRYPTO_free_fn and otherwise calls free(str) alone (crypto/mem.c). NULL is inside that contract for the same reason it is for CRYPTO_free. In-tree C callers arrive through the OPENSSL_clear_free macro, which expands OPENSSL_FILE and OPENSSL_LINE (include/openssl/crypto.h)."
      }
     },
     {
@@ -8648,7 +8648,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Consumes a nullable OpenSSL allocation after cleansing the supplied byte length; applicable to scalar storage, buffers, and strings."
+      "note": "Consumes a nullable allocation obtained from the active OpenSSL allocator; applies to scalar storage, counted buffers, and strings. NULL returns before anything else, so a null pointer is safe whatever num says. num is caller-asserted and never derived from the allocation: it is only the OPENSSL_cleanse length (crypto/mem_clr.c, an unelidable memset), so it must not exceed the live bytes, and it fixes how much is erased - bytes of the allocation beyond num survive the call. num == 0 skips the cleanse entirely (if (num) in crypto/mem.c), leaving the call identical to CRYPTO_free. Release then always goes through CRYPTO_free, so cleansing changes what the storage holds, never which allocator or application-installed CRYPTO_free_fn reclaims it: a buffer is interchangeable between CRYPTO_free and CRYPTO_clear_free owners."
      }
     }
    ]
@@ -11685,7 +11685,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Consumes a nullable OpenSSL byte buffer, cleansing size bytes when pedantic zeroization is configured and otherwise releasing directly."
+      "note": "Consumes a nullable byte buffer owned by the caller. Declared static ossl_inline in an internal header, so there is no linkable symbol to call: a Rust surface is a native translation of the branch it selects, not an FFI wrap. Both branches release through CRYPTO_free - OPENSSL_clear_free(ptr, size) -> CRYPTO_clear_free -> CRYPTO_free when OPENSSL_PEDANTIC_ZEROIZATION is defined, OPENSSL_free(ptr) -> CRYPTO_free otherwise - so the storage is an ordinary OpenSSL allocation whichever way the module is configured and only the cleansing differs; a buffer therefore crosses between C and a Rust owner in either build. size is read only on the pedantic branch, where it becomes the OPENSSL_cleanse length and must be the buffer's live byte count; the default branch ignores it, so a wrong size is inert there and harmful only under pedantic zeroization. Every in-tree caller is crypto/ffc/ffc_params.c (ossl_ffc_params_cleanup, ossl_ffc_params_set_seed, ossl_ffc_params_copy), passing params->seed with params->seedlen: an OPENSSL_memdup buffer of exactly seedlen bytes, or the NULL/0 pair ossl_ffc_params_init leaves behind. OPENSSL_PEDANTIC_ZEROIZATION is a supported configuration exercised daily in CI (.github/workflows/run-checker-daily.yml), not dead code."
      }
     }
    ]

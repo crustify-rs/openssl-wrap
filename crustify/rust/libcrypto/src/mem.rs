@@ -58,15 +58,36 @@ unsafe impl CLenDropped for CryptoFree {
 
 /// Wraps: CRYPTO_clear_free
 /// Length-aware lifecycle strategy that cleanses an ordinary OpenSSL buffer.
+///
+/// `CRYPTO_clear_free` cleanses exactly the byte count it is handed and then
+/// releases through `CRYPTO_free` (`crypto/mem.c`). So this strategy erases
+/// only the bytes its owner accounts for, and as far as the allocator is
+/// concerned it is interchangeable with [`CryptoFree`]: a buffer released
+/// here could equally have been released there, and vice versa.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct CryptoClearFree;
 
 /// An owned OpenSSL string whose bytes are cleansed before release.
 pub type CryptoClearString = CrustifyStr<CryptoClearFree>;
 
-/// Wraps: CRYPTO_clear_free
-// SAFETY: for this string strategy, the terminator makes the readable byte
-// count recoverable before delegating to the allocator-matched clear-free.
+// This impl carries a precondition `CDropped` does not state: it recovers the
+// cleanse length by scanning for a terminator, so `obj` must denote a live
+// NUL-terminated OpenSSL allocation rather than an arbitrary one. Both owners
+// that consume a `CDropped` strategy reach it. `CrustifyStr<CryptoClearFree>`
+// (`CryptoClearString`) upholds it by construction, its type invariant being
+// exactly a live NUL-terminated string. `CVoidBox<CryptoClearFree>` leaves it
+// to the caller, whose `from_raw` obligation is that this strategy is the
+// correct destructor for the allocation — which here includes the terminator.
+// An erased blob carrying no terminator belongs in `CVec<u8, CryptoClearFree>`
+// instead, which supplies the length rather than recovering it.
+//
+// Only the logical string and its NUL are cleansed. Bytes of a longer
+// allocation past the terminator are freed untouched, so storage whose secret
+// extends beyond it needs the length-aware impl below.
+//
+// SAFETY: `CRYPTO_clear_free` cleanses the byte count it is given and then
+// releases the allocation through `CRYPTO_free`, settling exactly the one
+// ownership debt this contract transfers.
 unsafe impl CDropped for CryptoClearFree {
     unsafe fn c_drop(obj: NonNull<Self>) {
         // SAFETY: this strategy is selected only for a live NUL-terminated
@@ -75,13 +96,17 @@ unsafe impl CDropped for CryptoClearFree {
             .to_bytes_with_nul()
             .len();
         // SAFETY: `byte_len` covers the live logical string including its NUL,
-        // and the trait contract transfers its OpenSSL allocation exactly once.
+        // so it cannot exceed the allocation `OPENSSL_cleanse` then writes
+        // over, and the trait contract transfers that allocation exactly once.
         unsafe { ffi::CRYPTO_clear_free(obj.as_ptr().cast(), byte_len, ptr::null(), 0) }
     }
 }
 
-// SAFETY: the byte length supplied by `CVec` is exactly the allocation size,
-// which is the contract required by `CRYPTO_clear_free` before release.
+// SAFETY: `CRYPTO_clear_free` never consults the allocation size; it cleanses
+// exactly the byte count it is handed. The `CLenDropped` contract bounds that
+// count by the allocation, which is what keeps the write in bounds, and a zero
+// count is inside the contract too — `crypto/mem.c` skips the cleanse and the
+// call degenerates to a plain `CRYPTO_free`.
 unsafe impl CLenDropped for CryptoClearFree {
     unsafe fn c_drop_len(ptr: *mut u8, byte_len: usize) {
         // SAFETY: the trait contract guarantees `byte_len` live bytes in an
@@ -117,6 +142,30 @@ mod tests {
             unsafe { CVec::<u8, CryptoClearFree>::from_raw_parts(duplicate(&bytes), bytes.len()) }
                 .expect("CRYPTO_memdup allocation");
         assert_eq!(buffer.as_slice(), bytes);
+    }
+
+    #[test]
+    fn erased_clear_free_owner_releases_a_terminated_allocation() {
+        // SAFETY: `CRYPTO_strdup` returns a fresh NUL-terminated OpenSSL
+        // allocation, which is the precondition this strategy's `CDropped`
+        // impl adds; ownership of it transfers to the erased handle.
+        let erased = unsafe {
+            CVoidBox::<CryptoClearFree>::from_raw(
+                ffi::CRYPTO_strdup(c"erase me".as_ptr(), ptr::null(), 0).cast(),
+            )
+        };
+        assert!(erased.is_some());
+    }
+
+    #[test]
+    fn empty_buffer_release_skips_the_cleanse() {
+        let bytes = [7_u8];
+        // SAFETY: `duplicate` returns a unique one-byte OpenSSL allocation,
+        // which covers the zero byte length claimed here; on drop the strategy
+        // asks `CRYPTO_clear_free` to cleanse nothing and release the storage.
+        let empty = unsafe { CVec::<u8, CryptoClearFree>::from_raw_parts(duplicate(&bytes), 0) }
+            .expect("CRYPTO_memdup allocation");
+        assert!(empty.is_empty());
     }
 
     #[test]
