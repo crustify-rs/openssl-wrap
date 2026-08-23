@@ -562,7 +562,7 @@
   {
    "name": "asn1_string_st",
    "defined_in": "include/crypto/asn1.h",
-   "_comment_agent": "The data field has runtime-conditional ownership selected by ASN1_STRING_FLAG_DATA_NOT_OWNED; length is authoritative and contents are not generally NUL-terminated.",
+   "_comment_agent": "The data field has runtime-conditional ownership, selected by ASN1_STRING_FLAG_DATA_NOT_OWNED or ASN1_STRING_FLAG_NDEF; length is authoritative and the contents are not generally NUL-terminated. The header's own storage is equally conditional: ASN1_STRING_FLAG_EMBED, set by asn1_primitive_new for ASN1_EMBED template fields, means the struct lives inside a parent allocation and both destructors then release only the data. ASN1_STRING_free and ASN1_STRING_clear_free are ossl_asn1_string_free_internal with clear=0 and clear=1, so either accepts every string the other does and the choice between them is free.",
    "fields": [
     {
      "name": "data",
@@ -578,7 +578,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Length-delimited byte buffer. Normally owned and released by the ASN1_STRING destructor; ASN1_STRING_FLAG_DATA_NOT_OWNED makes it a borrowed external buffer. Zero-length strings may carry NULL. Mutating APIs can replace or write the buffer."
+      "note": "Length-delimited byte buffer, normally owned and released by the ASN1_STRING destructor. Two flags suppress that release and make it a borrowed external buffer: ASN1_STRING_FLAG_DATA_NOT_OWNED, set by ASN1_STRING_new_not_owned, and ASN1_STRING_FLAG_NDEF, set by the streaming PKCS#7 and CMS code for a placeholder pointing into a caller buffer. ASN1_STRING_copy, and therefore ASN1_STRING_dup, allocates a fresh owned buffer and then copies every source flag except EMBED, so a copy of either kind of source owns its buffer while flagged as not owning it and leaks it at free (confirmed under LeakSanitizer). Zero-length strings may carry NULL. Mutating APIs can replace or write the buffer."
      }
     }
    ]

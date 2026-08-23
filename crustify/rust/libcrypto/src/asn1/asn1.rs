@@ -2,7 +2,7 @@
 
 use core::ptr::NonNull;
 
-use ffibox::{CBox, CCloner, CDropper, define_ctype, impl_cloned, impl_dropped};
+use ffibox::{CBox, CBoxWith, CCloner, CDropper, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -111,19 +111,69 @@ mod tests {
 define_ctype!(
     /// Wraps: asn1_string_st
     ///
-    /// All of OpenSSL's public ASN.1 string typedefs share this representation.
-    /// The concrete body remains private to OpenSSL, while owned and borrowed
-    /// Rust handles preserve its C allocation and pointer ABI.
+    /// Every public ASN.1 string typedef — `ASN1_STRING`, `ASN1_INTEGER`,
+    /// `ASN1_OCTET_STRING`, `ASN1_TIME` and the rest of the eighteen — is this
+    /// one C struct, told apart at runtime by its `type` field, so one wrapper
+    /// covers all of them.
+    ///
+    /// The public headers only forward-declare `struct asn1_string_st`; the
+    /// body lives in the internal `crypto/asn1.h`. The generated binding is
+    /// therefore an incomplete type and this wrapper deliberately carries no
+    /// field accessors. `length`, `type`, `data` and `flags` are reached
+    /// through the published call surface in [`crate::asn1::asn1_lib`] —
+    /// `ASN1_STRING_get_length`, `ASN1_STRING_type`, `ASN1_STRING_get0_data`,
+    /// `ASN1_STRING_set0` and friends — which is also what keeps the handles
+    /// one pointer wide over OpenSSL's own allocation.
+    ///
+    /// Adoption is the part Rust cannot check for the caller. Both destructors
+    /// registered below consult `flags` to decide whether they release the
+    /// header, the byte buffer, or neither, so a raw pointer may be adopted as
+    /// an owner only when it is a heap header the caller owns outright — what
+    /// `ASN1_STRING_new`, `ASN1_STRING_type_new`, `ASN1_STRING_dup` and
+    /// `ASN1_STRING_set_by_NID` return. A string that OpenSSL embedded in a
+    /// parent (`ASN1_STRING_FLAG_EMBED`, which the ASN.1 template code sets for
+    /// every `ASN1_EMBED` field) or one merely borrowed from a parent, as every
+    /// `X509_get0_*`-style accessor returns, stays a borrowed
+    /// [`Asn1StringRef`] or [`Asn1StringMut`]: adopting it would free a buffer
+    /// the parent still points at.
     Asn1String,
     Asn1StringRef,
     Asn1StringMut,
     ffi::asn1_string_st
 );
 
+// `ASN1_STRING_free` is the destructor for a heap-allocated ASN.1 string, and
+// both halves of it are conditional on `flags`: the byte buffer is released
+// unless it belongs to someone else (`ASN1_STRING_FLAG_DATA_NOT_OWNED`, set by
+// `ASN1_STRING_new_not_owned`, or `ASN1_STRING_FLAG_NDEF`, set by the
+// streaming PKCS#7 and CMS code), and the header is released unless it is
+// embedded in a parent (`ASN1_STRING_FLAG_EMBED`). For the strings the public
+// API hands out as owned, none of those flags is set and this frees both.
 impl_dropped!(Asn1String, ffi::asn1_string_st, ffi::ASN1_STRING_free);
+
+// `ASN1_STRING_dup` allocates a fresh header with `ASN1_STRING_new` and
+// deep-copies the bytes into it, so the duplicate is independent of its source
+// and owes exactly one free of its own. No refcount exists on this type, which
+// is why the binding is a `dup =` and not an `up_ref =`.
+//
+// The copy also inherits the source's flags, all but `ASN1_STRING_FLAG_EMBED`.
+// When the source's buffer is external — `ASN1_STRING_FLAG_DATA_NOT_OWNED` or
+// `ASN1_STRING_FLAG_NDEF` — the duplicate ends up owning a freshly allocated
+// buffer while flagged as not owning it, and its destructor then leaves that
+// buffer behind. Cloning such a string leaks the copied bytes. The `CCloned`
+// contract still holds, since the duplicate owes and receives exactly one
+// `c_drop`; the leak is inside OpenSSL's copy routine, and callers cloning a
+// string built by `ASN1_STRING_new_not_owned` should know about it.
 impl_cloned!(Asn1String, ffi::asn1_string_st, dup = ffi::ASN1_STRING_dup);
 
 /// Selects `ASN1_STRING_clear_free` for an owned ASN.1 string.
+///
+/// A type gets one `CDropped`, which is spent on `ASN1_STRING_free`, so this
+/// second, equally valid destructor is registered as a policy object instead
+/// and selected by the [`ClearAsn1String`] owner. The two differ only in that
+/// this one cleanses the released bytes first; every object either accepts is
+/// accepted by the other, which is what makes [`Asn1String::into_clearing`] and
+/// [`Asn1String::into_plain`] safe.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Asn1StringClearFree;
 
@@ -149,13 +199,37 @@ unsafe impl CCloner<Asn1String> for Asn1StringClearFree {
 }
 
 /// An owning ASN.1 string that clears its contents before releasing storage.
-pub type ClearAsn1String = ffibox::CBoxWith<Asn1String, Asn1StringClearFree>;
+pub type ClearAsn1String = CBoxWith<Asn1String, Asn1StringClearFree>;
+
+impl Asn1String {
+    /// Hand an owned string to the clearing destructor.
+    ///
+    /// The object is untouched — only which destructor will run changes — so
+    /// this is the way to reach [`ClearAsn1String`] for a string that arrived
+    /// under the ordinary owner, such as the result of `ASN1_STRING_new` or of
+    /// a duplication.
+    pub fn into_clearing(owner: CBox<Self>) -> ClearAsn1String {
+        let raw = owner.into_raw();
+        // SAFETY: `into_raw` surrenders the sole ownership of a live, fully
+        // initialized heap string, and `ASN1_STRING_clear_free` releases
+        // exactly what `ASN1_STRING_free` would, cleansing the bytes first.
+        let clearing = unsafe { CBoxWith::from_raw(raw, Asn1StringClearFree) };
+        clearing.expect("CBox::into_raw yields the non-null pointer it owned")
+    }
+
+    /// Hand a clearing owner back to the ordinary destructor.
+    pub fn into_plain(owner: ClearAsn1String) -> CBox<Self> {
+        // SAFETY: both owners describe the same fully formed heap string and
+        // nothing about it changes here; `ASN1_STRING_free` requires exactly
+        // what `ASN1_STRING_clear_free` already required of this object.
+        unsafe { owner.into_box() }
+    }
+}
 
 #[cfg(test)]
 mod string_tests {
-    use ffibox::{CBox, CBoxWith};
-
     use super::*;
+    use crate::asn1::asn1_lib::{ASN1_STRING_get0_data, ASN1_STRING_new, ASN1_STRING_set1_data};
 
     #[test]
     fn owned_string_clones_and_borrows() {
@@ -183,5 +257,60 @@ mod string_tests {
 
         let duplicate = string.try_clone().expect("ASN1_STRING_dup");
         assert_ne!(duplicate.as_ptr(), raw);
+    }
+
+    #[test]
+    fn a_duplicate_stops_tracking_its_source() {
+        let mut source = ASN1_STRING_new().expect("ASN1_STRING_new");
+        assert!(ASN1_STRING_set1_data(&mut source.as_mut(), b"first"));
+
+        let duplicate = source.try_clone().expect("ASN1_STRING_dup");
+        assert_ne!(duplicate.as_ptr(), source.as_ptr());
+        assert!(ASN1_STRING_set1_data(&mut source.as_mut(), b"second"));
+
+        let copied = ASN1_STRING_get0_data(duplicate.as_ref()).expect("duplicated data");
+        assert_eq!(copied.elems().collect::<Vec<_>>(), b"first");
+    }
+
+    #[test]
+    fn the_two_owner_forms_convert_in_both_directions() {
+        let mut string = ASN1_STRING_new().expect("ASN1_STRING_new");
+        assert!(ASN1_STRING_set1_data(&mut string.as_mut(), b"secret"));
+        let raw = string.as_ptr();
+
+        let clearing = Asn1String::into_clearing(string);
+        assert_eq!(clearing.as_ptr(), raw);
+
+        // The round trip must not duplicate or release anything: the final
+        // owner releases this one allocation once, with `ASN1_STRING_free`.
+        let plain = Asn1String::into_plain(clearing);
+        assert_eq!(plain.as_ptr(), raw);
+        assert_eq!(
+            ASN1_STRING_get0_data(plain.as_ref())
+                .expect("retained data")
+                .elems()
+                .collect::<Vec<_>>(),
+            b"secret"
+        );
+    }
+
+    #[test]
+    fn owners_and_handles_stay_pointer_sized() {
+        assert_eq!(
+            size_of::<CBox<Asn1String>>(),
+            size_of::<*mut ffi::asn1_string_st>()
+        );
+        assert_eq!(
+            size_of::<ClearAsn1String>(),
+            size_of::<*mut ffi::asn1_string_st>()
+        );
+        assert_eq!(
+            size_of::<Asn1StringRef<'static>>(),
+            size_of::<*mut ffi::asn1_string_st>()
+        );
+        assert_eq!(
+            size_of::<Asn1StringMut<'static>>(),
+            size_of::<*mut ffi::asn1_string_st>()
+        );
     }
 }
