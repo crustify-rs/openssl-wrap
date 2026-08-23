@@ -188,6 +188,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "X509_NAME_dup",
     "X509_NAME_ENTRY_dup",
     "X509_NAME_ENTRY_free",
+    "X509_NAME_ENTRY_get_data",
     "X509_NAME_ENTRY_get_object",
     "X509_NAME_ENTRY_new",
     "X509_NAME_cmp",

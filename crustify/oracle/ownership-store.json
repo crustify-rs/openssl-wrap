@@ -13184,6 +13184,45 @@
    ]
   },
   {
+   "name": "X509_NAME_ENTRY_get_data",
+   "defined_in": "crypto/x509/x509name.c",
+   "ptr_args": [
+    {
+     "name": "ne",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ne"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The function only tests and reads the const entry; NULL is accepted and returns NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ne->value"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "The result is the entry's internally owned ASN1_STRING value and remains valid only while the entry remains live; it is NULL when the input is NULL."
+    }
+   }
+  },
+  {
    "name": "X509_NAME_ENTRY_get_object",
    "defined_in": "crypto/x509/x509name.c",
    "ptr_args": [

@@ -4,7 +4,7 @@ use core::ptr;
 
 use libcrypto_sys as ffi;
 
-use crate::asn1::asn1::Asn1ObjectRef;
+use crate::asn1::asn1::{Asn1ObjectRef, Asn1StringRef};
 use crate::x509::x509_internal::{X509NameEntryRef, X509NameRef};
 
 fn last_position(position: Option<usize>) -> Option<i32> {
@@ -22,6 +22,19 @@ pub fn X509_NAME_ENTRY_get_object<'a>(
     // SAFETY: the input is null or a live shared entry. The returned object is
     // retained by that entry and therefore shares the entry handle's lifetime.
     unsafe { Asn1ObjectRef::from_ptr(ffi::X509_NAME_ENTRY_get_object(entry).cast_mut()) }
+}
+
+/// Wraps: X509_NAME_ENTRY_get_data
+/// Borrows the ASN.1 string retained by an optional name entry.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_NAME_ENTRY_get_data<'a>(
+    entry: Option<X509NameEntryRef<'a>>,
+) -> Option<Asn1StringRef<'a>> {
+    let entry = entry.map_or(ptr::null(), |entry| entry.as_ptr());
+    // SAFETY: the input is null or a live shared entry. The returned string is
+    // retained by that entry and therefore shares the entry handle's lifetime.
+    unsafe { Asn1StringRef::from_ptr(ffi::X509_NAME_ENTRY_get_data(entry).cast_mut()) }
 }
 
 /// Wraps: X509_NAME_entry_count
@@ -143,6 +156,7 @@ pub fn X509_NAME_get_text_by_OBJ(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::asn1::asn1_lib::ASN1_STRING_get0_data;
     use crate::x509::x_name::{X509_NAME_free, d2i_X509_NAME};
 
     const NAME_DER: &[u8] = b"\x30\x0c\x31\x0a\x30\x08\x06\x03\x55\x04\x03\x0c\x01x";
@@ -157,6 +171,14 @@ mod tests {
         let entry = X509_NAME_get_entry(Some(name.as_ref()), 0).expect("entry");
         assert!(X509_NAME_get_entry(Some(name.as_ref()), 1).is_none());
         let object = X509_NAME_ENTRY_get_object(Some(entry)).expect("object");
+        let data = X509_NAME_ENTRY_get_data(Some(entry)).expect("data");
+        assert_eq!(
+            ASN1_STRING_get0_data(data)
+                .expect("data bytes")
+                .elems()
+                .collect::<Vec<_>>(),
+            b"x"
+        );
         assert_eq!(
             X509_NAME_get_index_by_OBJ(Some(name.as_ref()), object, None),
             Some(0)
@@ -175,6 +197,7 @@ mod tests {
             Err(InvalidNid)
         );
         assert!(X509_NAME_ENTRY_get_object(None).is_none());
+        assert!(X509_NAME_ENTRY_get_data(None).is_none());
         X509_NAME_free(name);
     }
 
