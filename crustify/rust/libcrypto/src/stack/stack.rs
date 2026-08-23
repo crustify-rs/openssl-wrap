@@ -182,19 +182,63 @@ mod tests {
     enum FirstElement {}
     enum SecondElement {}
 
-    static DEEP_FREES: AtomicUsize = AtomicUsize::new(0);
-
-    unsafe extern "C" fn copy_i32(source: *const c_void) -> *mut c_void {
-        // SAFETY: the test registers this callback only for live `i32` elements.
-        let value = unsafe { source.cast::<i32>().read() };
-        Box::into_raw(Box::new(value)).cast()
+    /// Stores a boxed value in `stack` and hands back its element token.
+    ///
+    /// # Safety
+    ///
+    /// The caller must reclaim or transfer every returned allocation exactly
+    /// once, as each test below does.
+    unsafe fn push_boxed(stack: &mut CBox<Stack<i32>>, value: i32) -> StackElement<i32> {
+        let raw = Box::into_raw(Box::new(value));
+        // SAFETY: `raw` is a live, uniquely owned `i32` allocation.
+        let element = unsafe { StackElement::from_raw(raw) }.unwrap();
+        // SAFETY: the caller keeps the allocation live for as long as it is
+        // stored and for every comparator invocation.
+        unsafe { OPENSSL_sk_push(Some(&mut stack.as_mut()), Some(element)) }.unwrap();
+        element
     }
 
-    unsafe extern "C" fn free_i32(value: *mut c_void) {
-        if !value.is_null() {
-            // SAFETY: the deep-copy callback created one unique `Box<i32>`.
-            drop(unsafe { Box::from_raw(value.cast::<i32>()) });
-            DEEP_FREES.fetch_add(1, Ordering::Relaxed);
+    /// Reads the `i32` an element token addresses.
+    ///
+    /// # Safety
+    ///
+    /// `element` must still address a live `i32`.
+    unsafe fn read_element(element: StackElement<i32>) -> i32 {
+        // SAFETY: the caller guarantees the allocation is still live.
+        unsafe { element.as_non_null().as_ptr().read() }
+    }
+
+    /// Reclaims a `Box<i32>` the tests stored in a stack.
+    ///
+    /// # Safety
+    ///
+    /// `element` must be an allocation from [`push_boxed`] that nothing else
+    /// has reclaimed.
+    unsafe fn reclaim(element: StackElement<i32>) {
+        // SAFETY: the caller transfers the unique `Box<i32>` back.
+        drop(unsafe { Box::from_raw(element.as_non_null().as_ptr()) });
+    }
+
+    /// The comparator contract `OpenSslSkStackCompFunc` describes: both
+    /// arguments address element *slots*, not the elements themselves.
+    unsafe extern "C" fn compare_i32_slots(left: *const c_void, right: *const c_void) -> i32 {
+        // SAFETY: every stack routine that reaches a comparator — `qsort` in
+        // `OPENSSL_sk_sort`, `ossl_bsearch`, `internal_find`'s linear scan and
+        // `OPENSSL_sk_insert`'s sortedness check — passes the addresses of two
+        // slots holding live `i32` pointers.
+        let (left, right) = unsafe {
+            (
+                left.cast::<*const i32>().read(),
+                right.cast::<*const i32>().read(),
+            )
+        };
+        // SAFETY: the tests keep every stored element live while it resides in
+        // a stack carrying this comparator.
+        let (left, right) = unsafe { (left.read(), right.read()) };
+        match left.cmp(&right) {
+            core::cmp::Ordering::Less => -1,
+            core::cmp::Ordering::Equal => 0,
+            core::cmp::Ordering::Greater => 1,
         }
     }
 
@@ -284,13 +328,25 @@ mod tests {
 
     #[test]
     fn deep_copy_owner_frees_copied_elements() {
-        DEEP_FREES.store(0, Ordering::Relaxed);
+        static FREES: AtomicUsize = AtomicUsize::new(0);
+
+        unsafe extern "C" fn copy_i32(source: *const c_void) -> *mut c_void {
+            // SAFETY: this callback is registered only for live `i32` elements.
+            let value = unsafe { source.cast::<i32>().read() };
+            Box::into_raw(Box::new(value)).cast()
+        }
+
+        unsafe extern "C" fn free_i32(value: *mut c_void) {
+            if !value.is_null() {
+                // SAFETY: `copy_i32` created one unique `Box<i32>`.
+                drop(unsafe { Box::from_raw(value.cast::<i32>()) });
+                FREES.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+
         let mut source = OPENSSL_sk_new_null::<i32>().expect("new source stack");
-        let original = Box::into_raw(Box::new(23_i32));
-        // SAFETY: `original` stays live until removed after the copy.
-        let token = unsafe { StackElement::from_raw(original) }.unwrap();
-        // SAFETY: the Box remains live throughout its residence in `source`.
-        unsafe { OPENSSL_sk_push(Some(&mut source.as_mut()), Some(token)) }.unwrap();
+        // SAFETY: the allocation is reclaimed once, below.
+        let token = unsafe { push_boxed(&mut source, 23) };
 
         // SAFETY: these callbacks copy and free precisely `i32` allocations.
         let copy = unsafe { OpenSslSkCopyFunc::from_raw(Some(copy_i32)) }.unwrap();
@@ -298,25 +354,56 @@ mod tests {
         let free = unsafe { OpenSslSkFreeFunc::from_raw(Some(free_i32)) }.unwrap();
         let deep = OPENSSL_sk_deep_copy(Some(source.as_ref()), copy, free).expect("deep copy");
         assert_eq!(OPENSSL_sk_num(Some(deep.as_ref())), Some(1));
+        // The copy is independent: it holds a different allocation.
+        let copied = OPENSSL_sk_value(Some(deep.as_ref()), 0).unwrap();
+        assert_ne!(copied.as_non_null(), token.as_non_null());
+        // SAFETY: both allocations are still live here.
+        assert_eq!(unsafe { read_element(copied) }, 23);
         drop(deep);
-        assert_eq!(DEEP_FREES.load(Ordering::Relaxed), 1);
+        assert_eq!(FREES.load(Ordering::Relaxed), 1);
 
         let original = OPENSSL_sk_pop(Some(&mut source.as_mut())).unwrap();
-        // SAFETY: the original stack did not own or free this Box.
-        drop(unsafe { Box::from_raw(original.as_non_null().as_ptr()) });
+        // SAFETY: the source stack did not own or free this Box.
+        unsafe { reclaim(original) };
+    }
+
+    #[test]
+    fn a_null_source_deep_copies_into_an_empty_owner() {
+        unsafe extern "C" fn never_copies(_source: *const c_void) -> *mut c_void {
+            unreachable!("an empty source has no element to copy")
+        }
+
+        unsafe extern "C" fn never_frees(_value: *mut c_void) {
+            unreachable!("an empty copy has no element to release")
+        }
+
+        // SAFETY: neither callback can be reached from an empty source.
+        let copy = unsafe { OpenSslSkCopyFunc::<i32>::from_raw(Some(never_copies)) }.unwrap();
+        // SAFETY: as above.
+        let free = unsafe { OpenSslSkFreeFunc::<i32>::from_raw(Some(never_frees)) }.unwrap();
+        // Like `OPENSSL_sk_dup`, a null source produces a fresh empty stack.
+        let deep = OPENSSL_sk_deep_copy(None, copy, free).expect("deep copy of a null source");
+        assert_eq!(OPENSSL_sk_num(Some(deep.as_ref())), Some(0));
+        OPENSSL_sk_pop_free(Some(deep));
     }
 
     #[test]
     fn promoted_owner_releases_every_transferred_element() {
-        DEEP_FREES.store(0, Ordering::Relaxed);
+        static FREES: AtomicUsize = AtomicUsize::new(0);
+
+        unsafe extern "C" fn free_i32(value: *mut c_void) {
+            if !value.is_null() {
+                // SAFETY: every element stored below is a unique `Box<i32>`.
+                drop(unsafe { Box::from_raw(value.cast::<i32>()) });
+                FREES.fetch_add(1, Ordering::Relaxed);
+            }
+        }
+
         let mut stack = OPENSSL_sk_new_null::<i32>().expect("new stack");
         for value in [2_i32, 3, 5] {
-            let raw = Box::into_raw(Box::new(value));
-            // SAFETY: `raw` is a live unique `i32` allocation.
-            let element = unsafe { StackElement::from_raw(raw) }.unwrap();
             // SAFETY: ownership of the Box moves into the stack, which is
             // promoted below to an owner that frees it exactly once.
-            unsafe { OPENSSL_sk_push(Some(&mut stack.as_mut()), Some(element)) }.unwrap();
+            unsafe { push_boxed(&mut stack, value) };
         }
 
         // SAFETY: `free_i32` releases exactly the `Box<i32>` allocations above.
@@ -327,7 +414,322 @@ mod tests {
         assert_eq!(OPENSSL_sk_num(Some(owning.as_ref())), Some(3));
 
         OPENSSL_sk_pop_free(Some(owning));
-        assert_eq!(DEEP_FREES.load(Ordering::Relaxed), 3);
+        assert_eq!(FREES.load(Ordering::Relaxed), 3);
+    }
+
+    #[test]
+    fn constructors_reserve_capacity_and_duplicates_share_element_pointers() {
+        let mut source = OPENSSL_sk_new_reserve::<i32>(None, 4).expect("reserved stack");
+        assert_eq!(OPENSSL_sk_num(Some(source.as_ref())), Some(0));
+        // Reserving does not populate the stack, so it is still sorted.
+        assert!(OPENSSL_sk_is_sorted(Some(source.as_ref())));
+        // SAFETY: the allocation is reclaimed once, below.
+        let stored = unsafe { push_boxed(&mut source, 11) };
+
+        let duplicate = OPENSSL_sk_dup(Some(source.as_ref())).expect("duplicate");
+        assert_eq!(OPENSSL_sk_num(Some(duplicate.as_ref())), Some(1));
+        // The duplicate holds the very same element pointer, which neither
+        // stack owns.
+        assert_eq!(
+            OPENSSL_sk_value(Some(duplicate.as_ref()), 0)
+                .unwrap()
+                .as_non_null(),
+            stored.as_non_null()
+        );
+        OPENSSL_sk_free(Some(duplicate));
+
+        // A null source is not an error: it produces a fresh empty stack.
+        let empty = OPENSSL_sk_dup::<i32>(None).expect("duplicate of a null source");
+        assert_eq!(OPENSSL_sk_num(Some(empty.as_ref())), Some(0));
+        OPENSSL_sk_free(Some(empty));
+
+        // SAFETY: neither stack ever owned the element.
+        unsafe { reclaim(stored) };
+    }
+
+    #[test]
+    fn sorted_search_wrappers_report_matches_and_neighbours() {
+        // SAFETY: `compare_i32_slots` obeys the element-slot comparator
+        // contract for `i32` and never retains or unwinds.
+        let comparator = unsafe { OpenSslSkStackCompFunc::from_raw(Some(compare_i32_slots)) };
+        let mut stack = OPENSSL_sk_new(comparator).expect("new stack");
+        let mut stored = Vec::new();
+        for value in [5_i32, 1, 9, 3, 5] {
+            // SAFETY: every allocation is reclaimed once, below.
+            stored.push(unsafe { push_boxed(&mut stack, value) });
+        }
+
+        // Pushing out of order clears the flag the constructor set.
+        assert!(!OPENSSL_sk_is_sorted(Some(stack.as_ref())));
+        OPENSSL_sk_sort(Some(&mut stack.as_mut()));
+        assert!(OPENSSL_sk_is_sorted(Some(stack.as_ref())));
+
+        let order: Vec<i32> = (0..5)
+            .map(|index| {
+                let element = OPENSSL_sk_value(Some(stack.as_ref()), index).unwrap();
+                // SAFETY: every element is still live and stored.
+                unsafe { read_element(element) }
+            })
+            .collect();
+        assert_eq!(order, [1, 3, 5, 5, 9]);
+
+        let five = stored[0];
+        // SAFETY: `five` and every stored element remain live for the search.
+        let found = unsafe { OPENSSL_sk_find(Some(stack.as_ref()), Some(five)) };
+        assert_eq!(found, Some(2));
+        // SAFETY: as above; both equal elements are counted.
+        let all = unsafe { OPENSSL_sk_find_all(Some(stack.as_ref()), Some(five)) };
+        assert_eq!(all, Some((2, 2)));
+
+        let absent = Box::into_raw(Box::new(4_i32));
+        // SAFETY: `absent` is a live `i32` for the searches below.
+        let absent = unsafe { StackElement::from_raw(absent) }.unwrap();
+        // An exact search reports nothing...
+        // SAFETY: every element the comparator sees is live.
+        let exact = unsafe { OPENSSL_sk_find(Some(stack.as_ref()), Some(absent)) };
+        assert_eq!(exact, None);
+        // ...while the `_ex` form reports where the binary search stopped.
+        // SAFETY: as above.
+        let nearest = unsafe { OPENSSL_sk_find_ex(Some(stack.as_ref()), Some(absent)) };
+        assert_eq!(nearest, Some(1));
+
+        // A null stack has nothing to search, whichever form is used.
+        // SAFETY: no comparator runs without a stack.
+        unsafe {
+            assert_eq!(OPENSSL_sk_find::<i32>(None, Some(absent)), None);
+            assert_eq!(OPENSSL_sk_find_ex::<i32>(None, Some(absent)), None);
+            assert_eq!(OPENSSL_sk_find_all::<i32>(None, Some(absent)), None);
+        }
+
+        // SAFETY: each allocation is reclaimed exactly once.
+        unsafe { reclaim(absent) };
+        for element in stored {
+            // SAFETY: the stack never owned these allocations.
+            unsafe { reclaim(element) };
+        }
+    }
+
+    #[test]
+    fn the_comparator_thunk_mediates_searches_but_not_sorting() {
+        static THUNK_CALLS: AtomicUsize = AtomicUsize::new(0);
+
+        unsafe extern "C" fn counting_thunk(
+            comparator: ffi::OPENSSL_sk_compfunc,
+            left: *const c_void,
+            right: *const c_void,
+        ) -> i32 {
+            THUNK_CALLS.fetch_add(1, Ordering::Relaxed);
+            // SAFETY: the stack passes its stored comparator together with the
+            // two element-slot addresses it would otherwise hand it directly.
+            unsafe { comparator.expect("stored comparator")(left, right) }
+        }
+
+        // SAFETY: `compare_i32_slots` obeys the element-slot comparator contract.
+        let comparator = unsafe { OpenSslSkStackCompFunc::from_raw(Some(compare_i32_slots)) };
+        let mut stack = OPENSSL_sk_new(comparator).expect("new stack");
+        let mut stored = Vec::new();
+        for value in [5_i32, 1, 9, 3] {
+            // SAFETY: every allocation is reclaimed once, below.
+            stored.push(unsafe { push_boxed(&mut stack, value) });
+        }
+
+        // SAFETY: `counting_thunk` forwards the stored comparator unchanged,
+        // retains nothing and cannot unwind.
+        let thunk = unsafe { OpenSslSkCompThunk::from_raw(Some(counting_thunk)) };
+        OPENSSL_sk_set_cmp_thunks(Some(&mut stack.as_mut()), thunk);
+
+        // `OPENSSL_sk_sort` hands the comparator straight to `qsort`, so the
+        // adapter is bypassed — exactly what the wrapper documents.
+        THUNK_CALLS.store(0, Ordering::Relaxed);
+        OPENSSL_sk_sort(Some(&mut stack.as_mut()));
+        assert_eq!(THUNK_CALLS.load(Ordering::Relaxed), 0);
+        assert!(OPENSSL_sk_is_sorted(Some(stack.as_ref())));
+
+        // Searching does go through it.
+        THUNK_CALLS.store(0, Ordering::Relaxed);
+        let five = stored[0];
+        // SAFETY: `five` and every stored element remain live for the search.
+        let through_thunk = unsafe { OPENSSL_sk_find(Some(stack.as_ref()), Some(five)) };
+        assert_eq!(through_thunk, Some(2));
+        assert!(THUNK_CALLS.load(Ordering::Relaxed) > 0);
+
+        // Clearing the adapter restores the direct comparator call.
+        OPENSSL_sk_set_cmp_thunks::<i32>(Some(&mut stack.as_mut()), None);
+        THUNK_CALLS.store(0, Ordering::Relaxed);
+        // SAFETY: as above.
+        let direct = unsafe { OPENSSL_sk_find(Some(stack.as_ref()), Some(five)) };
+        assert_eq!(direct, Some(2));
+        assert_eq!(THUNK_CALLS.load(Ordering::Relaxed), 0);
+
+        for element in stored {
+            // SAFETY: the stack never owned these allocations.
+            unsafe { reclaim(element) };
+        }
+    }
+
+    #[test]
+    fn replacing_the_comparator_hands_back_the_previous_one() {
+        // SAFETY: `compare_i32_slots` obeys the element-slot comparator contract.
+        let comparator = unsafe { OpenSslSkStackCompFunc::from_raw(Some(compare_i32_slots)) };
+        let mut stack = OPENSSL_sk_new(comparator).expect("new stack");
+
+        let previous = OPENSSL_sk_set_cmp_func(&mut stack.as_mut(), None);
+        assert!(previous.is_some());
+        // The slot now holds nothing, so putting the comparator back reports
+        // no predecessor.
+        assert!(OPENSSL_sk_set_cmp_func(&mut stack.as_mut(), previous).is_none());
+
+        // The restored comparator is the one the stack consults: pushing a
+        // smaller element after a larger one clears the sorted flag.
+        let mut stored = Vec::new();
+        for value in [7_i32, 2] {
+            // SAFETY: every allocation is reclaimed once, below.
+            stored.push(unsafe { push_boxed(&mut stack, value) });
+        }
+        assert!(!OPENSSL_sk_is_sorted(Some(stack.as_ref())));
+
+        for element in stored {
+            // SAFETY: the stack never owned these allocations.
+            unsafe { reclaim(element) };
+        }
+    }
+
+    #[test]
+    fn insertion_and_removal_wrappers_only_move_pointer_slots() {
+        let mut stack = OPENSSL_sk_new_null::<i32>().expect("new stack");
+        // SAFETY: every allocation is reclaimed once, below.
+        let (first, second) = unsafe { (push_boxed(&mut stack, 1), push_boxed(&mut stack, 2)) };
+
+        let middle = Box::into_raw(Box::new(3_i32));
+        // SAFETY: `middle` outlives its residence in the stack.
+        let middle = unsafe { StackElement::from_raw(middle) }.unwrap();
+        // SAFETY: as above.
+        let length = unsafe { OPENSSL_sk_insert(Some(&mut stack.as_mut()), Some(middle), 1) };
+        assert_eq!(length, Some(3));
+        assert_eq!(
+            OPENSSL_sk_value(Some(stack.as_ref()), 1)
+                .unwrap()
+                .as_non_null(),
+            middle.as_non_null()
+        );
+
+        let front = Box::into_raw(Box::new(4_i32));
+        // SAFETY: `front` outlives its residence in the stack.
+        let front = unsafe { StackElement::from_raw(front) }.unwrap();
+        // SAFETY: as above.
+        let length = unsafe { OPENSSL_sk_unshift(Some(&mut stack.as_mut()), Some(front)) };
+        assert_eq!(length, Some(4));
+        assert_eq!(
+            OPENSSL_sk_shift(Some(&mut stack.as_mut()))
+                .unwrap()
+                .as_non_null(),
+            front.as_non_null()
+        );
+
+        // Out-of-range removals report nothing and change nothing.
+        assert!(OPENSSL_sk_delete(Some(&mut stack.as_mut()), 99).is_none());
+        let absent = Box::into_raw(Box::new(5_i32));
+        // SAFETY: `absent` is live and never stored; `delete_ptr` only
+        // compares pointer identity.
+        let absent = unsafe { StackElement::from_raw(absent) }.unwrap();
+        assert!(OPENSSL_sk_delete_ptr(Some(&mut stack.as_mut()), Some(absent)).is_none());
+        assert_eq!(OPENSSL_sk_num(Some(stack.as_ref())), Some(3));
+
+        assert_eq!(
+            OPENSSL_sk_delete(Some(&mut stack.as_mut()), 1)
+                .unwrap()
+                .as_non_null(),
+            middle.as_non_null()
+        );
+        assert_eq!(
+            OPENSSL_sk_delete_ptr(Some(&mut stack.as_mut()), Some(second))
+                .unwrap()
+                .as_non_null(),
+            second.as_non_null()
+        );
+        assert_eq!(OPENSSL_sk_num(Some(stack.as_ref())), Some(1));
+
+        // Zeroing abandons the remaining slot without touching the element.
+        OPENSSL_sk_zero(Some(&mut stack.as_mut()));
+        assert_eq!(OPENSSL_sk_num(Some(stack.as_ref())), Some(0));
+        // SAFETY: each allocation is reclaimed exactly once, and the stack
+        // released none of them.
+        unsafe {
+            reclaim(first);
+            reclaim(second);
+            reclaim(middle);
+            reclaim(front);
+            reclaim(absent);
+        }
+    }
+
+    #[test]
+    fn installed_thunks_mediate_deep_copy_and_pop_free() {
+        static COPIES: AtomicUsize = AtomicUsize::new(0);
+        static FREES: AtomicUsize = AtomicUsize::new(0);
+
+        unsafe extern "C" fn copy_i32(source: *const c_void) -> *mut c_void {
+            // SAFETY: this callback is registered only for live `i32` elements.
+            let value = unsafe { source.cast::<i32>().read() };
+            Box::into_raw(Box::new(value)).cast()
+        }
+
+        unsafe extern "C" fn free_i32(value: *mut c_void) {
+            if !value.is_null() {
+                // SAFETY: `copy_i32` created one unique `Box<i32>`.
+                drop(unsafe { Box::from_raw(value.cast::<i32>()) });
+            }
+        }
+
+        unsafe extern "C" fn copy_thunk(
+            copy: ffi::OPENSSL_sk_copyfunc,
+            source: *const c_void,
+        ) -> *mut c_void {
+            COPIES.fetch_add(1, Ordering::Relaxed);
+            // SAFETY: the stack passes the copy callback it was given together
+            // with one live source element.
+            unsafe { copy.expect("copy callback")(source) }
+        }
+
+        unsafe extern "C" fn free_thunk(free: ffi::OPENSSL_sk_freefunc, value: *mut c_void) {
+            FREES.fetch_add(1, Ordering::Relaxed);
+            // SAFETY: the stack passes the destructor it was given together
+            // with one element allocation it is releasing.
+            unsafe { free.expect("free callback")(value) }
+        }
+
+        let mut source = OPENSSL_sk_new_null::<i32>().expect("new source stack");
+        // SAFETY: `copy_thunk` forwards the supplied copier for a live `i32`.
+        let installed_copy = unsafe { OpenSslSkCopyFuncThunk::from_raw(Some(copy_thunk)) };
+        OPENSSL_sk_set_copy_thunks(&mut source.as_mut(), installed_copy);
+        // SAFETY: `free_thunk` forwards the supplied destructor exactly once.
+        let installed_free = unsafe { OpenSslSkFreeFuncThunk::from_raw(Some(free_thunk)) };
+        OPENSSL_sk_set_thunks(&mut source.as_mut(), installed_free);
+
+        let mut stored = Vec::new();
+        for value in [13_i32, 17] {
+            // SAFETY: every allocation is reclaimed once, below.
+            stored.push(unsafe { push_boxed(&mut source, value) });
+        }
+
+        // SAFETY: both callbacks handle precisely `i32` allocations.
+        let copy = unsafe { OpenSslSkCopyFunc::from_raw(Some(copy_i32)) }.unwrap();
+        // SAFETY: as above.
+        let free = unsafe { OpenSslSkFreeFunc::from_raw(Some(free_i32)) }.unwrap();
+
+        // `internal_copy` copies the source struct wholesale, so the deep copy
+        // inherits both adapters and routes each element through them.
+        let deep = OPENSSL_sk_deep_copy(Some(source.as_ref()), copy, free).expect("deep copy");
+        assert_eq!(COPIES.load(Ordering::Relaxed), 2);
+        assert_eq!(OPENSSL_sk_num(Some(deep.as_ref())), Some(2));
+
+        OPENSSL_sk_pop_free(Some(deep));
+        assert_eq!(FREES.load(Ordering::Relaxed), 2);
+
+        for element in stored {
+            // SAFETY: the source stack never owned these allocations.
+            unsafe { reclaim(element) };
+        }
     }
 
     #[test]

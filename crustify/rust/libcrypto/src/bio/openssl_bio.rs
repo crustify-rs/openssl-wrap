@@ -1616,6 +1616,13 @@ pub fn BIO_set_callback(bio: &mut super::bio_bio_local::BioMut<'_>, callback: Op
 }
 /// Opaque in/out state passed between an ASN.1 prefix/suffix setup callback
 /// and its paired cleanup callback.
+///
+/// The three slots mirror `BIO_ASN1_BUF_CTX`'s `ex_buf` / `ex_len` / `ex_arg`.
+/// None of them owns anything: `asn1_bio_free` never releases `ex_buf`, and the
+/// in-tree implementations keep the allocation inside the context object
+/// reached through the `argument` slot (`ndef_aux->derbuf`), publishing a read
+/// window — possibly an interior pointer — in `buffer`. Releasing that
+/// allocation, and the context itself, is the paired cleanup callback's job.
 pub struct Asn1PsBuffer {
     buffer: *mut u8,
     length: i32,
@@ -1646,15 +1653,20 @@ impl Asn1PsBuffer {
     }
 }
 
-fn call_asn1_ps(
+/// # Safety
+///
+/// `state` must be one `callback` accepts, as documented on the calling
+/// wrapper's `call`.
+unsafe fn call_asn1_ps(
     callback: ffi::asn1_ps_func,
     bio: &mut BioMut<'_>,
     state: &mut Asn1PsBuffer,
 ) -> i32 {
     let callback = callback.expect("constructor rejects null callbacks");
     // SAFETY: the callback wrapper's constructor establishes the setup or
-    // cleanup contract. All three in/out slots and the exclusive BIO handle
-    // remain live for this synchronous invocation.
+    // cleanup contract and the caller supplies a state it accepts. All three
+    // in/out slots and the exclusive BIO handle remain live for this
+    // synchronous invocation.
     unsafe {
         callback(
             bio.as_mut_ptr(),
@@ -1666,8 +1678,12 @@ fn call_asn1_ps(
 }
 
 /// Wraps: asn1_ps_func
-/// Setup variant: produces a prefix/suffix buffer owned by the ASN.1 BIO until
-/// its paired cleanup callback runs.
+/// Setup variant: publishes the prefix or suffix bytes the ASN.1 BIO then
+/// drains.
+///
+/// The published window is not owned by the BIO or by [`Asn1PsBuffer`] — it
+/// belongs to the context object reached through the state's `void **`
+/// argument slot, and only the paired [`Asn1PsCleanupFunc`] releases it.
 #[derive(Clone, Copy)]
 pub struct Asn1PsSetupFunc(ffi::asn1_ps_func);
 
@@ -1676,10 +1692,10 @@ impl Asn1PsSetupFunc {
     ///
     /// # Safety
     ///
-    /// The callback must accept a live exclusive BIO, initialize a coherent
+    /// The callback must accept a live exclusive BIO, write a coherent
     /// buffer/length pair on success, use the argument as a `void **` context
-    /// slot, retain nothing beyond that state, accept every state passed to
-    /// [`Self::call`] (including [`Asn1PsBuffer::empty`]), and must not unwind.
+    /// slot, retain none of the three slot addresses past the call, and must
+    /// not unwind. It need only accept the states described by [`Self::call`].
     pub unsafe fn from_raw(raw: ffi::asn1_ps_func) -> Option<Self> {
         raw.map(|function| Self(Some(function)))
     }
@@ -1689,8 +1705,19 @@ impl Asn1PsSetupFunc {
     }
 
     /// Invokes this setup callback with its opaque state slots.
-    pub fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
-        call_asn1_ps(self.0, bio, state)
+    ///
+    /// # Safety
+    ///
+    /// `state` must be one this callback accepts: either freshly prepared for
+    /// it — [`Asn1PsBuffer::empty`] only if the callback tolerates a null
+    /// context, which `ndef_prefix` and `ndef_suffix` do not — or left behind
+    /// by an earlier call of this same setup/cleanup pair. A state produced by
+    /// an unrelated callback is not interchangeable: the buffer and the
+    /// context slot are released by that other pair's cleanup routine.
+    pub unsafe fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
+        // SAFETY: the caller supplies a state this callback accepts; the
+        // constructor established the rest of the setup contract.
+        unsafe { call_asn1_ps(self.0, bio, state) }
     }
 }
 
@@ -1705,9 +1732,10 @@ impl Asn1PsCleanupFunc {
     /// # Safety
     ///
     /// The callback must accept state produced by its paired setup callback,
-    /// release the owned buffer/context resources it consumes, leave the slots
-    /// coherent for any later cleanup, safely accept empty/already-cleaned
-    /// state, and must not unwind.
+    /// release the buffer and context resources that state owns, leave the
+    /// slots coherent afterwards, and must not unwind. `asn1_bio_free` runs
+    /// both the prefix and the suffix cleanup over the same slots, so it must
+    /// also tolerate already-cleaned state.
     pub unsafe fn from_raw(raw: ffi::asn1_ps_func) -> Option<Self> {
         raw.map(|function| Self(Some(function)))
     }
@@ -1717,8 +1745,17 @@ impl Asn1PsCleanupFunc {
     }
 
     /// Invokes this cleanup callback with its opaque state slots.
-    pub fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
-        call_asn1_ps(self.0, bio, state)
+    ///
+    /// # Safety
+    ///
+    /// As [`Asn1PsSetupFunc::call`]: `state` must belong to this callback's own
+    /// setup/cleanup pair, or be already-cleaned state from it. Handing it a
+    /// state another pair's setup callback produced would release that pair's
+    /// buffer and context through the wrong routine.
+    pub unsafe fn call(&self, bio: &mut BioMut<'_>, state: &mut Asn1PsBuffer) -> i32 {
+        // SAFETY: the caller supplies state belonging to this callback's pair;
+        // the constructor established the rest of the cleanup contract.
+        unsafe { call_asn1_ps(self.0, bio, state) }
     }
 }
 
@@ -1822,7 +1859,9 @@ mod asn1_ps_tests {
         let callback = unsafe { Asn1PsSetupFunc::from_raw(Some(empty_setup)) }.unwrap();
         let mut state = Asn1PsBuffer::empty();
 
-        assert_eq!(callback.call(&mut bio.as_mut(), &mut state), 1);
+        // SAFETY: `empty_setup` ignores the context slot, so the empty state
+        // is one it accepts.
+        assert_eq!(unsafe { callback.call(&mut bio.as_mut(), &mut state) }, 1);
         assert!(state.is_empty());
         assert_eq!(state.len(), Some(0));
     }

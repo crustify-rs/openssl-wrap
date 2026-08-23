@@ -12242,6 +12242,90 @@
   {
    "name": "asn1_ps_func",
    "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The ASN.1 filter BIO that owns the prefix/suffix state. asn1_bio_setup_ex, asn1_bio_flush_ex and asn1_bio_free all pass their own non-null b; implementations pass it on to BIO_next/BIO_write helpers and never retain or release it."
+     }
+    },
+    {
+     "name": "arg1",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:arg3"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg1"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Always &ctx->ex_buf of BIO_ASN1_BUF_CTX, so the slot itself is a non-null borrowed in/out cell. The pointer written into it is NOT owned by the slot or by the BIO: asn1_bio_free never frees ctx->ex_buf. ndef_prefix/ndef_suffix keep the allocation in the context object reached through arg3 (ndef_aux->derbuf) and may publish an interior pointer here (ndef_suffix writes *ndef_aux->boundary), so the inner pointer borrows from that context. The cleanup role clears the slot to NULL after releasing the context-owned buffer."
+     }
+    },
+    {
+     "name": "arg2",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg2"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Always &ctx->ex_len, a non-null borrowed in/out length cell paired with arg1. The setup role writes the byte count the ASN.1 BIO then drains from *arg1; the cleanup role zeroes it. Never retained."
+     }
+    },
+    {
+     "name": "arg3",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "other"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg3"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Declared void * but used as void **: every call site passes &ctx->ex_arg and every implementation dereferences it (ndef_prefix does ndef_aux = *(NDEF_SUPPORT **)parg). The outer slot is a borrowed cell; implementations guard it with an explicit parg == NULL check, hence nullable. The inner context pointer has dual ownership: the setup role and ndef_prefix_free only borrow it, while ndef_suffix_free consumes it (OPENSSL_free(*pndef_aux)) and writes NULL back, so the cleanup role is where the context is released. The prefix/suffix buffer of arg1 hangs off this context, which is why the two slots must be handed to the same setup/cleanup family."
+     }
+    }
+   ]
+  },
+  {
+   "name": "asn1_ps_func",
+   "defined_in": null,
    "variant": 1,
    "ptr_args": [
     {

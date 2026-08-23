@@ -289,6 +289,38 @@ pub fn OBJ_txt2obj(text: &CStr, numeric_only: bool) -> Option<CBox<Asn1Object>> 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bio::bss_mem::BIO_new_mem_buf;
+
+    #[test]
+    fn textual_definitions_are_registered_line_by_line() {
+        // `OBJ_create_objects` overwrites the last byte of every line it reads,
+        // so each definition has to be newline-terminated.
+        let definitions = concat!(
+            "1.3.6.1.4.1.57264.9101 crustifyReviewObjOne crustify review object one\n",
+            "1.3.6.1.4.1.57264.9102 crustifyReviewObjTwo crustify review object two\n",
+        );
+        let mut input = BIO_new_mem_buf(definitions.as_bytes()).expect("memory BIO");
+        assert_eq!(OBJ_create_objects(&mut input.as_mut()), 2);
+
+        let first = OBJ_sn2nid(c"crustifyReviewObjOne");
+        assert_ne!(first, 0);
+        assert_eq!(OBJ_txt2nid(c"1.3.6.1.4.1.57264.9101"), first);
+        assert_eq!(OBJ_ln2nid(c"crustify review object one"), first);
+        assert_ne!(OBJ_sn2nid(c"crustifyReviewObjTwo"), 0);
+    }
+
+    #[test]
+    fn parsing_stops_at_the_first_line_that_is_not_a_definition() {
+        // A line whose first byte is not alphanumeric ends the scan, so the
+        // definition behind it is never reached.
+        let definitions = concat!(
+            "# crustify review comment\n",
+            "1.3.6.1.4.1.57264.9103 crustifyReviewObjThree unreachable\n",
+        );
+        let mut input = BIO_new_mem_buf(definitions.as_bytes()).expect("memory BIO");
+        assert_eq!(OBJ_create_objects(&mut input.as_mut()), 0);
+        assert_eq!(OBJ_sn2nid(c"crustifyReviewObjThree"), 0);
+    }
 
     unsafe extern "C" fn compare_i32(left: *const c_void, right: *const c_void) -> i32 {
         // SAFETY: the test associates this callback only with live `i32` values.

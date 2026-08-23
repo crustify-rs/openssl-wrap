@@ -279,7 +279,15 @@ pub unsafe fn OBJ_NAME_remove(name: &CStr, type_id: i32) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use std::ffi::CString;
+    use std::sync::{Mutex, PoisonError};
+
     use super::*;
+
+    /// `OBJ_NAME_add` takes `obj_lock` but `OBJ_NAME_do_all` does not, so the
+    /// tests that touch the process-global registry serialize against each
+    /// other rather than relying on the harness thread schedule.
+    static REGISTRY: Mutex<()> = Mutex::new(());
 
     #[test]
     fn initialization_is_idempotent() {
@@ -288,7 +296,74 @@ mod tests {
     }
 
     #[test]
+    fn traversals_visit_one_class_and_the_sorted_form_orders_by_name() {
+        let _registry = REGISTRY.lock().unwrap_or_else(PoisonError::into_inner);
+        let class = OBJ_NAME_new_index(None, None, None).expect("object-name class");
+        for (name, data) in [
+            (c"crustify-review-do-all-c", c"3"),
+            (c"crustify-review-do-all-a", c"1"),
+            (c"crustify-review-do-all-b", c"2"),
+        ] {
+            // SAFETY: both strings are `'static` literals, so they outlive the
+            // entry. Nothing replaces, removes or cleans up these entries, so
+            // the class needs no disposal callback.
+            assert!(unsafe { OBJ_NAME_add(name, class, data) });
+        }
+
+        let mut visited = Vec::new();
+        {
+            let mut collect = |entry: ObjNameRef<'_>| {
+                // The traversal filters by class before it reaches us.
+                assert_eq!(entry.r#type(), class);
+                visited.push(entry.name().expect("registered name").to_owned());
+            };
+            // SAFETY: the registry guard excludes every other mutator, and the
+            // callback only reads the entries it is handed.
+            unsafe { OBJ_NAME_do_all(class, &mut collect) };
+        }
+        assert_eq!(visited.len(), 3);
+
+        let mut ordered = Vec::new();
+        {
+            let mut collect = |entry: ObjNameRef<'_>| {
+                ordered.push(entry.name().expect("registered name").to_owned());
+            };
+            // SAFETY: as above.
+            unsafe { OBJ_NAME_do_all_sorted(class, &mut collect) };
+        }
+        assert_eq!(
+            ordered,
+            [
+                CString::from(c"crustify-review-do-all-a"),
+                CString::from(c"crustify-review-do-all-b"),
+                CString::from(c"crustify-review-do-all-c"),
+            ]
+        );
+
+        // The unsorted form visits the same set in an unspecified order.
+        visited.sort();
+        assert_eq!(visited, ordered);
+    }
+
+    #[test]
+    fn a_traversal_of_an_unpopulated_class_visits_nothing() {
+        let _registry = REGISTRY.lock().unwrap_or_else(PoisonError::into_inner);
+        let class = OBJ_NAME_new_index(None, None, None).expect("object-name class");
+        let mut visited = 0_usize;
+        {
+            let mut count = |_: ObjNameRef<'_>| visited += 1;
+            // SAFETY: the registry guard excludes every other mutator.
+            unsafe {
+                OBJ_NAME_do_all(class, &mut count);
+                OBJ_NAME_do_all_sorted(class, &mut count);
+            }
+        }
+        assert_eq!(visited, 0);
+    }
+
+    #[test]
     fn lookups_return_the_registered_opaque_payload() {
+        let _registry = REGISTRY.lock().unwrap_or_else(PoisonError::into_inner);
         let class = OBJ_NAME_new_index(None, None, None).expect("object-name class");
         // SAFETY: both strings are `'static` literals, so they outlive the
         // entry. The test never replaces, removes or cleans up this entry, so
