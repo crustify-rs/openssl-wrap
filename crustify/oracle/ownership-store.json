@@ -1501,6 +1501,109 @@
    ]
   },
   {
+   "name": "evp_pkey_st",
+   "defined_in": "include/crypto/evp.h",
+   "_comment_agent": "EVP_PKEY is opaque on the published API. Its complete value owns the attribute stack and elements, an acquired EVP_KEYMGMT reference with provider-owned keydata, its thread lock, and the operation-cache stack. The ASN.1 method pointer refers to static method-table storage. references is the object's atomic reference count.",
+   "fields": [
+    {
+     "name": "ameth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional const pointer selected from static registered EVP_PKEY_ASN1_METHOD tables; EVP_PKEY never frees it."
+     }
+    },
+    {
+     "name": "attributes",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned STACK_OF(X509_ATTRIBUTE); EVP_PKEY_free pop-frees the owned attribute elements and EVP_PKEY_dup deep-copies them."
+     }
+    },
+    {
+     "name": "keydata",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional provider key object owned jointly with keymgmt; its runtime-specific evp_keymgmt_freedata callback releases it before the keymgmt reference."
+     }
+    },
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional acquired EVP_KEYMGMT reference; assignment takes/up-refs a count and EVP_PKEY_free releases it after freeing keydata."
+     }
+    },
+    {
+     "name": "lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "A fully constructed EVP_PKEY owns the CRYPTO_RWLOCK created by EVP_PKEY_new and releases it in EVP_PKEY_free."
+     }
+    },
+    {
+     "name": "operation_cache",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned STACK_OF(OP_CACHE_ELEM); cache clearing pop-frees every owned element and the stack."
+     }
+    },
+    {
+     "name": "references",
+     "refcount": true
+    }
+   ]
+  },
+  {
    "name": "hostent",
    "defined_in": "/usr/include/netdb.h",
    "_comment_agent": "hostent has no independent lifecycle primitive: nothing in the tree allocates, frees or duplicates an entry or any buffer it points at, so it gets borrowed handles and no owning pointer form. The pointer fields are recorded borrowed with lifetime `self` rather than `static` deliberately. gethostbyname's storage is statically allocated but NOT valid for the life of the program -- the next lookup on the same thread overwrites it in place -- so the name, alias and address buffers are exactly as valid as the entry handle that reached them, and binding them to 'static would be wrong. The other producer, crypto/bio/bio_addr.c's `static const struct hostent he_fallback`, points h_addr_list at file-scope statics and is itself const, i.e. read-only storage; between the two, no producer in this tree yields a writable entry, so an exclusive handle is only ever legitimate over caller-owned storage. BIO_lookup_ex is the only in-tree field reader: it takes h_addrtype, h_length and h_addr_list, and walks the address vector without a NULL check on the vector itself. h_name and h_aliases are never read in-tree; their records describe the public struct hostent surface rather than observed OpenSSL behaviour.",
@@ -9737,6 +9840,129 @@
      "note": "Fresh NUL-terminated copy of at most s source bytes, allocated by OpenSSL and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
     }
    }
+  },
+  {
+   "name": "EVP_PKEY_dup",
+   "defined_in": "crypto/evp/p_lib.c",
+   "lifetime": {
+    "for": "pkey",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrows the source while constructing an independent deep duplicate."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL or a fresh fully initialized EVP_PKEY with one independent free obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_free",
+   "defined_in": "crypto/evp/p_lib.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one EVP_PKEY reference; NULL is accepted. The final down-ref destroys fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_new",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL or a fresh fully initialized refcount-one EVP_PKEY owned by the caller."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_up_ref",
+   "defined_in": "crypto/evp/p_lib.c",
+   "lifetime": {
+    "for": "pkey",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live EVP_PKEY and atomically increments its reference count; callers receive another ownership debt for the same pointer."
+     }
+    }
+   ]
   },
   {
    "name": "OBJ_NAME_add",
