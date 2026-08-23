@@ -85,7 +85,7 @@ campaigns `02` and `04`; superseded campaign `03` is unmetered. The orchestrator
 row is live at the report checkpoint and is not part of `crustify-log-cost`'s
 agent total. For mixed campaigns, each unit rate uses only its matching cost
 bucket. The 8 callback units are excluded from both counts and folded into the
-type bucket's cost. Rate cells in the Σ rows are medians of the displayed
+type bucket's cost. Rate cells in the Σ row are medians of the displayed
 campaign-level rates.
 
 | campaign | objective | nr types | nr symbols | session wall | campaign total | campaign $/type | campaign $/sym | review total | review $/type | review $/sym |
@@ -94,8 +94,7 @@ campaign-level rates.
 | `10–11-foundation` | wrap + corrective wrap | `34` | `277` | `2h50m51s` | `$244.34` (gpt56sol) | `$4.48` | `$0.33` | `$217.23` (opus5) | `$3.84` | `$0.31` |
 | `ub-20260823-025523` | UB audit | `34` | `277` | `56m04s` | `$43.48` (opus5) | — | — | — | — | — |
 | orchestrator | orchestration | `34` | `277` | live | `$77.52` (gpt56sol) | — | — | — | — | — |
-| **Σ recorded agents** | | | | | **`$301.45`** | **med `$4.48`** | **med `$0.85`** | **`$246.84`** | **med `$3.84`** | **med `$1.64`** |
-| **Σ including orchestrator** | | | | | **`$378.97`** | **med `$4.48`** | **med `$0.85`** | **`$246.84`** | **med `$3.84`** | **med `$1.64`** |
+| **Σ recorded agents** | | | | | **`$301.45`** | **`$4.48`** | **`$0.85`** | **`$246.84`** | **`$3.84`** | **`$1.64`** |
 
 ## Raw lifetime discovery
 
