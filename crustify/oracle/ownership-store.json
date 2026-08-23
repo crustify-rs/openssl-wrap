@@ -8792,7 +8792,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
+      "note": "Transient optional source-file string. CRYPTO_secure_clear_free never reads the (file, line) pair itself, and the arena branch discards it entirely; it reaches CRYPTO_free only on the ordinary-allocation branch, which forwards it verbatim to an application-installed CRYPTO_free_fn and otherwise calls free(ptr) alone (crypto/mem.c). NULL is inside that contract for the same reason it is for CRYPTO_free. In-tree C callers arrive through the OPENSSL_secure_clear_free macro, which expands OPENSSL_FILE and OPENSSL_LINE (include/openssl/crypto.h)."
      }
     },
     {
@@ -8809,7 +8809,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure storage is cleansed by actual size and ordinary storage by num bytes."
+      "note": "Consumes a nullable allocation obtained from CRYPTO_secure_malloc / CRYPTO_secure_zalloc, whichever allocator actually served it; applies to scalar storage, counted buffers, and strings. NULL returns before anything else, so a null pointer is safe whatever num says. Like CRYPTO_secure_free it dispatches on the pointer's address through CRYPTO_secure_allocated -> sh_allocated (WITHIN_ARENA), and the two routines differ ONLY on the ordinary-allocation branch. Arena branch: num is IGNORED and the cleanse length is sh_actual_size(ptr), the whole buddy block (the request rounded up), so the erasure is at least what the caller asked for and the call is indistinguishable from CRYPTO_secure_free. Ordinary branch: num is exactly the OPENSSL_cleanse length (crypto/mem_clr.c, an unelidable memset) - caller-asserted, never derived from the allocation, so it must not exceed the live bytes, and bytes past it survive into free(). Unlike CRYPTO_clear_free there is no `if (num)` guard around the cleanse, but OPENSSL_cleanse(ptr, 0) is a no-op memset, so num == 0 leaves the call equivalent to CRYPTO_secure_free. Release then goes through CRYPTO_free on that branch, the same allocator CRYPTO_secure_free uses there, so cleansing changes what the storage holds and never which allocator reclaims it: a buffer is interchangeable between CRYPTO_secure_free and CRYPTO_secure_clear_free owners. Under OPENSSL_NO_SECURE_MEMORY only the ordinary branch remains. Release is not guaranteed to happen: on the arena branch a failing CRYPTO_THREAD_write_lock(sec_malloc_lock) returns without freeing, leaking the block. In-tree callers supply the full live extent - OPENSSL_secure_clear_free(a->data, a->max) in crypto/buffer/buffer.c, (a->d, a->dmax * sizeof(a->d[0])) in crypto/bn/bn_lib.c."
      }
     }
    ]
@@ -8840,7 +8840,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Transient optional source-file string used on the ordinary-allocation fallback."
+      "note": "Transient optional source-file string. CRYPTO_secure_free never reads the (file, line) pair itself, and the arena branch discards it entirely; it reaches CRYPTO_free only on the ordinary-allocation branch, which forwards it verbatim to an application-installed CRYPTO_free_fn and otherwise calls free(ptr) alone (crypto/mem.c). NULL is inside that contract for the same reason it is for CRYPTO_free. In-tree C callers arrive through the OPENSSL_secure_free macro, which expands OPENSSL_FILE and OPENSSL_LINE (include/openssl/crypto.h)."
      }
     },
     {
@@ -8857,7 +8857,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Consumes nullable secure or ordinary OpenSSL storage; secure allocations are cleansed using their recorded actual size before release."
+      "note": "Consumes a nullable allocation obtained from CRYPTO_secure_malloc / CRYPTO_secure_zalloc, whichever allocator actually served it; applies to scalar storage, counted buffers, and strings. NULL returns before anything else. The branch is chosen from the pointer itself, not from anything the caller asserts: CRYPTO_secure_allocated -> sh_allocated is an arena address-range test (WITHIN_ARENA in crypto/mem_sec.c). Arena storage is cleansed over sh_actual_size(ptr) - the whole buddy block, i.e. the request rounded up to a power of two - and returned to the secure heap. Anything else is released through CRYPTO_free with its bytes INTACT: this routine never cleanses ordinary storage, and that is the path every allocation takes while the secure heap is down, because CRYPTO_secure_malloc/zalloc fall through to CRYPTO_malloc/CRYPTO_zalloc before CRYPTO_secure_malloc_init succeeds and after CRYPTO_secure_malloc_done. Under OPENSSL_NO_SECURE_MEMORY the entire body is that fallback. Consequences for pairing: this is a strict superset of CRYPTO_free - an ordinary OpenSSL allocation is released correctly here, only uncleansed - while the reverse is invalid, since CRYPTO_free would hand an arena address to free() or to an installed CRYPTO_free_fn. A buffer that may be secure must therefore be released by CRYPTO_secure_free or CRYPTO_secure_clear_free. Release is also not guaranteed to happen: on the arena branch a failing CRYPTO_THREAD_write_lock(sec_malloc_lock) returns without freeing, leaking the block."
      }
     }
    ]
