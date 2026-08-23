@@ -7,11 +7,229 @@ use libc_sys as ffi;
 
 ffibox::define_ctype!(
     /// Wraps: addrinfo
+    ///
+    /// Layout-compatible storage for one node of a C address-info list.
+    ///
+    /// A node never owns itself. A chain produced by `getaddrinfo` is released
+    /// by `freeaddrinfo`, while a chain produced by OpenSSL's `BIO_lookup`
+    /// family is released by `BIO_ADDRINFO_free`, which additionally handles
+    /// the hand-built `AF_UNIX` nodes OpenSSL allocates itself. Nothing in the
+    /// node distinguishes the two producers, so this type binds no destructor;
+    /// each producer's wrapper selects the matching owner strategy, as
+    /// libcrypto does for `BIO_ADDRINFO_free`.
+    ///
+    /// The owned `ai_canonname` and `ai_next` fields are therefore readable but
+    /// not writable through these handles: storing into them would hand the
+    /// node's chain releaser an object it did not allocate.
+    ///
+    /// `ai_addr` is not projected here. Its `struct sockaddr` payload is sized
+    /// by `ai_addrlen` and has no wrapper in this crate; OpenSSL publishes the
+    /// same storage through its wrapped `BIO_ADDRINFO_address` accessor.
     AddrInfo,
     AddrInfoRef,
     AddrInfoMut,
     ffi::addrinfo
 );
+
+/// A borrowed, NUL-terminated canonical name referenced by an [`AddrInfo`].
+///
+/// Bytes are copied out individually so no Rust reference covers storage that
+/// remains under C ownership and is released with the node's chain.
+#[derive(Clone, Copy)]
+pub struct AddrInfoNameRef<'a> {
+    ptr: NonNull<core::ffi::c_char>,
+    _borrow: PhantomData<&'a AddrInfo>,
+}
+
+impl AddrInfoNameRef<'_> {
+    /// Number of bytes before the terminating NUL.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        let mut len = 0;
+        // SAFETY: construction is restricted to a non-null, NUL-terminated
+        // string borrowed by a live `AddrInfo`; each byte before the terminator
+        // is initialized and is copied without forming a reference.
+        unsafe {
+            while self.ptr.as_ptr().add(len).read() != 0 {
+                len += 1;
+            }
+        }
+        len
+    }
+
+    /// Whether the name has no bytes before its terminating NUL.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        // SAFETY: construction guarantees that the first byte is initialized
+        // and belongs to a NUL-terminated string.
+        unsafe { self.ptr.as_ptr().read() == 0 }
+    }
+
+    /// Copy byte `index`, or return `None` at and beyond the terminator.
+    #[must_use]
+    pub fn byte(&self, index: usize) -> Option<u8> {
+        if index >= self.len() {
+            return None;
+        }
+        // SAFETY: the length check proves `index` precedes the terminator and
+        // therefore addresses an initialized byte in the borrowed string.
+        Some(unsafe { self.ptr.as_ptr().cast::<u8>().add(index).read() })
+    }
+
+    /// Copy the bytes before the NUL into an exactly sized destination.
+    ///
+    /// Returns `false` without copying when the lengths differ.
+    #[must_use]
+    pub fn copy_to_slice(&self, destination: &mut [u8]) -> bool {
+        let len = self.len();
+        if destination.len() != len {
+            return false;
+        }
+        // SAFETY: `len` initialized bytes precede the terminator. The Rust
+        // destination cannot overlap the C-owned address-info storage.
+        unsafe {
+            ptr::copy_nonoverlapping(
+                self.ptr.as_ptr().cast::<u8>(),
+                destination.as_mut_ptr(),
+                len,
+            )
+        };
+        true
+    }
+}
+
+impl<'a> AddrInfoRef<'a> {
+    /// Wraps: addrinfo.ai_flags
+    ///
+    /// Lookup flags requested from or reported by the resolver.
+    #[must_use]
+    pub fn flags(&self) -> core::ffi::c_int {
+        // SAFETY: raw projection copies an initialized scalar field from the
+        // live node and forms no reference to C storage.
+        unsafe { ptr::addr_of!((*self.as_ptr()).ai_flags).read() }
+    }
+
+    /// Wraps: addrinfo.ai_family
+    ///
+    /// Address family of this node.
+    #[must_use]
+    pub fn family(&self) -> core::ffi::c_int {
+        // SAFETY: raw projection copies an initialized scalar field from the
+        // live node and forms no reference to C storage.
+        unsafe { ptr::addr_of!((*self.as_ptr()).ai_family).read() }
+    }
+
+    /// Wraps: addrinfo.ai_socktype
+    ///
+    /// Socket type of this node.
+    #[must_use]
+    pub fn socket_type(&self) -> core::ffi::c_int {
+        // SAFETY: raw projection copies an initialized scalar field from the
+        // live node and forms no reference to C storage.
+        unsafe { ptr::addr_of!((*self.as_ptr()).ai_socktype).read() }
+    }
+
+    /// Wraps: addrinfo.ai_protocol
+    ///
+    /// Protocol of this node.
+    #[must_use]
+    pub fn protocol(&self) -> core::ffi::c_int {
+        // SAFETY: raw projection copies an initialized scalar field from the
+        // live node and forms no reference to C storage.
+        unsafe { ptr::addr_of!((*self.as_ptr()).ai_protocol).read() }
+    }
+
+    /// Wraps: addrinfo.ai_addrlen
+    ///
+    /// Number of bytes in the node's socket address.
+    ///
+    /// This is the length of the `ai_addr` payload that this crate does not
+    /// project; a node OpenSSL built itself reports zero.
+    #[must_use]
+    pub fn address_len(&self) -> usize {
+        // SAFETY: raw projection copies an initialized scalar field from the
+        // live node and forms no reference to C storage.
+        let length = unsafe { ptr::addr_of!((*self.as_ptr()).ai_addrlen).read() };
+        // `socklen_t` is an unsigned 32-bit count, so this widening is exact.
+        length as usize
+    }
+
+    /// Wraps: addrinfo.ai_canonname
+    ///
+    /// Borrow the optional canonical name.
+    ///
+    /// Only a resolver-produced node ever carries one; the nodes OpenSSL builds
+    /// for `AF_UNIX` leave the field null, and their releaser never frees it.
+    #[must_use]
+    pub fn canonical_name(&self) -> Option<AddrInfoNameRef<'a>> {
+        // SAFETY: raw projection copies the initialized owned string pointer
+        // from the live node without forming a reference.
+        let name = unsafe { ptr::addr_of!((*self.as_ptr()).ai_canonname).read() };
+        NonNull::new(name).map(|ptr| AddrInfoNameRef {
+            ptr,
+            _borrow: PhantomData,
+        })
+    }
+
+    /// Wraps: addrinfo.ai_next
+    ///
+    /// Borrow the remaining nodes of the chain.
+    ///
+    /// The tail is owned by the same chain as this node, so the borrow lives no
+    /// longer than the handle the head was reached through.
+    #[must_use]
+    pub fn next(&self) -> Option<AddrInfoRef<'a>> {
+        // SAFETY: raw projection copies the initialized chain pointer from the
+        // live node without forming a reference.
+        let next = unsafe { ptr::addr_of!((*self.as_ptr()).ai_next).read() };
+        // SAFETY: a non-null tail belongs to the chain kept alive by this
+        // handle, and so is live for the same borrow.
+        unsafe { AddrInfoRef::from_ptr(next) }
+    }
+
+    /// Iterate over this node and the remaining nodes of the chain.
+    pub fn iter(&self) -> impl Iterator<Item = AddrInfoRef<'a>> + use<'a> {
+        let mut next = Some(*self);
+        core::iter::from_fn(move || {
+            let node = next?;
+            next = node.next();
+            Some(node)
+        })
+    }
+}
+
+impl AddrInfoMut<'_> {
+    /// Set the lookup flags (`ai_flags`).
+    ///
+    /// C builds its `hints` argument by writing exactly these four scalars into
+    /// a zeroed node; the owned pointer fields have no setter here.
+    pub fn set_flags(&mut self, flags: core::ffi::c_int) {
+        // SAFETY: the exclusive handle guarantees writable node storage; raw
+        // projection writes the scalar without forming a reference.
+        unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).ai_flags).write(flags) }
+    }
+
+    /// Set the address family (`ai_family`).
+    pub fn set_family(&mut self, family: core::ffi::c_int) {
+        // SAFETY: the exclusive handle guarantees writable node storage; raw
+        // projection writes the scalar without forming a reference.
+        unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).ai_family).write(family) }
+    }
+
+    /// Set the socket type (`ai_socktype`).
+    pub fn set_socket_type(&mut self, socket_type: core::ffi::c_int) {
+        // SAFETY: the exclusive handle guarantees writable node storage; raw
+        // projection writes the scalar without forming a reference.
+        unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).ai_socktype).write(socket_type) }
+    }
+
+    /// Set the protocol (`ai_protocol`).
+    pub fn set_protocol(&mut self, protocol: core::ffi::c_int) {
+        // SAFETY: the exclusive handle guarantees writable node storage; raw
+        // projection writes the scalar without forming a reference.
+        unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).ai_protocol).write(protocol) }
+    }
+}
 
 ffibox::define_ctype!(
     /// Wraps: hostent
@@ -360,6 +578,78 @@ mod tests {
         // exclusively borrowed for the lifetime of the returned handle.
         let view = unsafe { AddrInfoMut::from_ptr(raw) }.expect("stack addrinfo");
         assert_eq!(view.as_ref().as_ptr(), raw.cast_const());
+    }
+
+    #[test]
+    fn addrinfo_hint_scalars_round_trip_through_handles() {
+        let mut value = AddrInfo::zeroed();
+        let raw = ptr::addr_of_mut!(value).cast::<ffi::addrinfo>();
+        // SAFETY: `raw` points to live layout-compatible storage used only by
+        // this exclusive handle for the duration of the test.
+        let mut hints = unsafe { AddrInfoMut::from_ptr(raw) }.expect("stack addrinfo");
+
+        hints.set_flags(0x0001);
+        hints.set_family(10);
+        hints.set_socket_type(1);
+        hints.set_protocol(6);
+
+        let shared = hints.as_ref();
+        assert_eq!(shared.flags(), 0x0001);
+        assert_eq!(shared.family(), 10);
+        assert_eq!(shared.socket_type(), 1);
+        assert_eq!(shared.protocol(), 6);
+        assert_eq!(shared.address_len(), 0);
+        assert!(shared.canonical_name().is_none());
+        assert!(shared.next().is_none());
+    }
+
+    #[test]
+    fn addrinfo_chain_borrows_its_tail_and_canonical_name() {
+        let mut canonical = *b"host.example\0";
+        let mut tail = ffi::addrinfo {
+            ai_flags: 0,
+            ai_family: 2,
+            ai_socktype: 2,
+            ai_protocol: 17,
+            ai_addrlen: 16,
+            ai_addr: ptr::null_mut(),
+            ai_canonname: ptr::null_mut(),
+            ai_next: ptr::null_mut(),
+        };
+        let mut head = ffi::addrinfo {
+            ai_flags: 0,
+            ai_family: 2,
+            ai_socktype: 1,
+            ai_protocol: 6,
+            ai_addrlen: 16,
+            ai_addr: ptr::null_mut(),
+            ai_canonname: canonical.as_mut_ptr().cast(),
+            ai_next: ptr::addr_of_mut!(tail),
+        };
+
+        // SAFETY: both nodes and the canonical name outlive this shared handle
+        // and are not mutated while it and its derived views are used.
+        let node = unsafe { AddrInfoRef::from_ptr(ptr::addr_of_mut!(head)) }.expect("addrinfo");
+
+        let name = node.canonical_name().expect("canonical name");
+        assert_eq!(name.len(), 12);
+        assert!(!name.is_empty());
+        assert_eq!(name.byte(0), Some(b'h'));
+        assert_eq!(name.byte(12), None);
+        let mut copy = [0_u8; 12];
+        assert!(!name.copy_to_slice(&mut [0_u8; 4]));
+        assert!(name.copy_to_slice(&mut copy));
+        assert_eq!(&copy, b"host.example");
+
+        let next = node.next().expect("chain tail");
+        assert_eq!(next.socket_type(), 2);
+        assert_eq!(next.protocol(), 17);
+        assert_eq!(next.address_len(), 16);
+        assert!(next.canonical_name().is_none());
+        assert!(next.next().is_none());
+
+        let protocols: Vec<_> = node.iter().map(|node| node.protocol()).collect();
+        assert_eq!(protocols, [6, 17]);
     }
 
     #[test]

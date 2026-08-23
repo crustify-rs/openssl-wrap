@@ -12,6 +12,24 @@ use crate::stack::stack::{Stack, StackMut, StackRef};
 
 define_ctype!(
     /// Wraps: asn1_string_table_st
+    ///
+    /// Layout-compatible storage for one ASN.1 string-constraint record. A
+    /// record has no destructor of its own: OpenSSL keeps them in two places
+    /// and `flags` says which, through [`Asn1StringTableRef::is_heap_allocated`].
+    ///
+    /// * Records carrying `STABLE_FLAGS_MALLOC` were heap-allocated on behalf
+    ///   of `ASN1_STRING_TABLE_add`, are owned by the process-global dynamic
+    ///   table, and are released together when `ASN1_STRING_TABLE_cleanup`
+    ///   frees that table through its `st_free` callback.
+    /// * Records without it are elements of the `static const` standard table
+    ///   compiled into the library. `ASN1_STRING_TABLE_get` casts that
+    ///   constness away, so a record reached from a lookup may live in
+    ///   read-only storage.
+    ///
+    /// Building an [`Asn1StringTableMut`] over a record therefore requires the
+    /// caller to have established that the record is heap-allocated; writing
+    /// through a standard-table record is undefined behaviour. The safe
+    /// lookup in `a_strnid` avoids the question by copying the scalars out.
     Asn1StringTable,
     Asn1StringTableRef,
     Asn1StringTableMut,
@@ -37,6 +55,26 @@ impl Asn1StringTableRef<'_> {
         // SAFETY: this raw projection reads an initialized scalar field from
         // the live object represented by the shared handle.
         unsafe { ptr::addr_of!((*self.as_ptr()).flags).read() }
+    }
+
+    /// Whether this record was allocated by `ASN1_STRING_TABLE_add`.
+    ///
+    /// `true` means the record lives in the writable, process-global dynamic
+    /// table; `false` means it is an element of the `static const` standard
+    /// table and must never be written through, even though
+    /// `ASN1_STRING_TABLE_get` hands it back as a non-const pointer.
+    #[must_use]
+    pub fn is_heap_allocated(&self) -> bool {
+        self.flags() & core::ffi::c_ulong::from(ffi::STABLE_FLAGS_MALLOC) != 0
+    }
+
+    /// Whether the record's `mask` is used without the process default mask.
+    ///
+    /// `ASN1_STRING_set_by_NID` intersects `mask` with the default mask unless
+    /// this `STABLE_NO_MASK` bit is set.
+    #[must_use]
+    pub fn ignores_default_mask(&self) -> bool {
+        self.flags() & core::ffi::c_ulong::from(ffi::STABLE_NO_MASK) != 0
     }
 
     /// Wraps: asn1_string_table_st.nid
@@ -72,6 +110,10 @@ impl Asn1StringTableRef<'_> {
     }
 }
 
+/// Setters for a record whose storage the caller has proven writable.
+///
+/// Only a record carrying `STABLE_FLAGS_MALLOC` qualifies; see
+/// [`Asn1StringTable`] and [`Asn1StringTableRef::is_heap_allocated`].
 impl Asn1StringTableMut<'_> {
     /// Set the table flags.
     pub fn set_flags(&mut self, flags: core::ffi::c_ulong) {
@@ -136,6 +178,42 @@ mod tests {
         assert_eq!(shared.max_size(), 64);
         assert_eq!(shared.mask(), 0x1234);
         assert_eq!(shared.flags(), 0x2);
+    }
+
+    #[test]
+    fn flag_predicates_report_the_records_storage_class_and_mask_rule() {
+        let mut value = Asn1StringTable::zeroed();
+        let raw = ptr::addr_of_mut!(value).cast::<ffi::asn1_string_table_st>();
+        // SAFETY: `raw` points to a live layout-compatible value and remains
+        // exclusively borrowed for the lifetime of the returned handle.
+        let mut view =
+            unsafe { Asn1StringTableMut::from_ptr(raw) }.expect("stack ASN.1 string table");
+
+        assert!(!view.as_ref().is_heap_allocated());
+        assert!(!view.as_ref().ignores_default_mask());
+
+        view.set_flags(core::ffi::c_ulong::from(
+            ffi::STABLE_FLAGS_MALLOC | ffi::STABLE_NO_MASK,
+        ));
+        assert!(view.as_ref().is_heap_allocated());
+        assert!(view.as_ref().ignores_default_mask());
+
+        view.set_flags(core::ffi::c_ulong::from(ffi::STABLE_NO_MASK));
+        assert!(!view.as_ref().is_heap_allocated());
+        assert!(view.as_ref().ignores_default_mask());
+    }
+
+    #[test]
+    fn a_standard_table_entry_is_not_heap_allocated() {
+        // The standard entries live in a `static const` array, so a lookup that
+        // reports no `STABLE_FLAGS_MALLOC` bit is one no caller may write to.
+        let nid = crate::objects::obj_dat::OBJ_sn2nid(c"CN");
+        let entry = crate::asn1::a_strnid::ASN1_STRING_TABLE_get(nid)
+            .expect("commonName standard table entry");
+        assert_eq!(
+            entry.flags & core::ffi::c_ulong::from(ffi::STABLE_FLAGS_MALLOC),
+            0
+        );
     }
 
     #[test]

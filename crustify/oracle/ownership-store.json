@@ -440,7 +440,7 @@
   {
    "name": "addrinfo",
    "defined_in": "/usr/include/netdb.h",
-   "_comment_agent": "The layout has multiple allocation origins: system result chains use freeaddrinfo, while OpenSSL-created AF_UNIX nodes use BIO_ADDRINFO_free. The type therefore needs allocation-specific owner strategies rather than one unconditional CDropped implementation.",
+   "_comment_agent": "Reviewed 2026-08-23 against /usr/include/netdb.h and crypto/bio/bio_addr.c. The releaser is selected by the PRODUCER, not by the node: a chain from getaddrinfo must be released with freeaddrinfo, and every chain returned by BIO_lookup/BIO_lookup_ex must be released with BIO_ADDRINFO_free. BIO_ADDRINFO_free itself dispatches on bai_family - it forwards resolver chains to freeaddrinfo and walks the AF_UNIX nodes it allocated itself - so one owner strategy covers both kinds of OpenSSL list, and the layout still binds no unconditional CDropped because nothing in a node identifies its producer. addrinfo_wrap leaves ai_addrlen and ai_canonname zero, so BIO_ADDRINFO_sockaddr_size reports 0 for those nodes.",
    "fields": [
     {
      "name": "ai_addr",
@@ -454,7 +454,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Optional variable-sized socket-address storage belongs to the result node and is released with the chain; OpenSSL-created AF_UNIX nodes instead pair the same layout with BIO_ADDRINFO_free."
+      "note": "Optional socket address of ai_addrlen bytes owned by the node. freeaddrinfo releases it with a resolver chain; a node built by addrinfo_wrap instead holds a BIO_ADDR from BIO_ADDR_new that BIO_ADDRINFO_free releases with OPENSSL_free, which is why the two origins cannot share one releaser. Consumers only read it: BIO_ADDRINFO_address and BIO_ADDRINFO_sockaddr both return it as const."
      }
     },
     {
@@ -467,7 +467,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Optional NUL-terminated canonical-name storage belongs to a getaddrinfo result node and is released with its result chain."
+      "note": "Optional NUL-terminated canonical name owned by a resolver-produced node and released by freeaddrinfo together with its chain. OpenSSL never populates it: addrinfo_wrap zero-allocates its nodes, and BIO_ADDRINFO_free's manual path releases only bai_addr and the node itself, so a hand-built node that set this field would leak it."
      }
     },
     {
@@ -482,7 +482,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "A result node links to the remaining owned result chain. The enclosing chain's matching releaser consumes all linked nodes; projected access must borrow the tail from the head."
+      "note": "Owned tail of the node's chain. The head's releaser consumes every linked node: freeaddrinfo for a resolver chain, the manual OPENSSL_free loop in BIO_ADDRINFO_free for the AF_UNIX nodes addrinfo_wrap allocates. No consumer detaches, stores or frees a tail on its own, and BIO_ADDRINFO_next hands it back as const, so projected access must borrow the tail from the head."
      }
     }
    ]
@@ -568,7 +568,7 @@
   {
    "name": "asn1_string_table_st",
    "defined_in": "include/openssl/asn1.h",
-   "_comment_agent": "This is a plain scalar table record. ASN1_STRING_TABLE_get returns library-owned borrowed storage, and individual records have no unconditional public destructor because the global dynamic table and the static standard table own them.",
+   "_comment_agent": "Reviewed 2026-08-23 against crypto/asn1/a_strnid.c, crypto/asn1/tbl_standard.h and include/openssl/asn1.h. A plain scalar record with two storage classes discriminated by the flags field. STABLE_FLAGS_MALLOC marks an entry that stable_get allocated with OPENSSL_zalloc and pushed onto the process-global `stable` stack; ASN1_STRING_TABLE_cleanup releases exactly those through st_free. An entry without the bit is an element of the static const tbl_standard array compiled into the library. ASN1_STRING_TABLE_get casts that constness away and may return either kind, so the result is borrowed, is invalidated by cleanup, and may only be written when it carries STABLE_FLAGS_MALLOC - which is the check stable_get makes before handing a record to ASN1_STRING_TABLE_add for update. STABLE_NO_MASK on the same field tells ASN1_STRING_set_by_NID to use mask directly instead of intersecting it with the global default mask. There is no public per-record destructor.",
    "fields": []
   },
   {
@@ -1930,7 +1930,7 @@
      },
      "nullable": true,
      "mutable": true,
-     "note": "Borrowed global/static entry invalidated by ASN1_STRING_TABLE_cleanup when dynamically configured."
+     "note": "Borrowed entry from one of two global tables, invalidated by ASN1_STRING_TABLE_cleanup when it came from the dynamic one. Writable only on that path: the result may also be an element of the static const tbl_standard array, whose constness this signature casts away, so a caller must check STABLE_FLAGS_MALLOC in flags before writing, exactly as stable_get does."
     }
    }
   },
@@ -12001,6 +12001,33 @@
       "nullable": true,
       "mutable": true,
       "note": "Consumes a nullable byte buffer owned by the caller. Declared static ossl_inline in an internal header, so there is no linkable symbol to call: a Rust surface is a native translation of the branch it selects, not an FFI wrap. Both branches release through CRYPTO_free - OPENSSL_clear_free(ptr, size) -> CRYPTO_clear_free -> CRYPTO_free when OPENSSL_PEDANTIC_ZEROIZATION is defined, OPENSSL_free(ptr) -> CRYPTO_free otherwise - so the storage is an ordinary OpenSSL allocation whichever way the module is configured and only the cleansing differs; a buffer therefore crosses between C and a Rust owner in either build. size is read only on the pedantic branch, where it becomes the OPENSSL_cleanse length and must be the buffer's live byte count; the default branch ignores it, so a wrong size is inert there and harmful only under pedantic zeroization. Every in-tree caller is crypto/ffc/ffc_params.c (ossl_ffc_params_cleanup, ossl_ffc_params_set_seed, ossl_ffc_params_copy), passing params->seed with params->seedlen: an OPENSSL_memdup buffer of exactly seedlen bytes, or the NULL/0 pair ossl_ffc_params_init leaves behind. OPENSSL_PEDANTIC_ZEROIZATION is a supported configuration exercised daily in CI (.github/workflows/run-checker-daily.yml), not dead code."
+     }
+    }
+   ]
+  },
+  {
+   "name": "st_free",
+   "defined_in": "crypto/asn1/a_strnid.c",
+   "lifetime": {
+    "for": "tbl",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "tbl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Consumes one dynamic string-table record. Reached only as the pop_free callback of ASN1_STRING_TABLE_cleanup, whose stack holds exactly the OPENSSL_zalloc'd records stable_get pushed, so every argument carries STABLE_FLAGS_MALLOC and the flag test is defensive. The argument is dereferenced before the test, so NULL is not accepted."
      }
     }
    ]
