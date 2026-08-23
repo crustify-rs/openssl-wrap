@@ -5,6 +5,8 @@ use core::ptr::NonNull;
 use ffibox::{CBox, CBoxWith, CCloner, CDropper, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
+use crate::stack::stack::{Stack, StackMut, StackRef};
+
 define_ctype!(
     /// Wraps: asn1_object_st
     ///
@@ -312,5 +314,102 @@ mod string_tests {
             size_of::<Asn1StringMut<'static>>(),
             size_of::<*mut ffi::asn1_string_st>()
         );
+    }
+}
+
+/// Wraps: stack_st_ASN1_INTEGER
+///
+/// Typed view of OpenSSL's `STACK_OF(ASN1_INTEGER)`. `ASN1_INTEGER` is a
+/// typedef of the common ASN.1 string layout, while the generated stack tag
+/// erases to `OPENSSL_STACK`; this alias retains the element type without
+/// changing the generic container's representation.
+///
+/// A plain stack owns its pointer array, not the integers. Element ownership
+/// can instead be selected explicitly with [`Stack::into_pop_free`].
+pub type Asn1IntegerStack = Stack<Asn1String>;
+
+/// Shared borrowed handle to a `STACK_OF(ASN1_INTEGER)`.
+pub type Asn1IntegerStackRef<'a> = StackRef<'a, Asn1String>;
+
+/// Exclusive borrowed handle to a `STACK_OF(ASN1_INTEGER)`.
+pub type Asn1IntegerStackMut<'a> = StackMut<'a, Asn1String>;
+
+/// Wraps: stack_st_ASN1_OBJECT
+///
+/// Typed view of OpenSSL's `STACK_OF(ASN1_OBJECT)`. The generated C tag is a
+/// forward declaration whose operations erase it to `OPENSSL_STACK`, so this
+/// alias uses the generic container while preserving [`Asn1Object`] as its
+/// element type.
+///
+/// A plain stack owns its pointer array, not the objects. Element ownership
+/// can instead be selected explicitly with [`Stack::into_pop_free`].
+pub type Asn1ObjectStack = Stack<Asn1Object>;
+
+/// Shared borrowed handle to a `STACK_OF(ASN1_OBJECT)`.
+pub type Asn1ObjectStackRef<'a> = StackRef<'a, Asn1Object>;
+
+/// Exclusive borrowed handle to a `STACK_OF(ASN1_OBJECT)`.
+pub type Asn1ObjectStackMut<'a> = StackMut<'a, Asn1Object>;
+
+#[cfg(test)]
+mod stack_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CBox, CCell, CCloned, CDropped};
+
+    use super::*;
+    use crate::stack::stack::{OPENSSL_sk_new_null, OPENSSL_sk_num};
+
+    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+
+    #[test]
+    fn asn1_stacks_keep_the_typed_erased_surface() {
+        assert_owned_cloneable_cell::<Asn1IntegerStack>();
+        assert_owned_cloneable_cell::<Asn1ObjectStack>();
+
+        assert_eq!(
+            size_of::<CBox<Asn1IntegerStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<Asn1IntegerStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<Asn1IntegerStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<CBox<Asn1ObjectStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<Asn1ObjectStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<Asn1ObjectStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+    }
+
+    #[test]
+    fn owners_produce_integer_and_object_stack_handles() {
+        let mut integers: CBox<Asn1IntegerStack> =
+            OPENSSL_sk_new_null().expect("ASN1_INTEGER stack");
+        let integer_raw = integers.as_ptr();
+        let integer_shared: Asn1IntegerStackRef<'_> = integers.as_ref();
+        assert_eq!(integer_shared.as_ptr(), integer_raw.cast_const());
+        let mut integer_exclusive: Asn1IntegerStackMut<'_> = integers.as_mut();
+        assert_eq!(integer_exclusive.as_mut_ptr(), integer_raw);
+        assert_eq!(OPENSSL_sk_num(Some(integer_exclusive.as_ref())), Some(0));
+
+        let mut objects: CBox<Asn1ObjectStack> = OPENSSL_sk_new_null().expect("ASN1_OBJECT stack");
+        let object_raw = objects.as_ptr();
+        let object_shared: Asn1ObjectStackRef<'_> = objects.as_ref();
+        assert_eq!(object_shared.as_ptr(), object_raw.cast_const());
+        let mut object_exclusive: Asn1ObjectStackMut<'_> = objects.as_mut();
+        assert_eq!(object_exclusive.as_mut_ptr(), object_raw);
+        assert_eq!(OPENSSL_sk_num(Some(object_exclusive.as_ref())), Some(0));
     }
 }
