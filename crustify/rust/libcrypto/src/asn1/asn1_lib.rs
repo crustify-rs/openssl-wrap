@@ -160,7 +160,12 @@ pub fn ASN1_STRING_set0(
     Ok(())
 }
 
+/// Wraps: ASN1_STRING_set0
 /// Clears the current data while preserving the ASN.1 string allocation.
+///
+/// The second of this symbol's two safe contracts: `ASN1_STRING_set0` above
+/// transfers a buffer in, and the null/zero argument pair that OpenSSL
+/// documents as a reset has no owned buffer to take, so it gets its own name.
 pub fn clear_data(string: &mut Asn1StringMut<'_>) {
     // SAFETY: a null zero-length replacement is explicitly supported and the
     // exclusive handle permits OpenSSL to release the old owned data.
@@ -239,6 +244,60 @@ mod tests {
             .expect("borrowed ASN.1 header");
         let bytes = ASN1_STRING_get0_data(string.as_ref()).expect("valid string data");
         assert_eq!(bytes.elems().collect::<Vec<_>>(), source);
+    }
+
+    #[test]
+    fn comparison_orders_by_length_then_bytes_then_type() {
+        let string = |string_type: c_int, data: &[u8]| {
+            let mut value = ASN1_STRING_type_new(string_type).expect("typed ASN1 string");
+            assert!(ASN1_STRING_set1_data(&mut value.as_mut(), data));
+            value
+        };
+        let octet = ffi::V_ASN1_OCTET_STRING as c_int;
+
+        // Length dominates, then the bytes, then the type tag.
+        let longer = string(octet, b"abc");
+        let shorter = string(octet, b"ab");
+        assert_eq!(
+            ASN1_STRING_cmp(longer.as_ref(), shorter.as_ref()),
+            Ordering::Greater
+        );
+
+        let higher = string(octet, b"abd");
+        assert_eq!(
+            ASN1_STRING_cmp(longer.as_ref(), higher.as_ref()),
+            Ordering::Less
+        );
+
+        let retyped = string(ffi::V_ASN1_UTF8STRING as c_int, b"abc");
+        assert_eq!(
+            ASN1_STRING_cmp(retyped.as_ref(), longer.as_ref()),
+            Ordering::Greater
+        );
+        assert_eq!(
+            ASN1_STRING_cmp(longer.as_ref(), longer.as_ref()),
+            Ordering::Equal
+        );
+    }
+
+    #[test]
+    fn clearing_data_releases_the_buffer_and_keeps_the_header() {
+        let mut string = ASN1_STRING_new().expect("ASN1_STRING_new");
+        assert!(ASN1_STRING_set1_data(&mut string.as_mut(), b"payload"));
+        assert_eq!(ASN1_STRING_get_length(string.as_ref()), 7);
+
+        clear_data(&mut string.as_mut());
+        assert_eq!(ASN1_STRING_get_length(string.as_ref()), 0);
+        assert_eq!(
+            ASN1_STRING_get0_data(string.as_ref())
+                .expect("an emptied string still has a valid view")
+                .elems()
+                .collect::<Vec<_>>(),
+            b""
+        );
+        // The header survived its buffer, so the ordinary destructor still owns
+        // exactly one allocation here.
+        ASN1_STRING_free(string);
     }
 
     #[test]

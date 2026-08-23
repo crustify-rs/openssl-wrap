@@ -950,6 +950,13 @@ pub fn ASN1_STRING_length(string: Asn1StringRef<'_>) -> c_int {
 /// Unlike the deprecated C entry point, this safe surface rejects growth:
 /// OpenSSL does not track the allocation capacity needed to prove such a write
 /// leaves later reads and destruction in bounds.
+///
+/// Shrinking to zero is in bounds but loses the buffer's address inside
+/// OpenSSL: `ossl_asn1_string_set_internal` reallocates from
+/// `str->length == 0 ? NULL : str->data`, so a later `ASN1_STRING_set1_data`
+/// on this string allocates afresh and leaks what was there. Nothing is freed
+/// twice or read after release; the bytes are simply never reclaimed.
+/// [`crate::asn1::asn1_lib::clear_data`] empties a string without that cost.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn ASN1_STRING_length_set(string: &mut Asn1StringMut<'_>, new_length: usize) -> bool {

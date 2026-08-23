@@ -167,7 +167,13 @@ pub fn ASN1_STRING_set_by_NID(
     unsafe { ffibox::CBox::from_raw(raw) }
 }
 
+/// Wraps: ASN1_STRING_set_by_NID
 /// Reuses an existing owned ASN.1 string for the constrained conversion.
+///
+/// The second of this symbol's two safe contracts. A non-null `*out` selects
+/// OpenSSL's reuse branch, which empties the supplied string with
+/// `ASN1_STRING_set0` and refills it in place, so the caller keeps ownership
+/// and the result is a success flag rather than a new owner.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn ASN1_STRING_set_by_NID_into(
