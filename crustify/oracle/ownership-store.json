@@ -147,6 +147,88 @@
    ]
   },
   {
+   "name": "X509_pubkey_st",
+   "defined_in": "crypto/x509/x_pubkey.c",
+   "_comment_agent": "The public X509_PUBKEY surface is opaque. A complete object uniquely owns algor, public_key and propq, owns one EVP_PKEY reference when the optional decode cache exists, and only borrows its optional OSSL_LIB_CTX.",
+   "fields": [
+    {
+     "name": "algor",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Unique X509_ALGOR child allocated/populated during construction, mutated by set0 operations, duplicated deeply, and released by X509_ALGOR_free. It is transiently null in zeroed/partially constructed storage but non-null for a fully formed public object."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional non-owning library context retained by new_ex/set0_libctx and passed into later decoder construction; no up-ref or free is performed, so the external context must remain live while the pubkey may use it."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional cached EVP_PKEY. The pubkey owns one reference: decode creates it and X509_PUBKEY_set takes an up-ref before storing it; x509_pubkey_ex_free pays that debt with EVP_PKEY_free. X509_PUBKEY_get0 exposes a mutable borrowed handle."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query deep-copied with OPENSSL_strdup and released with OPENSSL_free; consumers only read it as a string."
+     }
+    },
+    {
+     "name": "public_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Unique ASN1_BIT_STRING child allocated/populated during construction, mutated by public-key setters and decoding, duplicated deeply, and released by ASN1_BIT_STRING_free. It is transiently null only in partial construction."
+     }
+    }
+   ]
+  },
+  {
    "name": "_IO_FILE",
    "defined_in": "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h",
    "_comment_agent": "Reviewed as an imported, permanently C-owned type. Its footprint is opaque everywhere: opaque_in is complete for the tree, and the only field touchers are glibc's own inline helpers in bits/stdio.h (getc_unlocked, putc_unlocked, feof_unlocked, ferror_unlocked), none of which this codebase calls. No OpenSSL, apps, ssl or test code reads or writes a single member, so the wrapper keeps the layout opaque and exposes no field accessors; the field judgements below record glibc's documented internal contract so that a later wave cannot mistake an interior pointer for owned storage. Stream lifecycle stays in libc: fopen/fdopen allocate and fclose releases. libcrypto never frees a stream it did not open (BIO_new_file opens and closes its own; BIO_new_fp and BIO_set_fp free the caller's stream only when the caller passes BIO_CLOSE), so the type has borrowed handles and no owning pointer form until an fclose-backed release strategy is scheduled.",
@@ -12248,6 +12330,79 @@
      "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
     }
    }
+  },
+  {
+   "name": "X509_PUBKEY_dup",
+   "defined_in": "crypto/x509/x_pubkey.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads a required source synchronously and leaves it unchanged."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL on failure or a fresh deep copy with an independent X509_PUBKEY_free obligation."
+    }
+   }
+  },
+  {
+   "name": "X509_PUBKEY_free",
+   "defined_in": "crypto/x509/x_pubkey.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and releases one fully formed X509_PUBKEY allocation; NULL is explicitly accepted through ASN1_item_free."
+     }
+    }
+   ]
   },
   {
    "name": "asn1_ps_func",

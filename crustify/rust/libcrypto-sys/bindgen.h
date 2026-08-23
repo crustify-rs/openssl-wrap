@@ -6,6 +6,7 @@
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
 #include <openssl/stack.h>
+#include <openssl/x509.h>
 #include <internal/bio.h>
 #include "internal/bio_addr.h"
 /* crustify:includes:end */
