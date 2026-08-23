@@ -1626,7 +1626,7 @@
   {
    "name": "obj_name_st",
    "defined_in": "include/openssl/objects.h",
-   "_comment_agent": "OBJ_NAME records own only their header allocation inside o_names.c. Their public name/data fields borrow caller-managed immutable NUL strings; there is no public per-record destructor or clone operation.",
+   "_comment_agent": "OBJ_NAME records own only their header allocation inside o_names.c: OBJ_NAME_add OPENSSL_mallocs one, and OBJ_NAME_add (on replacement), OBJ_NAME_remove and OBJ_NAME_cleanup OPENSSL_free it after running the class's registered free_func on the name/data pair. There is no public per-record constructor, destructor or clone. `alias` discriminates `data`: a non-zero alias makes data the borrowed name of another entry of the same class (OBJ_NAME_get feeds it back as its next lookup key), and a zero alias makes it the class's registered payload, an erased pointer that is NOT a string -- EVP_add_cipher and EVP_add_digest store (const char *)cipher / (const char *)md, and do_all_cipher_fn/do_all_md_fn cast it straight back. `type` and `name` are the hash key.",
    "fields": [
     {
      "name": "data",
@@ -1640,7 +1640,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "OBJ_NAME_add stores caller-managed const data without copying it. Non-alias entries may carry NULL; optional type-specific free callbacks, not OBJ_NAME itself, govern any external storage."
+      "note": "Discriminated by the sibling `alias` field, and only one arm is a string; the record cannot hold both, so `string: true` covers the alias arm and this note carries the other. alias != 0: `data` is the caller-managed NUL-terminated name of another entry of the same class, which OBJ_NAME_get assigns to `on.name` and looks up again (o_names.c:172). alias == 0: `data` is the registered payload, an erased pointer whose concrete type is fixed by `type` -- `const EVP_CIPHER *` from EVP_add_cipher, `const EVP_MD *` from EVP_add_digest, arbitrary for a class from OBJ_NAME_new_index -- and do_all_cipher_fn/do_all_md_fn (crypto/evp/names.c:201-252) and get_legacy_cipher_names (crypto/core_namemap.c:409) cast it back. Reading that arm as a C string is an out-of-bounds read: it is not NUL-terminated. Either arm is stored without copying and OBJ_NAME_add does not validate it; NULL is reachable and reported by OBJ_NAME_get as `not registered`. Any external storage is governed by the class's optional free_func, never by OBJ_NAME itself."
      }
     },
     {
@@ -1653,9 +1653,9 @@
       "borrowed": {
        "lifetime": "other"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": false,
-      "note": "OBJ_NAME_add stores the caller's const NUL-terminated name without copying it; registered callbacks receive that borrowed pointer."
+      "note": "OBJ_NAME_add stores the caller's const NUL-terminated name without copying it; registered callbacks receive that borrowed pointer. Every reader dereferences it unconditionally -- obj_name_cmp hands it to OPENSSL_strcasecmp, which derefs without a NULL check, and apps/enc.c:860 indexes it -- so a non-NULL name is the invariant the registry relies on. It is not enforced: OBJ_NAME_add takes the pointer unchecked, and EVP_add_cipher / EVP_add_digest pass an unchecked OBJ_nid2sn / OBJ_nid2ln result, which is NULL for a nid outside the object table (obj_dat.c:279-291). ossl_lh_strcasehash tolerates NULL, so such an entry can be inserted and later reached, making the NULL state observable rather than impossible: nullable, with every consumer requiring the non-NULL case."
      }
     }
    ]
@@ -1663,7 +1663,7 @@
   {
    "name": "ossl_init_settings_st",
    "defined_in": "include/internal/conf.h",
-   "_comment_agent": "Both optional string fields are independently owned malloc-family strings. OPENSSL_INIT_free releases both and then the settings allocation.",
+   "_comment_agent": "Both optional string fields are independently owned strings allocated by the C runtime's strdup, and OPENSSL_INIT_free releases both and then the settings allocation with the C runtime's free. crypto/conf/conf_lib.c does this deliberately -- OPENSSL_INIT_new mallocs, and the two setters strdup/free rather than OPENSSL_strdup/OPENSSL_free -- so that a later CRYPTO_set_mem_functions cannot disjoin allocation from release; a wrapper must not substitute an OPENSSL_free-family releaser for either field or for the struct. The type carries no reference count and has no duplicator, so OPENSSL_INIT_free is its whole lifecycle. ossl_config_int (crypto/conf/conf_sap.c:58-60) is the only reader of the three fields anywhere and treats a NULL filename/appname as absent.",
    "fields": [
     {
      "name": "appname",
@@ -1675,7 +1675,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": false,
-      "note": "OPENSSL_INIT_set_config_appname duplicates the input with strdup, replaces and frees the old allocation; OPENSSL_INIT_free frees it."
+      "note": "OPENSSL_INIT_set_config_appname duplicates the input with the C runtime's strdup (never OPENSSL_strdup), frees the previous allocation with the C runtime's free, and stores the copy; OPENSSL_INIT_free frees it the same way. NULL is the initial state from OPENSSL_INIT_new's memset and is also stored when the setter is passed NULL. The pointee is never written through, only replaced wholesale."
      }
     },
     {
@@ -1688,7 +1688,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": false,
-      "note": "OPENSSL_INIT_set_config_filename duplicates the input with strdup, replaces and frees the old allocation; OPENSSL_INIT_free frees it."
+      "note": "OPENSSL_INIT_set_config_filename duplicates the input with the C runtime's strdup (never OPENSSL_strdup), frees the previous allocation with the C runtime's free, and stores the copy; OPENSSL_INIT_free frees it the same way. NULL is the initial state from OPENSSL_INIT_new's memset and is also stored when the setter is passed NULL. The pointee is never written through, only replaced wholesale."
      }
     }
    ]

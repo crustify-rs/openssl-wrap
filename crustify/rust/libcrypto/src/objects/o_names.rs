@@ -55,13 +55,31 @@ impl ObjNameFreeCallback {
     }
 }
 
-/// An opaque, registry-owned payload returned by `OBJ_NAME_get`.
+/// An opaque, registry-owned payload: what `OBJ_NAME_get` returns, and what
+/// the `data` slot of a non-alias [`ObjNameRef`] holds.
 pub struct ObjNameValue<'a> {
     ptr: NonNull<c_void>,
     marker: PhantomData<&'a ()>,
 }
 
-impl ObjNameValue<'_> {
+impl<'a> ObjNameValue<'a> {
+    /// Builds a payload view over a registry pointer.
+    ///
+    /// Crate-internal: `'a` is chosen by the caller, which must bind it to the
+    /// borrow the pointer was read through — the registry lookup, or the
+    /// [`ObjNameRef`] handle owning the field.
+    pub(crate) fn from_ptr(ptr: NonNull<c_void>) -> Self {
+        Self {
+            ptr,
+            marker: PhantomData,
+        }
+    }
+
+    /// The erased pointer, for storing the payload back into an entry.
+    pub(crate) fn as_non_null(&self) -> NonNull<c_void> {
+        self.ptr
+    }
+
     /// Reinterprets the erased payload after validating its registered type.
     ///
     /// # Safety
@@ -82,10 +100,7 @@ pub fn OBJ_NAME_get(name: &CStr, type_id: i32) -> Option<ObjNameValue<'_>> {
     // SAFETY: `name` is a live immutable C string. The returned registry
     // pointer remains opaque and cannot be dereferenced through this safe API.
     let raw = unsafe { ffi::OBJ_NAME_get(name.as_ptr(), type_id) };
-    NonNull::new(raw.cast_mut().cast()).map(|ptr| ObjNameValue {
-        ptr,
-        marker: PhantomData,
-    })
+    NonNull::new(raw.cast_mut().cast()).map(ObjNameValue::from_ptr)
 }
 
 /// Wraps: OBJ_NAME_init

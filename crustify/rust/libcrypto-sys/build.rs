@@ -138,6 +138,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_secure_zalloc",
     "CRYPTO_strdup",
     "OPENSSL_INIT_free",
+    "OPENSSL_INIT_new",
     "OPENSSL_LH_free",
     "OPENSSL_sk_dup",
     "OPENSSL_sk_free",
@@ -391,6 +392,7 @@ const AGENT_ALLOWED_VARS: &[&str] = &[
     "AF_INET",
     "AF_INET6",
     "AF_UNIX",
+    "OBJ_NAME_ALIAS",
 ];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end
