@@ -129,6 +129,315 @@
    ]
   },
   {
+   "name": "_IO_FILE",
+   "defined_in": "/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h",
+   "_comment_agent": "Reviewed as an imported, permanently C-owned type. Its footprint is opaque everywhere: opaque_in is complete for the tree, and the only field touchers are glibc's own inline helpers in bits/stdio.h (getc_unlocked, putc_unlocked, feof_unlocked, ferror_unlocked), none of which this codebase calls. No OpenSSL, apps, ssl or test code reads or writes a single member, so the wrapper keeps the layout opaque and exposes no field accessors; the field judgements below record glibc's documented internal contract so that a later wave cannot mistake an interior pointer for owned storage. Stream lifecycle stays in libc: fopen/fdopen allocate and fclose releases. libcrypto never frees a stream it did not open (BIO_new_file opens and closes its own; BIO_new_fp and BIO_set_fp free the caller's stream only when the caller passes BIO_CLOSE), so the type has borrowed handles and no owning pointer form until an fclose-backed release strategy is scheduled.",
+   "fields": [
+    {
+     "name": "_IO_backup_base",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_save_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "First valid character of the backup area; an interior pointer into the _IO_save_base allocation, null when no backup area exists."
+     }
+    },
+    {
+     "name": "_IO_buf_base",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Start of the reserve area, with runtime-conditional ownership: normally a glibc-allocated buffer released when the stream is closed or re-buffered, but setvbuf can install caller storage and an unbuffered stream points at the inline _shortbuf member instead. The flag deciding which case applies is glibc-internal, so no wrapper may free this slot; null until the stream is buffered."
+     }
+    },
+    {
+     "name": "_IO_buf_end",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_buf_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "End of the reserve area started by _IO_buf_base; a bound rather than storage of its own, null while the stream has no buffer."
+     }
+    },
+    {
+     "name": "_IO_read_base",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_buf_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Start of the putback+get area inside the reserve area; interior pointer, null before a buffer exists, never released on its own."
+     }
+    },
+    {
+     "name": "_IO_read_end",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_buf_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "End of the get area inside the reserve area; interior pointer maintained by glibc on every refill, null before a buffer exists, and never released on its own."
+     }
+    },
+    {
+     "name": "_IO_read_ptr",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_buf_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Current read position inside the reserve area delimited by _IO_buf_base/_IO_buf_end; glibc advances it and refills through it, and it is null while the stream has no buffer. It is an interior pointer, never separately allocated or released."
+     }
+    },
+    {
+     "name": "_IO_save_base",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Start of the saved (non-current) get area allocated by glibc when the stream switches to its backup area; released by glibc when the backup area is discarded or the stream is closed. Null whenever no backup area exists, which is the state for every stream this tree opens."
+     }
+    },
+    {
+     "name": "_IO_save_end",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_save_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "End of the saved get area; a bound on the _IO_save_base allocation, null when no backup area exists."
+     }
+    },
+    {
+     "name": "_IO_write_base",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_buf_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Start of the put area inside the reserve area; glibc writes bytes through it when flushing, and it is null before a buffer exists."
+     }
+    },
+    {
+     "name": "_IO_write_end",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_buf_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "End of the put area inside the reserve area; compared against _IO_write_ptr to decide when to overflow. Interior pointer, null before a buffer exists."
+     }
+    },
+    {
+     "name": "_IO_write_ptr",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:_IO_buf_base"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Current put position inside the reserve area; the __putc_unlocked_body macro stores through it and advances it. Interior pointer, null before a buffer exists."
+     }
+    },
+    {
+     "name": "_chain",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Link into glibc's global list of open streams. Each linked stream is owned by whoever opened it, so following the chain must never transfer ownership; null at the end of the list."
+     }
+    },
+    {
+     "name": "_codecvt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Conversion state used once a stream acquires wide orientation; glibc attaches storage that lives with the stream's own allocation and mutates it while converting. Not separately released, and null for byte-oriented streams, which is every stream this tree opens."
+     }
+    },
+    {
+     "name": "_freeres_buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Type-erased buffer the stream registers for release during glibc's process-teardown pass rather than at fclose. Ownership sits with the stream implementation; no code in this tree reads, writes or frees it, and it is null for ordinary streams."
+     }
+    },
+    {
+     "name": "_freeres_list",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Link into glibc's process-teardown (__libc_freeres) chain of streams. The linked stream belongs to whoever opened it, so this is a borrow; null outside that teardown bookkeeping."
+     }
+    },
+    {
+     "name": "_lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque _IO_lock_t (a void typedef outside libc) guarding the stream. glibc allocates it together with the stream, or points at static storage for the standard streams, and releases it with the stream; it is written by every locked stdio operation and is never freed through this field. The header's flag documentation (_IO_USER_LOCK) shows the slot is implementation-managed, and it can be null for a stream glibc has not finished initializing."
+     }
+    },
+    {
+     "name": "_markers",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Head of the intrusive list of stream markers. A marker is created and destroyed by the code that registers it (the C++ streambuf protocol this layout preserves); closing the stream detaches the list without freeing its nodes, so the field borrows rather than owns. Null for every stream this tree opens."
+     }
+    },
+    {
+     "name": "_wide_data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Wide-character buffer state that glibc allocates together with the stream and tears down with it, so the slot must not be released on its own. Written throughout wide-oriented I/O; null when a stream carries no wide state."
+     }
+    }
+   ]
+  },
+  {
    "name": "addrinfo",
    "defined_in": "/usr/include/netdb.h",
    "_comment_agent": "The layout has multiple allocation origins: system result chains use freeaddrinfo, while OpenSSL-created AF_UNIX nodes use BIO_ADDRINFO_free. The type therefore needs allocation-specific owner strategies rather than one unconditional CDropped implementation.",
