@@ -78,28 +78,23 @@ the campaign's.
 
 ## Overview
 
-Every recorded campaign/session, including work later superseded. Totals price
-the recorded token classes at provider API rates. Review-objective campaigns
-use only the three `review` cost columns; every other row uses the three
-`campaign` cost columns. The orchestrator row is live at the report checkpoint
-and is not part of `crustify-log-cost`'s agent total. For mixed campaigns, each
-unit rate uses only its matching cost bucket. The 8 callback units are excluded
-from both counts and folded into the type bucket's cost.
+Each row groups a reviewee with the campaigns that actually reviewed it.
+Totals price the recorded token classes at provider API rates; the compact
+model tag sits beside each total. The lifetime review total contains metered
+campaigns `02` and `04`; superseded campaign `03` is unmetered. The orchestrator
+row is live at the report checkpoint and is not part of `crustify-log-cost`'s
+agent total. For mixed campaigns, each unit rate uses only its matching cost
+bucket. The 8 callback units are excluded from both counts and folded into the
+type bucket's cost.
 
-| campaign | objective | model | nr types | nr symbols | session wall | campaign total | campaign $/type | campaign $/sym | review total | review $/type | review $/sym |
-|---|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|
-| `00-lifetime-void` | raw lifetime | `openai/gpt-5.6-sol` | `0` | `7` | `24m20s` | `$7.94` | — | `$1.13` | — | — | — |
-| `01-lifetime-string` | raw lifetime | `openai/gpt-5.6-sol` | `0` | `3` | `15m05s` | `$5.69` | — | `$1.90` | — | — | — |
-| `02-review-void` | review | `openai/gpt-5.5` | `0` | `7` | `25m18s` | — | — | — | `$10.79` | — | `$1.54` |
-| `03-review-string` | review | `openai/gpt-5.5` | `0` | `3` | unmetered | — | — | — | — | — | — |
-| `04-review-lifetimes` | review | `anthropic/claude-opus-5` | `0` | `10` | `47m01s` | — | — | — | `$18.82` | — | `$1.88` |
-| `10-foundation` | wrap | `openai/gpt-5.6-sol` | `34` | `277` | `2h45m09s` | `$241.75` | `$4.48` | `$0.32` | — | — | — |
-| `11-foundation-audit` | corrective wrap | `openai/gpt-5.6-sol` | `0` | `2` | `5m42s` | `$2.59` | — | `$1.30` | — | — | — |
-| `20-review-foundation` | review | `anthropic/claude-opus-5` | `34` | `277` | `2h03m21s` | — | — | — | `$217.23` | `$3.84` | `$0.31` |
-| `ub-20260823-025523` | UB audit | `anthropic/claude-opus-5` | `34` | `277` | `56m04s` | `$43.48` | — | — | — | — | — |
-| orchestrator | orchestration | `openai/gpt-5.6-sol` | `34` | `277` | live | `$77.52` | — | — | — | — | — |
-| **Σ recorded agents** | | | | | | **`$301.45`** | | | **`$246.84`** | | |
-| **Σ including orchestrator** | | | | | | **`$378.97`** | | | **`$246.84`** | | |
+| campaign | objective | nr types | nr symbols | session wall | campaign total | campaign $/type | campaign $/sym | review total | review $/type | review $/sym |
+|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|
+| `00–01-lifetimes` | raw lifetime | `0` | `10` | `39m26s` | `$13.63` (gpt56sol) | — | `$1.36` | `$29.61` (gpt55, opus5) | — | `$2.96` |
+| `10–11-foundation` | wrap + corrective wrap | `34` | `277` | `2h50m51s` | `$244.34` (gpt56sol) | `$4.48` | `$0.33` | `$217.23` (opus5) | `$3.84` | `$0.31` |
+| `ub-20260823-025523` | UB audit | `34` | `277` | `56m04s` | `$43.48` (opus5) | — | — | — | — | — |
+| orchestrator | orchestration | `34` | `277` | live | `$77.52` (gpt56sol) | — | — | — | — | — |
+| **Σ recorded agents** | | | | | **`$301.45`** | | | **`$246.84`** | | |
+| **Σ including orchestrator** | | | | | **`$378.97`** | | | **`$246.84`** | | |
 
 ## Raw lifetime discovery
 
