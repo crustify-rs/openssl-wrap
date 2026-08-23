@@ -150,9 +150,7 @@ impl PolicyInfo {
     /// Allocates a complete empty policy-info record.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh, fully initialized ASN.1
-        // sequence carrying one `POLICYINFO_free` obligation.
-        unsafe { CBox::from_raw(ffi::POLICYINFO_new()) }
+        crate::x509::v3_cpols::POLICYINFO_new()
     }
 }
 
@@ -729,9 +727,7 @@ impl DistPointName {
     /// Allocates OpenSSL's empty, unset distribution-point-name choice.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh complete ASN.1 allocation with
-        // one matching `DIST_POINT_NAME_free` obligation.
-        unsafe { CBox::from_raw(ffi::DIST_POINT_NAME_new()) }
+        crate::x509::v3_crld::DIST_POINT_NAME_new()
     }
 }
 
@@ -1004,9 +1000,7 @@ impl NameConstraints {
     /// Allocates an empty name-constraints sequence.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh complete ASN.1 allocation with
-        // one `NAME_CONSTRAINTS_free` obligation.
-        unsafe { CBox::from_raw(ffi::NAME_CONSTRAINTS_new()) }
+        crate::x509::v3_ncons::NAME_CONSTRAINTS_new()
     }
 }
 
