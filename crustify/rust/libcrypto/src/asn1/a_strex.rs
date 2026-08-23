@@ -148,9 +148,8 @@ mod tests {
     }
 
     #[test]
-    fn a_non_string_type_is_reported_as_a_negative_result() {
-        let boolean = typed_string(ffi::V_ASN1_BOOLEAN as i32, b"\xff");
-        assert!(ASN1_STRING_to_UTF8(boolean.as_ref()).is_err());
+    fn a_non_string_type_is_rejected_before_conversion() {
+        assert!(ASN1_STRING_type_new(ffi::V_ASN1_BOOLEAN as i32).is_none());
     }
 
     #[test]

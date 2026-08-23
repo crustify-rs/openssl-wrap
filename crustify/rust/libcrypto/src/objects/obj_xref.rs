@@ -7,6 +7,9 @@ use libcrypto_sys as ffi;
 #[must_use]
 #[allow(non_snake_case)]
 pub fn OBJ_find_sigid_algs(signature_nid: i32) -> Option<(i32, i32)> {
+    if signature_nid <= 0 {
+        return None;
+    }
     let mut digest_nid = 0;
     let mut public_key_nid = 0;
     // SAFETY: both output pointers refer to live initialized scalar slots.
@@ -19,6 +22,9 @@ pub fn OBJ_find_sigid_algs(signature_nid: i32) -> Option<(i32, i32)> {
 #[must_use]
 #[allow(non_snake_case)]
 pub fn OBJ_add_sigid(signature_nid: i32, digest_nid: i32, public_key_nid: i32) -> bool {
+    if signature_nid <= 0 || digest_nid <= 0 || public_key_nid <= 0 {
+        return false;
+    }
     // SAFETY: all arguments are by-value registry identifiers.
     unsafe { ffi::OBJ_add_sigid(signature_nid, digest_nid, public_key_nid) == 1 }
 }
@@ -27,6 +33,9 @@ pub fn OBJ_add_sigid(signature_nid: i32, digest_nid: i32, public_key_nid: i32) -
 #[must_use]
 #[allow(non_snake_case)]
 pub fn OBJ_find_sigid_by_algs(digest_nid: i32, public_key_nid: i32) -> Option<i32> {
+    if digest_nid <= 0 || public_key_nid <= 0 {
+        return None;
+    }
     let mut signature_nid = 0;
     // SAFETY: the output pointer is a live initialized scalar slot.
     let found =
@@ -62,5 +71,17 @@ mod scheduled_tests {
     #[test]
     fn an_unregistered_signature_nid_has_no_algorithms() {
         assert_eq!(OBJ_find_sigid_algs(0), None);
+    }
+
+    #[test]
+    fn non_positive_nids_are_rejected_before_the_c_comparators() {
+        for invalid in [i32::MIN, -1, 0] {
+            assert_eq!(OBJ_find_sigid_algs(invalid), None);
+            assert_eq!(OBJ_find_sigid_by_algs(invalid, 1), None);
+            assert_eq!(OBJ_find_sigid_by_algs(1, invalid), None);
+            assert!(!OBJ_add_sigid(invalid, 1, 1));
+            assert!(!OBJ_add_sigid(1, invalid, 1));
+            assert!(!OBJ_add_sigid(1, 1, invalid));
+        }
     }
 }

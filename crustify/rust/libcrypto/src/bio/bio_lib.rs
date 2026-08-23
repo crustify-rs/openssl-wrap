@@ -12,6 +12,10 @@ use super::context::OsslLibCtxRef;
 use super::internal_bio::BioMethodRef;
 use super::openssl_bio::{BioCallbackFnEx, BioInfoCallback, BioMsg, BioPollDescriptorMut};
 
+/// Public `<openssl/bio.h>` method-class and method-type values.
+const BIO_TYPE_DESCRIPTOR: i32 = 0x0100;
+const BIO_TYPE_BUFFER: i32 = 9 | 0x0200;
+
 /// Wraps: BIO_err_is_non_fatal
 #[must_use]
 #[allow(non_snake_case)]
@@ -303,6 +307,8 @@ pub fn BIO_get_shutdown(bio: BioRef<'_>) -> i32 {
 /// Rejects an empty buffer instead of calling C. `BIO_gets` validates only
 /// `size < 0`, and a `bgets` method reached with `size == 0` still writes the
 /// terminating NUL — `mem_gets` does so before it looks at the length at all.
+/// Also rejects an unchained buffer filter: OpenSSL's `buffer_gets` omits the
+/// null-successor guard present in its read and write methods.
 #[allow(non_snake_case)]
 pub fn BIO_gets(mut bio: BioMut<'_>, buffer: &mut [u8]) -> i32 {
     if buffer.is_empty() {
@@ -311,6 +317,13 @@ pub fn BIO_gets(mut bio: BioMut<'_>, buffer: &mut [u8]) -> i32 {
     let Ok(size) = i32::try_from(buffer.len()) else {
         return -1;
     };
+    let unchained_buffer = {
+        let shared = bio.as_ref();
+        BIO_method_type(shared) == BIO_TYPE_BUFFER && BIO_next(&shared).is_none()
+    };
+    if unchained_buffer {
+        return -1;
+    }
     // SAFETY: the exclusive BIO handle and mutable slice remain live for the
     // synchronous call; `size` is exactly the writable buffer length.
     unsafe { ffi::BIO_gets(bio.as_mut_ptr(), buffer.as_mut_ptr().cast(), size) }
@@ -442,6 +455,15 @@ mod tests {
         let mut line = [0_u8; 16];
         assert_eq!(BIO_gets(bio.as_mut(), &mut line), 6);
         assert_eq!(&line[..6], b"hello\n");
+    }
+
+    #[test]
+    fn gets_rejects_an_unchained_buffer_filter() {
+        let method = crate::bio::bf_buff::BIO_f_buffer();
+        let mut bio = BIO_new(method).expect("buffer BIO");
+        let mut line = [0_u8; 16];
+
+        assert_eq!(BIO_gets(bio.as_mut(), &mut line), -1);
     }
 }
 
@@ -986,18 +1008,28 @@ impl BioChain<'_> {
 /// `Bio` owner already carries its method's lifetime -- see [`BorrowedBio`]
 /// and [`BIO_new`].
 ///
-/// The copied `num` and `shutdown` are a resource-sharing hazard that belongs
-/// to C and that this wrapper cannot remove: for a descriptor-backed method
-/// with `shutdown` set, source and duplicate each close the same descriptor
-/// when released.
+/// Refuses the complete chain when any descriptor-class node has `shutdown`
+/// set. OpenSSL copies both `num` and `shutdown`, which would make source and
+/// duplicate close the same descriptor independently.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_dup_chain<'a>(input: Option<&mut BioMut<'a>>) -> Option<BioChain<'a>> {
-    let input = input.map_or(ptr::null_mut(), |input| input.as_mut_ptr());
-    // SAFETY: `input` is either null, which OpenSSL documents and answers with
-    // null, or one live chain head borrowed exclusively for this call -- the
-    // access the source-side `BIO_CTRL_DUP` handlers and ex_data `dup`
-    // callbacks take.
+    let input = input?;
+    let mut node = input.as_ref();
+    loop {
+        if BIO_method_type(node) & BIO_TYPE_DESCRIPTOR != 0 && BIO_get_shutdown(node) != 0 {
+            return None;
+        }
+        let Some(next) = BIO_next(&node) else {
+            break;
+        };
+        node = next;
+    }
+    let input = input.as_mut_ptr();
+    // SAFETY: `input` is one live chain head borrowed exclusively for this
+    // call -- the access the source-side `BIO_CTRL_DUP` handlers and ex_data
+    // `dup` callbacks take. The scan above excludes duplicated descriptor
+    // ownership.
     let duplicate = unsafe { ffi::BIO_dup_chain(input) };
     // SAFETY: a non-null result is a newly allocated, fully constructed chain
     // transferred to the caller and requiring `BIO_free_all` for teardown.
@@ -1097,6 +1129,27 @@ mod dup_chain_tests {
         assert_ne!(duplicate_head.as_ptr(), source_head);
         assert_ne!(duplicate_tail.as_ptr(), source_tail);
         assert!(BIO_next(&duplicate_tail).is_none());
+    }
+
+    #[test]
+    fn refuses_an_owned_descriptor_anywhere_in_the_chain() {
+        let head = new_null_bio();
+        let file = std::fs::File::open("/dev/null").expect("open /dev/null");
+        let tail = crate::bio::bss_fd::BIO_new_fd(file.into()).expect("descriptor BIO");
+        assert_ne!(BIO_method_type(tail.as_ref()) & BIO_TYPE_DESCRIPTOR, 0);
+        assert_ne!(BIO_get_shutdown(tail.as_ref()), 0);
+
+        let tail = tail.into_raw();
+        // SAFETY: both BIOs are uniquely owned and live; ownership of `tail`
+        // becomes part of the chain rooted at `head`.
+        let linked = unsafe { ffi::BIO_push(head.as_ptr(), tail) };
+        assert_eq!(linked, head.as_ptr());
+        let head = head.into_raw();
+        // SAFETY: the complete linked chain is transferred to one owner.
+        let mut source = unsafe { BioChain::from_raw(head) }.expect("descriptor-tail chain");
+
+        let mut source_handle = source.as_mut();
+        assert!(BIO_dup_chain(Some(&mut source_handle)).is_none());
     }
 }
 

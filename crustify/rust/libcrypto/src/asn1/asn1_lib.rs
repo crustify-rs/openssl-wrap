@@ -9,6 +9,7 @@ use ffibox::{CBox, CSlice, CVec};
 use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::{Asn1String, Asn1StringMut, Asn1StringRef};
+use crate::asn1::openssl_asn1::Asn1TypeKind;
 use crate::mem::CryptoClearFree;
 
 /// An owned ASN.1 header whose data remains borrowed from a Rust byte slice.
@@ -127,7 +128,7 @@ pub fn ASN1_STRING_new_not_owned(
     string_type: c_int,
     data: &[u8],
 ) -> Option<BorrowedAsn1String<'_>> {
-    if data.is_empty() {
+    if data.is_empty() || !Asn1TypeKind::from_raw(string_type).holds_string() {
         return None;
     }
     // SAFETY: `data` is nonempty and readable for the returned value's
@@ -204,8 +205,12 @@ pub fn ASN1_STRING_type(string: Asn1StringRef<'_>) -> c_int {
 #[must_use]
 #[allow(non_snake_case)]
 pub fn ASN1_STRING_type_new(string_type: c_int) -> Option<CBox<Asn1String>> {
+    if !Asn1TypeKind::from_raw(string_type).holds_string() {
+        return None;
+    }
     // SAFETY: a non-null result is fresh and fully initialized for the
-    // registered ASN.1 string destructor.
+    // registered ASN.1 string destructor. The check above excludes tags whose
+    // payload representation is not `asn1_string_st`.
     unsafe { CBox::from_raw(ffi::ASN1_STRING_type_new(string_type)) }
 }
 
@@ -244,6 +249,22 @@ mod tests {
             .expect("borrowed ASN.1 header");
         let bytes = ASN1_STRING_get0_data(string.as_ref()).expect("valid string data");
         assert_eq!(bytes.elems().collect::<Vec<_>>(), source);
+    }
+
+    #[test]
+    fn string_constructors_reject_non_string_payload_tags() {
+        for tag in [
+            ffi::V_ASN1_UNDEF,
+            ffi::V_ASN1_BOOLEAN as c_int,
+            ffi::V_ASN1_NULL as c_int,
+            ffi::V_ASN1_OBJECT as c_int,
+            ffi::V_ASN1_ANY,
+        ] {
+            assert!(ASN1_STRING_type_new(tag).is_none());
+            assert!(ASN1_STRING_new_not_owned(tag, b"value").is_none());
+        }
+
+        assert!(ASN1_STRING_type_new(ffi::V_ASN1_OCTET_STRING as c_int).is_some());
     }
 
     #[test]
