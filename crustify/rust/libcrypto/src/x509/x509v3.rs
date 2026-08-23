@@ -3,12 +3,16 @@
 use core::ffi::c_void;
 use core::ptr::{self, NonNull};
 
-use ffibox::{CBox, CBoxWith, CDropper, define_ctype, impl_dropped};
+use ffibox::{CBox, CBoxWith, CDropper, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 pub use crate::x509::v3_info::{AuthorityInfoAccess, AuthorityInfoAccessFree};
+use crate::x509::x509::{X509NameEntryStack, X509NameEntryStackMut, X509NameEntryStackRef};
+use crate::x509::x509_internal::{
+    GeneralNameStack, GeneralNameStackMut, GeneralNameStackRef, X509Name, X509NameMut, X509NameRef,
+};
 use crate::x509::x509_vfy::{PolicyQualInfoStack, PolicyQualInfoStackMut, PolicyQualInfoStackRef};
 
 /// Opaque element marker for the `GENERAL_SUBTREE` records stored in this
@@ -600,5 +604,669 @@ mod identity_check_tests {
             X509_check_ip(certificate.as_ref(), &[127, 0, 0], 0),
             Err(X509CheckError::InvalidInput)
         );
+    }
+}
+
+define_ctype!(
+    /// Wraps: DIST_POINT_NAME_st
+    ///
+    /// Layout-compatible storage for the ASN.1 distribution-point-name
+    /// choice. `type` selects which owned stack pointer is active in `name`,
+    /// while `dpname` is a separately owned, optional full-name cache.
+    DistPointName,
+    DistPointNameRef,
+    DistPointNameMut,
+    ffi::DIST_POINT_NAME_st
+);
+
+// `DIST_POINT_NAME_free` releases the active choice arm, the optional cached
+// full name, and finally the record allocation.
+impl_dropped!(
+    DistPointName,
+    ffi::DIST_POINT_NAME_st,
+    ffi::DIST_POINT_NAME_free
+);
+
+// The value has no reference count. ASN.1 duplication creates an independent
+// record and recursively duplicates the active stack and cached name.
+impl_cloned!(
+    DistPointName,
+    ffi::DIST_POINT_NAME_st,
+    dup = ffi::DIST_POINT_NAME_dup
+);
+
+/// Wraps: DIST_POINT_NAME_st.type
+///
+/// Lossless spelling of the ASN.1 choice discriminator. OpenSSL initializes a
+/// fresh choice to `-1`, uses zero for `fullName`, and one for
+/// `nameRelativeToCRLIssuer`.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DistPointNameKind {
+    Unset,
+    FullName,
+    RelativeName,
+    Unknown(i32),
+}
+
+impl DistPointNameKind {
+    #[must_use]
+    pub const fn from_raw(value: i32) -> Self {
+        match value {
+            -1 => Self::Unset,
+            0 => Self::FullName,
+            1 => Self::RelativeName,
+            value => Self::Unknown(value),
+        }
+    }
+
+    #[must_use]
+    pub const fn as_raw(self) -> i32 {
+        match self {
+            Self::Unset => -1,
+            Self::FullName => 0,
+            Self::RelativeName => 1,
+            Self::Unknown(value) => value,
+        }
+    }
+}
+
+/// Selects the ASN.1 full destructor for a `GENERAL_NAMES` sequence.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct GeneralNamesFree;
+
+// SAFETY: `GENERAL_NAMES_free` pop-frees every owned `GENERAL_NAME`, releases
+// the pointer array, and releases the stack allocation exactly once.
+unsafe impl CDropper<GeneralNameStack> for GeneralNamesFree {
+    unsafe fn c_drop(&self, object: NonNull<GeneralNameStack>) {
+        // SAFETY: the policy is attached only to a complete owned
+        // `GENERAL_NAMES` sequence, whose generated stack tag erases to the
+        // common stack representation used by `GeneralNameStack`.
+        unsafe { ffi::GENERAL_NAMES_free(object.as_ptr().cast()) }
+    }
+}
+
+/// An owned `GENERAL_NAMES` sequence, including all stored names.
+pub type GeneralNames = CBoxWith<GeneralNameStack, GeneralNamesFree>;
+
+unsafe extern "C" fn free_x509_name_entry(value: *mut c_void) {
+    // SAFETY: this adapter is installed only on stacks whose non-null elements
+    // are uniquely owned `X509_NAME_ENTRY` allocations.
+    unsafe { ffi::X509_NAME_ENTRY_free(value.cast()) }
+}
+
+/// Selects pop-free destruction for the relative-name entry stack.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct RelativeNameEntriesFree;
+
+// SAFETY: the strategy is constructed only for a stack that uniquely owns all
+// of its X509 name entries. The callback frees each entry and the generic
+// pop-free routine then frees the stack allocation.
+unsafe impl CDropper<X509NameEntryStack> for RelativeNameEntriesFree {
+    unsafe fn c_drop(&self, object: NonNull<X509NameEntryStack>) {
+        // SAFETY: `object` is the complete owned stack selected by this
+        // policy, and every element satisfies `free_x509_name_entry`.
+        unsafe { ffi::OPENSSL_sk_pop_free(object.as_ptr().cast(), Some(free_x509_name_entry)) }
+    }
+}
+
+/// An owned relative-name stack, including all stored name entries.
+pub type RelativeNameEntries = CBoxWith<X509NameEntryStack, RelativeNameEntriesFree>;
+
+/// Wraps: DIST_POINT_NAME_st.name
+///
+/// Borrowed view of the discriminator-selected union arm. Pointer arms remain
+/// optional so malformed or construction-phase C values never become invalid
+/// Rust handles.
+#[derive(Clone, Copy)]
+pub enum DistPointNameChoice<'a> {
+    Unset,
+    FullName(Option<GeneralNameStackRef<'a>>),
+    RelativeName(Option<X509NameEntryStackRef<'a>>),
+    Unknown(i32),
+}
+
+impl DistPointName {
+    /// Allocates OpenSSL's empty, unset distribution-point-name choice.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete ASN.1 allocation with
+        // one matching `DIST_POINT_NAME_free` obligation.
+        unsafe { CBox::from_raw(ffi::DIST_POINT_NAME_new()) }
+    }
+}
+
+impl<'a> DistPointNameRef<'a> {
+    /// Returns the lossless ASN.1 choice discriminator.
+    #[must_use]
+    pub fn kind(&self) -> DistPointNameKind {
+        // SAFETY: raw-place projection copies the initialized integer from the
+        // live shared handle without forming a reference to C storage.
+        DistPointNameKind::from_raw(unsafe { ptr::addr_of!((*self.as_ptr()).type_).read() })
+    }
+
+    /// Returns the active choice arm together with its nullable pointer state.
+    #[must_use]
+    pub fn name(&self) -> DistPointNameChoice<'a> {
+        match self.kind() {
+            DistPointNameKind::Unset => DistPointNameChoice::Unset,
+            DistPointNameKind::FullName => DistPointNameChoice::FullName(self.full_name()),
+            DistPointNameKind::RelativeName => {
+                DistPointNameChoice::RelativeName(self.relative_name())
+            }
+            DistPointNameKind::Unknown(value) => DistPointNameChoice::Unknown(value),
+        }
+    }
+
+    /// Wraps: DIST_POINT_NAME_st.name.fullname
+    ///
+    /// Borrows the owned full-name sequence only when its discriminator is
+    /// active.
+    #[must_use]
+    pub fn full_name(&self) -> Option<GeneralNameStackRef<'a>> {
+        if self.kind() != DistPointNameKind::FullName {
+            return None;
+        }
+        // SAFETY: discriminator zero selects the initialized `fullname`
+        // pointer. A non-null sequence is owned by this choice and therefore
+        // remains live for the handle's `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).name.fullname).read() };
+        // SAFETY: generated `GENERAL_NAMES` erases to `OPENSSL_STACK` and the
+        // enclosing shared borrow supplies the returned lifetime.
+        unsafe { GeneralNameStackRef::from_ptr(raw.cast()) }
+    }
+
+    /// Wraps: DIST_POINT_NAME_st.name.relativename
+    ///
+    /// Borrows the owned relative-name entry stack only when its discriminator
+    /// is active.
+    #[must_use]
+    pub fn relative_name(&self) -> Option<X509NameEntryStackRef<'a>> {
+        if self.kind() != DistPointNameKind::RelativeName {
+            return None;
+        }
+        // SAFETY: discriminator one selects this initialized union pointer.
+        // A non-null stack remains owned by the enclosing choice for `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).name.relativename).read() };
+        // SAFETY: the generated stack tag has the common stack representation
+        // and the enclosing handle carries its lifetime.
+        unsafe { X509NameEntryStackRef::from_ptr(raw.cast()) }
+    }
+
+    /// Wraps: DIST_POINT_NAME_st.dpname
+    ///
+    /// Borrows the optional cached full distribution-point name.
+    #[must_use]
+    pub fn dp_name(&self) -> Option<X509NameRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer without forming a
+        // reference. A non-null name is owned by this record and lives for `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).dpname).read() };
+        // SAFETY: the preceding ownership invariant supplies the lifetime.
+        unsafe { X509NameRef::from_ptr(raw) }
+    }
+}
+
+impl DistPointNameMut<'_> {
+    /// Exclusively reborrows the active full-name sequence.
+    #[must_use]
+    pub fn full_name_mut(&mut self) -> Option<GeneralNameStackMut<'_>> {
+        if self.as_ref().kind() != DistPointNameKind::FullName {
+            return None;
+        }
+        // SAFETY: the exclusive choice handle permits an exclusive reborrow of
+        // its active owned sequence.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).name.fullname).read() };
+        // SAFETY: the generated tag erases to the common stack and the result
+        // is bounded by this exclusive reborrow.
+        unsafe { GeneralNameStackMut::from_ptr(raw.cast()) }
+    }
+
+    /// Exclusively reborrows the active relative-name entry stack.
+    #[must_use]
+    pub fn relative_name_mut(&mut self) -> Option<X509NameEntryStackMut<'_>> {
+        if self.as_ref().kind() != DistPointNameKind::RelativeName {
+            return None;
+        }
+        // SAFETY: the exclusive choice handle permits an exclusive reborrow of
+        // its active owned stack.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).name.relativename).read() };
+        // SAFETY: the generated tag erases to the common stack and the result
+        // is bounded by this exclusive reborrow.
+        unsafe { X509NameEntryStackMut::from_ptr(raw.cast()) }
+    }
+
+    /// Exclusively reborrows the optional cached name.
+    #[must_use]
+    pub fn dp_name_mut(&mut self) -> Option<X509NameMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // its separately owned cached name.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).dpname).read() };
+        // SAFETY: the result is bounded by the exclusive reborrow above.
+        unsafe { X509NameMut::from_ptr(raw) }
+    }
+
+    /// Replaces the cached full name and releases the previous value.
+    pub fn set_dp_name(&mut self, value: Option<CBox<X509Name>>) {
+        let value = value.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).dpname).replace(value) };
+        // SAFETY: the detached non-null value carried the field's unique
+        // `X509_NAME_free` obligation.
+        drop(unsafe { CBox::<X509Name>::from_raw(previous) });
+    }
+
+    /// Takes the cached full name, leaving the nullable cache empty.
+    #[must_use]
+    pub fn take_dp_name(&mut self) -> Option<CBox<X509Name>> {
+        // SAFETY: the exclusive handle transfers the old owned pointer out and
+        // leaves a valid null cache.
+        let raw =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).dpname).replace(ptr::null_mut()) };
+        // SAFETY: a non-null detached value is a complete uniquely owned name.
+        unsafe { CBox::from_raw(raw) }
+    }
+
+    /// Replaces the active arm with an owned full-name sequence.
+    ///
+    /// On an unknown C discriminator the value is returned unchanged because
+    /// Rust cannot determine which destructor the existing union pointer needs.
+    pub fn try_set_full_name(
+        &mut self,
+        value: Option<GeneralNames>,
+    ) -> Result<(), Option<GeneralNames>> {
+        if matches!(self.as_ref().kind(), DistPointNameKind::Unknown(_)) {
+            return Err(value);
+        }
+        self.clear_known_name();
+        let raw = value.map_or(ptr::null_mut(), |value| value.into_raw().0.cast());
+        // SAFETY: the old known arm has been cleared. Write the pointer before
+        // publishing its matching discriminator under the exclusive handle.
+        unsafe {
+            ptr::addr_of_mut!((*self.as_mut_ptr()).name.fullname).write(raw);
+            ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(0);
+        }
+        Ok(())
+    }
+
+    /// Takes the active full-name sequence and leaves the choice unset.
+    #[must_use]
+    pub fn take_full_name(&mut self) -> Option<GeneralNames> {
+        if self.as_ref().kind() != DistPointNameKind::FullName {
+            return None;
+        }
+        // SAFETY: discriminator zero selects the initialized pointer. Clearing
+        // it and then unsetting the tag transfers the unique sequence debt.
+        let raw = unsafe {
+            let raw =
+                ptr::addr_of_mut!((*self.as_mut_ptr()).name.fullname).replace(ptr::null_mut());
+            ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(-1);
+            raw
+        };
+        // SAFETY: a non-null active arm was a complete owned GENERAL_NAMES.
+        unsafe { CBoxWith::from_raw(raw.cast(), GeneralNamesFree) }
+    }
+
+    /// Replaces the active arm with an owned relative-name stack.
+    ///
+    /// On an unknown C discriminator the value is returned unchanged because
+    /// the existing union pointer cannot be safely classified.
+    pub fn try_set_relative_name(
+        &mut self,
+        value: Option<RelativeNameEntries>,
+    ) -> Result<(), Option<RelativeNameEntries>> {
+        if matches!(self.as_ref().kind(), DistPointNameKind::Unknown(_)) {
+            return Err(value);
+        }
+        self.clear_known_name();
+        let raw = value.map_or(ptr::null_mut(), |value| value.into_raw().0.cast());
+        // SAFETY: the old known arm has been cleared. The pointer and matching
+        // discriminator are installed together under the exclusive handle.
+        unsafe {
+            ptr::addr_of_mut!((*self.as_mut_ptr()).name.relativename).write(raw);
+            ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(1);
+        }
+        Ok(())
+    }
+
+    /// Takes the active relative-name stack and leaves the choice unset.
+    #[must_use]
+    pub fn take_relative_name(&mut self) -> Option<RelativeNameEntries> {
+        if self.as_ref().kind() != DistPointNameKind::RelativeName {
+            return None;
+        }
+        // SAFETY: discriminator one selects this initialized pointer. Clearing
+        // it before unsetting the tag transfers the unique stack debt.
+        let raw = unsafe {
+            let raw =
+                ptr::addr_of_mut!((*self.as_mut_ptr()).name.relativename).replace(ptr::null_mut());
+            ptr::addr_of_mut!((*self.as_mut_ptr()).type_).write(-1);
+            raw
+        };
+        // SAFETY: a non-null active arm owns its stack and every entry.
+        unsafe { CBoxWith::from_raw(raw.cast(), RelativeNameEntriesFree) }
+    }
+
+    fn clear_known_name(&mut self) {
+        match self.as_ref().kind() {
+            DistPointNameKind::FullName => drop(self.take_full_name()),
+            DistPointNameKind::RelativeName => drop(self.take_relative_name()),
+            DistPointNameKind::Unset => {}
+            DistPointNameKind::Unknown(_) => {
+                unreachable!("callers reject an unknown discriminator")
+            }
+        }
+    }
+}
+
+define_ctype!(
+    /// Wraps: NAME_CONSTRAINTS_st
+    ///
+    /// Layout-compatible name-constraints sequence. Both optional fields own
+    /// their generated stack, pointer array, and every `GENERAL_SUBTREE`
+    /// element stored in it.
+    NameConstraints,
+    NameConstraintsRef,
+    NameConstraintsMut,
+    ffi::NAME_CONSTRAINTS_st
+);
+
+// The generated ASN.1 destructor pop-frees both optional subtree sequences and
+// finally releases the containing allocation.
+impl_dropped!(
+    NameConstraints,
+    ffi::NAME_CONSTRAINTS_st,
+    ffi::NAME_CONSTRAINTS_free
+);
+
+unsafe extern "C" fn free_general_subtree(value: *mut c_void) {
+    // SAFETY: this adapter is installed only for uniquely owned
+    // `GENERAL_SUBTREE` allocations in a name-constraints sequence.
+    unsafe { ffi::GENERAL_SUBTREE_free(value.cast()) }
+}
+
+/// Selects pop-free destruction for an owned general-subtree stack.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct GeneralSubtreesFree;
+
+// SAFETY: this strategy is attached only to stacks that uniquely own all
+// their `GENERAL_SUBTREE` elements. The callback and pop-free operation consume
+// every element and the stack allocation exactly once.
+unsafe impl CDropper<GeneralSubtreeStack> for GeneralSubtreesFree {
+    unsafe fn c_drop(&self, object: NonNull<GeneralSubtreeStack>) {
+        // SAFETY: `object` and all elements satisfy the strategy invariant.
+        unsafe { ffi::OPENSSL_sk_pop_free(object.as_ptr().cast(), Some(free_general_subtree)) }
+    }
+}
+
+/// An owned stack of general subtrees, including all stored subtrees.
+pub type GeneralSubtrees = CBoxWith<GeneralSubtreeStack, GeneralSubtreesFree>;
+
+impl NameConstraints {
+    /// Allocates an empty name-constraints sequence.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete ASN.1 allocation with
+        // one `NAME_CONSTRAINTS_free` obligation.
+        unsafe { CBox::from_raw(ffi::NAME_CONSTRAINTS_new()) }
+    }
+}
+
+impl<'a> NameConstraintsRef<'a> {
+    /// Wraps: NAME_CONSTRAINTS_st.excludedSubtrees
+    ///
+    /// Borrows the optional excluded-subtree sequence.
+    #[must_use]
+    pub fn excluded_subtrees(&self) -> Option<GeneralSubtreeStackRef<'a>> {
+        // SAFETY: raw-place projection copies the owned nullable pointer. A
+        // non-null stack remains live for the enclosing handle's `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).excludedSubtrees).read() };
+        // SAFETY: the generated stack tag erases to the common representation
+        // and the enclosing handle supplies the lifetime.
+        unsafe { GeneralSubtreeStackRef::from_ptr(raw.cast()) }
+    }
+
+    /// Wraps: NAME_CONSTRAINTS_st.permittedSubtrees
+    ///
+    /// Borrows the optional permitted-subtree sequence.
+    #[must_use]
+    pub fn permitted_subtrees(&self) -> Option<GeneralSubtreeStackRef<'a>> {
+        // SAFETY: raw-place projection copies the owned nullable pointer. A
+        // non-null stack remains live for the enclosing handle's `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).permittedSubtrees).read() };
+        // SAFETY: the generated stack tag erases to the common representation
+        // and the enclosing handle supplies the lifetime.
+        unsafe { GeneralSubtreeStackRef::from_ptr(raw.cast()) }
+    }
+}
+
+impl NameConstraintsMut<'_> {
+    /// Exclusively reborrows the optional excluded-subtree sequence.
+    #[must_use]
+    pub fn excluded_subtrees_mut(&mut self) -> Option<GeneralSubtreeStackMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // this owned stack.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).excludedSubtrees).read() };
+        // SAFETY: the generated tag erases to the common stack and the result
+        // is bounded by this exclusive reborrow.
+        unsafe { GeneralSubtreeStackMut::from_ptr(raw.cast()) }
+    }
+
+    /// Exclusively reborrows the optional permitted-subtree sequence.
+    #[must_use]
+    pub fn permitted_subtrees_mut(&mut self) -> Option<GeneralSubtreeStackMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // this owned stack.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).permittedSubtrees).read() };
+        // SAFETY: the generated tag erases to the common stack and the result
+        // is bounded by this exclusive reborrow.
+        unsafe { GeneralSubtreeStackMut::from_ptr(raw.cast()) }
+    }
+
+    /// Replaces the excluded-subtree sequence and releases the previous one.
+    pub fn set_excluded_subtrees(&mut self, value: Option<GeneralSubtrees>) {
+        let raw = value.map_or(ptr::null_mut(), |value| value.into_raw().0.cast());
+        // SAFETY: the exclusive handle permits replacing the owned pointer.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).excludedSubtrees).replace(raw) };
+        // SAFETY: a non-null detached stack owned every element and carries the
+        // matching pop-free obligation.
+        drop(unsafe { CBoxWith::from_raw(previous.cast(), GeneralSubtreesFree) });
+    }
+
+    /// Takes the excluded-subtree sequence, leaving its optional field empty.
+    #[must_use]
+    pub fn take_excluded_subtrees(&mut self) -> Option<GeneralSubtrees> {
+        // SAFETY: the exclusive handle transfers the old owned stack out and
+        // leaves the nullable field empty.
+        let raw = unsafe {
+            ptr::addr_of_mut!((*self.as_mut_ptr()).excludedSubtrees).replace(ptr::null_mut())
+        };
+        // SAFETY: a non-null detached value owns the stack and all elements.
+        unsafe { CBoxWith::from_raw(raw.cast(), GeneralSubtreesFree) }
+    }
+
+    /// Replaces the permitted-subtree sequence and releases the previous one.
+    pub fn set_permitted_subtrees(&mut self, value: Option<GeneralSubtrees>) {
+        let raw = value.map_or(ptr::null_mut(), |value| value.into_raw().0.cast());
+        // SAFETY: the exclusive handle permits replacing the owned pointer.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).permittedSubtrees).replace(raw) };
+        // SAFETY: a non-null detached stack owned every element and carries the
+        // matching pop-free obligation.
+        drop(unsafe { CBoxWith::from_raw(previous.cast(), GeneralSubtreesFree) });
+    }
+
+    /// Takes the permitted-subtree sequence, leaving its optional field empty.
+    #[must_use]
+    pub fn take_permitted_subtrees(&mut self) -> Option<GeneralSubtrees> {
+        // SAFETY: the exclusive handle transfers the old owned stack out and
+        // leaves the nullable field empty.
+        let raw = unsafe {
+            ptr::addr_of_mut!((*self.as_mut_ptr()).permittedSubtrees).replace(ptr::null_mut())
+        };
+        // SAFETY: a non-null detached value owns the stack and all elements.
+        unsafe { CBoxWith::from_raw(raw.cast(), GeneralSubtreesFree) }
+    }
+}
+
+#[cfg(test)]
+mod wrapped_x509v3_tests {
+    use core::mem::{align_of, size_of};
+
+    use ffibox::{CCell, CCloned, CDropped};
+
+    use super::*;
+    use crate::stack::stack::{OPENSSL_sk_new_null, OPENSSL_sk_num};
+    use crate::x509::x509_internal::{GeneralName, X509NameEntry};
+
+    fn assert_cloneable_owner<T: CCell + CCloned + CDropped>() {}
+    fn assert_drop_owner<T: CCell + CDropped>() {}
+
+    fn empty_general_names() -> GeneralNames {
+        let stack = OPENSSL_sk_new_null::<GeneralName>().expect("GENERAL_NAMES stack");
+        let raw = stack.into_raw();
+        // SAFETY: this fresh stack is empty, so the full GENERAL_NAMES policy
+        // has no element ownership to establish and owns the stack allocation.
+        unsafe { CBoxWith::from_raw(raw, GeneralNamesFree) }
+            .expect("an owning stack has a non-null pointer")
+    }
+
+    fn empty_relative_names() -> RelativeNameEntries {
+        let stack = OPENSSL_sk_new_null::<X509NameEntry>().expect("relative-name stack");
+        let raw = stack.into_raw();
+        // SAFETY: this fresh stack is empty, so pop-free has no element
+        // ownership to establish and owns the stack allocation.
+        unsafe { CBoxWith::from_raw(raw, RelativeNameEntriesFree) }
+            .expect("an owning stack has a non-null pointer")
+    }
+
+    fn empty_general_subtrees() -> GeneralSubtrees {
+        let stack = OPENSSL_sk_new_null::<GeneralSubtree>().expect("GENERAL_SUBTREE stack");
+        let raw = stack.into_raw();
+        // SAFETY: this fresh stack is empty, so pop-free has no element
+        // ownership to establish and owns the stack allocation.
+        unsafe { CBoxWith::from_raw(raw, GeneralSubtreesFree) }
+            .expect("an owning stack has a non-null pointer")
+    }
+
+    #[test]
+    fn distribution_point_name_preserves_layout_and_lifecycle() {
+        assert_cloneable_owner::<DistPointName>();
+        assert_eq!(
+            size_of::<DistPointName>(),
+            size_of::<ffi::DIST_POINT_NAME_st>()
+        );
+        assert_eq!(
+            align_of::<DistPointName>(),
+            align_of::<ffi::DIST_POINT_NAME_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<DistPointName>>(),
+            size_of::<*mut ffi::DIST_POINT_NAME_st>()
+        );
+
+        let mut name = DistPointName::new().expect("DIST_POINT_NAME_new");
+        assert_eq!(name.as_ref().kind(), DistPointNameKind::Unset);
+        assert!(matches!(name.as_ref().name(), DistPointNameChoice::Unset));
+        assert!(name.as_ref().dp_name().is_none());
+
+        assert!(
+            name.as_mut()
+                .try_set_full_name(Some(empty_general_names()))
+                .is_ok()
+        );
+        assert_eq!(name.as_ref().kind(), DistPointNameKind::FullName);
+        assert_eq!(OPENSSL_sk_num(name.as_ref().full_name()), Some(0));
+        assert!(name.as_mut().full_name_mut().is_some());
+
+        let duplicate = name.try_clone().expect("DIST_POINT_NAME_dup");
+        assert_ne!(duplicate.as_ptr(), name.as_ptr());
+        assert_eq!(duplicate.as_ref().kind(), DistPointNameKind::FullName);
+        assert_ne!(
+            duplicate.as_ref().full_name().map(|stack| stack.as_ptr()),
+            name.as_ref().full_name().map(|stack| stack.as_ptr())
+        );
+
+        drop(name.as_mut().take_full_name().expect("owned full name"));
+        assert_eq!(name.as_ref().kind(), DistPointNameKind::Unset);
+        assert!(
+            name.as_mut()
+                .try_set_relative_name(Some(empty_relative_names()))
+                .is_ok()
+        );
+        assert_eq!(name.as_ref().kind(), DistPointNameKind::RelativeName);
+        assert!(name.as_mut().relative_name_mut().is_some());
+        drop(
+            name.as_mut()
+                .take_relative_name()
+                .expect("owned relative name"),
+        );
+    }
+
+    #[test]
+    fn distribution_point_cached_name_transfers_ownership() {
+        let mut point = DistPointName::new().expect("DIST_POINT_NAME_new");
+        // SAFETY: OpenSSL returns null or a fresh complete name with one
+        // `X509_NAME_free` obligation.
+        let raw = unsafe { ffi::X509_NAME_new() };
+        // SAFETY: ownership of the fresh result transfers once to this owner.
+        let cached = unsafe { CBox::<X509Name>::from_raw(raw) }.expect("X509_NAME_new");
+
+        point.as_mut().set_dp_name(Some(cached));
+        assert_eq!(
+            point.as_ref().dp_name().map(|name| name.as_ptr()),
+            Some(raw.cast_const())
+        );
+        assert!(point.as_mut().dp_name_mut().is_some());
+        let cached = point.as_mut().take_dp_name().expect("cached full name");
+        assert_eq!(cached.as_ptr(), raw);
+        assert!(point.as_ref().dp_name().is_none());
+    }
+
+    #[test]
+    fn name_constraints_owns_and_reborrows_both_optional_stacks() {
+        assert_drop_owner::<NameConstraints>();
+        assert_eq!(
+            size_of::<NameConstraints>(),
+            size_of::<ffi::NAME_CONSTRAINTS_st>()
+        );
+        assert_eq!(
+            align_of::<NameConstraints>(),
+            align_of::<ffi::NAME_CONSTRAINTS_st>()
+        );
+
+        let mut constraints = NameConstraints::new().expect("NAME_CONSTRAINTS_new");
+        assert!(constraints.as_ref().permitted_subtrees().is_none());
+        assert!(constraints.as_ref().excluded_subtrees().is_none());
+
+        constraints
+            .as_mut()
+            .set_permitted_subtrees(Some(empty_general_subtrees()));
+        constraints
+            .as_mut()
+            .set_excluded_subtrees(Some(empty_general_subtrees()));
+        assert_eq!(
+            OPENSSL_sk_num(constraints.as_ref().permitted_subtrees()),
+            Some(0)
+        );
+        assert_eq!(
+            OPENSSL_sk_num(constraints.as_ref().excluded_subtrees()),
+            Some(0)
+        );
+        assert!(constraints.as_mut().permitted_subtrees_mut().is_some());
+        assert!(constraints.as_mut().excluded_subtrees_mut().is_some());
+
+        let permitted = constraints
+            .as_mut()
+            .take_permitted_subtrees()
+            .expect("owned permitted stack");
+        assert!(constraints.as_ref().permitted_subtrees().is_none());
+        constraints.as_mut().set_permitted_subtrees(Some(permitted));
+        drop(
+            constraints
+                .as_mut()
+                .take_excluded_subtrees()
+                .expect("owned excluded stack"),
+        );
+        assert!(constraints.as_ref().excluded_subtrees().is_none());
     }
 }
