@@ -1463,9 +1463,7 @@ impl DistPoint {
     /// Allocates an empty distribution point.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh, fully initialized generated
-        // ASN.1 record carrying one `DIST_POINT_free` obligation.
-        unsafe { CBox::from_raw(ffi::DIST_POINT_new()) }
+        crate::x509::v3_crld::DIST_POINT_new()
     }
 }
 
@@ -1855,9 +1853,7 @@ impl AuthorityKeyId {
     /// Allocates an empty authority-key-identifier sequence.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
-        // exactly one `AUTHORITY_KEYID_free` obligation.
-        unsafe { CBox::from_raw(ffi::AUTHORITY_KEYID_new()) }
+        crate::x509::v3_akeya::AUTHORITY_KEYID_new()
     }
 }
 
@@ -2025,9 +2021,7 @@ impl BasicConstraints {
     /// Allocates an empty basic-constraints sequence.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
-        // exactly one `BASIC_CONSTRAINTS_free` obligation.
-        unsafe { CBox::from_raw(ffi::BASIC_CONSTRAINTS_new()) }
+        crate::x509::v3_bcons::BASIC_CONSTRAINTS_new()
     }
 }
 

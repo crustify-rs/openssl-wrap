@@ -6,7 +6,7 @@ use ffibox::{CBox, CBoxWith, CDropper};
 use libcrypto_sys as ffi;
 
 use crate::x509::x509_internal::DistPointStack;
-use crate::x509::x509v3::DistPointName;
+use crate::x509::x509v3::{DistPoint, DistPointName};
 
 /// Full ASN.1 teardown policy for CRL distribution points.
 #[derive(Clone, Copy, Debug, Default)]
@@ -82,5 +82,38 @@ mod dist_point_name_tests {
         assert!(value.as_ref().dp_name().is_none());
         DIST_POINT_NAME_free(Some(value));
         DIST_POINT_NAME_free(None);
+    }
+}
+
+/// Wraps: DIST_POINT_free
+/// Consumes an optional complete CRL distribution-point allocation.
+#[allow(non_snake_case)]
+pub fn DIST_POINT_free(value: Option<CBox<DistPoint>>) {
+    drop(value);
+}
+
+/// Wraps: DIST_POINT_new
+/// Allocates an empty CRL distribution point.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn DIST_POINT_new() -> Option<CBox<DistPoint>> {
+    // SAFETY: a non-null result is a fresh complete ASN.1 record whose
+    // matching destructor is registered on `DistPoint`.
+    unsafe { CBox::from_raw(ffi::DIST_POINT_new()) }
+}
+
+#[cfg(test)]
+mod dist_point_tests {
+    use super::*;
+
+    #[test]
+    fn constructor_returns_an_owned_empty_record() {
+        let value = DIST_POINT_new().expect("DIST_POINT_new");
+        assert_eq!(value.as_ref().dp_reasons(), 0);
+        assert!(value.as_ref().reasons().is_none());
+        assert!(value.as_ref().dist_point_name().is_none());
+        assert!(value.as_ref().crl_issuer().is_none());
+        DIST_POINT_free(Some(value));
+        DIST_POINT_free(None);
     }
 }
