@@ -966,19 +966,43 @@ impl BioChain<'_> {
 
 /// Wraps: BIO_dup_chain
 ///
-/// Deep-copies every node. The returned owner remains lifetime-bound to the
-/// input because BIO methods, callback arguments, and application data may
-/// retain shared state even after their duplication callbacks run.
+/// Allocates one fresh BIO per link from the source node's method, copies its
+/// callback, `cb_arg`, `init`, `shutdown`, `flags` and `num` verbatim, then
+/// runs the node's `BIO_CTRL_DUP` handler and duplicates its ex_data. `None`
+/// covers both a null input and a failure part-way through, which OpenSSL
+/// reports only after releasing the partial chain itself.
+///
+/// The input is borrowed exclusively because duplication writes back to the
+/// source rather than only reading it: `bio_md.c` answers `BIO_CTRL_DUP` by
+/// setting the source's own `init`, `ssl/bio_ssl.c` answers it by calling
+/// `SSL_dup` on the source's live `SSL`, and an ex_data `dup` callback is
+/// handed the source's stored pointer to act on.
+///
+/// The returned owner stays lifetime-bound to the input because the copy is
+/// not self-contained: every duplicated node keeps the source node's
+/// `BIO_METHOD` pointer and its raw `cb_arg`, and an ex_data slot with no
+/// registered `dup_func` is copied across as the same bare pointer. Bounding
+/// the duplicate by the source's borrow covers those transitively, since a
+/// `Bio` owner already carries its method's lifetime -- see [`BorrowedBio`]
+/// and [`BIO_new`].
+///
+/// The copied `num` and `shutdown` are a resource-sharing hazard that belongs
+/// to C and that this wrapper cannot remove: for a descriptor-backed method
+/// with `shutdown` set, source and duplicate each close the same descriptor
+/// when released.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_dup_chain<'a>(input: Option<&mut BioMut<'a>>) -> Option<BioChain<'a>> {
     let input = input.map_or(ptr::null_mut(), |input| input.as_mut_ptr());
-    // SAFETY: a non-null input is exclusively borrowed for the operation. The
-    // returned chain adopts OpenSSL's fresh ownership and cannot outlive state
-    // reachable through the input chain.
+    // SAFETY: `input` is either null, which OpenSSL documents and answers with
+    // null, or one live chain head borrowed exclusively for this call -- the
+    // access the source-side `BIO_CTRL_DUP` handlers and ex_data `dup`
+    // callbacks take.
     let duplicate = unsafe { ffi::BIO_dup_chain(input) };
     // SAFETY: a non-null result is a newly allocated, fully constructed chain
     // transferred to the caller and requiring `BIO_free_all` for teardown.
+    // `'a` bounds it by the source borrow that its copied method, `cb_arg` and
+    // ex_data depend on.
     unsafe { BioChain::from_raw(duplicate) }
 }
 
@@ -1006,6 +1030,55 @@ mod dup_chain_tests {
         let head = head.into_raw();
         // SAFETY: the complete linked chain is now transferred to one owner.
         unsafe { BioChain::from_raw(head) }.expect("non-null chain")
+    }
+
+    /// `<openssl/bio.h>`: one flag bit `BIO_dup_chain` copies wholesale from
+    /// the source node before any duplication handler runs.
+    const BIO_FLAGS_SHOULD_RETRY: i32 = 0x08;
+
+    /// A `head -> tail` null chain whose two nodes carry deliberately
+    /// different state, so a per-node copy can be told apart from one that
+    /// broadcasts the head's. `BIO_new_ex` leaves a create-less method's node
+    /// at `init = 1`, `shutdown = 1`, so the tail is the one marked down.
+    fn new_marked_chain() -> BioChain<'static> {
+        let mut head = new_null_bio();
+        let mut tail = new_null_bio();
+        BIO_set_flags(&mut head.as_mut(), BIO_FLAGS_SHOULD_RETRY);
+        BIO_set_init(&mut tail.as_mut(), false);
+        BIO_set_shutdown(&mut tail.as_mut(), false);
+
+        let tail = tail.into_raw();
+        // SAFETY: both BIOs are uniquely owned and live; ownership of `tail`
+        // becomes part of the chain rooted at `head`.
+        let linked = unsafe { ffi::BIO_push(head.as_ptr(), tail) };
+        assert_eq!(linked, head.as_ptr());
+        let head = head.into_raw();
+        // SAFETY: the complete linked chain is now transferred to one owner.
+        unsafe { BioChain::from_raw(head) }.expect("non-null chain")
+    }
+
+    #[test]
+    fn duplicate_copies_per_node_state_and_is_released_independently() {
+        let mut source = new_marked_chain();
+        let mut source_handle = source.as_mut();
+        let duplicate = BIO_dup_chain(Some(&mut source_handle)).expect("BIO_dup_chain");
+
+        let head = duplicate.as_ref();
+        assert_eq!(BIO_get_init(head), 1);
+        assert_eq!(BIO_get_shutdown(head), 1);
+        assert_ne!(BIO_test_flags(&head, BIO_FLAGS_SHOULD_RETRY), 0);
+
+        // Every node copies its own source node rather than the chain head.
+        let tail = BIO_next(&head).expect("duplicate tail");
+        assert_eq!(BIO_get_init(tail), 0);
+        assert_eq!(BIO_get_shutdown(tail), 0);
+        assert_eq!(BIO_test_flags(&tail, BIO_FLAGS_SHOULD_RETRY), 0);
+
+        // Releasing the duplicate runs `BIO_free_all` over its own two nodes
+        // and leaves the source chain whole.
+        drop(duplicate);
+        assert_ne!(BIO_test_flags(&source.as_ref(), BIO_FLAGS_SHOULD_RETRY), 0);
+        assert!(BIO_next(&source.as_ref()).is_some());
     }
 
     #[test]
