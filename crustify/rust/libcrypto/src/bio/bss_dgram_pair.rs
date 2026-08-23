@@ -42,14 +42,18 @@ pub fn BIO_new_bio_dgram_pair(
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_s_dgram_mem() -> Option<BioMethodRef<'static>> {
-    // SAFETY: the selector returns a process-lifetime table or null.
-    static_bio_method(unsafe { ffi::BIO_s_dgram_mem() })
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // null or the address of a `static const` table, which is the
+    // process-lifetime borrow `static_bio_method` requires.
+    unsafe { static_bio_method(ffi::BIO_s_dgram_mem()) }
 }
 
 /// Wraps: BIO_s_dgram_pair
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_s_dgram_pair() -> Option<BioMethodRef<'static>> {
-    // SAFETY: the selector returns a process-lifetime table or null.
-    static_bio_method(unsafe { ffi::BIO_s_dgram_pair() })
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // null or the address of a `static const` table, which is the
+    // process-lifetime borrow `static_bio_method` requires.
+    unsafe { static_bio_method(ffi::BIO_s_dgram_pair()) }
 }

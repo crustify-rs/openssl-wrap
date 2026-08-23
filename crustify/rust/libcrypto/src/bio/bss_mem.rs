@@ -49,16 +49,20 @@ pub fn BIO_new_mem_buf(buffer: &[u8]) -> Option<BorrowedMemBio<'_>> {
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_s_mem() -> Option<BioMethodRef<'static>> {
-    // SAFETY: the selector returns a process-lifetime table or null.
-    static_bio_method(unsafe { ffi::BIO_s_mem() })
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // null or the address of a `static const` table, which is the
+    // process-lifetime borrow `static_bio_method` requires.
+    unsafe { static_bio_method(ffi::BIO_s_mem()) }
 }
 
 /// Wraps: BIO_s_secmem
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_s_secmem() -> Option<BioMethodRef<'static>> {
-    // SAFETY: the selector returns a process-lifetime table or null.
-    static_bio_method(unsafe { ffi::BIO_s_secmem() })
+    // SAFETY: the selector has no caller-side memory obligations and returns
+    // null or the address of a `static const` table, which is the
+    // process-lifetime borrow `static_bio_method` requires.
+    unsafe { static_bio_method(ffi::BIO_s_secmem()) }
 }
 
 #[cfg(test)]

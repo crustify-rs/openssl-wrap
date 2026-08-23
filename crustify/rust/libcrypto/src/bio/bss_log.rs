@@ -9,6 +9,7 @@ use super::internal_bio::{BioMethodRef, static_bio_method};
 #[allow(non_snake_case)]
 pub fn BIO_s_log() -> Option<BioMethodRef<'static>> {
     // SAFETY: the selector has no caller-side memory obligations and returns
-    // a process-lifetime static method table or null.
-    static_bio_method(unsafe { ffi::BIO_s_log() })
+    // null or the address of a `static const` table, which is the
+    // process-lifetime borrow `static_bio_method` requires.
+    unsafe { static_bio_method(ffi::BIO_s_log()) }
 }

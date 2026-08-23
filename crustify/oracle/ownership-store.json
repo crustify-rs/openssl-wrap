@@ -907,7 +907,7 @@
   {
    "name": "bio_method_st",
    "defined_in": "include/internal/bio.h",
-   "_comment_agent": "BIO_meth_new allocates the method and owns its duplicated NUL-terminated name; static method tables borrow static names and callbacks. Callback slots are nullable program-lifetime function pointers and do not own code storage.",
+   "_comment_agent": "BIO_meth_new allocates the method and owns its duplicated NUL-terminated name; static method tables borrow static names and callbacks. Callback slots are nullable program-lifetime function pointers and do not own code storage. Review (2026-08-23): re-verified against crypto/bio/bio_meth.c, crypto/bio/bio_lib.c and every BIO_s_*/BIO_f_* definition; the field records above hold. Two facts the field slots cannot carry. (1) The dual owned/borrowed encoding is a property of the TABLE's storage, not just of `name`: every selector returns the address of a file-scope `static const BIO_METHOD` (e.g. null_method in crypto/bio/bss_null.c, corebiometh in crypto/bio/bss_core.c), so those tables live in read-only storage and must be reached only through a borrowed handle -- treating one as an owner would hand BIO_meth_free a .rodata address. Only a BIO_meth_new result is ownable. (2) `name` is assigned as a whole pointer and freed, never written through, and every static initializer supplies a string literal, so mutable=false and nullable=false hold on both paths; BIO_meth_new itself returns NULL when the strdup fails, so a live table always has a non-null name. BIO_s_log returns NULL under NO_SYSLOG, which is a null TABLE pointer, not a null name.",
    "fields": [
     {
      "name": "bgets",

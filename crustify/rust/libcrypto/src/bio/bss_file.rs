@@ -41,8 +41,9 @@ pub fn BIO_new_fp<'a>(mut stream: IoFileMut<'a>) -> Option<BorrowedBio<'a>> {
 #[allow(non_snake_case)]
 pub fn BIO_s_file() -> Option<BioMethodRef<'static>> {
     // SAFETY: the selector has no caller-side memory obligations and returns
-    // a process-lifetime static method table or null.
-    static_bio_method(unsafe { ffi::BIO_s_file() })
+    // null or the address of a `static const` table, which is the
+    // process-lifetime borrow `static_bio_method` requires.
+    unsafe { static_bio_method(ffi::BIO_s_file()) }
 }
 
 #[cfg(test)]
