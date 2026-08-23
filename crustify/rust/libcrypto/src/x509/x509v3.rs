@@ -6,7 +6,10 @@ use core::ptr::{self, NonNull};
 use ffibox::{CBox, CBoxWith, CDropper, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
-use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef, Asn1String, Asn1StringMut, Asn1StringRef};
+use crate::asn1::asn1::{
+    Asn1IntegerStack, Asn1IntegerStackMut, Asn1IntegerStackRef, Asn1Object, Asn1ObjectRef,
+    Asn1String, Asn1StringMut, Asn1StringRef,
+};
 use crate::asn1::openssl_asn1::{Asn1Type, Asn1TypeMut, Asn1TypeRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 pub use crate::x509::v3_info::{AuthorityInfoAccess, AuthorityInfoAccessFree};
@@ -2190,5 +2193,236 @@ mod authority_and_basic_constraints_tests {
         assert_eq!(path_len.as_ptr(), path_len_raw);
         assert!(constraints.as_ref().path_len().is_none());
         constraints.as_mut().set_path_len(Some(path_len));
+    }
+}
+
+define_ctype!(
+    /// Wraps: NOTICEREF_st
+    ///
+    /// Layout-compatible storage for an ASN.1 notice-reference record. The
+    /// record owns its organization string and its sequence of notice-number
+    /// integers; borrowed access is carried by [`NoticeRefRef`] and
+    /// [`NoticeRefMut`] without forming Rust references over OpenSSL storage.
+    NoticeRef,
+    NoticeRefRef,
+    NoticeRefMut,
+    ffi::NOTICEREF_st
+);
+
+// `NOTICEREF_free` is the generated ASN.1 sequence destructor: it releases the
+// organization string, every notice number and its stack, then the record.
+impl_dropped!(NoticeRef, ffi::NOTICEREF_st, ffi::NOTICEREF_free);
+
+/// Selects full destruction for an owned notice-number sequence, including
+/// every `ASN1_INTEGER` element.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct NoticeNumbersFree;
+
+unsafe extern "C" fn notice_number_free(value: *mut c_void) {
+    // SAFETY: this callback is installed only on a stack whose elements are
+    // complete, uniquely owned ASN.1 integers (the ASN1_STRING layout alias).
+    unsafe { ffi::ASN1_STRING_free(value.cast()) }
+}
+
+// SAFETY: this policy is attached only to a stack that owns all its integer
+// elements. `OPENSSL_sk_pop_free` visits each element exactly once with the
+// matching ASN.1 destructor, then releases the stack allocation.
+unsafe impl CDropper<Asn1IntegerStack> for NoticeNumbersFree {
+    unsafe fn c_drop(&self, object: NonNull<Asn1IntegerStack>) {
+        // SAFETY: the `CDropper` contract supplies unique ownership of the
+        // complete stack and every stored integer.
+        unsafe { ffi::OPENSSL_sk_pop_free(object.as_ptr().cast(), Some(notice_number_free)) }
+    }
+}
+
+/// Owning form of `NOTICEREF_st.noticenos`, releasing the stack and every
+/// notice-number integer together.
+pub type NoticeNumbers = CBoxWith<Asn1IntegerStack, NoticeNumbersFree>;
+
+impl NoticeRef {
+    /// Allocates a complete empty notice-reference record.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: OpenSSL returns null or a fresh, fully initialized record
+        // carrying one matching `NOTICEREF_free` obligation.
+        unsafe { CBox::from_raw(ffi::NOTICEREF_new()) }
+    }
+}
+
+impl<'a> NoticeRefRef<'a> {
+    /// Wraps: NOTICEREF_st.organization
+    ///
+    /// Borrows the installed organization string. Although the generated
+    /// constructor installs this required child, the public layout permits a
+    /// construction or ownership-transfer path to clear the slot.
+    #[must_use]
+    pub fn organization(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer from the live shared
+        // handle without forming a reference to C storage. A non-null string
+        // is owned by this record and therefore lives for the handle's `'a`.
+        unsafe {
+            let organization = ptr::addr_of!((*self.as_ptr()).organization).read();
+            Asn1StringRef::from_ptr(organization)
+        }
+    }
+
+    /// Wraps: NOTICEREF_st.noticenos
+    ///
+    /// Borrows the notice-number sequence and its element-address array. The
+    /// notice-reference record keeps the stack and all integers alive.
+    #[must_use]
+    pub fn notice_numbers(&self) -> Option<Asn1IntegerStackRef<'a>> {
+        // SAFETY: raw-place projection reads only the stored pointer. The
+        // generated stack tag erases to `OPENSSL_STACK`, and a non-null stack
+        // remains owned by this record for the handle's `'a`.
+        unsafe {
+            let numbers = ptr::addr_of!((*self.as_ptr()).noticenos).read();
+            Asn1IntegerStackRef::from_ptr(numbers.cast())
+        }
+    }
+}
+
+impl NoticeRefMut<'_> {
+    /// Exclusively reborrows the installed organization string.
+    #[must_use]
+    pub fn organization_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive notice-reference handle supplies exclusive
+        // access to its owned string for the duration of this reborrow.
+        unsafe {
+            let organization = ptr::addr_of!((*self.as_mut_ptr()).organization).read();
+            Asn1StringMut::from_ptr(organization)
+        }
+    }
+
+    /// Exclusively reborrows the notice-number sequence.
+    #[must_use]
+    pub fn notice_numbers_mut(&mut self) -> Option<Asn1IntegerStackMut<'_>> {
+        // SAFETY: the exclusive notice-reference handle supplies exclusive
+        // access to its owned stack for the duration of this reborrow.
+        unsafe {
+            let numbers = ptr::addr_of!((*self.as_mut_ptr()).noticenos).read();
+            Asn1IntegerStackMut::from_ptr(numbers.cast())
+        }
+    }
+
+    /// Replaces the owned organization string and releases the previous one.
+    pub fn set_organization(&mut self, organization: Option<CBox<Asn1String>>) {
+        let organization = organization.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // the old value's release obligation transfers to the owner below.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).organization).replace(organization) };
+        // SAFETY: a detached non-null string was uniquely owned by this record
+        // and remains a complete heap-allocated ASN.1 string.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned organization string, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_organization(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let organization = unsafe {
+            ptr::addr_of_mut!((*self.as_mut_ptr()).organization).replace(ptr::null_mut())
+        };
+        // SAFETY: a detached non-null string remains fully initialized and
+        // carries exactly one `ASN1_STRING_free` obligation.
+        unsafe { CBox::from_raw(organization) }
+    }
+
+    /// Replaces the owned notice-number sequence and releases its predecessor.
+    pub fn set_notice_numbers(&mut self, numbers: Option<NoticeNumbers>) {
+        let numbers: *mut ffi::stack_st_ASN1_INTEGER = numbers.map_or(ptr::null_mut(), |numbers| {
+            let (raw, _dropper) = numbers.into_raw();
+            raw.cast()
+        });
+        // SAFETY: the exclusive handle permits replacing the owned sequence;
+        // ownership of the old pointer transfers to the temporary owner.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).noticenos).replace(numbers) };
+        // SAFETY: a detached non-null stack and each element were uniquely
+        // owned by this field and match `NoticeNumbersFree`.
+        drop(unsafe { NoticeNumbers::from_raw(previous.cast(), NoticeNumbersFree) });
+    }
+
+    /// Takes the owned notice-number sequence, leaving the slot empty.
+    #[must_use]
+    pub fn take_notice_numbers(&mut self) -> Option<NoticeNumbers> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // ownership of its stack and elements to the returned owner.
+        let numbers =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).noticenos).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null field is a complete stack whose elements
+        // remain uniquely owned and require the full pop-free policy.
+        unsafe { NoticeNumbers::from_raw(numbers.cast(), NoticeNumbersFree) }
+    }
+}
+
+#[cfg(test)]
+mod notice_ref_tests {
+    use core::mem::{align_of, size_of};
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+    use crate::asn1::asn1_lib::ASN1_STRING_new;
+    use crate::stack::stack::{OPENSSL_sk_new_null, OPENSSL_sk_num};
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    fn empty_notice_numbers() -> NoticeNumbers {
+        let stack = OPENSSL_sk_new_null::<Asn1String>().expect("ASN1_INTEGER stack");
+        let raw = stack.into_raw();
+        // SAFETY: this fresh stack is empty, so pop-free has no element
+        // ownership to establish and owns the stack allocation.
+        unsafe { NoticeNumbers::from_raw(raw, NoticeNumbersFree) }
+            .expect("an owning stack has a non-null pointer")
+    }
+
+    #[test]
+    fn constructor_preserves_layout_and_initializes_required_children() {
+        assert_owned_cell::<NoticeRef>();
+        assert_eq!(size_of::<NoticeRef>(), size_of::<ffi::NOTICEREF_st>());
+        assert_eq!(align_of::<NoticeRef>(), align_of::<ffi::NOTICEREF_st>());
+        assert_eq!(
+            size_of::<CBox<NoticeRef>>(),
+            size_of::<*mut ffi::NOTICEREF_st>()
+        );
+
+        let mut notice = NoticeRef::new().expect("NOTICEREF_new");
+        assert!(notice.as_ref().organization().is_some());
+        assert_eq!(OPENSSL_sk_num(notice.as_ref().notice_numbers()), Some(0));
+        assert!(notice.as_mut().organization_mut().is_some());
+        assert!(notice.as_mut().notice_numbers_mut().is_some());
+    }
+
+    #[test]
+    fn owned_fields_can_be_taken_and_replaced() {
+        let mut notice = NoticeRef::new().expect("NOTICEREF_new");
+        let organization = notice
+            .as_mut()
+            .take_organization()
+            .expect("generated organization");
+        assert!(notice.as_ref().organization().is_none());
+        notice.as_mut().set_organization(Some(organization));
+
+        let numbers = notice
+            .as_mut()
+            .take_notice_numbers()
+            .expect("generated notice-number sequence");
+        assert!(notice.as_ref().notice_numbers().is_none());
+        notice.as_mut().set_notice_numbers(Some(numbers));
+
+        let replacement = ASN1_STRING_new().expect("ASN1_STRING_new");
+        let replacement_raw = replacement.as_ptr();
+        notice.as_mut().set_organization(Some(replacement));
+        assert_eq!(
+            notice.as_ref().organization().map(|value| value.as_ptr()),
+            Some(replacement_raw.cast_const())
+        );
+        notice
+            .as_mut()
+            .set_notice_numbers(Some(empty_notice_numbers()));
+        assert_eq!(OPENSSL_sk_num(notice.as_ref().notice_numbers()), Some(0));
     }
 }

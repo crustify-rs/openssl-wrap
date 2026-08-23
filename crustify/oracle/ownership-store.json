@@ -105,6 +105,80 @@
    "fields": []
   },
   {
+   "name": "AUTHORITY_KEYID_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "All three pointers are optional owned ASN.1 template fields. v2i_AUTHORITY_KEYID transfers fresh allocations into them, and the generated ASN1_ITEM destructor recursively releases each non-null field.",
+   "fields": [
+    {
+     "name": "issuer",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 SEQUENCE OF GENERAL_NAME. AUTHORITY_KEYID's ASN.1 template recursively owns and pop-frees the generated stack and every element."
+     }
+    },
+    {
+     "name": "keyid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN1_OCTET_STRING allocated independently and transferred into the record; AUTHORITY_KEYID_free recursively releases it."
+     }
+    },
+    {
+     "name": "serial",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN1_INTEGER allocated independently and transferred into the record; AUTHORITY_KEYID_free recursively releases it."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BASIC_CONSTRAINTS_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "pathlen is an optional owned ASN.1 template field; ca is an inline scalar.",
+   "fields": [
+    {
+     "name": "pathlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN1_INTEGER returned through X509V3_get_value_int and transferred into the record; the generated BASIC_CONSTRAINTS ASN.1 destructor releases it."
+     }
+    }
+   ]
+  },
+  {
    "name": "BIO_hostserv_priorities",
    "defined_in": "include/openssl/bio.h",
    "_comment_agent": "Closed two-value selector passed by value to BIO_parse_hostserv; BIO_PARSE_PRIO_HOST and BIO_PARSE_PRIO_SERV only choose how an unqualified hostserv string is read. No pointer slots and no lifecycle of its own.",
@@ -199,6 +273,95 @@
    ]
   },
   {
+   "name": "DIST_POINT_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "ASN1_SEQUENCE(DIST_POINT) declares all three pointer members optional and recursive ASN.1 teardown owns them. dp_reasons is a derived scalar cache.",
+   "fields": [
+    {
+     "name": "CRLissuer",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional GENERAL_NAMES sequence; the field owns the stack and every GENERAL_NAME element."
+     }
+    },
+    {
+     "name": "distpoint",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional DIST_POINT_NAME owned by the ASN.1 sequence and released recursively by DIST_POINT_free."
+     }
+    },
+    {
+     "name": "reasons",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN1_BIT_STRING owned by the ASN.1 DIST_POINT sequence and released by DIST_POINT_free."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EDIPartyName_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "ASN1_SEQUENCE(EDIPARTYNAME) marks nameAssigner optional and partyName required for encoding; the generated constructor materializes partyName, while defensive consumers and the public layout still permit null. Generated teardown owns both.",
+   "fields": [
+    {
+     "name": "nameAssigner",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned ASN1_STRING directory string, released recursively by EDIPARTYNAME_free."
+     }
+    },
+    {
+     "name": "partyName",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Required in encoded EDIPARTYNAME values but the public layout and defensive C consumers permit null in manually modified or malformed states; owned and freed recursively."
+     }
+    }
+   ]
+  },
+  {
    "name": "NAME_CONSTRAINTS_st",
    "defined_in": "include/openssl/x509v3.h",
    "_comment_agent": "Both optional subtree stacks and all their elements are owned by NAME_CONSTRAINTS and released by its generated ASN.1 destructor.",
@@ -231,6 +394,46 @@
       "nullable": true,
       "mutable": true,
       "note": "Optional owned generated stack; NAME_CONSTRAINTS_free pop-frees every GENERAL_SUBTREE and the stack."
+     }
+    }
+   ]
+  },
+  {
+   "name": "NOTICEREF_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "ASN1_SEQUENCE(NOTICEREF) declares an owned DISPLAYTEXT and owned SEQUENCE OF ASN1_INTEGER. The generated constructor initializes both; notice_section mutates them; the generated full destructor recursively releases both fields.",
+   "fields": [
+    {
+     "name": "noticenos",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Required STACK_OF(ASN1_INTEGER): NOTICEREF owns the stack and every integer element; NOTICEREF_free pop-frees them, while notice_section pushes owned mutable integers and validates the slot as non-null when construction finishes."
+     }
+    },
+    {
+     "name": "organization",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Required ASN1_STRING child of the ASN1_SEQUENCE: NOTICEREF_new installs it, NOTICEREF_free releases it, notice_section mutates it, and public field access permits an incomplete/null slot during construction or transfer."
      }
     }
    ]
@@ -2844,169 +3047,6 @@
      }
     }
    ]
-  },
-  {
-   "name": "DIST_POINT_st",
-   "defined_in": "include/openssl/x509v3.h",
-   "_comment_agent": "ASN1_SEQUENCE(DIST_POINT) declares all three pointer members optional and recursive ASN.1 teardown owns them. dp_reasons is a derived scalar cache.",
-   "fields": [
-    {
-     "name": "CRLissuer",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional GENERAL_NAMES sequence; the field owns the stack and every GENERAL_NAME element."
-     }
-    },
-    {
-     "name": "distpoint",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional DIST_POINT_NAME owned by the ASN.1 sequence and released recursively by DIST_POINT_free."
-     }
-    },
-    {
-     "name": "reasons",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional ASN1_BIT_STRING owned by the ASN.1 DIST_POINT sequence and released by DIST_POINT_free."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EDIPartyName_st",
-   "defined_in": "include/openssl/x509v3.h",
-   "_comment_agent": "ASN1_SEQUENCE(EDIPARTYNAME) marks nameAssigner optional and partyName required for encoding; the generated constructor materializes partyName, while defensive consumers and the public layout still permit null. Generated teardown owns both.",
-   "fields": [
-    {
-     "name": "nameAssigner",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional owned ASN1_STRING directory string, released recursively by EDIPARTYNAME_free."
-     }
-    },
-    {
-     "name": "partyName",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Required in encoded EDIPARTYNAME values but the public layout and defensive C consumers permit null in manually modified or malformed states; owned and freed recursively."
-     }
-    }
-   ]
-  },
-  {
-   "name": "AUTHORITY_KEYID_st",
-   "defined_in": "include/openssl/x509v3.h",
-   "_comment_agent": "All three pointers are optional owned ASN.1 template fields. v2i_AUTHORITY_KEYID transfers fresh allocations into them, and the generated ASN1_ITEM destructor recursively releases each non-null field.",
-   "fields": [
-    {
-     "name": "issuer",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional ASN.1 SEQUENCE OF GENERAL_NAME. AUTHORITY_KEYID's ASN.1 template recursively owns and pop-frees the generated stack and every element."
-     }
-    },
-    {
-     "name": "keyid",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional ASN1_OCTET_STRING allocated independently and transferred into the record; AUTHORITY_KEYID_free recursively releases it."
-     }
-    },
-    {
-     "name": "serial",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional ASN1_INTEGER allocated independently and transferred into the record; AUTHORITY_KEYID_free recursively releases it."
-     }
-    }
-   ]
-  },
-  {
-   "name": "BASIC_CONSTRAINTS_st",
-   "defined_in": "include/openssl/x509v3.h",
-   "_comment_agent": "pathlen is an optional owned ASN.1 template field; ca is an inline scalar.",
-   "fields": [
-    {
-     "name": "pathlen",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional ASN1_INTEGER returned through X509V3_get_value_int and transferred into the record; the generated BASIC_CONSTRAINTS ASN.1 destructor releases it."
-     }
-    }
-   ]
   }
  ],
  "symbols": [
@@ -4042,6 +4082,96 @@
      "nullable": true,
      "mutable": true,
      "note": "Null on failure or a fresh empty authority-info-access stack whose full destructor is AUTHORITY_INFO_ACCESS_free."
+    }
+   }
+  },
+  {
+   "name": "AUTHORITY_KEYID_free",
+   "defined_in": "crypto/x509/v3_akeya.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes an optional complete ASN.1 sequence and recursively frees its fields and allocation; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "AUTHORITY_KEYID_new",
+   "defined_in": "crypto/x509/v3_akeya.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "ASN1_item_new returns NULL on allocation failure or a fresh complete sequence owned by the caller."
+    }
+   }
+  },
+  {
+   "name": "BASIC_CONSTRAINTS_free",
+   "defined_in": "crypto/x509/v3_bcons.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes an optional complete ASN.1 sequence and recursively frees its fields and allocation; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BASIC_CONSTRAINTS_new",
+   "defined_in": "crypto/x509/v3_bcons.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "ASN1_item_new returns NULL on allocation failure or a fresh complete sequence owned by the caller."
     }
    }
   },
@@ -10769,6 +10899,96 @@
    }
   },
   {
+   "name": "DIST_POINT_free",
+   "defined_in": "crypto/x509/v3_crld.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes an optional complete ASN.1 object and recursively releases its owned fields and allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "DIST_POINT_new",
+   "defined_in": "crypto/x509/v3_crld.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
+    }
+   }
+  },
+  {
+   "name": "EDIPARTYNAME_free",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes an optional complete ASN.1 object and recursively releases its owned fields and allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EDIPARTYNAME_new",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
+    }
+   }
+  },
+  {
    "name": "EVP_PKEY_dup",
    "defined_in": "crypto/evp/p_lib.c",
    "lifetime": {
@@ -11023,6 +11243,51 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns null on allocation failure or a fresh complete object whose caller owns the generated ASN.1 free obligation."
+    }
+   }
+  },
+  {
+   "name": "NOTICEREF_free",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable NOTICEREF and recursively frees its owned organization, integer elements, stack, and record allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "NOTICEREF_new",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "ASN1_item_new returns NULL on allocation failure or a fresh fully initialized NOTICEREF owned by the caller."
     }
    }
   },
@@ -17720,186 +17985,6 @@
      "nullable": true,
      "mutable": true,
      "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
-    }
-   }
-  },
-  {
-   "name": "DIST_POINT_free",
-   "defined_in": "crypto/x509/v3_crld.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes an optional complete ASN.1 object and recursively releases its owned fields and allocation."
-     }
-    }
-   ]
-  },
-  {
-   "name": "DIST_POINT_new",
-   "defined_in": "crypto/x509/v3_crld.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
-    }
-   }
-  },
-  {
-   "name": "EDIPARTYNAME_free",
-   "defined_in": "crypto/x509/v3_genn.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes an optional complete ASN.1 object and recursively releases its owned fields and allocation."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EDIPARTYNAME_new",
-   "defined_in": "crypto/x509/v3_genn.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
-    }
-   }
-  },
-  {
-   "name": "AUTHORITY_KEYID_free",
-   "defined_in": "crypto/x509/v3_akeya.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes an optional complete ASN.1 sequence and recursively frees its fields and allocation; NULL is accepted."
-     }
-    }
-   ]
-  },
-  {
-   "name": "AUTHORITY_KEYID_new",
-   "defined_in": "crypto/x509/v3_akeya.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "ASN1_item_new returns NULL on allocation failure or a fresh complete sequence owned by the caller."
-    }
-   }
-  },
-  {
-   "name": "BASIC_CONSTRAINTS_free",
-   "defined_in": "crypto/x509/v3_bcons.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes an optional complete ASN.1 sequence and recursively frees its fields and allocation; NULL is accepted."
-     }
-    }
-   ]
-  },
-  {
-   "name": "BASIC_CONSTRAINTS_new",
-   "defined_in": "crypto/x509/v3_bcons.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "ASN1_item_new returns NULL on allocation failure or a fresh complete sequence owned by the caller."
     }
    }
   }
