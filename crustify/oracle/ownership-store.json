@@ -147,6 +147,46 @@
    ]
   },
   {
+   "name": "POLICYINFO_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "ASN1_SEQUENCE(POLICYINFO) declares an owned ASN1_OBJECT and optional owned SEQUENCE OF POLICYQUALINFO. policy_section/r2i_certpol construct them; POLICYINFO_free recursively releases them; ossl_policy_data_new transfers both by nulling the source fields.",
+   "fields": [
+    {
+     "name": "policyid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "POLICYINFO owns the ASN1_OBJECT_free obligation. POLICYINFO_new installs the static NID_undef object, while public field access and transfer paths can clear the slot; users read or transfer the pointer but do not mutate the pointee."
+     }
+    },
+    {
+     "name": "qualifiers",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional STACK_OF(POLICYQUALINFO): POLICYINFO owns the stack and each element; POLICYINFO_free pop-frees it, builders push owned mutable elements, and ossl_policy_data_new can transfer the whole field by clearing it."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_algor_st",
    "defined_in": "include/openssl/x509.h",
    "_comment_agent": "X509_ALGOR owns both pointer fields through its ASN.1 SEQUENCE template. X509_ALGOR_set0 transfers the algorithm object and parameter payload on success; sequence teardown releases algorithm with ASN1_OBJECT_free and the optional parameter with ASN1_TYPE_free. Direct code writes through parameter, while algorithm objects are treated as immutable after installation. Both slots can be null.",
@@ -12973,6 +13013,78 @@
      "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
     }
    }
+  },
+  {
+   "name": "POLICYINFO_free",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable POLICYINFO and recursively frees its owned fields and allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "POLICYINFO_new",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "ASN1_item_new returns NULL on allocation failure or a fresh fully initialized POLICYINFO owned by the caller."
+    }
+   }
+  },
+  {
+   "name": "POLICYQUALINFO_free",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a nullable POLICYQUALINFO and recursively frees its owned fields and allocation."
+     }
+    }
+   ]
   },
   {
    "name": "X509_ALGOR_cmp",

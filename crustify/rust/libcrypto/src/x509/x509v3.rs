@@ -1,11 +1,14 @@
 //! Wrappers assigned from `include/openssl/x509v3.h`.
 
-use core::ptr::NonNull;
+use core::ffi::c_void;
+use core::ptr::{self, NonNull};
 
-use ffibox::{CBoxWith, CDropper};
+use ffibox::{CBox, CBoxWith, CDropper, define_ctype, impl_dropped};
 use libcrypto_sys as ffi;
 
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
+use crate::x509::x509_vfy::{PolicyQualInfoStack, PolicyQualInfoStackMut, PolicyQualInfoStackRef};
 
 /// Opaque element marker for the `GENERAL_SUBTREE` records stored in this
 /// stack.
@@ -104,16 +107,22 @@ impl AccessDescriptionStack {
     }
 }
 
-/// Opaque element marker for the `POLICYINFO` records stored in this stack.
-///
-/// `POLICYINFO` has its own authored type-route work and is not part of this
-/// worklist. Until that wrapper is available, this unconstructible marker
-/// retains the generated stack's element type without exposing or
-/// dereferencing the record's layout.
-#[repr(C)]
-pub struct PolicyInfo {
-    _opaque: [u8; 0],
-}
+define_ctype!(
+    /// Wraps: POLICYINFO_st
+    ///
+    /// Layout-compatible storage for an ASN.1 certificate-policy record. The
+    /// record owns its policy object and optional qualifier sequence; borrowed
+    /// access is carried by [`PolicyInfoRef`] and [`PolicyInfoMut`] without
+    /// forming Rust references over memory OpenSSL may mutate.
+    PolicyInfo,
+    PolicyInfoRef,
+    PolicyInfoMut,
+    ffi::POLICYINFO_st
+);
+
+// `POLICYINFO_free` is the ASN.1 sequence's full destructor: it releases the
+// policy object, every qualifier and its stack, then the record allocation.
+impl_dropped!(PolicyInfo, ffi::POLICYINFO_st, ffi::POLICYINFO_free);
 
 /// Wraps: stack_st_POLICYINFO
 ///
@@ -135,6 +144,140 @@ pub type PolicyInfoStackMut<'a> = StackMut<'a, PolicyInfo>;
 /// Rust spelling of OpenSSL's `CERTIFICATEPOLICIES` typedef.
 pub type CertificatePolicies = PolicyInfoStack;
 
+/// Selects full destruction for an owned qualifier sequence, including each
+/// `POLICYQUALINFO` element.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct PolicyQualifiersFree;
+
+unsafe extern "C" fn policy_qualifier_free(value: *mut c_void) {
+    // SAFETY: this callback is installed only on a stack whose elements are
+    // complete, uniquely owned `POLICYQUALINFO` allocations.
+    unsafe { ffi::POLICYQUALINFO_free(value.cast()) }
+}
+
+// SAFETY: this policy is attached only to a qualifier stack that owns all of
+// its elements. `OPENSSL_sk_pop_free` visits each element exactly once with the
+// matching ASN.1 destructor, then releases the pointer array and stack header.
+unsafe impl CDropper<PolicyQualInfoStack> for PolicyQualifiersFree {
+    unsafe fn c_drop(&self, object: NonNull<PolicyQualInfoStack>) {
+        // SAFETY: the `CDropper` contract supplies unique ownership of the
+        // complete stack and every stored qualifier.
+        unsafe { ffi::OPENSSL_sk_pop_free(object.as_ptr().cast(), Some(policy_qualifier_free)) }
+    }
+}
+
+/// Owning form of `POLICYINFO_st.qualifiers`, releasing the stack and every
+/// qualifier together.
+pub type PolicyQualifiers = CBoxWith<PolicyQualInfoStack, PolicyQualifiersFree>;
+
+impl PolicyInfo {
+    /// Allocates a complete empty policy-info record.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh, fully initialized ASN.1
+        // sequence carrying one `POLICYINFO_free` obligation.
+        unsafe { CBox::from_raw(ffi::POLICYINFO_new()) }
+    }
+}
+
+impl<'a> PolicyInfoRef<'a> {
+    /// Wraps: POLICYINFO_st.policyid
+    ///
+    /// Borrows the installed policy object. The public layout permits the slot
+    /// to be cleared after an ownership transfer.
+    #[must_use]
+    pub fn policy_id(&self) -> Option<Asn1ObjectRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer from the live shared
+        // handle without forming a reference to C storage. A non-null object is
+        // owned by this record and therefore lives for the handle's `'a`.
+        unsafe {
+            let policy_id = ptr::addr_of!((*self.as_ptr()).policyid).read();
+            Asn1ObjectRef::from_ptr(policy_id)
+        }
+    }
+
+    /// Wraps: POLICYINFO_st.qualifiers
+    ///
+    /// Borrows the optional qualifier sequence, including its element-address
+    /// array. The record keeps the sequence and its elements alive.
+    #[must_use]
+    pub fn qualifiers(&self) -> Option<PolicyQualInfoStackRef<'a>> {
+        // SAFETY: raw-place projection reads only the stored pointer. The
+        // generated stack tag erases to `OPENSSL_STACK`, and the non-null stack
+        // remains owned by this record for the handle's `'a`.
+        unsafe {
+            let qualifiers = ptr::addr_of!((*self.as_ptr()).qualifiers).read();
+            PolicyQualInfoStackRef::from_ptr(qualifiers.cast())
+        }
+    }
+}
+
+impl PolicyInfoMut<'_> {
+    /// Exclusively reborrows the optional qualifier sequence.
+    #[must_use]
+    pub fn qualifiers_mut(&mut self) -> Option<PolicyQualInfoStackMut<'_>> {
+        // SAFETY: the exclusive policy-info handle supplies exclusive access to
+        // its owned qualifier stack for the duration of this reborrow.
+        unsafe {
+            let qualifiers = ptr::addr_of!((*self.as_mut_ptr()).qualifiers).read();
+            PolicyQualInfoStackMut::from_ptr(qualifiers.cast())
+        }
+    }
+
+    /// Replaces the owned policy object and releases the previous value.
+    pub fn set_policy_id(&mut self, policy_id: Option<CBox<Asn1Object>>) {
+        let policy_id = policy_id.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // the old value's release obligation transfers to the owner below.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).policyid).replace(policy_id) };
+        // SAFETY: the detached non-null value was uniquely owned by this record
+        // and remains a complete ASN.1 object.
+        drop(unsafe { CBox::<Asn1Object>::from_raw(previous) });
+    }
+
+    /// Takes the owned policy object, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_policy_id(&mut self) -> Option<CBox<Asn1Object>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let policy_id =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).policyid).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null object remains fully initialized and
+        // carries exactly one `ASN1_OBJECT_free` obligation.
+        unsafe { CBox::from_raw(policy_id) }
+    }
+
+    /// Replaces the owned qualifier sequence and releases the previous stack
+    /// and all of its elements.
+    pub fn set_qualifiers(&mut self, qualifiers: Option<PolicyQualifiers>) {
+        let qualifiers: *mut ffi::stack_st_POLICYQUALINFO =
+            qualifiers.map_or(ptr::null_mut(), |qualifiers| {
+                let (raw, _dropper) = qualifiers.into_raw();
+                raw.cast()
+            });
+        // SAFETY: the exclusive handle permits replacing the owned sequence;
+        // ownership of the old pointer transfers to the temporary owner.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).qualifiers).replace(qualifiers) };
+        // SAFETY: the detached non-null stack and each element were uniquely
+        // owned by this field and match `PolicyQualifiersFree`.
+        drop(unsafe { PolicyQualifiers::from_raw(previous.cast(), PolicyQualifiersFree) });
+    }
+
+    /// Takes the owned qualifier sequence, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_qualifiers(&mut self) -> Option<PolicyQualifiers> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // ownership of its stack and elements to the returned policy owner.
+        let qualifiers =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).qualifiers).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null field is a complete stack whose elements
+        // remain uniquely owned and require the full pop-free policy.
+        unsafe { PolicyQualifiers::from_raw(qualifiers.cast(), PolicyQualifiersFree) }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use core::mem::size_of;
@@ -149,6 +292,7 @@ mod tests {
     };
 
     fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+    fn assert_owned_cell<T: CCell + CDropped>() {}
 
     #[test]
     fn generated_subtree_stack_uses_the_typed_erased_container() {
@@ -271,5 +415,68 @@ mod tests {
         assert_eq!(shared.as_ptr(), raw.cast_const());
         let exclusive: PolicyInfoStackMut<'_> = stack.as_mut();
         assert_eq!(OPENSSL_sk_num(Some(exclusive.as_ref())), Some(0));
+    }
+
+    #[test]
+    fn policy_info_owns_and_transfers_its_optional_fields() {
+        use crate::asn1::a_object::ASN1_OBJECT_create;
+        use crate::x509::x509_vfy::PolicyQualInfo;
+
+        assert_owned_cell::<PolicyInfo>();
+        assert_eq!(size_of::<PolicyInfo>(), size_of::<ffi::POLICYINFO_st>());
+        assert_eq!(
+            size_of::<CBox<PolicyInfo>>(),
+            size_of::<*mut ffi::POLICYINFO_st>()
+        );
+        assert_eq!(
+            size_of::<PolicyInfoRef<'static>>(),
+            size_of::<*mut ffi::POLICYINFO_st>()
+        );
+        assert_eq!(
+            size_of::<PolicyInfoMut<'static>>(),
+            size_of::<*mut ffi::POLICYINFO_st>()
+        );
+
+        let mut policy = PolicyInfo::new().expect("POLICYINFO_new");
+        assert!(policy.as_ref().policy_id().is_some());
+        assert!(policy.as_ref().qualifiers().is_none());
+
+        let object =
+            ASN1_OBJECT_create(10_003, &[0x2a, 0x03, 0x05], None, None).expect("policy object");
+        let object_raw = object.as_ptr();
+        policy.as_mut().set_policy_id(Some(object));
+        assert_eq!(
+            policy.as_ref().policy_id().map(|object| object.as_ptr()),
+            Some(object_raw.cast_const())
+        );
+        let detached_object = policy.as_mut().take_policy_id().expect("policy object");
+        assert_eq!(detached_object.as_ptr(), object_raw);
+        assert!(policy.as_ref().policy_id().is_none());
+        drop(detached_object);
+
+        let qualifiers = OPENSSL_sk_new_null::<PolicyQualInfo>().expect("qualifier stack");
+        // SAFETY: the fresh stack is empty, hence vacuously owns every stored
+        // element and is valid for the full pop-free policy.
+        let qualifiers =
+            unsafe { PolicyQualifiers::from_raw(qualifiers.into_raw(), PolicyQualifiersFree) }
+                .expect("non-null qualifier stack");
+        let qualifiers_raw = qualifiers.as_ptr();
+        policy.as_mut().set_qualifiers(Some(qualifiers));
+        assert_eq!(
+            policy.as_ref().qualifiers().map(|stack| stack.as_ptr()),
+            Some(qualifiers_raw.cast_const())
+        );
+        {
+            let mut policy_mut = policy.as_mut();
+            let qualifiers_mut = policy_mut.qualifiers_mut().expect("qualifier stack");
+            assert_eq!(OPENSSL_sk_num(Some(qualifiers_mut.as_ref())), Some(0));
+        }
+        let detached_qualifiers = policy
+            .as_mut()
+            .take_qualifiers()
+            .expect("detached qualifier stack");
+        assert_eq!(detached_qualifiers.as_ptr(), qualifiers_raw);
+        assert!(policy.as_ref().qualifiers().is_none());
+        drop(detached_qualifiers);
     }
 }
