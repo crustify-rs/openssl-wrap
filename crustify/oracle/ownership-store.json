@@ -2490,6 +2490,43 @@
    ]
   },
   {
+   "name": "otherName_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "OTHERNAME is an ASN.1 SEQUENCE owning its object identifier and tagged value. OTHERNAME_free releases both fields and the record; public set0 paths transfer replacement pointers, and the public layout permits nullable slots.",
+   "fields": [
+    {
+     "name": "type_id",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned OTHERNAME object identifier slot. ASN.1 sequence teardown calls ASN1_OBJECT_free; the default and other built-in objects are valid because that destructor is a no-op for non-dynamic objects. Codebase users read but do not mutate the installed ASN1_OBJECT pointee, and public set0 construction can install NULL."
+     }
+    },
+    {
+     "name": "value",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned ASN1_TYPE value slot. OTHERNAME ASN.1 sequence teardown releases it, while construction paths replace or populate the discriminator and active payload in place. The public layout and GENERAL_NAME_set0_othername permit NULL."
+     }
+    }
+   ]
+  },
+  {
    "name": "stack_st",
    "defined_in": "crypto/stack/stack.c",
    "_comment_agent": "The public OPENSSL_STACK is opaque. Its private data field owns the resizable pointer array, while each type-erased element is either caller-borrowed or transferred for later OPENSSL_sk_pop_free according to the API path. Plain OPENSSL_sk_free never frees elements. Comparator and thunk fields are optional borrowed executable-code pointers with static lifetime.",
@@ -2804,43 +2841,6 @@
       "nullable": true,
       "mutable": false,
       "note": "Optional decoded subject-key-identifier cache owned by X509, replaced and freed while rebuilding the cache, and exposed only through const getters."
-     }
-    }
-   ]
-  },
-  {
-   "name": "otherName_st",
-   "defined_in": "include/openssl/x509v3.h",
-   "_comment_agent": "OTHERNAME is an ASN.1 SEQUENCE owning its object identifier and tagged value. OTHERNAME_free releases both fields and the record; public set0 paths transfer replacement pointers, and the public layout permits nullable slots.",
-   "fields": [
-    {
-     "name": "type_id",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": false,
-      "note": "Owned OTHERNAME object identifier slot. ASN.1 sequence teardown calls ASN1_OBJECT_free; the default and other built-in objects are valid because that destructor is a no-op for non-dynamic objects. Codebase users read but do not mutate the installed ASN1_OBJECT pointee, and public set0 construction can install NULL."
-     }
-    },
-    {
-     "name": "value",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Owned ASN1_TYPE value slot. OTHERNAME ASN.1 sequence teardown releases it, while construction paths replace or populate the discriminator and active payload in place. The public layout and GENERAL_NAME_set0_othername permit NULL."
      }
     }
    ]
@@ -10041,6 +10041,96 @@
    ]
   },
   {
+   "name": "CERTIFICATEPOLICIES_free",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CERTIFICATEPOLICIES_new",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
+    }
+   }
+  },
+  {
+   "name": "CRL_DIST_POINTS_free",
+   "defined_in": "crypto/x509/v3_crld.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "CRL_DIST_POINTS_new",
+   "defined_in": "crypto/x509/v3_crld.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
+    }
+   }
+  },
+  {
    "name": "CRYPTO_clear_free",
    "defined_in": "crypto/mem.c",
    "lifetime": {
@@ -10637,6 +10727,96 @@
      }
     }
    ]
+  },
+  {
+   "name": "EXTENDED_KEY_USAGE_free",
+   "defined_in": "crypto/x509/v3_extku.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EXTENDED_KEY_USAGE_new",
+   "defined_in": "crypto/x509/v3_extku.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
+    }
+   }
+  },
+  {
+   "name": "GENERAL_NAMES_free",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "GENERAL_NAMES_new",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
+    }
+   }
   },
   {
    "name": "NAME_CONSTRAINTS_free",
@@ -13277,6 +13457,51 @@
    }
   },
   {
+   "name": "OTHERNAME_free",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a complete OTHERNAME, releases its owned type_id and value through the ASN.1 template, then releases the record allocation; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OTHERNAME_new",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh fully initialized OTHERNAME allocation, or NULL on allocation failure."
+    }
+   }
+  },
+  {
    "name": "POLICYINFO_free",
    "defined_in": "crypto/x509/v3_cpols.c",
    "lifetime": {
@@ -13347,6 +13572,122 @@
      }
     }
    ]
+  },
+  {
+   "name": "TLS_FEATURE_free",
+   "defined_in": "crypto/x509/v3_tlsf.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "TLS_FEATURE_new",
+   "defined_in": "crypto/x509/v3_tlsf.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
+    }
+   }
+  },
+  {
+   "name": "X509V3_get_d2i",
+   "defined_in": "crypto/x509/v3_lib.c",
+   "ptr_args": [
+    {
+     "name": "crit",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:crit"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional scalar output receiving criticality or a negative failure classification."
+     }
+    },
+    {
+     "name": "idx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:idx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional in/out scalar cursor for repeated extension retrieval."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared extension stack read synchronously."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on lookup/decode failure or a freshly decoded runtime-typed extension whose NID-specific destructor the caller must select."
+    }
+   }
   },
   {
    "name": "X509_ALGOR_cmp",
@@ -13635,6 +13976,107 @@
      }
     }
    ]
+  },
+  {
+   "name": "X509_EXTENSION_get_critical",
+   "defined_in": "crypto/x509/x509_v3.c",
+   "ptr_args": [
+    {
+     "name": "ex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ex"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared extension input; null is accepted by the raw API."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_EXTENSION_get_data",
+   "defined_in": "crypto/x509/x509_v3.c",
+   "ptr_args": [
+    {
+     "name": "ex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ex"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The body explicitly accepts NULL; otherwise it only reads ex and returns a pointer to the embedded ex->value field."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ex->value"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "NULL follows a NULL ex; otherwise this is the const embedded ASN1_OCTET_STRING and remains live only with ex."
+    }
+   }
+  },
+  {
+   "name": "X509_EXTENSION_get_object",
+   "defined_in": "crypto/x509/x509_v3.c",
+   "ptr_args": [
+    {
+     "name": "ex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ex"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional shared extension input; null is accepted by the raw API."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ex"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Object identifier owned by and lifetime-bound to the extension; null for a null or incomplete extension."
+    }
+   }
   },
   {
    "name": "X509_EXTENSION_new",
@@ -14628,6 +15070,186 @@
    }
   },
   {
+   "name": "X509_check_email",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "chk",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:chk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed identity bytes read synchronously; null or malformed embedded NUL input is rejected."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_check_host",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "chk",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:chk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed identity bytes read synchronously; null or malformed embedded NUL input is rejected."
+     }
+    },
+    {
+     "name": "peername",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:peername"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receives a fresh OpenSSL-allocated matched name that the caller owns."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_check_ip",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "chk",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:chk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed binary address extent read synchronously; null is rejected."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_check_ip_asc",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "ipasc",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ipasc"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NUL-terminated textual address read synchronously; null or malformed input is rejected."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_cmp",
    "defined_in": "crypto/x509/x509_cmp.c",
    "ptr_args": [
@@ -15081,6 +15703,80 @@
    }
   },
   {
+   "name": "X509_get1_email",
+   "defined_in": "crypto/x509/v3_utl.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh stack owning every independently allocated email string."
+    }
+   }
+  },
+  {
+   "name": "X509_get1_ocsp",
+   "defined_in": "crypto/x509/v3_utl.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The certificate is read transiently through X509_get_ext_d2i and is neither stored nor released; callers supply a live X509."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "The caller receives a newly allocated STACK_OF(OPENSSL_STRING), including independently allocated URI strings, and releases the complete result with X509_email_free. NULL means no AIA extension or allocation failure."
+    }
+   }
+  },
+  {
    "name": "X509_get_X509_PUBKEY",
    "defined_in": "crypto/x509/x509_set.c",
    "ptr_args": [
@@ -15116,6 +15812,225 @@
      "nullable": false,
      "mutable": false,
      "note": "The complete certificate owns this SubjectPublicKeyInfo container; the result borrows it."
+    }
+   }
+  },
+  {
+   "name": "X509_get_ext",
+   "defined_in": "crypto/x509/x509_ext.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:x"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Extension borrowed from and lifetime-bound to the certificate; null for an invalid index."
+    }
+   }
+  },
+  {
+   "name": "X509_get_ext_by_NID",
+   "defined_in": "crypto/x509/x509_ext.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_get_ext_by_OBJ",
+   "defined_in": "crypto/x509/x509_ext.c",
+   "ptr_args": [
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared object identifier read synchronously."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_get_ext_by_critical",
+   "defined_in": "crypto/x509/x509_ext.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_get_ext_count",
+   "defined_in": "crypto/x509/x509_ext.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_get_ext_d2i",
+   "defined_in": "crypto/x509/x509_ext.c",
+   "ptr_args": [
+    {
+     "name": "crit",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:crit"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional scalar output receiving criticality or a negative failure classification."
+     }
+    },
+    {
+     "name": "idx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:idx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional in/out scalar cursor for repeated extension retrieval."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate input retained only for the synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on lookup/decode failure or a freshly decoded runtime-typed extension whose NID-specific destructor the caller must select."
     }
    }
   },
@@ -15950,6 +16865,68 @@
    }
   },
   {
+   "name": "d2i_X509_EXTENSION",
+   "defined_in": "crypto/x509/x_exten.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional in/out owner slot; null requests a fresh extension, while success may replace or reuse an existing owner."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:in"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed input cursor slot; C advances the inner pointer within the readable DER extent."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on decode failure or the decoded extension owner; aliases the value stored through a when supplied."
+    }
+   }
+  },
+  {
    "name": "d2i_X509_NAME",
    "defined_in": "crypto/x509/x_name.c",
    "ptr_args": [
@@ -16259,6 +17236,51 @@
    ]
   },
   {
+   "name": "i2d_X509_EXTENSION",
+   "defined_in": "crypto/x509/x_exten.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live extension read synchronously for DER encoding."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "arg:out"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output-pointer slot: null requests a length; a null inner pointer requests an owned allocation; otherwise C advances within caller storage."
+     }
+    }
+   ]
+  },
+  {
    "name": "i2d_X509_NAME",
    "defined_in": "crypto/x509/x_name.c",
    "ptr_args": [
@@ -16537,952 +17559,6 @@
      "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
     }
    }
-  },
-  {
-   "name": "CERTIFICATEPOLICIES_free",
-   "defined_in": "crypto/x509/v3_cpols.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
-     }
-    }
-   ]
-  },
-  {
-   "name": "CERTIFICATEPOLICIES_new",
-   "defined_in": "crypto/x509/v3_cpols.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
-    }
-   }
-  },
-  {
-   "name": "CRL_DIST_POINTS_free",
-   "defined_in": "crypto/x509/v3_crld.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
-     }
-    }
-   ]
-  },
-  {
-   "name": "CRL_DIST_POINTS_new",
-   "defined_in": "crypto/x509/v3_crld.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
-    }
-   }
-  },
-  {
-   "name": "EXTENDED_KEY_USAGE_free",
-   "defined_in": "crypto/x509/v3_extku.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EXTENDED_KEY_USAGE_new",
-   "defined_in": "crypto/x509/v3_extku.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
-    }
-   }
-  },
-  {
-   "name": "GENERAL_NAMES_free",
-   "defined_in": "crypto/x509/v3_genn.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
-     }
-    }
-   ]
-  },
-  {
-   "name": "GENERAL_NAMES_new",
-   "defined_in": "crypto/x509/v3_genn.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
-    }
-   }
-  },
-  {
-   "name": "TLS_FEATURE_free",
-   "defined_in": "crypto/x509/v3_tlsf.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes the complete generated ASN.1 stack, including every owned element, and accepts null."
-     }
-    }
-   ]
-  },
-  {
-   "name": "TLS_FEATURE_new",
-   "defined_in": "crypto/x509/v3_tlsf.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
-    }
-   }
-  },
-  {
-   "name": "X509V3_get_d2i",
-   "defined_in": "crypto/x509/v3_lib.c",
-   "ptr_args": [
-    {
-     "name": "crit",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:crit"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional scalar output receiving criticality or a negative failure classification."
-     }
-    },
-    {
-     "name": "idx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:idx"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional in/out scalar cursor for repeated extension retrieval."
-     }
-    },
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional shared extension stack read synchronously."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on lookup/decode failure or a freshly decoded runtime-typed extension whose NID-specific destructor the caller must select."
-    }
-   }
-  },
-  {
-   "name": "X509_EXTENSION_get_critical",
-   "defined_in": "crypto/x509/x509_v3.c",
-   "ptr_args": [
-    {
-     "name": "ex",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ex"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional shared extension input; null is accepted by the raw API."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_EXTENSION_get_object",
-   "defined_in": "crypto/x509/x509_v3.c",
-   "ptr_args": [
-    {
-     "name": "ex",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ex"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional shared extension input; null is accepted by the raw API."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:ex"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Object identifier owned by and lifetime-bound to the extension; null for a null or incomplete extension."
-    }
-   }
-  },
-  {
-   "name": "X509_check_email",
-   "defined_in": null,
-   "ptr_args": [
-    {
-     "name": "chk",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:chk"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Borrowed identity bytes read synchronously; null or malformed embedded NUL input is rejected."
-     }
-    },
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_check_host",
-   "defined_in": null,
-   "ptr_args": [
-    {
-     "name": "chk",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:chk"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Borrowed identity bytes read synchronously; null or malformed embedded NUL input is rejected."
-     }
-    },
-    {
-     "name": "peername",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": true,
-        "borrowed": null
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:peername"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional output slot receives a fresh OpenSSL-allocated matched name that the caller owns."
-     }
-    },
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_check_ip",
-   "defined_in": null,
-   "ptr_args": [
-    {
-     "name": "chk",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:chk"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Borrowed binary address extent read synchronously; null is rejected."
-     }
-    },
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_check_ip_asc",
-   "defined_in": null,
-   "ptr_args": [
-    {
-     "name": "ipasc",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ipasc"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Borrowed NUL-terminated textual address read synchronously; null or malformed input is rejected."
-     }
-    },
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_get1_email",
-   "defined_in": "crypto/x509/v3_utl.c",
-   "ptr_args": [
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure or a fresh stack owning every independently allocated email string."
-    }
-   }
-  },
-  {
-   "name": "X509_get_ext",
-   "defined_in": "crypto/x509/x509_ext.c",
-   "ptr_args": [
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:x"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Extension borrowed from and lifetime-bound to the certificate; null for an invalid index."
-    }
-   }
-  },
-  {
-   "name": "X509_get_ext_by_NID",
-   "defined_in": "crypto/x509/x509_ext.c",
-   "ptr_args": [
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_get_ext_by_OBJ",
-   "defined_in": "crypto/x509/x509_ext.c",
-   "ptr_args": [
-    {
-     "name": "obj",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:obj"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared object identifier read synchronously."
-     }
-    },
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_get_ext_by_critical",
-   "defined_in": "crypto/x509/x509_ext.c",
-   "ptr_args": [
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_get_ext_count",
-   "defined_in": "crypto/x509/x509_ext.c",
-   "ptr_args": [
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "X509_get_ext_d2i",
-   "defined_in": "crypto/x509/x509_ext.c",
-   "ptr_args": [
-    {
-     "name": "crit",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:crit"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional scalar output receiving criticality or a negative failure classification."
-     }
-    },
-    {
-     "name": "idx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:idx"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional in/out scalar cursor for repeated extension retrieval."
-     }
-    },
-    {
-     "name": "x",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:x"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Required shared certificate input retained only for the synchronous call."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on lookup/decode failure or a freshly decoded runtime-typed extension whose NID-specific destructor the caller must select."
-    }
-   }
-  },
-  {
-   "name": "d2i_X509_EXTENSION",
-   "defined_in": "crypto/x509/x_exten.c",
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": true,
-        "borrowed": null
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:a"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional in/out owner slot; null requests a fresh extension, while success may replace or reuse an existing owner."
-     }
-    },
-    {
-     "name": "in",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:in"
-        }
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:in"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Borrowed input cursor slot; C advances the inner pointer within the readable DER extent."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on decode failure or the decoded extension owner; aliases the value stored through a when supplied."
-    }
-   }
-  },
-  {
-   "name": "i2d_X509_EXTENSION",
-   "defined_in": "crypto/x509/x_exten.c",
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:a"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Live extension read synchronously for DER encoding."
-     }
-    },
-    {
-     "name": "out",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": true,
-        "borrowed": {
-         "lifetime": "arg:out"
-        }
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:out"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Optional output-pointer slot: null requests a length; a null inner pointer requests an owned allocation; otherwise C advances within caller storage."
-     }
-    }
-   ]
-  },
-  {
-   "name": "OTHERNAME_new",
-   "defined_in": "crypto/x509/v3_genn.c",
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Returns a fresh fully initialized OTHERNAME allocation, or NULL on allocation failure."
-    }
-   }
-  },
-  {
-   "name": "OTHERNAME_free",
-   "defined_in": "crypto/x509/v3_genn.c",
-   "lifetime": {
-    "for": "a",
-    "is_dropper": true,
-    "is_disposer": false,
-    "is_cloner": null
-   },
-   "ptr_args": [
-    {
-     "name": "a",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": true,
-      "borrowed": null,
-      "nullable": true,
-      "mutable": true,
-      "note": "Consumes a complete OTHERNAME, releases its owned type_id and value through the ASN.1 template, then releases the record allocation; NULL is accepted."
-     }
-    }
-   ]
   }
  ]
 }

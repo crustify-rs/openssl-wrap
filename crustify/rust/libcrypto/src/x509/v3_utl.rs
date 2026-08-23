@@ -9,13 +9,14 @@ use libcrypto_sys as ffi;
 use crate::stack::openssl_safestack::OpenSslStringStack;
 use crate::x509::x509_internal::X509Ref;
 
-unsafe extern "C" fn free_email_address(address: *mut c_void) {
-    // SAFETY: `X509_get1_email` allocates every stored string with the active
-    // OpenSSL allocator, and the stack pop-free callback transfers it once.
-    unsafe { ffi::CRYPTO_free(address, ptr::null(), 0) };
+unsafe extern "C" fn free_collected_string(string: *mut c_void) {
+    // SAFETY: both collection routines allocate every stored string with the
+    // active OpenSSL allocator, and the pop-free callback transfers it once.
+    unsafe { ffi::CRYPTO_free(string, ptr::null(), 0) };
 }
 
-/// Full teardown policy for the strings returned by `X509_get1_email`.
+/// Full teardown policy for the strings returned by `X509_get1_email` and
+/// `X509_get1_ocsp`.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct EmailAddressesFree;
 
@@ -26,12 +27,15 @@ unsafe impl CDropper<OpenSslStringStack> for EmailAddressesFree {
     unsafe fn c_drop(&self, object: NonNull<OpenSslStringStack>) {
         // SAFETY: the dropper contract supplies sole ownership of the complete
         // result and its generated stack erases to `OPENSSL_STACK`.
-        unsafe { ffi::OPENSSL_sk_pop_free(object.as_ptr().cast(), Some(free_email_address)) }
+        unsafe { ffi::OPENSSL_sk_pop_free(object.as_ptr().cast(), Some(free_collected_string)) }
     }
 }
 
 /// An owned list of NUL-terminated email-address strings.
 pub type EmailAddresses = CBoxWith<OpenSslStringStack, EmailAddressesFree>;
+
+/// An owned list of NUL-terminated OCSP responder URI strings.
+pub type OcspResponderUris = CBoxWith<OpenSslStringStack, EmailAddressesFree>;
 
 /// Wraps: X509_get1_email
 /// Collects independently allocated email addresses from a certificate.
@@ -43,6 +47,21 @@ pub fn X509_get1_email(certificate: X509Ref<'_>) -> Option<EmailAddresses> {
     unsafe {
         CBoxWith::from_raw(
             ffi::X509_get1_email(certificate.as_ptr()).cast(),
+            EmailAddressesFree,
+        )
+    }
+}
+
+/// Wraps: X509_get1_ocsp
+/// Collects independently allocated OCSP responder URIs from a certificate.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get1_ocsp(certificate: X509Ref<'_>) -> Option<OcspResponderUris> {
+    // SAFETY: the shared certificate remains live for the call. A non-null
+    // result owns its stack and every URI string under `EmailAddressesFree`.
+    unsafe {
+        CBoxWith::from_raw(
+            ffi::X509_get1_ocsp(certificate.as_ptr()).cast(),
             EmailAddressesFree,
         )
     }
@@ -60,5 +79,11 @@ mod tests {
         if let Some(addresses) = X509_get1_email(certificate.as_ref()) {
             assert_eq!(OPENSSL_sk_num(Some(addresses.as_ref())), Some(0));
         }
+    }
+
+    #[test]
+    fn empty_certificate_has_no_ocsp_responder_uris() {
+        let certificate = X509_new().expect("certificate");
+        assert!(X509_get1_ocsp(certificate.as_ref()).is_none());
     }
 }
