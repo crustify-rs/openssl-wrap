@@ -7,6 +7,7 @@ use ffibox::{CBox, CBoxWith, CDropper, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
+use crate::asn1::openssl_asn1::{Asn1Type, Asn1TypeMut, Asn1TypeRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 pub use crate::x509::v3_info::{AuthorityInfoAccess, AuthorityInfoAccessFree};
 use crate::x509::x509::{X509NameEntryStack, X509NameEntryStackMut, X509NameEntryStackRef};
@@ -1102,6 +1103,116 @@ impl NameConstraintsMut<'_> {
     }
 }
 
+define_ctype!(
+    /// Wraps: otherName_st
+    ///
+    /// Layout-compatible storage for an X.509 `OTHERNAME` record. The ASN.1
+    /// sequence owns its object identifier and tagged value; borrowed access
+    /// stays on pointer-carrying handles rather than references over C memory.
+    OtherName,
+    OtherNameRef,
+    OtherNameMut,
+    ffi::otherName_st
+);
+
+impl_dropped!(OtherName, ffi::otherName_st, ffi::OTHERNAME_free);
+
+impl OtherName {
+    /// Allocates a complete default `OTHERNAME` sequence.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh, fully initialized ASN.1
+        // sequence carrying one `OTHERNAME_free` obligation.
+        unsafe { CBox::from_raw(ffi::OTHERNAME_new()) }
+    }
+}
+
+impl<'a> OtherNameRef<'a> {
+    /// Wraps: otherName_st.type_id
+    ///
+    /// Borrows the installed object identifier. The public layout and set0
+    /// construction paths permit this owned slot to be null.
+    #[must_use]
+    pub fn type_id(&self) -> Option<Asn1ObjectRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer from the live shared
+        // handle. A non-null object remains owned by this record for `'a`.
+        unsafe {
+            let type_id = ptr::addr_of!((*self.as_ptr()).type_id).read();
+            Asn1ObjectRef::from_ptr(type_id)
+        }
+    }
+
+    /// Wraps: otherName_st.value
+    ///
+    /// Borrows the installed tagged ASN.1 value. The public layout and set0
+    /// construction paths permit this owned slot to be null.
+    #[must_use]
+    pub fn value(&self) -> Option<Asn1TypeRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer from the live shared
+        // handle. A non-null value remains owned by this record for `'a`.
+        unsafe {
+            let value = ptr::addr_of!((*self.as_ptr()).value).read();
+            Asn1TypeRef::from_ptr(value)
+        }
+    }
+}
+
+impl OtherNameMut<'_> {
+    /// Exclusively reborrows the installed tagged ASN.1 value.
+    #[must_use]
+    pub fn value_mut(&mut self) -> Option<Asn1TypeMut<'_>> {
+        // SAFETY: this exclusive record handle permits an exclusive reborrow
+        // of its uniquely owned value for the duration of `&mut self`.
+        unsafe {
+            let value = ptr::addr_of!((*self.as_mut_ptr()).value).read();
+            Asn1TypeMut::from_ptr(value)
+        }
+    }
+
+    /// Replaces the owned object identifier and releases the previous value.
+    pub fn set_type_id(&mut self, type_id: Option<CBox<Asn1Object>>) {
+        let type_id = type_id.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // the old release obligation transfers to the temporary owner below.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).type_id).replace(type_id) };
+        // SAFETY: a detached non-null object remains valid for its registered
+        // destructor, which intentionally ignores built-in static objects.
+        drop(unsafe { CBox::<Asn1Object>::from_raw(previous) });
+    }
+
+    /// Takes the owned object identifier, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_type_id(&mut self) -> Option<CBox<Asn1Object>> {
+        // SAFETY: the exclusive handle permits clearing the slot and moving
+        // its one `ASN1_OBJECT_free` obligation into the returned owner.
+        let type_id =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).type_id).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null object remains a complete ASN.1 object.
+        unsafe { CBox::from_raw(type_id) }
+    }
+
+    /// Replaces the owned tagged value and releases the previous value.
+    pub fn set_value(&mut self, value: Option<CBox<Asn1Type>>) {
+        let value = value.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // the prior release obligation transfers to the temporary owner.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).value).replace(value) };
+        // SAFETY: a detached non-null value remains a complete `ASN1_TYPE`.
+        drop(unsafe { CBox::<Asn1Type>::from_raw(previous) });
+    }
+
+    /// Takes the owned tagged value, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_value(&mut self) -> Option<CBox<Asn1Type>> {
+        // SAFETY: the exclusive handle permits clearing the slot and moving
+        // its one `ASN1_TYPE_free` obligation into the returned owner.
+        let value =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).value).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null value remains a complete `ASN1_TYPE`.
+        unsafe { CBox::from_raw(value) }
+    }
+}
+
 #[cfg(test)]
 mod wrapped_x509v3_tests {
     use core::mem::{align_of, size_of};
@@ -1109,6 +1220,7 @@ mod wrapped_x509v3_tests {
     use ffibox::{CCell, CCloned, CDropped};
 
     use super::*;
+    use crate::asn1::openssl_asn1::{Asn1TypeKind, Asn1TypeValue};
     use crate::stack::stack::{OPENSSL_sk_new_null, OPENSSL_sk_num};
     use crate::x509::x509_internal::{GeneralName, X509NameEntry};
 
@@ -1262,5 +1374,68 @@ mod wrapped_x509v3_tests {
                 .expect("owned excluded stack"),
         );
         assert!(constraints.as_ref().excluded_subtrees().is_none());
+    }
+
+    #[test]
+    fn other_name_owns_and_reborrows_both_fields() {
+        assert_drop_owner::<OtherName>();
+        assert_eq!(size_of::<OtherName>(), size_of::<ffi::otherName_st>());
+        assert_eq!(align_of::<OtherName>(), align_of::<ffi::otherName_st>());
+        assert_eq!(
+            size_of::<CBox<OtherName>>(),
+            size_of::<*mut ffi::otherName_st>()
+        );
+
+        let mut other_name = OtherName::new().expect("OTHERNAME_new");
+        assert!(other_name.as_ref().type_id().is_some());
+        assert!(matches!(
+            other_name.as_ref().value().map(|value| value.value()),
+            Some(Asn1TypeValue::Undefined)
+        ));
+
+        // SAFETY: the literal is NUL terminated and OpenSSL returns null or a
+        // fresh, fully initialized dynamic object identifier.
+        let raw_type_id = unsafe { ffi::OBJ_txt2obj(c"1.3.6.1.4.1.55555.31337".as_ptr(), 1) };
+        // SAFETY: the fresh non-null result transfers one free obligation.
+        let type_id = unsafe { CBox::<Asn1Object>::from_raw(raw_type_id) }.expect("ASN1 object");
+        other_name.as_mut().set_type_id(Some(type_id));
+        assert_eq!(
+            other_name.as_ref().type_id().map(|value| value.as_ptr()),
+            Some(raw_type_id.cast_const())
+        );
+        let type_id = other_name
+            .as_mut()
+            .take_type_id()
+            .expect("installed object identifier");
+        assert!(other_name.as_ref().type_id().is_none());
+        other_name.as_mut().set_type_id(Some(type_id));
+
+        let mut value = Asn1Type::new().expect("ASN1_TYPE_new");
+        value.as_mut().set_boolean(true);
+        let raw_value = value.as_ptr();
+        other_name.as_mut().set_value(Some(value));
+        assert_eq!(
+            other_name.as_ref().value().map(|value| value.as_ptr()),
+            Some(raw_value.cast_const())
+        );
+        assert_eq!(
+            other_name.as_ref().value().map(|value| value.kind()),
+            Some(Asn1TypeKind::Boolean)
+        );
+        other_name
+            .as_mut()
+            .value_mut()
+            .expect("installed value")
+            .set_null();
+        assert_eq!(
+            other_name.as_ref().value().map(|value| value.kind()),
+            Some(Asn1TypeKind::Null)
+        );
+        let value = other_name
+            .as_mut()
+            .take_value()
+            .expect("installed tagged value");
+        assert!(other_name.as_ref().value().is_none());
+        other_name.as_mut().set_value(Some(value));
     }
 }

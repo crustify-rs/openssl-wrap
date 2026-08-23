@@ -2807,6 +2807,43 @@
      }
     }
    ]
+  },
+  {
+   "name": "otherName_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "OTHERNAME is an ASN.1 SEQUENCE owning its object identifier and tagged value. OTHERNAME_free releases both fields and the record; public set0 paths transfer replacement pointers, and the public layout permits nullable slots.",
+   "fields": [
+    {
+     "name": "type_id",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned OTHERNAME object identifier slot. ASN.1 sequence teardown calls ASN1_OBJECT_free; the default and other built-in objects are valid because that destructor is a no-op for non-dynamic objects. Codebase users read but do not mutate the installed ASN1_OBJECT pointee, and public set0 construction can install NULL."
+     }
+    },
+    {
+     "name": "value",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned ASN1_TYPE value slot. OTHERNAME ASN.1 sequence teardown releases it, while construction paths replace or populate the discriminator and active payload in place. The public layout and GENERAL_NAME_set0_othername permit NULL."
+     }
+    }
+   ]
   }
  ],
  "symbols": [
@@ -17398,6 +17435,51 @@
       "nullable": true,
       "mutable": true,
       "note": "Optional output-pointer slot: null requests a length; a null inner pointer requests an owned allocation; otherwise C advances within caller storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OTHERNAME_new",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh fully initialized OTHERNAME allocation, or NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "OTHERNAME_free",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a complete OTHERNAME, releases its owned type_id and value through the ASN.1 template, then releases the record allocation; NULL is accepted."
      }
     }
    ]
