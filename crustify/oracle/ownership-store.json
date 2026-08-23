@@ -2933,6 +2933,80 @@
      }
     }
    ]
+  },
+  {
+   "name": "AUTHORITY_KEYID_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "All three pointers are optional owned ASN.1 template fields. v2i_AUTHORITY_KEYID transfers fresh allocations into them, and the generated ASN1_ITEM destructor recursively releases each non-null field.",
+   "fields": [
+    {
+     "name": "issuer",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 SEQUENCE OF GENERAL_NAME. AUTHORITY_KEYID's ASN.1 template recursively owns and pop-frees the generated stack and every element."
+     }
+    },
+    {
+     "name": "keyid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN1_OCTET_STRING allocated independently and transferred into the record; AUTHORITY_KEYID_free recursively releases it."
+     }
+    },
+    {
+     "name": "serial",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN1_INTEGER allocated independently and transferred into the record; AUTHORITY_KEYID_free recursively releases it."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BASIC_CONSTRAINTS_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "pathlen is an optional owned ASN.1 template field; ca is an inline scalar.",
+   "fields": [
+    {
+     "name": "pathlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN1_INTEGER returned through X509V3_get_value_int and transferred into the record; the generated BASIC_CONSTRAINTS ASN.1 destructor releases it."
+     }
+    }
+   ]
   }
  ],
  "symbols": [
@@ -17736,6 +17810,96 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
+    }
+   }
+  },
+  {
+   "name": "AUTHORITY_KEYID_free",
+   "defined_in": "crypto/x509/v3_akeya.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes an optional complete ASN.1 sequence and recursively frees its fields and allocation; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "AUTHORITY_KEYID_new",
+   "defined_in": "crypto/x509/v3_akeya.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "ASN1_item_new returns NULL on allocation failure or a fresh complete sequence owned by the caller."
+    }
+   }
+  },
+  {
+   "name": "BASIC_CONSTRAINTS_free",
+   "defined_in": "crypto/x509/v3_bcons.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes an optional complete ASN.1 sequence and recursively frees its fields and allocation; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "BASIC_CONSTRAINTS_new",
+   "defined_in": "crypto/x509/v3_bcons.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "ASN1_item_new returns NULL on allocation failure or a fresh complete sequence owned by the caller."
     }
    }
   }

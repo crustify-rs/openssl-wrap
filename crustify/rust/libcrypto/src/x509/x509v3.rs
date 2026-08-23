@@ -1827,3 +1827,368 @@ mod distribution_point_and_edi_tests {
         edi.as_mut().set_name_assigner(Some(assigner));
     }
 }
+define_ctype!(
+    /// Wraps: AUTHORITY_KEYID_st
+    ///
+    /// Layout-compatible storage for an authority-key-identifier sequence.
+    /// Each optional pointer is independently owned by the record; borrowed
+    /// access stays lifetime-bound through [`AuthorityKeyIdRef`] and
+    /// [`AuthorityKeyIdMut`] without forming Rust references over C storage.
+    AuthorityKeyId,
+    AuthorityKeyIdRef,
+    AuthorityKeyIdMut,
+    ffi::AUTHORITY_KEYID_st
+);
+
+// The generated ASN.1 destructor releases all three optional fields, including
+// every GENERAL_NAME in `issuer`, and then releases the record allocation.
+impl_dropped!(
+    AuthorityKeyId,
+    ffi::AUTHORITY_KEYID_st,
+    ffi::AUTHORITY_KEYID_free
+);
+
+impl AuthorityKeyId {
+    /// Allocates an empty authority-key-identifier sequence.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
+        // exactly one `AUTHORITY_KEYID_free` obligation.
+        unsafe { CBox::from_raw(ffi::AUTHORITY_KEYID_new()) }
+    }
+}
+
+impl<'a> AuthorityKeyIdRef<'a> {
+    /// Wraps: AUTHORITY_KEYID_st.issuer
+    ///
+    /// Borrows the optional issuer-name sequence. The enclosing record keeps
+    /// the stack, its pointer array, and every general name alive.
+    #[must_use]
+    pub fn issuer(&self) -> Option<GeneralNameStackRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer
+        // without forming a reference. The enclosing handle supplies `'a`.
+        let issuer = unsafe { ptr::addr_of!((*self.as_ptr()).issuer).read() };
+        // SAFETY: the generated stack tag erases to the common stack layout,
+        // and a non-null value remains owned by this record for `'a`.
+        unsafe { GeneralNameStackRef::from_ptr(issuer.cast()) }
+    }
+
+    /// Wraps: AUTHORITY_KEYID_st.serial
+    ///
+    /// Borrows the optional ASN.1 serial number.
+    #[must_use]
+    pub fn serial(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null ASN1_INTEGER is the common ASN.1 string layout and remains
+        // alive for the enclosing handle's `'a`.
+        let serial = unsafe { ptr::addr_of!((*self.as_ptr()).serial).read() };
+        // SAFETY: the ownership and lifetime are established above.
+        unsafe { Asn1StringRef::from_ptr(serial) }
+    }
+
+    /// Wraps: AUTHORITY_KEYID_st.keyid
+    ///
+    /// Borrows the optional ASN.1 octet string containing the key identifier.
+    #[must_use]
+    pub fn key_id(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null ASN1_OCTET_STRING uses the common ASN.1 string layout and
+        // remains alive for the enclosing handle's `'a`.
+        let key_id = unsafe { ptr::addr_of!((*self.as_ptr()).keyid).read() };
+        // SAFETY: the ownership and lifetime are established above.
+        unsafe { Asn1StringRef::from_ptr(key_id) }
+    }
+}
+
+impl AuthorityKeyIdMut<'_> {
+    /// Exclusively reborrows the optional issuer-name sequence.
+    #[must_use]
+    pub fn issuer_mut(&mut self) -> Option<GeneralNameStackMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // its owned sequence for the duration of this call's borrow.
+        let issuer = unsafe { ptr::addr_of!((*self.as_mut_ptr()).issuer).read() };
+        // SAFETY: the generated tag erases to the common stack layout and the
+        // result is bounded by the exclusive reborrow above.
+        unsafe { GeneralNameStackMut::from_ptr(issuer.cast()) }
+    }
+
+    /// Exclusively reborrows the optional serial number.
+    #[must_use]
+    pub fn serial_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // its owned ASN1_INTEGER for the duration of this borrow.
+        let serial = unsafe { ptr::addr_of!((*self.as_mut_ptr()).serial).read() };
+        // SAFETY: ASN1_INTEGER has the wrapped ASN.1 string layout.
+        unsafe { Asn1StringMut::from_ptr(serial) }
+    }
+
+    /// Exclusively reborrows the optional key identifier.
+    #[must_use]
+    pub fn key_id_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // its owned ASN1_OCTET_STRING for the duration of this borrow.
+        let key_id = unsafe { ptr::addr_of!((*self.as_mut_ptr()).keyid).read() };
+        // SAFETY: ASN1_OCTET_STRING has the wrapped ASN.1 string layout.
+        unsafe { Asn1StringMut::from_ptr(key_id) }
+    }
+
+    /// Replaces the owned issuer sequence and releases the previous sequence
+    /// together with every name it contains.
+    pub fn set_issuer(&mut self, issuer: Option<GeneralNames>) {
+        let issuer = issuer.map_or(ptr::null_mut(), |issuer| issuer.into_raw().0.cast());
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // ownership of the detached sequence transfers to the temporary owner.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).issuer).replace(issuer) };
+        // SAFETY: a detached non-null sequence and each of its elements carried
+        // exactly the full `GENERAL_NAMES_free` obligation.
+        drop(unsafe { GeneralNames::from_raw(previous.cast(), GeneralNamesFree) });
+    }
+
+    /// Takes the owned issuer sequence, leaving the optional slot empty.
+    #[must_use]
+    pub fn take_issuer(&mut self) -> Option<GeneralNames> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique sequence ownership into the returned owner.
+        let issuer =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).issuer).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null value owns the complete sequence and all
+        // of its elements under the full GENERAL_NAMES policy.
+        unsafe { GeneralNames::from_raw(issuer.cast(), GeneralNamesFree) }
+    }
+
+    /// Replaces the owned serial number and releases the previous value.
+    pub fn set_serial(&mut self, serial: Option<CBox<Asn1String>>) {
+        let serial = serial.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).serial).replace(serial) };
+        // SAFETY: a detached non-null ASN1_INTEGER is a complete independently
+        // allocated ASN.1 string carrying one ordinary free obligation.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned serial number, leaving the optional slot empty.
+    #[must_use]
+    pub fn take_serial(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle transfers the owned pointer out while
+        // leaving a valid null optional field.
+        let serial =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).serial).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null ASN1_INTEGER is a complete ASN.1 string.
+        unsafe { CBox::from_raw(serial) }
+    }
+
+    /// Replaces the owned key identifier and releases the previous value.
+    pub fn set_key_id(&mut self, key_id: Option<CBox<Asn1String>>) {
+        let key_id = key_id.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).keyid).replace(key_id) };
+        // SAFETY: a detached non-null ASN1_OCTET_STRING is a complete
+        // independently allocated ASN.1 string.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned key identifier, leaving the optional slot empty.
+    #[must_use]
+    pub fn take_key_id(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle transfers the owned pointer out while
+        // leaving a valid null optional field.
+        let key_id =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).keyid).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null ASN1_OCTET_STRING is a complete string.
+        unsafe { CBox::from_raw(key_id) }
+    }
+}
+
+define_ctype!(
+    /// Wraps: BASIC_CONSTRAINTS_st
+    ///
+    /// Layout-compatible storage for an X.509 basic-constraints sequence. Its
+    /// path-length integer is optional and owned by the record.
+    BasicConstraints,
+    BasicConstraintsRef,
+    BasicConstraintsMut,
+    ffi::BASIC_CONSTRAINTS_st
+);
+
+// The generated ASN.1 destructor releases the optional path-length integer and
+// then the basic-constraints allocation.
+impl_dropped!(
+    BasicConstraints,
+    ffi::BASIC_CONSTRAINTS_st,
+    ffi::BASIC_CONSTRAINTS_free
+);
+
+impl BasicConstraints {
+    /// Allocates an empty basic-constraints sequence.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
+        // exactly one `BASIC_CONSTRAINTS_free` obligation.
+        unsafe { CBox::from_raw(ffi::BASIC_CONSTRAINTS_new()) }
+    }
+}
+
+impl<'a> BasicConstraintsRef<'a> {
+    /// Wraps: BASIC_CONSTRAINTS_st.ca
+    ///
+    /// Reports whether the certificate-authority flag is set. OpenSSL treats
+    /// every nonzero representation of this ASN.1 boolean as true.
+    #[must_use]
+    pub fn is_ca(&self) -> bool {
+        // SAFETY: raw-place projection copies the initialized integer without
+        // forming a reference over memory OpenSSL may mutate.
+        unsafe { ptr::addr_of!((*self.as_ptr()).ca).read() != 0 }
+    }
+
+    /// Wraps: BASIC_CONSTRAINTS_st.pathlen
+    ///
+    /// Borrows the optional ASN.1 path-length integer.
+    #[must_use]
+    pub fn path_len(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null ASN1_INTEGER remains alive for this handle's borrow.
+        let path_len = unsafe { ptr::addr_of!((*self.as_ptr()).pathlen).read() };
+        // SAFETY: ASN1_INTEGER has the common wrapped ASN.1 string layout.
+        unsafe { Asn1StringRef::from_ptr(path_len) }
+    }
+}
+
+impl BasicConstraintsMut<'_> {
+    /// Sets the certificate-authority flag to OpenSSL's canonical false or
+    /// true integer representation.
+    pub fn set_ca(&mut self, value: bool) {
+        // SAFETY: raw-place projection writes the initialized scalar through
+        // the exclusive record handle without forming a reference.
+        unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).ca).write(i32::from(value)) }
+    }
+
+    /// Exclusively reborrows the optional path-length integer.
+    #[must_use]
+    pub fn path_len_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // its owned ASN1_INTEGER for the duration of this borrow.
+        let path_len = unsafe { ptr::addr_of!((*self.as_mut_ptr()).pathlen).read() };
+        // SAFETY: ASN1_INTEGER has the common wrapped ASN.1 string layout.
+        unsafe { Asn1StringMut::from_ptr(path_len) }
+    }
+
+    /// Replaces the owned path-length integer and releases the previous value.
+    pub fn set_path_len(&mut self, path_len: Option<CBox<Asn1String>>) {
+        let path_len = path_len.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).pathlen).replace(path_len) };
+        // SAFETY: a detached non-null ASN1_INTEGER is a complete independently
+        // allocated ASN.1 string carrying one free obligation.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned path-length integer, leaving the optional slot empty.
+    #[must_use]
+    pub fn take_path_len(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle transfers the owned pointer out and
+        // leaves a valid null optional field.
+        let path_len =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).pathlen).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null ASN1_INTEGER is a complete ASN.1 string.
+        unsafe { CBox::from_raw(path_len) }
+    }
+}
+
+#[cfg(test)]
+mod authority_and_basic_constraints_tests {
+    use core::mem::{align_of, size_of};
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+    use crate::asn1::asn1_lib::ASN1_STRING_type_new;
+    use crate::stack::stack::{OPENSSL_sk_new_null, OPENSSL_sk_num};
+    use crate::x509::x509_internal::GeneralName;
+
+    fn assert_drop_owner<T: CCell + CDropped>() {}
+
+    fn empty_general_names() -> GeneralNames {
+        let stack = OPENSSL_sk_new_null::<GeneralName>().expect("GENERAL_NAMES stack");
+        let raw = stack.into_raw();
+        // SAFETY: this fresh stack is empty, so the full GENERAL_NAMES policy
+        // has no element ownership to establish and owns the stack allocation.
+        unsafe { CBoxWith::from_raw(raw, GeneralNamesFree) }
+            .expect("an owning stack has a non-null pointer")
+    }
+
+    #[test]
+    fn authority_key_id_owns_and_reborrows_all_optional_fields() {
+        assert_drop_owner::<AuthorityKeyId>();
+        assert_eq!(
+            size_of::<AuthorityKeyId>(),
+            size_of::<ffi::AUTHORITY_KEYID_st>()
+        );
+        assert_eq!(
+            align_of::<AuthorityKeyId>(),
+            align_of::<ffi::AUTHORITY_KEYID_st>()
+        );
+
+        let mut authority = AuthorityKeyId::new().expect("AUTHORITY_KEYID_new");
+        assert!(authority.as_ref().issuer().is_none());
+        assert!(authority.as_ref().serial().is_none());
+        assert!(authority.as_ref().key_id().is_none());
+
+        authority.as_mut().set_issuer(Some(empty_general_names()));
+        authority
+            .as_mut()
+            .set_serial(ASN1_STRING_type_new(ffi::V_ASN1_INTEGER as i32));
+        authority
+            .as_mut()
+            .set_key_id(ASN1_STRING_type_new(ffi::V_ASN1_OCTET_STRING as i32));
+
+        assert_eq!(OPENSSL_sk_num(authority.as_ref().issuer()), Some(0));
+        assert!(authority.as_mut().issuer_mut().is_some());
+        assert!(authority.as_mut().serial_mut().is_some());
+        assert!(authority.as_mut().key_id_mut().is_some());
+
+        let issuer = authority.as_mut().take_issuer().expect("owned issuer");
+        let serial = authority.as_mut().take_serial().expect("owned serial");
+        let key_id = authority.as_mut().take_key_id().expect("owned key id");
+        assert!(authority.as_ref().issuer().is_none());
+        assert!(authority.as_ref().serial().is_none());
+        assert!(authority.as_ref().key_id().is_none());
+        authority.as_mut().set_issuer(Some(issuer));
+        authority.as_mut().set_serial(Some(serial));
+        authority.as_mut().set_key_id(Some(key_id));
+    }
+
+    #[test]
+    fn basic_constraints_preserves_scalar_and_owned_path_length() {
+        assert_drop_owner::<BasicConstraints>();
+        assert_eq!(
+            size_of::<BasicConstraints>(),
+            size_of::<ffi::BASIC_CONSTRAINTS_st>()
+        );
+        assert_eq!(
+            align_of::<BasicConstraints>(),
+            align_of::<ffi::BASIC_CONSTRAINTS_st>()
+        );
+
+        let mut constraints = BasicConstraints::new().expect("BASIC_CONSTRAINTS_new");
+        assert!(!constraints.as_ref().is_ca());
+        assert!(constraints.as_ref().path_len().is_none());
+        constraints.as_mut().set_ca(true);
+        assert!(constraints.as_ref().is_ca());
+
+        let path_len = ASN1_STRING_type_new(ffi::V_ASN1_INTEGER as i32).expect("ASN1_INTEGER");
+        let path_len_raw = path_len.as_ptr();
+        constraints.as_mut().set_path_len(Some(path_len));
+        assert_eq!(
+            constraints.as_ref().path_len().map(|value| value.as_ptr()),
+            Some(path_len_raw.cast_const())
+        );
+        assert!(constraints.as_mut().path_len_mut().is_some());
+        let path_len = constraints
+            .as_mut()
+            .take_path_len()
+            .expect("owned path length");
+        assert_eq!(path_len.as_ptr(), path_len_raw);
+        assert!(constraints.as_ref().path_len().is_none());
+        constraints.as_mut().set_path_len(Some(path_len));
+    }
+}
