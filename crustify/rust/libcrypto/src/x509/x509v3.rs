@@ -104,6 +104,37 @@ impl AccessDescriptionStack {
     }
 }
 
+/// Opaque element marker for the `POLICYINFO` records stored in this stack.
+///
+/// `POLICYINFO` has its own authored type-route work and is not part of this
+/// worklist. Until that wrapper is available, this unconstructible marker
+/// retains the generated stack's element type without exposing or
+/// dereferencing the record's layout.
+#[repr(C)]
+pub struct PolicyInfo {
+    _opaque: [u8; 0],
+}
+
+/// Wraps: stack_st_POLICYINFO
+///
+/// Typed view of OpenSSL's `STACK_OF(POLICYINFO)`, also published as
+/// `CERTIFICATEPOLICIES`. The generated C tag is only a forward declaration
+/// and every operation erases it to `OPENSSL_STACK *`, so this is the generic
+/// container with its policy-info element type retained.
+///
+/// A plain stack owns its pointer array, not the policy-info records. Element
+/// ownership can instead be selected explicitly with [`Stack::into_pop_free`].
+pub type PolicyInfoStack = Stack<PolicyInfo>;
+
+/// Shared borrowed handle to a `STACK_OF(POLICYINFO)`.
+pub type PolicyInfoStackRef<'a> = StackRef<'a, PolicyInfo>;
+
+/// Exclusive borrowed handle to a `STACK_OF(POLICYINFO)`.
+pub type PolicyInfoStackMut<'a> = StackMut<'a, PolicyInfo>;
+
+/// Rust spelling of OpenSSL's `CERTIFICATEPOLICIES` typedef.
+pub type CertificatePolicies = PolicyInfoStack;
+
 #[cfg(test)]
 mod tests {
     use core::mem::size_of;
@@ -216,5 +247,29 @@ mod tests {
             size_of::<AuthorityInfoAccess>(),
             size_of::<*mut ffi::OPENSSL_STACK>()
         );
+    }
+
+    #[test]
+    fn policy_info_stack_produces_typed_borrows() {
+        assert_owned_cloneable_cell::<PolicyInfoStack>();
+        assert_eq!(
+            size_of::<CBox<PolicyInfoStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<PolicyInfoStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<PolicyInfoStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+
+        let mut stack: CBox<CertificatePolicies> = OPENSSL_sk_new_null().expect("POLICYINFO stack");
+        let raw = stack.as_ptr();
+        let shared: PolicyInfoStackRef<'_> = stack.as_ref();
+        assert_eq!(shared.as_ptr(), raw.cast_const());
+        let exclusive: PolicyInfoStackMut<'_> = stack.as_mut();
+        assert_eq!(OPENSSL_sk_num(Some(exclusive.as_ref())), Some(0));
     }
 }
