@@ -1694,6 +1694,340 @@
    ]
   },
   {
+   "name": "ossl_lib_ctx_st",
+   "defined_in": "crypto/context.c",
+   "_comment_agent": "Reviewed against crypto/context.c for the ossl_lib_ctx_st wrapper. No field stores a reference count: the type has exactly one release primitive, OSSL_LIB_CTX_free, and no up_ref or dup anywhere in the tree, so its Rust lifecycle is CDropped alone. OSSL_LIB_CTX_free tolerates null and silently retains a context that is the caller's current default (ossl_lib_ctx_is_default_nocreate covers both the thread-local default set through OSSL_LIB_CTX_set0_default and the static default_context_int), so freeing a default leaks rather than corrupting. The static default_context_int is initialized in place by context_init() through RUN_ONCE and torn down only by ossl_lib_ctx_default_deinit(); it is never heap-allocated. Every pointer field except ssl_imod is owned by the context and released in context_deinit_objs()/context_deinit(); ssl_imod is a borrowed back-reference into conf_mod.c's module list. The void * fields are type-erased subsystem state, each with its own ossl_*_new/ossl_*_free pair, reachable from other translation units only through ossl_lib_ctx_get_data(ctx, index); no consumer outside crypto/context.c touches a field directly, which is why the type stays opaque in the public-API view (include/openssl/types.h only forward-declares it). The casted to/from openssl_core_ctx_st edge is the provider seam: an OSSL_LIB_CTX * is handed to providers as the erased OSSL_CORE_CTX * handle and cast back, with no layout requirement on either side.",
+   "fields": [
+    {
+     "name": "bio_core",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_bio_core_globals_new(ctx) / ossl_bio_core_globals_free() (non-FIPS); holds the core BIO dispatch installed by ossl_bio_init_core(). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "child_provider",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_child_prov_ctx_new(ctx) / ossl_child_prov_ctx_free() (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "comp_methods",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned STACK_OF(SSL_COMP) from ossl_load_builtin_compressions(), released by ossl_free_compression_methods_int() in context_deinit_objs(), which sk_SSL_COMP_pop_free()s the container together with its heap SSL_COMP elements. The one init slot whose failure is not fatal: context_init() does not check the result, so a fully built context may still hold null here (always null under OPENSSL_NO_COMP or when sk_SSL_COMP_new() fails)."
+     }
+    },
+    {
+     "name": "decoder_cache",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_decoder_cache_new(ctx) / ossl_decoder_cache_free() (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "decoder_store",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_method_store_new(ctx) / ossl_method_store_free(). Decoder method store (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "drbg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased DRBG state: ossl_rand_ctx_new(ctx) / ossl_rand_ctx_free(). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context. Additionally ossl_release_default_drbg_ctx() frees and nulls this field early for the process-global default context, so a null drbg is reachable on a live context."
+     }
+    },
+    {
+     "name": "drbg_nonce",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_prov_drbg_nonce_ctx_new(ctx) / ossl_prov_drbg_nonce_ctx_free(). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "encoder_store",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_method_store_new(ctx) / ossl_method_store_free(). Encoder method store (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "evp_method_store",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_method_store_new(ctx) / ossl_method_store_free(). Erased EVP method store; released before the provider store. Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "global_properties",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_ctx_global_properties_new(ctx) / ossl_ctx_global_properties_free(). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "indicator_cb",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_indicator_set_callback_new(ctx) / ossl_indicator_set_callback_free() (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "CRYPTO_THREAD_lock_new() in context_init(); CRYPTO_THREAD_lock_free() in context_deinit() (which nulls it) and on context_init()'s err path. The context is the sole owner. Mutable: ossl_lib_ctx_write_lock/read_lock/unlock mutate the lock object through this pointer. Null before init and after deinit; the lock helpers hand a null straight to CRYPTO_THREAD_*_lock."
+     }
+    },
+    {
+     "name": "namemap",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_stored_namemap_new(ctx) / ossl_stored_namemap_free(). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "property_defns",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased LHASH_OF(PROPERTY_DEFN_ELEM): ossl_property_defns_new(ctx) / ossl_property_defns_free(), which doalls property_defn_free over the owned elements before freeing the table. Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     },
+     "locked_by": {
+      "lock": "lock",
+      "lock_op": [
+       "ossl_lib_ctx_read_lock",
+       "ossl_lib_ctx_write_lock"
+      ],
+      "unlock_op": [
+       "ossl_lib_ctx_unlock"
+      ]
+     }
+    },
+    {
+     "name": "property_string_data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_property_string_data_new(ctx) / ossl_property_string_data_free(). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "provider_conf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_prov_conf_ctx_new(ctx) / ossl_prov_conf_ctx_free() (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "provider_store",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_provider_store_new(ctx) / ossl_provider_store_free(); released before the child-provider data. Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "self_test_cb",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_self_test_set_callback_new(ctx) / ossl_self_test_set_callback_free() (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "ssl_imod",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed back-reference, not owned: the CONF_IMODULE belongs to conf_mod.c's static initialized_modules stack and is freed by module_finish(). ossl_lib_ctx_attach_ssl_conf_imodule() (called from crypto/conf/conf_ssl.c ssl_module_init) installs the symmetric pair ctx->ssl_imod = md / md->libctx = ctx, and refuses to overwrite a non-null slot; ossl_lib_ctx_detach_ssl_conf_imodule() clears both halves and is called from context_deinit() and from ssl_module_close(). Mutable: detach writes md->libctx through this pointer."
+     }
+    },
+    {
+     "name": "store_loader_store",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_method_store_new(ctx) / ossl_method_store_free(). OSSL_STORE loader method store (non-FIPS). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    },
+    {
+     "name": "threads",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned, type-erased subsystem state reachable only through ossl_lib_ctx_get_data(). ossl_threads_ctx_new(ctx) / ossl_threads_ctx_free() (thread pool builds). Allocated by context_init() and released by context_deinit_objs(), which also nulls the slot; context_init()'s err path runs the same disposal and memsets the header, so the field is null outside a fully built context."
+     }
+    }
+   ]
+  },
+  {
    "name": "stack_st",
    "defined_in": "crypto/stack/stack.c",
    "_comment_agent": "The public OPENSSL_STACK is opaque. Its private data field owns the resizable pointer array, while each type-erased element is either caller-borrowed or transferred for later OPENSSL_sk_pop_free according to the API path. Plain OPENSSL_sk_free never frees elements. Comparator and thunk fields are optional borrowed executable-code pointers with static lifetime.",
@@ -11862,10 +12196,30 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "For a heap context, OSSL_LIB_CTX_free deinitializes and releases the allocation. NULL and the process-global default context are accepted and retained, so the general C contract also has a static borrowed path; Rust owners only adopt constructor results."
+      "note": "The type's only release primitive: for a heap context it runs ossl_provider_deinit_child (child contexts), context_deinit and OPENSSL_free, and no other path frees an OSSL_LIB_CTX. It is total rather than exclusively owning: it returns early for NULL and for ossl_lib_ctx_is_default_nocreate(ctx), which matches BOTH the static default_context_int AND any context the calling thread installed as its default through OSSL_LIB_CTX_set0_default. The second case is the corner: that context is an ordinary heap context the caller owns, so the retained path is not limited to the process-global default, and freeing a current default leaks the context instead of corrupting it. The type has no reference count and no up_ref or dup, so this is the whole lifecycle. Rust owners only adopt constructor results and never the default, which keeps the owning path exact."
      }
     }
    ]
+  },
+  {
+   "name": "OSSL_LIB_CTX_get0_global_default",
+   "defined_in": "crypto/context.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns &default_context_int, the file-static process-global context that DEFINE_RUN_ONCE_STATIC(default_context_do_init) initializes in place, so the get0 name matches the observed contract: no ownership is transferred and the caller must not free it. OSSL_LIB_CTX_free returns early for this pointer (ossl_lib_ctx_is_default_nocreate), and the only teardown is ossl_lib_ctx_default_deinit() during library cleanup. Mutable: callers pass it on as a plain OSSL_LIB_CTX * and the subsystem stores reached through it are mutated under ctx->lock. NULL only when the thread-key or context RUN_ONCE initialization fails."
+    }
+   }
   },
   {
    "name": "OSSL_LIB_CTX_new",

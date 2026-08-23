@@ -143,6 +143,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "OPENSSL_sk_dup",
     "OPENSSL_sk_free",
     "OSSL_LIB_CTX_free",
+    "OSSL_LIB_CTX_get0_global_default",
     "OSSL_LIB_CTX_new",
     "ASN1_STRING_TABLE_add",
     "ASN1_STRING_get_default_mask",
