@@ -95,16 +95,11 @@ impl_dropped!(X509, ffi::x509_st, ffi::X509_free);
 // creating an additional ownership debt.
 impl_cloned!(X509, ffi::x509_st, up_ref = ffi::X509_up_ref);
 
-impl X509Ref<'_> {
+impl<'a> X509Ref<'a> {
     /// Create an independently owned deep copy of this certificate.
     #[must_use]
-    pub fn try_dup(&self) -> Option<ffibox::CBox<X509>> {
-        // SAFETY: the handle carries a live shared borrow and `X509_dup` only
-        // reads its source, returning null or a fresh fully initialized X509.
-        let duplicate = unsafe { ffi::X509_dup(self.as_ptr()) };
-        // SAFETY: a non-null result transfers one independent `X509_free`
-        // obligation to the returned owner.
-        unsafe { ffibox::CBox::from_raw(duplicate) }
+    pub fn try_dup(self) -> Option<crate::x509::x_x509::BorrowedX509<'a>> {
+        crate::x509::x_x509::X509_dup(Some(self))
     }
 }
 

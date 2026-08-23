@@ -1,7 +1,14 @@
 //! Wrappers assigned from `crypto/x509/x_pubkey.c`.
 
-use ffibox::{define_ctype, impl_cloned, impl_dropped};
+use core::ffi::{CStr, c_long, c_void};
+use core::marker::PhantomData;
+use core::ptr;
+
+use ffibox::{CBox, CType, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
+
+use crate::bio::context::OsslLibCtxRef;
+use crate::evp::evp::{EvpPkey, EvpPkeyRef};
 
 define_ctype!(
     /// Wraps: X509_pubkey_st
@@ -91,6 +98,8 @@ mod tests {
         // `algorithm` and `encoded` are fresh matching allocations, and this
         // successful set0 call transfers both into the pubkey.
         assert_eq!(
+            // SAFETY: the arguments satisfy the ownership and extent contract
+            // established immediately above.
             unsafe {
                 ffi::X509_PUBKEY_set0_param(
                     pubkey.as_mut().as_mut_ptr(),
@@ -106,6 +115,9 @@ mod tests {
 
         assert_eq!(pubkey.as_ref().as_ptr(), raw.cast_const());
         assert_eq!(pubkey.as_mut().as_mut_ptr(), raw);
+        assert!(i2d_X509_PUBKEY(pubkey.as_ref()).is_some());
+        assert!(X509_PUBKEY_get0(pubkey.as_ref()).is_none());
+        assert!(X509_PUBKEY_get(pubkey.as_ref()).is_none());
 
         let duplicate = pubkey.try_clone().expect("X509_PUBKEY_dup");
         assert_ne!(duplicate.as_ptr(), raw);
@@ -125,5 +137,148 @@ mod tests {
             core::mem::size_of::<CBox<X509Pubkey>>(),
             core::mem::size_of::<*mut ffi::X509_pubkey_st>()
         );
+    }
+}
+
+/// An owned `X509_PUBKEY` whose library context is borrowed for `'a`.
+#[must_use = "dropping the owner releases the public-key container"]
+pub struct BorrowedX509Pubkey<'a> {
+    inner: CBox<X509Pubkey>,
+    borrow: PhantomData<&'a CType<c_void>>,
+}
+
+impl BorrowedX509Pubkey<'_> {
+    unsafe fn from_raw(raw: *mut ffi::X509_PUBKEY) -> Option<Self> {
+        // SAFETY: the caller transfers one freshly constructed container.
+        unsafe { CBox::from_raw(raw) }.map(|inner| Self {
+            inner,
+            borrow: PhantomData,
+        })
+    }
+
+    /// Borrow the public-key container without write access.
+    #[must_use]
+    pub fn as_ref(&self) -> X509PubkeyRef<'_> {
+        self.inner.as_ref()
+    }
+
+    /// Exclusively borrow the public-key container.
+    #[must_use]
+    pub fn as_mut(&mut self) -> X509PubkeyMut<'_> {
+        self.inner.as_mut()
+    }
+}
+
+/// Wraps: X509_PUBKEY_free
+/// Consumes one complete public-key container.
+#[allow(non_snake_case)]
+pub fn X509_PUBKEY_free(public_key: CBox<X509Pubkey>) {
+    drop(public_key);
+}
+
+/// Wraps: X509_PUBKEY_get
+/// Returns a newly owned reference to the decoded key cached by the container.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_PUBKEY_get(public_key: X509PubkeyRef<'_>) -> Option<CBox<EvpPkey>> {
+    // SAFETY: the shared container is live. On success OpenSSL increments the
+    // cached key's reference count before returning it.
+    unsafe { CBox::from_raw(ffi::X509_PUBKEY_get(public_key.as_ptr())) }
+}
+
+/// Wraps: X509_PUBKEY_get0
+/// Borrows the decoded key cached by the container.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_PUBKEY_get0<'a>(public_key: X509PubkeyRef<'a>) -> Option<EvpPkeyRef<'a>> {
+    // SAFETY: OpenSSL returns null or the container's cached key. The returned
+    // handle cannot outlive the container borrow and transfers no reference.
+    unsafe { EvpPkeyRef::from_ptr(ffi::X509_PUBKEY_get0(public_key.as_ptr())) }
+}
+
+/// Wraps: X509_PUBKEY_new_ex
+/// Constructs a container that retains the optional library-context borrow.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_PUBKEY_new_ex<'a>(
+    context: Option<OsslLibCtxRef<'a>>,
+    property_query: Option<&CStr>,
+) -> Option<BorrowedX509Pubkey<'a>> {
+    let context = context.map_or(ptr::null_mut(), |context| context.as_ptr().cast_mut());
+    let property_query = property_query.map_or(ptr::null(), |query| query.as_ptr());
+    // SAFETY: both optional inputs are live for the call. OpenSSL copies the
+    // query and the returned owner carries the context borrow for its lifetime.
+    unsafe { BorrowedX509Pubkey::from_raw(ffi::X509_PUBKEY_new_ex(context, property_query)) }
+}
+
+/// Wraps: d2i_X509_PUBKEY
+/// Decodes one DER SubjectPublicKeyInfo and advances `input` past it.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn d2i_X509_PUBKEY(input: &mut &[u8]) -> Option<CBox<X509Pubkey>> {
+    let source = *input;
+    let length = c_long::try_from(source.len()).ok()?;
+    let start = source.as_ptr();
+    let mut cursor = start;
+    // SAFETY: `cursor` starts at `source`, whose readable extent is exactly
+    // `length`; a null destination requests a fresh complete allocation.
+    let raw = unsafe { ffi::d2i_X509_PUBKEY(ptr::null_mut(), &mut cursor, length) };
+    // SAFETY: a non-null result transfers one `X509_PUBKEY_free` obligation.
+    let decoded = unsafe { CBox::from_raw(raw) }?;
+    let consumed = cursor.addr().wrapping_sub(start.addr());
+    if consumed > source.len() {
+        return None;
+    }
+    *input = &source[consumed..];
+    Some(decoded)
+}
+
+/// Wraps: i2d_X509_PUBKEY
+/// Encodes the public-key container into a newly owned DER byte vector.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn i2d_X509_PUBKEY(public_key: X509PubkeyRef<'_>) -> Option<Vec<u8>> {
+    encode_der(|output| {
+        // SAFETY: the shared handle remains live. `encode_der` first supplies
+        // null and then a buffer sized from OpenSSL's own length query.
+        unsafe { ffi::i2d_X509_PUBKEY(public_key.as_ptr(), output) }
+    })
+}
+
+pub(crate) fn encode_der(mut encode: impl FnMut(*mut *mut u8) -> i32) -> Option<Vec<u8>> {
+    let length = usize::try_from(encode(ptr::null_mut())).ok()?;
+    if length == 0 {
+        return None;
+    }
+    let mut output = vec![0_u8; length];
+    let start = output.as_mut_ptr();
+    let mut cursor = start;
+    let written = usize::try_from(encode(&mut cursor)).ok()?;
+    (written == length && cursor == start.wrapping_add(length)).then_some(output)
+}
+
+#[cfg(test)]
+mod wrapper_tests {
+    use super::*;
+
+    #[test]
+    fn failed_der_decode_does_not_advance() {
+        let invalid = [0_u8, 1, 2];
+        let mut input = invalid.as_slice();
+        assert!(d2i_X509_PUBKEY(&mut input).is_none());
+        assert_eq!(input, invalid);
+    }
+
+    #[test]
+    fn contextual_constructor_retains_its_context_lifetime() {
+        // SAFETY: the constructor returns null or one fresh context owner.
+        let context =
+            unsafe { CBox::<crate::bio::context::OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
+                .expect("context");
+        let public_key = X509_PUBKEY_new_ex(Some(context.as_ref()), Some(c"provider=default"))
+            .expect("contextual public key");
+        assert!(X509_PUBKEY_get0(public_key.as_ref()).is_none());
+        drop(public_key);
+        drop(context);
     }
 }
