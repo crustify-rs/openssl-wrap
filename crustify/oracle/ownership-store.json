@@ -147,6 +147,58 @@
    ]
   },
   {
+   "name": "X509_name_st",
+   "defined_in": "include/crypto/x509.h",
+   "_comment_agent": "The private layout is opaque on the public wrap surface. Its three pointer fields are nevertheless fully lifecycle-analyzed from x509_name_ex_new/free/canon/d2i.",
+   "fields": [
+    {
+     "name": "bytes",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "x509_name_ex_new allocates the BUF_MEM and requires success; x509_name_ex_free releases it with BUF_MEM_free. Encoding grows and writes through it."
+     }
+    },
+    {
+     "name": "canon_enc",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned canonical-encoding byte buffer of canon_enclen bytes. Empty names deliberately use NULL/zero; x509_name_canon replaces it and x509_name_ex_free releases it with OPENSSL_free."
+     }
+    },
+    {
+     "name": "entries",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Owned STACK_OF(X509_NAME_ENTRY), allocated during successful construction and mutated by name operations. Full teardown pop-frees its owned entries."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_pubkey_st",
    "defined_in": "crypto/x509/x_pubkey.c",
    "_comment_agent": "The public X509_PUBKEY surface is opaque. A complete object uniquely owns algor, public_key and propq, owns one EVP_PKEY reference when the optional decode cache exists, and only borrows its optional OSSL_LIB_CTX.",
@@ -2306,6 +2358,12 @@
      }
     }
    ]
+  },
+  {
+   "name": "stack_st_X509_EXTENSION",
+   "defined_in": null,
+   "_comment_agent": "DEFINE_STACK_OF only forward-declares this generated tag. It erases to stack_st/OPENSSL_STACK, whose translated generic wrapper owns the pointer array but not X509_EXTENSION elements unless explicitly promoted to pop-free ownership.",
+   "fields": []
   }
  ],
  "symbols": [
@@ -12554,6 +12612,97 @@
      "nullable": true,
      "mutable": true,
      "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
+    }
+   }
+  },
+  {
+   "name": "X509_NAME_dup",
+   "defined_in": "crypto/x509/x_name.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "ASN1_item_dup reads the source synchronously and explicitly returns NULL for a NULL source."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL on failure or a fresh independent X509_NAME allocation owed to X509_NAME_free."
+    }
+   }
+  },
+  {
+   "name": "X509_NAME_free",
+   "defined_in": "crypto/x509/x_name.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Public full destructor; NULL is accepted. Consumes and releases the complete X509_NAME allocation and owned fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_NAME_new",
+   "defined_in": "crypto/x509/x_name.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL on allocation failure or a fresh initialized X509_NAME owed to X509_NAME_free."
     }
    }
   },
