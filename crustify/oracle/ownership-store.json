@@ -147,6 +147,43 @@
    ]
   },
   {
+   "name": "X509_algor_st",
+   "defined_in": "include/openssl/x509.h",
+   "_comment_agent": "X509_ALGOR owns both pointer fields through its ASN.1 SEQUENCE template. X509_ALGOR_set0 transfers the algorithm object and parameter payload on success; sequence teardown releases algorithm with ASN1_OBJECT_free and the optional parameter with ASN1_TYPE_free. Direct code writes through parameter, while algorithm objects are treated as immutable after installation. Both slots can be null.",
+   "fields": [
+    {
+     "name": "algorithm",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned AlgorithmIdentifier OID slot. X509_ALGOR_set0 frees the old object and transfers aobj on success; ASN.1 sequence teardown calls ASN1_OBJECT_free. Built-in objects are accepted because that destructor is intentionally a no-op for non-dynamic objects. Callers read but do not mutate the installed ASN1_OBJECT pointee."
+     }
+    },
+    {
+     "name": "parameter",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned ASN1_TYPE. X509_ALGOR_set0 allocates, replaces, or frees it according to ptype, and sequence teardown releases it; multiple users update its discriminator and active payload in place."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_name_st",
    "defined_in": "include/crypto/x509.h",
    "_comment_agent": "The private layout is opaque on the public wrap surface. Its three pointer fields are nevertheless fully lifecycle-analyzed from x509_name_ex_new/free/canon/d2i.",
@@ -12818,6 +12855,97 @@
      "nullable": true,
      "mutable": true,
      "note": "OSSL_LIB_CTX_new allocates and initializes a fresh context; NULL reports allocation or initialization failure. The caller owns the returned context and releases it with OSSL_LIB_CTX_free."
+    }
+   }
+  },
+  {
+   "name": "X509_ALGOR_dup",
+   "defined_in": "crypto/asn1/x_algor.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads the source during ASN.1 encode/decode duplication; NULL is accepted and yields NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh independent ASN.1 deep copy, or NULL on a null source or failure."
+    }
+   }
+  },
+  {
+   "name": "X509_ALGOR_free",
+   "defined_in": "crypto/asn1/x_algor.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a complete X509_ALGOR, releases both owned fields through its ASN.1 template, then releases the allocation; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_ALGOR_new",
+   "defined_in": "crypto/asn1/x_algor.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh fully initialized X509_ALGOR allocation, or NULL on allocation failure."
     }
    }
   },
