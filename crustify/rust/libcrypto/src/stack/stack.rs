@@ -143,6 +143,32 @@ unsafe impl<T> CCloned for Stack<T> {
     }
 }
 
+impl<T> Stack<T> {
+    /// Promotes a stack that only owns its pointer array into one that also
+    /// owns every stored element, releasing them with `free`.
+    ///
+    /// This is the second releaser OpenSSL publishes for a stack: the result
+    /// is torn down by `OPENSSL_sk_pop_free` instead of `OPENSSL_sk_free`.
+    ///
+    /// # Safety
+    ///
+    /// Every non-null element stored in `stack`, now or later, must be a
+    /// uniquely owned allocation that `free` releases exactly once, and no
+    /// other owner may release it. In particular a stack duplicated by
+    /// [`OPENSSL_sk_dup`] shares its element pointers with the original, so at
+    /// most one of the two may be promoted here.
+    pub unsafe fn into_pop_free(
+        stack: CBox<Self>,
+        free: OpenSslSkFreeFunc<T>,
+    ) -> CBoxWith<Self, OpenSslSkPopFree<T>> {
+        let raw = stack.into_raw();
+        // SAFETY: `CBox::into_raw` surrenders a live, uniquely owned, non-null
+        // stack, and the caller established the element ownership `free` needs.
+        unsafe { CBoxWith::from_raw(raw, OpenSslSkPopFree { free }) }
+            .expect("an owning CBox never holds a null stack")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use core::ffi::c_void;
@@ -279,6 +305,66 @@ mod tests {
         // SAFETY: the original stack did not own or free this Box.
         drop(unsafe { Box::from_raw(original.as_non_null().as_ptr()) });
     }
+
+    #[test]
+    fn promoted_owner_releases_every_transferred_element() {
+        DEEP_FREES.store(0, Ordering::Relaxed);
+        let mut stack = OPENSSL_sk_new_null::<i32>().expect("new stack");
+        for value in [2_i32, 3, 5] {
+            let raw = Box::into_raw(Box::new(value));
+            // SAFETY: `raw` is a live unique `i32` allocation.
+            let element = unsafe { StackElement::from_raw(raw) }.unwrap();
+            // SAFETY: ownership of the Box moves into the stack, which is
+            // promoted below to an owner that frees it exactly once.
+            unsafe { OPENSSL_sk_push(Some(&mut stack.as_mut()), Some(element)) }.unwrap();
+        }
+
+        // SAFETY: `free_i32` releases exactly the `Box<i32>` allocations above.
+        let free = unsafe { OpenSslSkFreeFunc::from_raw(Some(free_i32)) }.unwrap();
+        // SAFETY: each stored element is a uniquely owned Box that `free_i32`
+        // releases once, and no other owner holds one.
+        let owning = unsafe { Stack::into_pop_free(stack, free) };
+        assert_eq!(OPENSSL_sk_num(Some(owning.as_ref())), Some(3));
+
+        OPENSSL_sk_pop_free(Some(owning));
+        assert_eq!(DEEP_FREES.load(Ordering::Relaxed), 3);
+    }
+
+    #[test]
+    fn set_echoes_the_stored_element_and_leaves_the_previous_one_to_the_caller() {
+        let mut stack = OPENSSL_sk_new_null::<i32>().expect("new stack");
+        let first = Box::into_raw(Box::new(41_i32));
+        let second = Box::into_raw(Box::new(42_i32));
+        // SAFETY: both allocations stay live until they are reclaimed below.
+        let first = unsafe { StackElement::from_raw(first) }.unwrap();
+        // SAFETY: both allocations stay live until they are reclaimed below.
+        let second = unsafe { StackElement::from_raw(second) }.unwrap();
+        // SAFETY: `first` outlives its residence in the stack.
+        unsafe { OPENSSL_sk_push(Some(&mut stack.as_mut()), Some(first)) }.unwrap();
+
+        // An out-of-range index stores nothing.
+        // SAFETY: `second` outlives the call and is not stored by it.
+        assert!(unsafe { OPENSSL_sk_set(Some(&mut stack.as_mut()), 1, Some(second)) }.is_none());
+
+        // The displaced element is only recoverable before the write.
+        let displaced = OPENSSL_sk_value(Some(stack.as_ref()), 0).unwrap();
+        assert_eq!(displaced.as_non_null(), first.as_non_null());
+        // SAFETY: `second` outlives its residence in the stack.
+        let stored = unsafe { OPENSSL_sk_set(Some(&mut stack.as_mut()), 0, Some(second)) }.unwrap();
+        assert_eq!(stored.as_non_null(), second.as_non_null());
+        assert_eq!(
+            OPENSSL_sk_value(Some(stack.as_ref()), 0)
+                .unwrap()
+                .as_non_null(),
+            second.as_non_null()
+        );
+        assert_eq!(OPENSSL_sk_num(Some(stack.as_ref())), Some(1));
+
+        // SAFETY: the stack owns neither Box; each is reclaimed exactly once.
+        drop(unsafe { Box::from_raw(displaced.as_non_null().as_ptr()) });
+        // SAFETY: as above, for the element still residing in the stack.
+        drop(unsafe { Box::from_raw(second.as_non_null().as_ptr()) });
+    }
 }
 
 /// Opaque identity of one non-null pointer stored in an OpenSSL stack.
@@ -339,6 +425,10 @@ fn comparator_raw<T>(comparator: Option<OpenSslSkStackCompFunc<T>>) -> ffi::OPEN
 }
 
 /// Runtime teardown policy for a stack that owns all of its elements.
+///
+/// Reached through [`OPENSSL_sk_deep_copy`], which produces the copied
+/// elements it releases, or through [`Stack::into_pop_free`] for a stack whose
+/// elements were transferred to it by the caller.
 pub struct OpenSslSkPopFree<T> {
     free: OpenSslSkFreeFunc<T>,
 }
@@ -431,6 +521,10 @@ pub fn OPENSSL_sk_delete_ptr<T>(
 }
 
 /// Wraps: OPENSSL_sk_dup
+///
+/// Duplicates the stack allocation and its pointer array only: the duplicate
+/// stores the very same element pointers, which neither stack owns. A null
+/// source yields a new empty stack rather than `None`.
 #[allow(non_snake_case)]
 pub fn OPENSSL_sk_dup<T>(source: Option<StackRef<'_, T>>) -> Option<CBox<Stack<T>>> {
     let source = source.map_or(core::ptr::null(), |source| source.as_ptr());
@@ -477,6 +571,9 @@ pub unsafe fn OPENSSL_sk_find_all<T>(
 
 /// Wraps: OPENSSL_sk_find_ex
 ///
+/// Unlike [`OPENSSL_sk_find`], a sorted stack with no exact match reports the
+/// index of the nearest element instead of `None`.
+///
 /// # Safety
 ///
 /// The same element and comparator obligations as [`OPENSSL_sk_find`] apply.
@@ -497,6 +594,9 @@ pub fn OPENSSL_sk_free<T>(stack: Option<CBox<Stack<T>>>) {
 }
 
 /// Wraps: OPENSSL_sk_insert
+///
+/// Inserts at `index`, shifting the elements after it right and appending when
+/// `index` is at or beyond the current length; returns the new length.
 ///
 /// # Safety
 ///
@@ -579,6 +679,8 @@ pub fn OPENSSL_sk_pop_free<T>(stack: Option<CBoxWith<Stack<T>, OpenSslSkPopFree<
 
 /// Wraps: OPENSSL_sk_push
 ///
+/// Appends `element` and returns the new length.
+///
 /// # Safety
 ///
 /// A non-null `element` must remain live for as long as it is stored and for
@@ -605,6 +707,13 @@ pub fn OPENSSL_sk_reserve<T>(stack: Option<&mut StackMut<'_, T>>, additional: us
 }
 
 /// Wraps: OPENSSL_sk_set
+///
+/// Returns the element that was just stored, echoing `element`, and `None`
+/// when the stack is null, `index` is out of range, or `element` is `None`.
+/// The element previously held at `index` is dropped from the stack without
+/// being returned; read it with [`OPENSSL_sk_value`] first when it is owned,
+/// otherwise it leaks. Storing also resets the sorted flag, which stays set
+/// only while the stack holds at most one element.
 ///
 /// # Safety
 ///
@@ -658,6 +767,12 @@ pub fn OPENSSL_sk_shift<T>(stack: Option<&mut StackMut<'_, T>>) -> Option<StackE
 }
 
 /// Wraps: OPENSSL_sk_sort
+///
+/// Sorts only when a comparator is installed and the stack is not already
+/// marked sorted. OpenSSL hands the comparator straight to `qsort` here, so
+/// the adapter installed by [`OPENSSL_sk_set_cmp_thunks`] is bypassed; a thunk
+/// that does more than cast its arguments makes this order disagree with
+/// [`OPENSSL_sk_find`].
 #[allow(non_snake_case)]
 pub fn OPENSSL_sk_sort<T>(stack: Option<&mut StackMut<'_, T>>) {
     // SAFETY: the optional exclusive handle supplies null or a valid stack
@@ -666,6 +781,8 @@ pub fn OPENSSL_sk_sort<T>(stack: Option<&mut StackMut<'_, T>>) {
 }
 
 /// Wraps: OPENSSL_sk_unshift
+///
+/// Inserts `element` at the front and returns the new length.
 ///
 /// # Safety
 ///
@@ -695,6 +812,10 @@ pub fn OPENSSL_sk_value<T>(
 }
 
 /// Wraps: OPENSSL_sk_zero
+///
+/// Clears the pointer slots without touching the elements. On a stack owned
+/// through [`OpenSslSkPopFree`] this abandons every stored element, so release
+/// them first.
 #[allow(non_snake_case)]
 pub fn OPENSSL_sk_zero<T>(stack: Option<&mut StackMut<'_, T>>) {
     // SAFETY: the optional exclusive handle supplies null or a live stack; the routine clears
