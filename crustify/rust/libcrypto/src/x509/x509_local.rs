@@ -42,9 +42,7 @@ impl X509Extension {
     /// Allocates one fully initialized empty extension.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: OpenSSL returns null or a fresh complete extension carrying
-        // one `X509_EXTENSION_free` ownership obligation.
-        unsafe { CBox::from_raw(ffi::X509_EXTENSION_new()) }
+        crate::x509::x_exten::X509_EXTENSION_new()
     }
 }
 

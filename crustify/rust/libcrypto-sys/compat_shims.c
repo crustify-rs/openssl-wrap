@@ -3,6 +3,7 @@
 
 #include <openssl/asn1.h>
 #include <openssl/crypto.h>
+#include <openssl/x509v3.h>
 #include "crypto/asn1.h"
 #include "internal/bio.h"
 
@@ -56,3 +57,60 @@ crustify_BIO_mmsg_fn crustify_BIO_meth_get_sendmmsg(const BIO_METHOD *method)
 {
     return method->bsendmmsg;
 }
+
+#if defined(OPENSSL_NO_DEPRECATED_4_1)
+/* Internal replacements exported by the no-deprecated libcrypto build. */
+int ossl_x509_check_host(const X509 *x, const char *chk, size_t chklen,
+    unsigned int flags, char **peername);
+int ossl_x509_check_rfc822(X509 *x, const char *chk, size_t chklen,
+    unsigned int flags);
+int ossl_x509_check_smtputf8(X509 *x, const char *chk, size_t chklen,
+    unsigned int flags);
+int ossl_x509_check_ip(const X509 *x, const unsigned char *chk, size_t chklen,
+    unsigned int flags);
+
+int X509_check_host(const X509 *x, const char *chk, size_t chklen,
+    unsigned int flags, char **peername)
+{
+    return ossl_x509_check_host(x, chk, chklen, flags, peername);
+}
+
+int X509_check_email(const X509 *x, const char *chk, size_t chklen,
+    unsigned int flags)
+{
+    int ret;
+
+    if (chk == NULL)
+        return -2;
+    if (chklen == 0)
+        chklen = strlen(chk);
+    else if (memchr(chk, '\0', chklen > 1 ? chklen - 1 : chklen))
+        return -2;
+    if (chklen > 1 && chk[chklen - 1] == '\0')
+        --chklen;
+    ret = ossl_x509_check_rfc822((X509 *)x, chk, chklen, flags);
+
+    if (ret == 1)
+        return 1;
+    return ossl_x509_check_smtputf8((X509 *)x, chk, chklen, flags);
+}
+
+int X509_check_ip(const X509 *x, const unsigned char *chk, size_t chklen,
+    unsigned int flags)
+{
+    return ossl_x509_check_ip(x, chk, chklen, flags);
+}
+
+int X509_check_ip_asc(const X509 *x, const char *ipasc, unsigned int flags)
+{
+    ASN1_OCTET_STRING *ip;
+    int ret;
+
+    if (ipasc == NULL || (ip = a2i_IPADDRESS(ipasc)) == NULL)
+        return -2;
+    ret = ossl_x509_check_ip(x, ASN1_STRING_get0_data(ip),
+        (size_t)ASN1_STRING_get_length(ip), flags);
+    ASN1_OCTET_STRING_free(ip);
+    return ret;
+}
+#endif

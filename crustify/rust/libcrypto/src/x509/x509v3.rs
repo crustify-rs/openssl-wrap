@@ -8,6 +8,7 @@ use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
+pub use crate::x509::v3_info::{AuthorityInfoAccess, AuthorityInfoAccessFree};
 use crate::x509::x509_vfy::{PolicyQualInfoStack, PolicyQualInfoStackMut, PolicyQualInfoStackRef};
 
 /// Opaque element marker for the `GENERAL_SUBTREE` records stored in this
@@ -70,40 +71,11 @@ pub type AccessDescriptionStackRef<'a> = StackRef<'a, AccessDescription>;
 /// Exclusive borrowed handle to a `STACK_OF(ACCESS_DESCRIPTION)`.
 pub type AccessDescriptionStackMut<'a> = StackMut<'a, AccessDescription>;
 
-/// Selects the ASN.1 full destructor for an authority-information-access
-/// sequence, including every `ACCESS_DESCRIPTION` element.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct AuthorityInfoAccessFree;
-
-// SAFETY: `AUTHORITY_INFO_ACCESS_free` accepts a fully initialized generated
-// stack, releases every owned access-description element, and finally releases
-// the common stack allocation.
-unsafe impl CDropper<AccessDescriptionStack> for AuthorityInfoAccessFree {
-    unsafe fn c_drop(&self, object: NonNull<AccessDescriptionStack>) {
-        // SAFETY: the `CDropper` contract supplies sole ownership of a complete
-        // authority-info-access value. Its generated stack tag and
-        // `OPENSSL_STACK` have the same pointer representation.
-        unsafe { ffi::AUTHORITY_INFO_ACCESS_free(object.as_ptr().cast()) }
-    }
-}
-
-/// Owning authority-information-access sequence whose elements are released
-/// together with its generated stack.
-pub type AuthorityInfoAccess = CBoxWith<AccessDescriptionStack, AuthorityInfoAccessFree>;
-
 impl AccessDescriptionStack {
     /// Allocates a complete empty authority-information-access sequence.
     #[must_use]
     pub fn new_authority_info_access() -> Option<AuthorityInfoAccess> {
-        // SAFETY: a non-null ASN.1 constructor result is a fresh, fully
-        // initialized generated stack carrying one
-        // `AUTHORITY_INFO_ACCESS_free` obligation.
-        unsafe {
-            CBoxWith::from_raw(
-                ffi::AUTHORITY_INFO_ACCESS_new().cast(),
-                AuthorityInfoAccessFree,
-            )
-        }
+        crate::x509::v3_info::AUTHORITY_INFO_ACCESS_new()
     }
 }
 
@@ -478,5 +450,155 @@ mod tests {
         assert_eq!(detached_qualifiers.as_ptr(), qualifiers_raw);
         assert!(policy.as_ref().qualifiers().is_none());
         drop(detached_qualifiers);
+    }
+}
+
+/// Error reported by an X.509 identity check.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum X509CheckError {
+    /// The checked identity had an invalid representation.
+    InvalidInput,
+    /// OpenSSL could not complete the comparison.
+    Internal,
+}
+
+fn checked_identity_result(result: i32) -> Result<bool, X509CheckError> {
+    match result {
+        1 => Ok(true),
+        0 => Ok(false),
+        -2 => Err(X509CheckError::InvalidInput),
+        _ => Err(X509CheckError::Internal),
+    }
+}
+
+/// Wraps: X509_check_email
+/// Checks an RFC 822 or SMTPUTF8 mailbox against a certificate.
+#[allow(non_snake_case)]
+pub fn X509_check_email(
+    certificate: crate::x509::x509_internal::X509Ref<'_>,
+    email: &[u8],
+    flags: u32,
+) -> Result<bool, X509CheckError> {
+    if email.is_empty() {
+        return Err(X509CheckError::InvalidInput);
+    }
+    // SAFETY: the certificate and exact byte extent remain live for the call;
+    // non-empty input prevents C's zero-length `strlen` convention.
+    checked_identity_result(unsafe {
+        libcrypto_sys::X509_check_email(
+            certificate.as_ptr(),
+            email.as_ptr().cast(),
+            email.len(),
+            flags,
+        )
+    })
+}
+
+/// Wraps: X509_check_host
+/// Checks a DNS identity and returns the matched certificate name.
+#[allow(non_snake_case)]
+pub fn X509_check_host(
+    certificate: crate::x509::x509_internal::X509Ref<'_>,
+    host: &[u8],
+    flags: u32,
+) -> Result<Option<crate::mem::CryptoString>, X509CheckError> {
+    if host.is_empty() {
+        return Err(X509CheckError::InvalidInput);
+    }
+    let mut peer_name = core::ptr::null_mut();
+    // SAFETY: the certificate, input extent and output slot remain live for
+    // the call. OpenSSL allocates a non-null peer name only for a match.
+    let result = unsafe {
+        libcrypto_sys::X509_check_host(
+            certificate.as_ptr(),
+            host.as_ptr().cast(),
+            host.len(),
+            flags,
+            &mut peer_name,
+        )
+    };
+    // SAFETY: a non-null output is a fresh NUL-terminated allocation from the
+    // OpenSSL allocator, independent of the certificate.
+    let peer_name = unsafe { crate::mem::CryptoString::from_raw(peer_name.cast()) };
+    match checked_identity_result(result)? {
+        true => peer_name.ok_or(X509CheckError::Internal).map(Some),
+        false => Ok(None),
+    }
+}
+
+/// Wraps: X509_check_ip
+/// Checks a four-byte IPv4 or sixteen-byte IPv6 address.
+#[allow(non_snake_case)]
+pub fn X509_check_ip(
+    certificate: crate::x509::x509_internal::X509Ref<'_>,
+    address: &[u8],
+    flags: u32,
+) -> Result<bool, X509CheckError> {
+    if !matches!(address.len(), 4 | 16) {
+        return Err(X509CheckError::InvalidInput);
+    }
+    // SAFETY: the certificate and exact address extent remain live for the
+    // synchronous comparison.
+    checked_identity_result(unsafe {
+        libcrypto_sys::X509_check_ip(certificate.as_ptr(), address.as_ptr(), address.len(), flags)
+    })
+}
+
+/// Wraps: X509_check_ip_asc
+/// Parses and checks a NUL-terminated textual IP address.
+#[allow(non_snake_case)]
+pub fn X509_check_ip_asc(
+    certificate: crate::x509::x509_internal::X509Ref<'_>,
+    address: &core::ffi::CStr,
+    flags: u32,
+) -> Result<bool, X509CheckError> {
+    // SAFETY: the certificate and NUL-terminated address remain live for the
+    // synchronous parse and comparison.
+    checked_identity_result(unsafe {
+        libcrypto_sys::X509_check_ip_asc(certificate.as_ptr(), address.as_ptr(), flags)
+    })
+}
+
+#[cfg(test)]
+mod identity_check_tests {
+    use super::*;
+    use crate::x509::x_x509::X509_new;
+
+    #[test]
+    fn empty_certificate_does_not_match_valid_identities() {
+        let certificate = X509_new().expect("certificate");
+        assert_eq!(
+            X509_check_email(certificate.as_ref(), b"a@example.test", 0),
+            Ok(false)
+        );
+        assert!(matches!(
+            X509_check_host(certificate.as_ref(), b"example.test", 0),
+            Ok(None)
+        ));
+        assert_eq!(
+            X509_check_ip(certificate.as_ref(), &[127, 0, 0, 1], 0),
+            Ok(false)
+        );
+        assert_eq!(
+            X509_check_ip_asc(certificate.as_ref(), c"127.0.0.1", 0),
+            Ok(false)
+        );
+    }
+
+    #[test]
+    fn safe_surface_rejects_invalid_extents() {
+        let certificate = X509_new().expect("certificate");
+        assert!(matches!(
+            X509_check_host(certificate.as_ref(), b"", 0),
+            Err(X509CheckError::InvalidInput)
+        ));
+        assert_eq!(
+            X509_check_email(certificate.as_ref(), b"", 0),
+            Err(X509CheckError::InvalidInput)
+        );
+        assert_eq!(
+            X509_check_ip(certificate.as_ref(), &[127, 0, 0], 0),
+            Err(X509CheckError::InvalidInput)
+        );
     }
 }

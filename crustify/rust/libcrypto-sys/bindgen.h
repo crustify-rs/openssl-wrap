@@ -36,4 +36,13 @@ int X509_NAME_get_text_by_NID(const X509_NAME *name, int nid,
 int X509_NAME_get_text_by_OBJ(const X509_NAME *name, const ASN1_OBJECT *obj,
     char *buf, int len);
 #endif
+#if defined(OPENSSL_NO_DEPRECATED_4_1)
+int X509_check_host(const X509 *x, const char *chk, size_t chklen,
+    unsigned int flags, char **peername);
+int X509_check_email(const X509 *x, const char *chk, size_t chklen,
+    unsigned int flags);
+int X509_check_ip(const X509 *x, const unsigned char *chk, size_t chklen,
+    unsigned int flags);
+int X509_check_ip_asc(const X509 *x, const char *ipasc, unsigned int flags);
+#endif
 /* crustify:compat-shims:end */
