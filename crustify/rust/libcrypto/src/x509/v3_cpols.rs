@@ -5,7 +5,7 @@ use core::ptr::NonNull;
 use ffibox::{CBox, CBoxWith, CDropper};
 use libcrypto_sys as ffi;
 
-use crate::x509::x509v3::{PolicyInfo, PolicyInfoStack};
+use crate::x509::x509v3::{PolicyInfo, PolicyInfoStack, PolicyQualInfo};
 
 /// Full ASN.1 teardown policy for a certificate-policies sequence.
 #[derive(Clone, Copy, Debug, Default)]
@@ -85,5 +85,40 @@ mod policy_info_tests {
         assert!(value.as_ref().qualifiers().is_none());
         POLICYINFO_free(Some(value));
         POLICYINFO_free(None);
+    }
+}
+
+/// Wraps: POLICYQUALINFO_free
+/// Consumes an optional complete policy-qualifier allocation.
+#[allow(non_snake_case)]
+pub fn POLICYQUALINFO_free(value: Option<CBox<PolicyQualInfo>>) {
+    drop(value);
+}
+
+/// Wraps: POLICYQUALINFO_new
+/// Allocates a complete empty policy qualifier.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn POLICYQUALINFO_new() -> Option<CBox<PolicyQualInfo>> {
+    // SAFETY: a non-null result is a fresh complete ASN.1 sequence whose
+    // matching destructor is registered on `PolicyQualInfo`.
+    unsafe { CBox::from_raw(ffi::POLICYQUALINFO_new()) }
+}
+
+#[cfg(test)]
+mod policy_qual_info_wrapper_tests {
+    use super::*;
+    use crate::x509::x509v3::PolicyQualInfoValueRef;
+
+    #[test]
+    fn constructor_and_nullable_destructor_preserve_ownership() {
+        let value = POLICYQUALINFO_new().expect("POLICYQUALINFO_new");
+        assert!(value.as_ref().qualifier_id().is_none());
+        assert!(matches!(
+            value.as_ref().value(),
+            PolicyQualInfoValueRef::Empty
+        ));
+        POLICYQUALINFO_free(Some(value));
+        POLICYQUALINFO_free(None);
     }
 }

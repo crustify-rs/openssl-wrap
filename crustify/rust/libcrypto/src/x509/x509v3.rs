@@ -109,9 +109,7 @@ impl AccessDescription {
     /// Allocates a fully initialized access-description sequence.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
-        // one matching `ACCESS_DESCRIPTION_free` obligation.
-        unsafe { CBox::from_raw(ffi::ACCESS_DESCRIPTION_new()) }
+        crate::x509::v3_info::ACCESS_DESCRIPTION_new()
     }
 }
 
@@ -207,9 +205,7 @@ impl GeneralSubtree {
     /// Allocates a fully initialized general-subtree sequence.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
-        // one matching `GENERAL_SUBTREE_free` obligation.
-        unsafe { CBox::from_raw(ffi::GENERAL_SUBTREE_new()) }
+        crate::x509::v3_ncons::GENERAL_SUBTREE_new()
     }
 }
 
@@ -394,8 +390,10 @@ pub struct PolicyQualifiersFree;
 
 unsafe extern "C" fn policy_qualifier_free(value: *mut c_void) {
     // SAFETY: this callback is installed only on a stack whose elements are
-    // complete, uniquely owned `POLICYQUALINFO` allocations.
-    unsafe { ffi::POLICYQUALINFO_free(value.cast()) }
+    // complete, uniquely owned `POLICYQUALINFO` allocations, so it may adopt
+    // the element's sole destructor obligation.
+    let value = unsafe { CBox::from_raw(value.cast()) };
+    crate::x509::v3_cpols::POLICYQUALINFO_free(value);
 }
 
 // SAFETY: this policy is attached only to a qualifier stack that owns all of
@@ -1234,8 +1232,10 @@ impl_dropped!(
 
 unsafe extern "C" fn free_general_subtree(value: *mut c_void) {
     // SAFETY: this adapter is installed only for uniquely owned
-    // `GENERAL_SUBTREE` allocations in a name-constraints sequence.
-    unsafe { ffi::GENERAL_SUBTREE_free(value.cast()) }
+    // `GENERAL_SUBTREE` allocations in a name-constraints sequence, so it may
+    // adopt the element's sole destructor obligation.
+    let value = unsafe { CBox::from_raw(value.cast()) };
+    crate::x509::v3_ncons::GENERAL_SUBTREE_free(value);
 }
 
 /// Selects pop-free destruction for an owned general-subtree stack.
@@ -3614,9 +3614,7 @@ impl PolicyQualInfo {
     /// Allocates a complete empty policy qualifier.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
-        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
-        // exactly one matching POLICYQUALINFO_free obligation.
-        unsafe { CBox::from_raw(ffi::POLICYQUALINFO_new()) }
+        crate::x509::v3_cpols::POLICYQUALINFO_new()
     }
 
     /// Allocates a qualifier and installs a consistently tagged owned value.

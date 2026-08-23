@@ -2,10 +2,10 @@
 
 use core::ptr::NonNull;
 
-use ffibox::{CBoxWith, CDropper};
+use ffibox::{CBox, CBoxWith, CDropper};
 use libcrypto_sys as ffi;
 
-use crate::x509::x509v3::AccessDescriptionStack;
+use crate::x509::x509v3::{AccessDescription, AccessDescriptionStack};
 
 /// Selects the ASN.1 full destructor for an authority-information-access
 /// sequence, including every access-description element.
@@ -57,5 +57,36 @@ mod tests {
         let value = AUTHORITY_INFO_ACCESS_new().expect("AUTHORITY_INFO_ACCESS_new");
         assert_eq!(OPENSSL_sk_num(Some(value.as_ref())), Some(0));
         AUTHORITY_INFO_ACCESS_free(value);
+    }
+}
+
+/// Wraps: ACCESS_DESCRIPTION_free
+/// Consumes an optional complete access-description allocation.
+#[allow(non_snake_case)]
+pub fn ACCESS_DESCRIPTION_free(value: Option<CBox<AccessDescription>>) {
+    drop(value);
+}
+
+/// Wraps: ACCESS_DESCRIPTION_new
+/// Allocates a fully initialized access-description sequence.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn ACCESS_DESCRIPTION_new() -> Option<CBox<AccessDescription>> {
+    // SAFETY: a non-null result is a fresh complete ASN.1 sequence whose
+    // matching destructor is registered on `AccessDescription`.
+    unsafe { CBox::from_raw(ffi::ACCESS_DESCRIPTION_new()) }
+}
+
+#[cfg(test)]
+mod access_description_tests {
+    use super::*;
+
+    #[test]
+    fn constructor_and_nullable_destructor_preserve_ownership() {
+        let value = ACCESS_DESCRIPTION_new().expect("ACCESS_DESCRIPTION_new");
+        assert!(value.as_ref().method().is_some());
+        assert!(value.as_ref().location().is_some());
+        ACCESS_DESCRIPTION_free(Some(value));
+        ACCESS_DESCRIPTION_free(None);
     }
 }
