@@ -711,6 +711,75 @@
    ]
   },
   {
+   "name": "POLICYQUALINFO_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "The pqualid OID is the ASN.1 ADB discriminator for the three one-pointer union arms and has runtime owned-versus-static-borrowed storage. Safe mutation must replace selector and arm together.",
+   "fields": [
+    {
+     "name": "d.cpsuri",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned ASN1_IA5STRING arm selected by NID_id_qt_cps and recursively released by the POLICYQUALINFO ASN.1 destructor."
+     }
+    },
+    {
+     "name": "d.other",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Default ASN.1 ADB arm, active for selector OIDs other than id-qt-cps and id-qt-unotice; recursively released as ASN1_TYPE."
+     }
+    },
+    {
+     "name": "d.usernotice",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned USERNOTICE arm selected by NID_id_qt_unotice and recursively released by the POLICYQUALINFO ASN.1 destructor."
+     }
+    },
+    {
+     "name": "pqualid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Runtime-conditional selector ownership: ASN.1 decoding and dynamic construction install owned ASN1_OBJECT values, while OBJ_nid2obj installs borrowed process-static registry objects. POLICYQUALINFO_free applies ASN1_OBJECT_free, which frees the dynamic case and intentionally leaves the static case allocated."
+     }
+    }
+   ]
+  },
+  {
    "name": "USERNOTICE_st",
    "defined_in": "include/openssl/x509v3.h",
    "_comment_agent": "The ASN.1 sequence declaration marks both pointer fields optional and USERNOTICE_free delegates to ASN1_item_free, which recursively owns and releases both children.",
@@ -14523,6 +14592,24 @@
      }
     }
    ]
+  },
+  {
+   "name": "POLICYQUALINFO_new",
+   "defined_in": "crypto/x509/v3_cpols.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on allocation failure or a fresh fully initialized POLICYQUALINFO carrying one POLICYQUALINFO_free obligation."
+    }
+   }
   },
   {
    "name": "TLS_FEATURE_free",

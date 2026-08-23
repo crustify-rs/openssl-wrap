@@ -3141,3 +3141,520 @@ mod general_name_tests {
         ));
     }
 }
+
+define_ctype!(
+    /// Wraps: POLICYQUALINFO_st
+    ///
+    /// Layout-compatible storage for an ASN.1 policy qualifier. The object
+    /// identifier in pqualid selects the active owned pointer in d; borrowed
+    /// access uses tagged Rust enums so safe callers never inspect an inactive
+    /// union member.
+    PolicyQualInfo,
+    PolicyQualInfoRef,
+    PolicyQualInfoMut,
+    ffi::POLICYQUALINFO_st
+);
+
+impl_dropped!(
+    PolicyQualInfo,
+    ffi::POLICYQUALINFO_st,
+    ffi::POLICYQUALINFO_free
+);
+
+/// The ASN.1 ADB branch selected by a policy qualifier's object identifier.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PolicyQualInfoKind {
+    CpsUri,
+    UserNotice,
+    Other,
+}
+
+/// Wraps: POLICYQUALINFO_st.d
+///
+/// Tagged shared view of the discriminator-selected qualifier union.
+#[derive(Clone, Copy)]
+pub enum PolicyQualInfoValueRef<'a> {
+    Empty,
+    /// Wraps: POLICYQUALINFO_st.d.cpsuri
+    CpsUri(Option<Asn1StringRef<'a>>),
+    /// Wraps: POLICYQUALINFO_st.d.usernotice
+    UserNotice(Option<UserNoticeRef<'a>>),
+    /// Wraps: POLICYQUALINFO_st.d.other
+    Other(Option<Asn1TypeRef<'a>>),
+    MissingIdentifier,
+}
+
+/// Exclusive tagged view of the active qualifier union member.
+pub enum PolicyQualInfoValueMut<'a> {
+    Empty,
+    CpsUri(Option<Asn1StringMut<'a>>),
+    UserNotice(Option<UserNoticeMut<'a>>),
+    Other(Option<Asn1TypeMut<'a>>),
+    MissingIdentifier,
+}
+
+/// A detached policy-qualifier identifier with OpenSSL's conditional release.
+///
+/// Dynamic objects are owned and freed; built-in registry objects are borrowed
+/// static values for which ASN1_OBJECT_free is intentionally a no-op. This
+/// handle exposes only a shared borrow, preserving that runtime distinction.
+pub struct PolicyQualInfoId {
+    raw: NonNull<ffi::ASN1_OBJECT>,
+}
+
+impl PolicyQualInfoId {
+    /// Borrows the identifier for the lifetime of this conditional owner.
+    #[must_use]
+    pub fn as_ref(&self) -> Asn1ObjectRef<'_> {
+        // SAFETY: raw stays live until this handle runs the matching
+        // ASN1_OBJECT_free operation; no mutable access is exposed.
+        unsafe { Asn1ObjectRef::from_ptr(self.raw.as_ptr()) }
+            .expect("PolicyQualInfoId always stores a non-null pointer")
+    }
+
+    unsafe fn from_raw(raw: *mut ffi::ASN1_OBJECT) -> Option<Self> {
+        NonNull::new(raw).map(|raw| Self { raw })
+    }
+
+    fn into_raw(self) -> *mut ffi::ASN1_OBJECT {
+        let this = core::mem::ManuallyDrop::new(self);
+        this.raw.as_ptr()
+    }
+}
+
+impl From<CBox<Asn1Object>> for PolicyQualInfoId {
+    fn from(value: CBox<Asn1Object>) -> Self {
+        // SAFETY: CBox transfers a non-null object carrying one matching
+        // ASN1_OBJECT_free obligation into this conditional owner.
+        unsafe { Self::from_raw(CBox::into_raw(value)) }
+            .expect("an owning CBox always stores a non-null pointer")
+    }
+}
+
+impl Drop for PolicyQualInfoId {
+    fn drop(&mut self) {
+        // SAFETY: this handle owns the one release operation associated with
+        // raw. OpenSSL frees dynamic objects and leaves static registry objects
+        // allocated, matching the field's runtime ownership contract.
+        unsafe { ffi::ASN1_OBJECT_free(self.raw.as_ptr()) }
+    }
+}
+
+/// An owned, consistently tagged policy-qualifier value.
+pub enum PolicyQualInfoValue {
+    Empty,
+    CpsUri(Option<CBox<Asn1String>>),
+    UserNotice(Option<CBox<UserNotice>>),
+    Other {
+        qualifier_id: PolicyQualInfoId,
+        value: Option<CBox<Asn1Type>>,
+    },
+}
+
+/// Failure to take a qualifier while leaving its record fully initialized.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum PolicyQualInfoTakeError {
+    MissingIdentifier,
+    AllocationFailure,
+}
+
+impl PolicyQualInfo {
+    /// Allocates a complete empty policy qualifier.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
+        // exactly one matching POLICYQUALINFO_free obligation.
+        unsafe { CBox::from_raw(ffi::POLICYQUALINFO_new()) }
+    }
+
+    /// Allocates a qualifier and installs a consistently tagged owned value.
+    pub fn from_value(value: PolicyQualInfoValue) -> Result<CBox<Self>, PolicyQualInfoValue> {
+        let Some(mut qualifier) = Self::new() else {
+            return Err(value);
+        };
+        qualifier.as_mut().set_value(value)?;
+        Ok(qualifier)
+    }
+}
+
+impl<'a> PolicyQualInfoRef<'a> {
+    /// Wraps: POLICYQUALINFO_st.pqualid
+    ///
+    /// Borrows the owned object identifier that discriminates the union.
+    #[must_use]
+    pub fn qualifier_id(&self) -> Option<Asn1ObjectRef<'a>> {
+        // SAFETY: raw-place projection copies the pointer without forming a
+        // reference over OpenSSL storage. A non-null selector is owned by the
+        // record and remains live for the handle lifetime.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).pqualid).read() };
+        // SAFETY: the enclosing record supplies the returned borrow lifetime.
+        unsafe { Asn1ObjectRef::from_ptr(raw) }
+    }
+
+    /// Classifies the active ASN.1 ADB arm.
+    #[must_use]
+    pub fn kind(&self) -> Option<PolicyQualInfoKind> {
+        let nid = crate::objects::obj_dat::OBJ_obj2nid(Some(self.qualifier_id()?));
+        Some(match nid {
+            nid if nid == ffi::NID_id_qt_cps as i32 => PolicyQualInfoKind::CpsUri,
+            nid if nid == ffi::NID_id_qt_unotice as i32 => PolicyQualInfoKind::UserNotice,
+            _ => PolicyQualInfoKind::Other,
+        })
+    }
+
+    /// Borrows only the active union member selected by pqualid.
+    #[must_use]
+    pub fn value(&self) -> PolicyQualInfoValueRef<'a> {
+        let raw = self.as_ptr();
+        match self.kind() {
+            Some(PolicyQualInfoKind::CpsUri) => {
+                // SAFETY: the CPS object identifier selects this pointer arm.
+                let value = unsafe { ptr::addr_of!((*raw).d.cpsuri).read() };
+                // SAFETY: the child remains owned by the record for the handle lifetime.
+                PolicyQualInfoValueRef::CpsUri(unsafe { Asn1StringRef::from_ptr(value) })
+            }
+            Some(PolicyQualInfoKind::UserNotice) => {
+                // SAFETY: the user-notice identifier selects this pointer arm.
+                let value = unsafe { ptr::addr_of!((*raw).d.usernotice).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                PolicyQualInfoValueRef::UserNotice(unsafe { UserNoticeRef::from_ptr(value) })
+            }
+            Some(PolicyQualInfoKind::Other) => {
+                // SAFETY: the ASN.1 ADB default selects the ASN1_TYPE arm.
+                let value = unsafe { ptr::addr_of!((*raw).d.other).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                PolicyQualInfoValueRef::Other(unsafe { Asn1TypeRef::from_ptr(value) })
+            }
+            None => {
+                // SAFETY: every ADB arm is one pointer wide. A null common
+                // slot is the constructor's valid empty state; a non-null slot
+                // without a selector is malformed and remains inaccessible.
+                let value = unsafe { ptr::addr_of!((*raw).d.other).read() };
+                if value.is_null() {
+                    PolicyQualInfoValueRef::Empty
+                } else {
+                    PolicyQualInfoValueRef::MissingIdentifier
+                }
+            }
+        }
+    }
+}
+
+impl PolicyQualInfoMut<'_> {
+    /// Exclusively borrows only the active union member.
+    #[must_use]
+    pub fn value_mut(&mut self) -> PolicyQualInfoValueMut<'_> {
+        let raw = self.as_mut_ptr();
+        match self.as_ref().kind() {
+            Some(PolicyQualInfoKind::CpsUri) => {
+                // SAFETY: the discriminator selects this member and the exclusive
+                // parent handle bounds the child reborrow.
+                let value = unsafe { ptr::addr_of!((*raw).d.cpsuri).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                PolicyQualInfoValueMut::CpsUri(unsafe { Asn1StringMut::from_ptr(value) })
+            }
+            Some(PolicyQualInfoKind::UserNotice) => {
+                // SAFETY: the discriminator selects the USERNOTICE member.
+                let value = unsafe { ptr::addr_of!((*raw).d.usernotice).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                PolicyQualInfoValueMut::UserNotice(unsafe { UserNoticeMut::from_ptr(value) })
+            }
+            Some(PolicyQualInfoKind::Other) => {
+                // SAFETY: the discriminator selects the default ASN1_TYPE member.
+                let value = unsafe { ptr::addr_of!((*raw).d.other).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                PolicyQualInfoValueMut::Other(unsafe { Asn1TypeMut::from_ptr(value) })
+            }
+            None => {
+                // SAFETY: as in the shared view, all arms are pointer-sized
+                // and a null common slot denotes the valid empty state.
+                let value = unsafe { ptr::addr_of!((*raw).d.other).read() };
+                if value.is_null() {
+                    PolicyQualInfoValueMut::Empty
+                } else {
+                    PolicyQualInfoValueMut::MissingIdentifier
+                }
+            }
+        }
+    }
+
+    /// Replaces the selector and active owned union member together.
+    ///
+    /// The input is returned unchanged if the current selector is missing, a
+    /// known selector cannot be allocated, or Other carries a reserved ID.
+    pub fn set_value(&mut self, value: PolicyQualInfoValue) -> Result<(), PolicyQualInfoValue> {
+        if matches!(
+            self.as_ref().value(),
+            PolicyQualInfoValueRef::MissingIdentifier
+        ) {
+            return Err(value);
+        }
+        let needs_known_selector = matches!(
+            &value,
+            PolicyQualInfoValue::CpsUri(_) | PolicyQualInfoValue::UserNotice(_)
+        );
+        let known_selector = match &value {
+            PolicyQualInfoValue::Empty => None,
+            PolicyQualInfoValue::CpsUri(_) => {
+                crate::objects::obj_dat::OBJ_nid2obj(ffi::NID_id_qt_cps as i32)
+                    .map(PolicyQualInfoId::from)
+            }
+            PolicyQualInfoValue::UserNotice(_) => {
+                crate::objects::obj_dat::OBJ_nid2obj(ffi::NID_id_qt_unotice as i32)
+                    .map(PolicyQualInfoId::from)
+            }
+            PolicyQualInfoValue::Other { qualifier_id, .. } => {
+                let nid = crate::objects::obj_dat::OBJ_obj2nid(Some(qualifier_id.as_ref()));
+                if nid == ffi::NID_id_qt_cps as i32 || nid == ffi::NID_id_qt_unotice as i32 {
+                    return Err(value);
+                }
+                None
+            }
+        };
+        if needs_known_selector && known_selector.is_none() {
+            return Err(value);
+        }
+
+        let old = self
+            .detach_value()
+            .expect("the selector was checked before detaching");
+        self.install_value(value, known_selector);
+        drop(old);
+        Ok(())
+    }
+
+    /// Takes the current value while installing a fresh default qualifier.
+    pub fn take_value(&mut self) -> Result<PolicyQualInfoValue, PolicyQualInfoTakeError> {
+        if matches!(
+            self.as_ref().value(),
+            PolicyQualInfoValueRef::MissingIdentifier
+        ) {
+            return Err(PolicyQualInfoTakeError::MissingIdentifier);
+        }
+        let mut replacement =
+            PolicyQualInfo::new().ok_or(PolicyQualInfoTakeError::AllocationFailure)?;
+        let raw = self.as_mut_ptr();
+        let replacement_raw = replacement.as_mut().as_mut_ptr();
+        // SAFETY: both exclusive handles name complete records. Swapping the
+        // selector and one-pointer union preserves a matching pair in each.
+        unsafe {
+            ptr::swap(
+                ptr::addr_of_mut!((*raw).pqualid),
+                ptr::addr_of_mut!((*replacement_raw).pqualid),
+            );
+            ptr::swap(
+                ptr::addr_of_mut!((*raw).d),
+                ptr::addr_of_mut!((*replacement_raw).d),
+            );
+        }
+        replacement
+            .as_mut()
+            .detach_value()
+            .map_err(|()| PolicyQualInfoTakeError::MissingIdentifier)
+    }
+
+    fn detach_value(&mut self) -> Result<PolicyQualInfoValue, ()> {
+        let kind = self.as_ref().kind();
+        let raw = self.as_mut_ptr();
+        // SAFETY: a present kind came from the live selector. Each branch
+        // reads and clears only its active one-pointer union member. With no
+        // selector, only a null common slot is the detachable empty state.
+        let value = unsafe {
+            match kind {
+                None => {
+                    let value = ptr::addr_of!((*raw).d.other).read();
+                    if value.is_null() {
+                        return Ok(PolicyQualInfoValue::Empty);
+                    }
+                    return Err(());
+                }
+                Some(PolicyQualInfoKind::CpsUri) => {
+                    let value = ptr::addr_of_mut!((*raw).d.cpsuri).replace(ptr::null_mut());
+                    PolicyQualInfoValue::CpsUri(CBox::from_raw(value))
+                }
+                Some(PolicyQualInfoKind::UserNotice) => {
+                    let value = ptr::addr_of_mut!((*raw).d.usernotice).replace(ptr::null_mut());
+                    PolicyQualInfoValue::UserNotice(CBox::from_raw(value))
+                }
+                Some(PolicyQualInfoKind::Other) => {
+                    let value = ptr::addr_of_mut!((*raw).d.other).replace(ptr::null_mut());
+                    let qualifier_id = ptr::addr_of_mut!((*raw).pqualid).replace(ptr::null_mut());
+                    let qualifier_id =
+                        PolicyQualInfoId::from_raw(qualifier_id).expect("kind requires a selector");
+                    return Ok(PolicyQualInfoValue::Other {
+                        qualifier_id,
+                        value: CBox::from_raw(value),
+                    });
+                }
+            }
+        };
+        // SAFETY: the selected payload was cleared first; detaching the
+        // selector transfers its unique free obligation.
+        let qualifier_id = unsafe { ptr::addr_of_mut!((*raw).pqualid).replace(ptr::null_mut()) };
+        // SAFETY: kind proves the selector was non-null and owned by the record.
+        drop(unsafe { PolicyQualInfoId::from_raw(qualifier_id) });
+        Ok(value)
+    }
+
+    fn install_value(
+        &mut self,
+        value: PolicyQualInfoValue,
+        known_selector: Option<PolicyQualInfoId>,
+    ) {
+        let raw = self.as_mut_ptr();
+        let (selector, value): (Option<PolicyQualInfoId>, *mut c_void) = match value {
+            PolicyQualInfoValue::Empty => (None, ptr::null_mut()),
+            PolicyQualInfoValue::CpsUri(value) => (
+                Some(known_selector.expect("CPS values prepare a selector")),
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            PolicyQualInfoValue::UserNotice(value) => (
+                Some(known_selector.expect("user-notice values prepare a selector")),
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            PolicyQualInfoValue::Other {
+                qualifier_id,
+                value,
+            } => (
+                Some(qualifier_id),
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+        };
+        // SAFETY: every union arm is one pointer wide. The previous pair was
+        // detached; pointer and validated selector form a consistent ADB value.
+        unsafe {
+            ptr::addr_of_mut!((*raw).d.other).write(value.cast());
+            ptr::addr_of_mut!((*raw).pqualid)
+                .write(selector.map_or(ptr::null_mut(), PolicyQualInfoId::into_raw));
+        }
+    }
+}
+
+#[cfg(test)]
+mod policy_qual_info_tests {
+    use core::mem::{align_of, size_of};
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+    use crate::asn1::asn1_lib::ASN1_STRING_new;
+    use crate::objects::obj_dat::OBJ_nid2obj;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn constructor_preserves_layout_and_exposes_the_empty_state() {
+        assert_owned_cell::<PolicyQualInfo>();
+        assert_eq!(
+            size_of::<PolicyQualInfo>(),
+            size_of::<ffi::POLICYQUALINFO_st>()
+        );
+        assert_eq!(
+            align_of::<PolicyQualInfo>(),
+            align_of::<ffi::POLICYQUALINFO_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<PolicyQualInfo>>(),
+            size_of::<*mut ffi::POLICYQUALINFO_st>()
+        );
+
+        let mut qualifier = PolicyQualInfo::new().expect("POLICYQUALINFO_new");
+        assert_eq!(qualifier.as_ref().kind(), None);
+        assert!(qualifier.as_ref().qualifier_id().is_none());
+        assert!(matches!(
+            qualifier.as_ref().value(),
+            PolicyQualInfoValueRef::Empty
+        ));
+        assert!(matches!(
+            qualifier.as_mut().value_mut(),
+            PolicyQualInfoValueMut::Empty
+        ));
+    }
+
+    #[test]
+    fn tagged_arms_can_be_replaced_borrowed_mutated_and_taken() {
+        let string = ASN1_STRING_new().expect("ASN1_STRING_new");
+        let mut qualifier =
+            match PolicyQualInfo::from_value(PolicyQualInfoValue::CpsUri(Some(string))) {
+                Ok(qualifier) => qualifier,
+                Err(_) => panic!("failed to construct CPS qualifier"),
+            };
+        assert_eq!(qualifier.as_ref().kind(), Some(PolicyQualInfoKind::CpsUri));
+        assert!(matches!(
+            qualifier.as_ref().value(),
+            PolicyQualInfoValueRef::CpsUri(Some(_))
+        ));
+        assert!(matches!(
+            qualifier.as_mut().value_mut(),
+            PolicyQualInfoValueMut::CpsUri(Some(_))
+        ));
+
+        let notice = UserNotice::new().expect("USERNOTICE_new");
+        assert!(
+            qualifier
+                .as_mut()
+                .set_value(PolicyQualInfoValue::UserNotice(Some(notice)))
+                .is_ok()
+        );
+        assert_eq!(
+            qualifier.as_ref().kind(),
+            Some(PolicyQualInfoKind::UserNotice)
+        );
+
+        let taken = qualifier.as_mut().take_value().expect("replacement record");
+        assert!(matches!(taken, PolicyQualInfoValue::UserNotice(Some(_))));
+        assert!(matches!(
+            qualifier.as_ref().value(),
+            PolicyQualInfoValueRef::Empty
+        ));
+    }
+
+    #[test]
+    fn other_arm_keeps_its_identifier_and_asn1_type_together() {
+        let qualifier_id = OBJ_nid2obj(ffi::NID_certificate_policies as i32).expect("policy OID");
+        let qualifier_id_ptr = qualifier_id.as_ptr();
+        let value = PolicyQualInfoValue::Other {
+            qualifier_id: qualifier_id.into(),
+            value: Asn1Type::new(),
+        };
+        let mut qualifier = match PolicyQualInfo::from_value(value) {
+            Ok(qualifier) => qualifier,
+            Err(_) => panic!("failed to construct other qualifier"),
+        };
+        assert_eq!(qualifier.as_ref().kind(), Some(PolicyQualInfoKind::Other));
+        assert_eq!(
+            qualifier
+                .as_ref()
+                .qualifier_id()
+                .map(|identifier| identifier.as_ptr()),
+            Some(qualifier_id_ptr.cast_const())
+        );
+        assert!(matches!(
+            qualifier.as_ref().value(),
+            PolicyQualInfoValueRef::Other(Some(_))
+        ));
+        assert!(matches!(
+            qualifier.as_mut().value_mut(),
+            PolicyQualInfoValueMut::Other(Some(_))
+        ));
+        assert!(matches!(
+            qualifier.as_mut().take_value(),
+            Ok(PolicyQualInfoValue::Other { value: Some(_), .. })
+        ));
+    }
+
+    #[test]
+    fn other_arm_rejects_reserved_identifiers() {
+        let reserved = OBJ_nid2obj(ffi::NID_id_qt_cps as i32).expect("CPS object identifier");
+        let value = PolicyQualInfoValue::Other {
+            qualifier_id: reserved.into(),
+            value: Asn1Type::new(),
+        };
+        let mut qualifier = PolicyQualInfo::new().expect("POLICYQUALINFO_new");
+        assert!(qualifier.as_mut().set_value(value).is_err());
+        assert!(matches!(
+            qualifier.as_ref().value(),
+            PolicyQualInfoValueRef::Empty
+        ));
+    }
+}

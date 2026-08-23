@@ -2,16 +2,9 @@
 
 use crate::stack::stack::{Stack, StackMut, StackRef};
 
-/// Opaque element marker for the `POLICYQUALINFO` records stored in this
-/// stack.
-///
-/// The concrete record has separate authored type-route work. Until that
-/// wrapper is available, this unconstructible marker retains the generated
-/// stack's element type without exposing or dereferencing its layout.
-#[repr(C)]
-pub struct PolicyQualInfo {
-    _opaque: [u8; 0],
-}
+// The concrete element wrapper now lives in its public-definition home. Keep
+// this re-export so existing stack consumers retain their lower-layer path.
+pub use crate::x509::x509v3::PolicyQualInfo;
 
 /// Wraps: stack_st_POLICYQUALINFO
 ///
