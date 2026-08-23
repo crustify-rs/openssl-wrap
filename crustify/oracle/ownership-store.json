@@ -592,7 +592,7 @@
   {
    "name": "asn1_type_st",
    "defined_in": "include/openssl/asn1.h",
-   "_comment_agent": "The value union is discriminator-controlled. Heap ASN1_TYPE values created by OpenSSL own active pointer payloads; ASN1_TYPE_free dispatches their release. The common ptr view also appears in non-owning stack temporaries. Pointer arms are nullable; string-shaped payloads are mutable internally, while ASN1_OBJECT payloads are observed immutably.",
+   "_comment_agent": "The value union is discriminator-controlled. Heap ASN1_TYPE values created by OpenSSL own active pointer payloads; ASN1_TYPE_free dispatches their release. The common ptr view also appears in non-owning stack temporaries. Pointer arms are nullable; string-shaped payloads are mutable internally, while ASN1_OBJECT payloads are observed immutably. Reviewed 2026-08-23: the ASN1_VALUE spelling of value.asn1_value names the union's generic aliasing slot, not the pointee, so V_ASN1_OTHER and every unenumerated tag carry an ASN1_STRING and only V_ASN1_ANY carries a nested ASN1_TYPE.",
    "fields": [
     {
      "name": "value.asn1_string",
@@ -621,7 +621,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+      "note": "The union's generic aliasing slot, not a distinct ASN1_VALUE payload: asn1_ex_c2i (tasn_dec.c), asn1_ex_i2c (tasn_enc.c), ossl_asn1_primitive_free (tasn_fre.c) and asn1_print_fsname (tasn_prn.c) all take &typ->value.asn1_value whatever the discriminator is. A fully constructed ASN1_TYPE owns the payload and the discriminator picks the releaser: ASN1_OBJECT_free for V_ASN1_OBJECT; a recursive ossl_asn1_primitive_free plus OPENSSL_free of the nested ASN1_TYPE for V_ASN1_ANY; ASN1_STRING teardown for every other tag, including V_ASN1_OTHER and every tag with no dedicated union member, which asn1_ex_c2i allocates as ASN1_STRING_type_new(tag). V_ASN1_UNDEF (the ASN1_TYPE_new state), V_ASN1_NULL and V_ASN1_BOOLEAN carry no pointer. Null is permitted and the releaser skips it."
      }
     },
     {

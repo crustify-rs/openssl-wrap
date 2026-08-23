@@ -389,8 +389,22 @@ define_ctype!(
 impl_dropped!(Asn1Type, ffi::asn1_type_st, ffi::ASN1_TYPE_free);
 
 /// Wraps: asn1_type_st.type
+///
+/// The discriminator decides what the `value` union holds, and OpenSSL's own
+/// teardown is the authority: `ossl_asn1_primitive_free` called with a null
+/// `ASN1_ITEM` — the form `ASN1_TYPE_set` uses — routes `V_ASN1_OBJECT` to
+/// `ASN1_OBJECT_free`, leaves `V_ASN1_BOOLEAN` and `V_ASN1_NULL` alone,
+/// recurses into a nested `ASN1_TYPE` for `V_ASN1_ANY`, and releases *every*
+/// other tag as an `ASN1_STRING`. `asn1_ex_c2i` and `ASN1_TYPE_cmp` agree, so
+/// `V_ASN1_OTHER` and every tag without a dedicated union member carry an
+/// `asn1_string_st` too, not a type-erased `ASN1_VALUE`.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Asn1TypeKind {
+    /// `V_ASN1_UNDEF`: the tag a freshly allocated `ASN1_TYPE` carries.
+    ///
+    /// `ossl_asn1_primitive_new` stores it together with a null payload, and
+    /// `ASN1_TYPE_get` reports such a value as having no content.
+    Undefined,
     Boolean,
     Integer,
     BitString,
@@ -410,8 +424,21 @@ pub enum Asn1TypeKind {
     GeneralString,
     UniversalString,
     BmpString,
+    /// `V_ASN1_OTHER`: a value outside the universal class, kept in its
+    /// encoded form inside an `ASN1_STRING`.
     Other,
+    /// `V_ASN1_ANY`: the payload is a nested, heap-allocated `ASN1_TYPE`.
+    ///
+    /// `ossl_asn1_primitive_free` is the only place this tag is honoured on an
+    /// `ASN1_TYPE`; it frees the inner value recursively and then the nested
+    /// header itself. Nothing in the decoder produces it, but the safe surface
+    /// must not mistake such a payload for an `ASN1_STRING`.
+    Any,
     /// A tag without a dedicated member in the public `ASN1_TYPE` union.
+    ///
+    /// Its payload is still an `asn1_string_st`: `asn1_ex_c2i` allocates
+    /// `ASN1_STRING_type_new(tag)` in its default branch and
+    /// `ossl_asn1_primitive_free` releases it as an `ASN1_STRING`.
     Unknown(c_int),
 }
 
@@ -420,6 +447,7 @@ impl Asn1TypeKind {
     #[must_use]
     pub fn from_raw(raw: c_int) -> Self {
         match raw {
+            ffi::V_ASN1_UNDEF => Self::Undefined,
             value if value == ffi::V_ASN1_BOOLEAN as c_int => Self::Boolean,
             value if value == ffi::V_ASN1_INTEGER as c_int => Self::Integer,
             value if value == ffi::V_ASN1_BIT_STRING as c_int => Self::BitString,
@@ -440,6 +468,7 @@ impl Asn1TypeKind {
             value if value == ffi::V_ASN1_UNIVERSALSTRING as c_int => Self::UniversalString,
             value if value == ffi::V_ASN1_BMPSTRING as c_int => Self::BmpString,
             ffi::V_ASN1_OTHER => Self::Other,
+            ffi::V_ASN1_ANY => Self::Any,
             value => Self::Unknown(value),
         }
     }
@@ -448,6 +477,7 @@ impl Asn1TypeKind {
     #[must_use]
     pub const fn as_raw(self) -> c_int {
         match self {
+            Self::Undefined => ffi::V_ASN1_UNDEF,
             Self::Boolean => ffi::V_ASN1_BOOLEAN as c_int,
             Self::Integer => ffi::V_ASN1_INTEGER as c_int,
             Self::BitString => ffi::V_ASN1_BIT_STRING as c_int,
@@ -468,23 +498,37 @@ impl Asn1TypeKind {
             Self::UniversalString => ffi::V_ASN1_UNIVERSALSTRING as c_int,
             Self::BmpString => ffi::V_ASN1_BMPSTRING as c_int,
             Self::Other => ffi::V_ASN1_OTHER,
+            Self::Any => ffi::V_ASN1_ANY,
             Self::Unknown(value) => value,
         }
     }
 
-    const fn is_string(self) -> bool {
+    /// Whether a non-null payload under this tag is an `asn1_string_st`.
+    ///
+    /// True for every tag but the ones OpenSSL's teardown singles out:
+    /// `V_ASN1_NULL` has no content, `V_ASN1_BOOLEAN` stores its byte inline,
+    /// `V_ASN1_OBJECT` holds an `ASN1_OBJECT` and `V_ASN1_ANY` a nested
+    /// `ASN1_TYPE`. `V_ASN1_UNDEF` is excluded as the not-yet-set state
+    /// `ossl_asn1_primitive_new` always pairs with a null payload; a C caller
+    /// that stores a string under it instead sees it reported as
+    /// [`Asn1TypeValue::Undefined`], never as a mistyped payload. See
+    /// [`Asn1TypeKind`].
+    #[must_use]
+    pub const fn holds_string(self) -> bool {
         !matches!(
             self,
-            Self::Boolean | Self::Null | Self::Object | Self::Other | Self::Unknown(_)
+            Self::Undefined | Self::Boolean | Self::Null | Self::Object | Self::Any
         )
     }
 }
 
 /// Wraps: asn1_type_st.value.asn1_string
 ///
-/// A type-tagged borrow of the common `asn1_string_st` representation. The
-/// concrete tag travels with the borrow so `try_set_string` cannot copy it
-/// using an incompatible ASN.1 discriminator.
+/// A type-tagged borrow of the common `asn1_string_st` representation, which
+/// every union arm but `boolean`, `object` and a nested `V_ASN1_ANY` value
+/// shares — see [`Asn1TypeKind::holds_string`]. The concrete tag travels with
+/// the borrow so `try_set_string` cannot copy it using an incompatible ASN.1
+/// discriminator.
 #[derive(Clone, Copy)]
 pub struct Asn1TypeStringRef<'a> {
     value: Asn1StringRef<'a>,
@@ -508,6 +552,9 @@ impl<'a> Asn1TypeStringRef<'a> {
 /// Wraps: asn1_type_st.value
 #[derive(Clone, Copy)]
 pub enum Asn1TypeValue<'a> {
+    /// The `V_ASN1_UNDEF` state a freshly allocated `ASN1_TYPE` starts in,
+    /// carrying no payload.
+    Undefined,
     /// Wraps: asn1_type_st.value.boolean
     Boolean(c_int),
     Null,
@@ -545,12 +592,19 @@ pub enum Asn1TypeValue<'a> {
     Set(Option<Asn1TypeStringRef<'a>>),
     /// Wraps: asn1_type_st.value.sequence
     Sequence(Option<Asn1TypeStringRef<'a>>),
+    /// A `V_ASN1_OTHER` value, held in encoded form in an `ASN1_STRING`.
+    Other(Option<Asn1TypeStringRef<'a>>),
     /// Wraps: asn1_type_st.value.asn1_value
-    Other(Option<Asn1ValueRef<'a>>),
+    ///
+    /// The nested `ASN1_TYPE` a `V_ASN1_ANY` tag selects.
+    Any(Option<Asn1TypeRef<'a>>),
     /// Wraps: asn1_type_st.value.ptr
+    ///
+    /// A tag with no dedicated union member; its payload is still an
+    /// `ASN1_STRING`.
     Unknown {
         type_tag: c_int,
-        value: Option<Asn1ValueRef<'a>>,
+        value: Option<Asn1TypeStringRef<'a>>,
     },
 }
 
@@ -575,7 +629,7 @@ impl<'a> Asn1TypeRef<'a> {
     }
 
     fn string_value(&self, kind: Asn1TypeKind) -> Option<Asn1TypeStringRef<'a>> {
-        if !kind.is_string() {
+        if !kind.holds_string() {
             return None;
         }
         // SAFETY: `kind` was read from this live `ASN1_TYPE` and selects one
@@ -593,6 +647,7 @@ impl<'a> Asn1TypeRef<'a> {
     pub fn value(&self) -> Asn1TypeValue<'a> {
         let kind = self.kind();
         match kind {
+            Asn1TypeKind::Undefined => Asn1TypeValue::Undefined,
             Asn1TypeKind::Boolean => {
                 // SAFETY: the discriminator selects the initialized boolean
                 // scalar and the raw projection merely copies it.
@@ -631,24 +686,21 @@ impl<'a> Asn1TypeRef<'a> {
             Asn1TypeKind::Utf8String => Asn1TypeValue::Utf8String(self.string_value(kind)),
             Asn1TypeKind::Set => Asn1TypeValue::Set(self.string_value(kind)),
             Asn1TypeKind::Sequence => Asn1TypeValue::Sequence(self.string_value(kind)),
-            Asn1TypeKind::Other => {
-                // SAFETY: the discriminator selects the erased ASN.1 value
-                // pointer; copying it does not access its pointee.
+            Asn1TypeKind::Other => Asn1TypeValue::Other(self.string_value(kind)),
+            Asn1TypeKind::Any => {
+                // SAFETY: the discriminator selects the nested `ASN1_TYPE`
+                // header; copying the pointer does not access its pointee.
                 let raw = unsafe { ptr::addr_of!((*self.as_ptr()).value.asn1_value).read() };
-                // SAFETY: a non-null active value is live for this handle's
-                // lifetime and remains type-erased.
-                let value = unsafe { Asn1ValueRef::from_ptr(raw) };
-                Asn1TypeValue::Other(value)
+                // SAFETY: `ossl_asn1_primitive_free` reinterprets a live
+                // `V_ASN1_ANY` payload as an `ASN1_TYPE *`, so a non-null one
+                // is a nested value that lives as long as this handle does.
+                let value = unsafe { Asn1TypeRef::from_ptr(raw.cast()) };
+                Asn1TypeValue::Any(value)
             }
-            Asn1TypeKind::Unknown(type_tag) => {
-                // SAFETY: every union arm shares the pointer-sized storage;
-                // copying `ptr` neither dereferences nor interprets the pointee.
-                let raw = unsafe { ptr::addr_of!((*self.as_ptr()).value.ptr).read() };
-                // SAFETY: a non-null pointer in a live unknown arm is exposed
-                // only as an erased borrow tied to this handle.
-                let value = unsafe { Asn1ValueRef::from_ptr(raw.cast()) };
-                Asn1TypeValue::Unknown { type_tag, value }
-            }
+            Asn1TypeKind::Unknown(type_tag) => Asn1TypeValue::Unknown {
+                type_tag,
+                value: self.string_value(kind),
+            },
         }
     }
 }
@@ -731,6 +783,11 @@ mod asn1_type_tests {
         );
 
         let mut value = Asn1Type::new().expect("ASN1_TYPE_new");
+        // `ossl_asn1_primitive_new` hands back `V_ASN1_UNDEF` and a null
+        // payload, not one of the tagged arms.
+        assert_eq!(value.as_ref().kind(), Asn1TypeKind::Undefined);
+        assert!(matches!(value.as_ref().value(), Asn1TypeValue::Undefined));
+
         value.as_mut().set_boolean(true);
         assert!(matches!(
             value.as_ref().value(),
@@ -764,7 +821,7 @@ mod asn1_type_tests {
     }
 
     #[test]
-    fn string_and_erased_union_arms_stay_lifetime_bound() {
+    fn every_string_backed_arm_stays_typed_and_lifetime_bound() {
         // SAFETY: OpenSSL returns either null or a fresh initialized string.
         let string =
             unsafe { CBox::<crate::asn1::asn1::Asn1String>::from_raw(ffi::ASN1_STRING_new()) }
@@ -787,14 +844,83 @@ mod asn1_type_tests {
             string.as_ptr().cast_const()
         );
 
+        // `V_ASN1_OTHER` keeps the value in encoded form, but the payload is
+        // still an `ASN1_STRING` — `ossl_asn1_primitive_free` releases it as
+        // one and `ASN1_TYPE_cmp` compares it as one.
         raw.type_ = ffi::V_ASN1_OTHER;
         raw.value = ffi::asn1_type_st__bindgen_ty_1 {
-            asn1_value: string.as_ptr().cast(),
+            asn1_string: string.as_ptr(),
         };
-        // SAFETY: the prior handle is no longer used; `raw` and its erased
-        // payload remain initialized and live for this new shared borrow.
-        let value = unsafe { Asn1TypeRef::from_ptr(&raw mut raw) }.expect("erased ASN1_TYPE view");
-        assert!(matches!(value.value(), Asn1TypeValue::Other(Some(_))));
+        // SAFETY: the prior handle is no longer used; `raw` and its payload
+        // remain initialized and live for this new shared borrow.
+        let value = unsafe { Asn1TypeRef::from_ptr(&raw mut raw) }.expect("other ASN1_TYPE view");
+        let Asn1TypeValue::Other(Some(other)) = value.value() else {
+            panic!("other arm");
+        };
+        assert_eq!(other.kind(), Asn1TypeKind::Other);
+        assert_eq!(other.as_string().as_ptr(), string.as_ptr().cast_const());
+
+        // A universal tag with no dedicated union member reaches the same
+        // `ASN1_STRING` payload through `asn1_ex_c2i`'s default branch.
+        raw.type_ = 18; // V_ASN1_NUMERICSTRING
+        // SAFETY: as above; only the discriminator changed.
+        let value = unsafe { Asn1TypeRef::from_ptr(&raw mut raw) }.expect("unknown ASN1_TYPE view");
+        let Asn1TypeValue::Unknown {
+            type_tag,
+            value: Some(unknown),
+        } = value.value()
+        else {
+            panic!("unknown arm");
+        };
+        assert_eq!(type_tag, 18);
+        assert_eq!(unknown.kind(), Asn1TypeKind::Unknown(18));
+        assert_eq!(unknown.as_string().as_ptr(), string.as_ptr().cast_const());
+    }
+
+    #[test]
+    fn any_arm_yields_the_nested_type_not_a_string() {
+        let mut inner = Asn1Type::new().expect("inner ASN1_TYPE");
+        inner.as_mut().set_boolean(true);
+
+        let mut raw = ffi::asn1_type_st {
+            type_: ffi::V_ASN1_ANY,
+            value: ffi::asn1_type_st__bindgen_ty_1 {
+                asn1_value: inner.as_ptr().cast(),
+            },
+        };
+        // SAFETY: `raw` is initialized and the nested `ASN1_TYPE` it points at
+        // outlives the handle taken here.
+        let value = unsafe { Asn1TypeRef::from_ptr(&raw mut raw) }.expect("any ASN1_TYPE view");
+        let Asn1TypeValue::Any(Some(nested)) = value.value() else {
+            panic!("any arm");
+        };
+        assert!(matches!(nested.value(), Asn1TypeValue::Boolean(0xff)));
+    }
+
+    #[test]
+    fn encoded_other_values_round_trip_through_the_deep_copy_setter() {
+        let source = crate::asn1::asn1_lib::ASN1_STRING_new().expect("ASN1_STRING_new");
+        let mut raw = ffi::asn1_type_st {
+            type_: ffi::V_ASN1_OTHER,
+            value: ffi::asn1_type_st__bindgen_ty_1 {
+                asn1_string: source.as_ptr(),
+            },
+        };
+        // SAFETY: `raw` is initialized and `source` keeps its payload alive.
+        let view = unsafe { Asn1TypeRef::from_ptr(&raw mut raw) }.expect("other ASN1_TYPE view");
+        let Asn1TypeValue::Other(Some(other)) = view.value() else {
+            panic!("other arm");
+        };
+
+        let mut target = Asn1Type::new().expect("target ASN1_TYPE");
+        assert!(target.as_mut().try_set_string(other));
+        let Asn1TypeValue::Other(Some(copy)) = target.as_ref().value() else {
+            panic!("duplicated other arm");
+        };
+        // `ASN1_TYPE_set1` deep-copies through `ASN1_STRING_dup`, so the
+        // target owns storage of its own and `ASN1_TYPE_free` may release it.
+        assert_ne!(copy.as_string().as_ptr(), source.as_ptr().cast_const());
+        assert_eq!(target.as_ref().kind(), Asn1TypeKind::Other);
     }
 }
 
