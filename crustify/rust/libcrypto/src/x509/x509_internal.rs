@@ -142,3 +142,84 @@ mod x509_tests {
         );
     }
 }
+
+define_ctype!(
+    /// Wraps: X509_name_entry_st
+    ///
+    /// Opaque layout-compatible target for one distinguished-name entry.
+    /// OpenSSL keeps the concrete record private, while the public API
+    /// allocates, deep-duplicates and frees complete entries. Each entry owns
+    /// its mandatory ASN.1 object and string children.
+    X509NameEntry,
+    X509NameEntryRef,
+    X509NameEntryMut,
+    ffi::X509_name_entry_st
+);
+
+// `X509_NAME_ENTRY_free` tears down both mandatory ASN.1 children before it
+// releases the entry allocation.
+impl_dropped!(
+    X509NameEntry,
+    ffi::X509_name_entry_st,
+    ffi::X509_NAME_ENTRY_free
+);
+
+// Entries are not reference counted. The ASN.1 duplication routine creates an
+// independent record and deep-copies both children.
+impl_cloned!(
+    X509NameEntry,
+    ffi::X509_name_entry_st,
+    dup = ffi::X509_NAME_ENTRY_dup
+);
+
+impl X509NameEntry {
+    /// Allocates one fully initialized, empty distinguished-name entry.
+    #[must_use]
+    pub fn new() -> Option<ffibox::CBox<Self>> {
+        // SAFETY: a non-null result is a fresh, fully initialized allocation
+        // carrying one `X509_NAME_ENTRY_free` ownership obligation.
+        unsafe { ffibox::CBox::from_raw(ffi::X509_NAME_ENTRY_new()) }
+    }
+}
+
+#[cfg(test)]
+mod x509_name_entry_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CBox, CCell, CCloned, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+
+    #[test]
+    fn opaque_entry_owner_borrows_and_handles_duplication_failure() {
+        assert_owned_cloneable_cell::<X509NameEntry>();
+
+        let mut entry = X509NameEntry::new().expect("X509_NAME_ENTRY_new");
+        let raw = entry.as_ptr();
+        assert_eq!(entry.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(entry.as_mut().as_mut_ptr(), raw);
+
+        // A newly allocated entry has empty mandatory children and therefore
+        // is not yet ASN.1 encodable. Its deep duplication reports failure
+        // rather than manufacturing a partial owner.
+        assert!(entry.try_clone().is_none());
+    }
+
+    #[test]
+    fn opaque_entry_handles_and_owner_are_pointer_sized() {
+        assert_eq!(
+            size_of::<X509NameEntryRef<'static>>(),
+            size_of::<*const ffi::X509_name_entry_st>()
+        );
+        assert_eq!(
+            size_of::<X509NameEntryMut<'static>>(),
+            size_of::<*mut ffi::X509_name_entry_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<X509NameEntry>>(),
+            size_of::<*mut ffi::X509_name_entry_st>()
+        );
+    }
+}

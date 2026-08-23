@@ -184,6 +184,43 @@
    ]
   },
   {
+   "name": "X509_name_entry_st",
+   "defined_in": "include/crypto/x509.h",
+   "_comment_agent": "Both pointer fields are mandatory owned children of a fully initialized X509_NAME_ENTRY, as established by its ASN1_SEQUENCE template and public setter/free implementations.",
+   "fields": [
+    {
+     "name": "object",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Mandatory ASN1_SIMPLE field initialized by X509_NAME_ENTRY_new; the entry owns it, X509_NAME_ENTRY_free releases it, and set_object replaces it with an OBJ_dup result."
+     }
+    },
+    {
+     "name": "value",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Mandatory ASN1_SIMPLE field initialized by X509_NAME_ENTRY_new; the entry owns and mutates the ASN1_STRING and X509_NAME_ENTRY_free releases it."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_name_st",
    "defined_in": "include/crypto/x509.h",
    "_comment_agent": "The private layout is opaque on the public wrap surface. Its three pointer fields are nevertheless fully lifecycle-analyzed from x509_name_ex_new/free/canon/d2i.",
@@ -13070,6 +13107,97 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns a fresh fully initialized X509_ALGOR allocation, or NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "X509_NAME_ENTRY_dup",
+   "defined_in": "crypto/x509/x_name.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Shared source read for the duration of the deep ASN.1 duplication; null produces no duplicate."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or an independent deep duplicate with its own X509_NAME_ENTRY_free obligation."
+    }
+   }
+  },
+  {
+   "name": "X509_NAME_ENTRY_free",
+   "defined_in": "crypto/x509/x_name.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and fully destroys one entry allocation; null is accepted as a no-op by ASN1_item_free."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_NAME_ENTRY_new",
+   "defined_in": "crypto/x509/x_name.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on allocation/field initialization failure or a fresh fully initialized entry owned by the caller."
     }
    }
   },

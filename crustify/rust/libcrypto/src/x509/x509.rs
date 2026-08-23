@@ -8,6 +8,7 @@ use libcrypto_sys as ffi;
 use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
 use crate::asn1::openssl_asn1::{Asn1Type, Asn1TypeMut, Asn1TypeRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
+use crate::x509::x509_internal::X509NameEntry;
 
 /// Opaque element marker for the `X509_EXTENSION` records stored in this
 /// stack.
@@ -322,5 +323,54 @@ mod x509_algor_tests {
             .expect("owned algorithm object");
         assert_eq!(detached_object.as_ptr(), object_ptr);
         assert!(algorithm.as_ref().algorithm().is_none());
+    }
+}
+
+/// Wraps: stack_st_X509_NAME_ENTRY
+///
+/// Typed view of OpenSSL's `STACK_OF(X509_NAME_ENTRY)`. The generated C tag is
+/// a forward declaration whose inline API erases every operation to the common
+/// `OPENSSL_STACK` implementation, so the generic container retains the entry
+/// element type without changing its representation.
+pub type X509NameEntryStack = Stack<X509NameEntry>;
+
+/// Shared borrowed handle to a `STACK_OF(X509_NAME_ENTRY)`.
+pub type X509NameEntryStackRef<'a> = StackRef<'a, X509NameEntry>;
+
+/// Exclusive borrowed handle to a `STACK_OF(X509_NAME_ENTRY)`.
+pub type X509NameEntryStackMut<'a> = StackMut<'a, X509NameEntry>;
+
+#[cfg(test)]
+mod x509_name_entry_stack_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CBox, CCell, CCloned, CDropped};
+
+    use super::*;
+    use crate::stack::stack::{OPENSSL_sk_new_null, OPENSSL_sk_num};
+
+    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+
+    #[test]
+    fn generated_stack_uses_the_typed_erased_container() {
+        assert_owned_cloneable_cell::<X509NameEntryStack>();
+        assert_eq!(
+            size_of::<CBox<X509NameEntryStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<X509NameEntryStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<X509NameEntryStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+
+        let mut stack = OPENSSL_sk_new_null::<X509NameEntry>().expect("name-entry stack");
+        let raw = stack.as_ptr();
+        assert_eq!(stack.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(stack.as_mut().as_mut_ptr(), raw);
+        assert_eq!(OPENSSL_sk_num(Some(stack.as_ref())), Some(0));
     }
 }
