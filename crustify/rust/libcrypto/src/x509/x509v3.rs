@@ -19,17 +19,26 @@ use crate::x509::x509_internal::{
 };
 use crate::x509::x509_vfy::{PolicyQualInfoStack, PolicyQualInfoStackMut, PolicyQualInfoStackRef};
 
-/// Opaque element marker for the `GENERAL_SUBTREE` records stored in this
-/// stack.
-///
-/// `GENERAL_SUBTREE` has its own authored item and is outside this worklist.
-/// Until that layout wrapper is available, this unconstructible marker keeps
-/// the generated stack typed without exposing or dereferencing the record.
-/// Replace it with the element wrapper when `GENERAL_SUBTREE_st` is filled.
-#[repr(C)]
-pub struct GeneralSubtree {
-    _opaque: [u8; 0],
-}
+define_ctype!(
+    /// Wraps: GENERAL_SUBTREE_st
+    ///
+    /// Layout-compatible storage for an ASN.1 general-subtree sequence. The
+    /// record owns its general-name base and its optional integer bounds;
+    /// borrowed access stays on pointer-carrying handles rather than references
+    /// over storage OpenSSL may mutate.
+    GeneralSubtree,
+    GeneralSubtreeRef,
+    GeneralSubtreeMut,
+    ffi::GENERAL_SUBTREE_st
+);
+
+// The generated ASN.1 destructor recursively releases every installed child
+// and then the record allocation.
+impl_dropped!(
+    GeneralSubtree,
+    ffi::GENERAL_SUBTREE_st,
+    ffi::GENERAL_SUBTREE_free
+);
 
 /// Wraps: stack_st_GENERAL_SUBTREE
 ///
@@ -49,17 +58,26 @@ pub type GeneralSubtreeStackRef<'a> = StackRef<'a, GeneralSubtree>;
 /// Exclusive borrowed handle to a `STACK_OF(GENERAL_SUBTREE)`.
 pub type GeneralSubtreeStackMut<'a> = StackMut<'a, GeneralSubtree>;
 
-/// Opaque element marker for the `ACCESS_DESCRIPTION` records stored in this
-/// stack.
-///
-/// The element record has its own public definition and lifecycle, but that
-/// higher-layer type is not part of this worklist. Until its wrapper is
-/// available, this unconstructible marker retains the generated stack's
-/// element type without exposing or dereferencing an element layout.
-#[repr(C)]
-pub struct AccessDescription {
-    _opaque: [u8; 0],
-}
+define_ctype!(
+    /// Wraps: ACCESS_DESCRIPTION_st
+    ///
+    /// Layout-compatible storage for an ASN.1 access-description sequence. The
+    /// record owns its object identifier and general-name location; borrowed
+    /// access is carried by handles without forming Rust references over C
+    /// storage.
+    AccessDescription,
+    AccessDescriptionRef,
+    AccessDescriptionMut,
+    ffi::ACCESS_DESCRIPTION_st
+);
+
+// The generated ASN.1 destructor recursively releases both installed children
+// and then the record allocation.
+impl_dropped!(
+    AccessDescription,
+    ffi::ACCESS_DESCRIPTION_st,
+    ffi::ACCESS_DESCRIPTION_free
+);
 
 /// Wraps: stack_st_ACCESS_DESCRIPTION
 ///
@@ -84,6 +102,251 @@ impl AccessDescriptionStack {
     #[must_use]
     pub fn new_authority_info_access() -> Option<AuthorityInfoAccess> {
         crate::x509::v3_info::AUTHORITY_INFO_ACCESS_new()
+    }
+}
+
+impl AccessDescription {
+    /// Allocates a fully initialized access-description sequence.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
+        // one matching `ACCESS_DESCRIPTION_free` obligation.
+        unsafe { CBox::from_raw(ffi::ACCESS_DESCRIPTION_new()) }
+    }
+}
+
+impl<'a> AccessDescriptionRef<'a> {
+    /// Wraps: ACCESS_DESCRIPTION_st.method
+    ///
+    /// Borrows the optional object identifier owned by this sequence.
+    #[must_use]
+    pub fn method(&self) -> Option<Asn1ObjectRef<'a>> {
+        // SAFETY: raw-place projection copies the stored pointer without
+        // forming a reference over C storage. A non-null child remains owned by
+        // this sequence for the handle's `'a`.
+        unsafe {
+            let method = ptr::addr_of!((*self.as_ptr()).method).read();
+            Asn1ObjectRef::from_ptr(method)
+        }
+    }
+
+    /// Wraps: ACCESS_DESCRIPTION_st.location
+    ///
+    /// Borrows the optional general-name location owned by this sequence.
+    #[must_use]
+    pub fn location(&self) -> Option<GeneralNameRef<'a>> {
+        // SAFETY: raw-place projection copies the stored pointer without
+        // forming a reference over C storage. A non-null child remains owned by
+        // this sequence for the handle's `'a`.
+        unsafe {
+            let location = ptr::addr_of!((*self.as_ptr()).location).read();
+            GeneralNameRef::from_ptr(location)
+        }
+    }
+}
+
+impl AccessDescriptionMut<'_> {
+    /// Exclusively reborrows the installed general-name location.
+    #[must_use]
+    pub fn location_mut(&mut self) -> Option<GeneralNameMut<'_>> {
+        // SAFETY: raw-place projection reads the stored pointer, and the
+        // exclusive parent reborrow supplies exclusive access to the child.
+        unsafe {
+            let location = ptr::addr_of!((*self.as_mut_ptr()).location).read();
+            GeneralNameMut::from_ptr(location)
+        }
+    }
+
+    /// Replaces the owned object identifier and releases the previous value.
+    pub fn set_method(&mut self, method: Option<CBox<Asn1Object>>) {
+        let method = method.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // ownership of the detached value transfers to the temporary owner.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).method).replace(method) };
+        // SAFETY: any detached non-null child carries exactly the destructor
+        // obligation formerly owned by this sequence.
+        drop(unsafe { CBox::<Asn1Object>::from_raw(previous) });
+    }
+
+    /// Takes the owned object identifier, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_method(&mut self) -> Option<CBox<Asn1Object>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let method =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).method).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null value remains a complete ASN.1 object.
+        unsafe { CBox::from_raw(method) }
+    }
+
+    /// Replaces the owned location and releases the previous value.
+    pub fn set_location(&mut self, location: Option<CBox<GeneralName>>) {
+        let location = location.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer;
+        // ownership of the detached value transfers to the temporary owner.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).location).replace(location) };
+        // SAFETY: a detached non-null child remains a complete general name
+        // carrying one `GENERAL_NAME_free` obligation.
+        drop(unsafe { CBox::<GeneralName>::from_raw(previous) });
+    }
+
+    /// Takes the owned location, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_location(&mut self) -> Option<CBox<GeneralName>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let location =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).location).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null child remains a complete general name.
+        unsafe { CBox::from_raw(location) }
+    }
+}
+
+impl GeneralSubtree {
+    /// Allocates a fully initialized general-subtree sequence.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete ASN.1 sequence carrying
+        // one matching `GENERAL_SUBTREE_free` obligation.
+        unsafe { CBox::from_raw(ffi::GENERAL_SUBTREE_new()) }
+    }
+}
+
+impl<'a> GeneralSubtreeRef<'a> {
+    /// Wraps: GENERAL_SUBTREE_st.base
+    ///
+    /// Borrows the optional general-name base owned by this sequence.
+    #[must_use]
+    pub fn base(&self) -> Option<GeneralNameRef<'a>> {
+        // SAFETY: raw-place projection copies the stored pointer. A non-null
+        // child remains owned by this sequence for the handle's `'a`.
+        unsafe {
+            let base = ptr::addr_of!((*self.as_ptr()).base).read();
+            GeneralNameRef::from_ptr(base)
+        }
+    }
+
+    /// Wraps: GENERAL_SUBTREE_st.minimum
+    ///
+    /// Borrows the optional inclusive minimum bound.
+    #[must_use]
+    pub fn minimum(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: `ASN1_INTEGER` aliases `asn1_string_st`; raw-place projection
+        // copies its pointer and the enclosing sequence keeps it alive.
+        unsafe {
+            let minimum = ptr::addr_of!((*self.as_ptr()).minimum).read();
+            Asn1StringRef::from_ptr(minimum)
+        }
+    }
+
+    /// Wraps: GENERAL_SUBTREE_st.maximum
+    ///
+    /// Borrows the optional inclusive maximum bound.
+    #[must_use]
+    pub fn maximum(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: `ASN1_INTEGER` aliases `asn1_string_st`; raw-place projection
+        // copies its pointer and the enclosing sequence keeps it alive.
+        unsafe {
+            let maximum = ptr::addr_of!((*self.as_ptr()).maximum).read();
+            Asn1StringRef::from_ptr(maximum)
+        }
+    }
+}
+
+impl GeneralSubtreeMut<'_> {
+    /// Exclusively reborrows the installed general-name base.
+    #[must_use]
+    pub fn base_mut(&mut self) -> Option<GeneralNameMut<'_>> {
+        // SAFETY: the exclusive parent reborrow supplies exclusive access to
+        // the installed child for the returned handle's lifetime.
+        unsafe {
+            let base = ptr::addr_of!((*self.as_mut_ptr()).base).read();
+            GeneralNameMut::from_ptr(base)
+        }
+    }
+
+    /// Exclusively reborrows the installed minimum bound.
+    #[must_use]
+    pub fn minimum_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: `ASN1_INTEGER` aliases `asn1_string_st`, and the exclusive
+        // parent reborrow supplies exclusive access to this child.
+        unsafe {
+            let minimum = ptr::addr_of!((*self.as_mut_ptr()).minimum).read();
+            Asn1StringMut::from_ptr(minimum)
+        }
+    }
+
+    /// Exclusively reborrows the installed maximum bound.
+    #[must_use]
+    pub fn maximum_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: `ASN1_INTEGER` aliases `asn1_string_st`, and the exclusive
+        // parent reborrow supplies exclusive access to this child.
+        unsafe {
+            let maximum = ptr::addr_of!((*self.as_mut_ptr()).maximum).read();
+            Asn1StringMut::from_ptr(maximum)
+        }
+    }
+
+    /// Replaces the owned base and releases the previous value.
+    pub fn set_base(&mut self, base: Option<CBox<GeneralName>>) {
+        let base = base.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).base).replace(base) };
+        // SAFETY: a detached non-null child remains a complete general name.
+        drop(unsafe { CBox::<GeneralName>::from_raw(previous) });
+    }
+
+    /// Takes the owned base, leaving the nullable slot empty.
+    #[must_use]
+    pub fn take_base(&mut self) -> Option<CBox<GeneralName>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let base = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).base).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null child remains a complete general name.
+        unsafe { CBox::from_raw(base) }
+    }
+
+    /// Replaces the owned minimum bound and releases the previous value.
+    pub fn set_minimum(&mut self, minimum: Option<CBox<Asn1String>>) {
+        let minimum = minimum.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).minimum).replace(minimum) };
+        // SAFETY: a detached non-null ASN.1 integer is an `asn1_string_st`
+        // carrying one matching free obligation.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned minimum bound, leaving the optional slot empty.
+    #[must_use]
+    pub fn take_minimum(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let minimum =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).minimum).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null ASN.1 integer remains complete.
+        unsafe { CBox::from_raw(minimum) }
+    }
+
+    /// Replaces the owned maximum bound and releases the previous value.
+    pub fn set_maximum(&mut self, maximum: Option<CBox<Asn1String>>) {
+        let maximum = maximum.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned pointer.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).maximum).replace(maximum) };
+        // SAFETY: a detached non-null ASN.1 integer is an `asn1_string_st`
+        // carrying one matching free obligation.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned maximum bound, leaving the optional slot empty.
+    #[must_use]
+    pub fn take_maximum(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique release obligation into the returned owner.
+        let maximum =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).maximum).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null ASN.1 integer remains complete.
+        unsafe { CBox::from_raw(maximum) }
     }
 }
 
@@ -259,7 +522,6 @@ impl PolicyInfoMut<'_> {
 #[cfg(test)]
 mod tests {
     use core::mem::size_of;
-    use core::ptr;
 
     use ffibox::{CBox, CCell, CCloned, CDropped};
     use libcrypto_sys as ffi;
@@ -296,23 +558,16 @@ mod tests {
 
     #[test]
     fn subtree_stack_preserves_borrowed_element_addresses() {
-        let subtree_storage = Box::new(0x5a_u8);
-        // SAFETY: the stable box address outlives both stacks. With no
-        // comparator installed, the container only moves this opaque address
-        // between slots and never dereferences it.
-        let element = unsafe {
-            StackElement::from_raw(
-                ptr::from_ref(&*subtree_storage)
-                    .cast_mut()
-                    .cast::<GeneralSubtree>(),
-            )
-        }
-        .expect("non-null subtree address");
+        let subtree = GeneralSubtree::new().expect("GENERAL_SUBTREE_new");
+        // SAFETY: the complete subtree allocation remains owned and live below;
+        // the plain stacks borrow its address and install no callbacks.
+        let element = unsafe { StackElement::from_raw(subtree.as_ptr().cast::<GeneralSubtree>()) }
+            .expect("non-null subtree address");
 
         let mut stack = OPENSSL_sk_new_null::<GeneralSubtree>().expect("subtree stack");
         assert_eq!(
-            // SAFETY: the stable stand-in allocation remains live through
-            // every stack use and no callback can inspect the marker.
+            // SAFETY: `subtree` remains live through every stack use, and no
+            // comparator, copier, or element destructor is installed.
             unsafe { OPENSSL_sk_push(Some(&mut stack.as_mut()), Some(element)) },
             Some(1)
         );
@@ -331,7 +586,7 @@ mod tests {
         );
         drop(duplicate);
         drop(stack);
-        assert_eq!(*subtree_storage, 0x5a);
+        drop(subtree);
     }
 
     #[test]
@@ -1255,6 +1510,103 @@ mod wrapped_x509v3_tests {
         // ownership to establish and owns the stack allocation.
         unsafe { CBoxWith::from_raw(raw, GeneralSubtreesFree) }
             .expect("an owning stack has a non-null pointer")
+    }
+
+    #[test]
+    fn access_description_owns_and_transfers_its_fields() {
+        use crate::asn1::a_object::ASN1_OBJECT_create;
+
+        assert_drop_owner::<AccessDescription>();
+        assert_eq!(
+            size_of::<AccessDescription>(),
+            size_of::<ffi::ACCESS_DESCRIPTION_st>()
+        );
+        assert_eq!(
+            align_of::<AccessDescription>(),
+            align_of::<ffi::ACCESS_DESCRIPTION_st>()
+        );
+        assert_eq!(
+            size_of::<AccessDescriptionRef<'static>>(),
+            size_of::<*mut ffi::ACCESS_DESCRIPTION_st>()
+        );
+        assert_eq!(
+            size_of::<AccessDescriptionMut<'static>>(),
+            size_of::<*mut ffi::ACCESS_DESCRIPTION_st>()
+        );
+
+        let mut description = AccessDescription::new().expect("ACCESS_DESCRIPTION_new");
+        assert!(description.as_ref().location().is_some());
+        assert!(description.as_mut().location_mut().is_some());
+
+        let location = description
+            .as_mut()
+            .take_location()
+            .expect("constructor location");
+        assert!(description.as_ref().location().is_none());
+        description.as_mut().set_location(Some(location));
+        assert!(description.as_ref().location().is_some());
+
+        let method =
+            ASN1_OBJECT_create(10_004, &[0x2a, 0x03, 0x06], None, None).expect("access method");
+        let method_ptr = method.as_ptr();
+        description.as_mut().set_method(Some(method));
+        assert_eq!(
+            description.as_ref().method().map(|method| method.as_ptr()),
+            Some(method_ptr.cast_const())
+        );
+        let method = description
+            .as_mut()
+            .take_method()
+            .expect("installed method");
+        assert!(description.as_ref().method().is_none());
+        description.as_mut().set_method(Some(method));
+    }
+
+    #[test]
+    fn general_subtree_owns_and_transfers_its_fields() {
+        use crate::asn1::asn1_lib::ASN1_STRING_type_new;
+
+        assert_drop_owner::<GeneralSubtree>();
+        assert_eq!(
+            size_of::<GeneralSubtree>(),
+            size_of::<ffi::GENERAL_SUBTREE_st>()
+        );
+        assert_eq!(
+            align_of::<GeneralSubtree>(),
+            align_of::<ffi::GENERAL_SUBTREE_st>()
+        );
+        assert_eq!(
+            size_of::<GeneralSubtreeRef<'static>>(),
+            size_of::<*mut ffi::GENERAL_SUBTREE_st>()
+        );
+        assert_eq!(
+            size_of::<GeneralSubtreeMut<'static>>(),
+            size_of::<*mut ffi::GENERAL_SUBTREE_st>()
+        );
+
+        let mut subtree = GeneralSubtree::new().expect("GENERAL_SUBTREE_new");
+        assert!(subtree.as_ref().base().is_some());
+        assert!(subtree.as_mut().base_mut().is_some());
+        assert!(subtree.as_ref().minimum().is_none());
+        assert!(subtree.as_ref().maximum().is_none());
+
+        let base = subtree.as_mut().take_base().expect("constructor base");
+        assert!(subtree.as_ref().base().is_none());
+        subtree.as_mut().set_base(Some(base));
+
+        let minimum = ASN1_STRING_type_new(ffi::V_ASN1_INTEGER as i32).expect("minimum integer");
+        let maximum = ASN1_STRING_type_new(ffi::V_ASN1_INTEGER as i32).expect("maximum integer");
+        subtree.as_mut().set_minimum(Some(minimum));
+        subtree.as_mut().set_maximum(Some(maximum));
+        assert!(subtree.as_mut().minimum_mut().is_some());
+        assert!(subtree.as_mut().maximum_mut().is_some());
+
+        let minimum = subtree.as_mut().take_minimum().expect("installed minimum");
+        let maximum = subtree.as_mut().take_maximum().expect("installed maximum");
+        assert!(subtree.as_ref().minimum().is_none());
+        assert!(subtree.as_ref().maximum().is_none());
+        subtree.as_mut().set_minimum(Some(minimum));
+        subtree.as_mut().set_maximum(Some(maximum));
     }
 
     #[test]
