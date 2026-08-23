@@ -351,6 +351,9 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "BIO_wait",
     "BIO_write",
     "BIO_write_ex",
+    "OPENSSL_LH_insert",
+    "OPENSSL_LH_new",
+    "OPENSSL_LH_num_items",
 ];
 const AGENT_ALLOWED_VARS: &[&str] = &[
     "V_ASN1_BIT_STRING",
