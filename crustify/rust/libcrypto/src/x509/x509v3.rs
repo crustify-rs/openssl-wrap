@@ -2618,3 +2618,526 @@ mod user_notice_tests {
         ));
     }
 }
+
+define_ctype!(
+    /// Wraps: GENERAL_NAME_st
+    ///
+    /// Layout-compatible storage for OpenSSL's general-name ASN.1 choice. The
+    /// active union member is selected by `type`; borrowed access is exposed as
+    /// tagged Rust enums so safe callers cannot read an inactive member.
+    GeneralName,
+    GeneralNameRef,
+    GeneralNameMut,
+    ffi::GENERAL_NAME_st
+);
+
+// The generated ASN.1 destructor releases the active choice member and the
+// containing allocation. Duplication performs a deep ASN.1 copy.
+impl_dropped!(GeneralName, ffi::GENERAL_NAME_st, ffi::GENERAL_NAME_free);
+impl_cloned!(
+    GeneralName,
+    ffi::GENERAL_NAME_st,
+    dup = ffi::GENERAL_NAME_dup
+);
+
+/// Wraps: GENERAL_NAME_st.type
+///
+/// Valid public discriminator values for [`GeneralName`]. OpenSSL additionally
+/// uses `-1` for a newly allocated empty choice.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(i32)]
+pub enum GeneralNameType {
+    OtherName = ffi::GEN_OTHERNAME as i32,
+    Email = ffi::GEN_EMAIL as i32,
+    Dns = ffi::GEN_DNS as i32,
+    X400Address = ffi::GEN_X400 as i32,
+    DirectoryName = ffi::GEN_DIRNAME as i32,
+    EdiPartyName = ffi::GEN_EDIPARTY as i32,
+    Uri = ffi::GEN_URI as i32,
+    IpAddress = ffi::GEN_IPADD as i32,
+    RegisteredId = ffi::GEN_RID as i32,
+}
+
+impl TryFrom<i32> for GeneralNameType {
+    type Error = i32;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        match value {
+            value if value == Self::OtherName as i32 => Ok(Self::OtherName),
+            value if value == Self::Email as i32 => Ok(Self::Email),
+            value if value == Self::Dns as i32 => Ok(Self::Dns),
+            value if value == Self::X400Address as i32 => Ok(Self::X400Address),
+            value if value == Self::DirectoryName as i32 => Ok(Self::DirectoryName),
+            value if value == Self::EdiPartyName as i32 => Ok(Self::EdiPartyName),
+            value if value == Self::Uri as i32 => Ok(Self::Uri),
+            value if value == Self::IpAddress as i32 => Ok(Self::IpAddress),
+            value if value == Self::RegisteredId as i32 => Ok(Self::RegisteredId),
+            value => Err(value),
+        }
+    }
+}
+
+/// Wraps: GENERAL_NAME_st.d
+/// Wraps: GENERAL_NAME_st.d.ptr
+///
+/// Tagged shared view of the general-name union. `None` preserves nullable
+/// construction and malformed states without exposing the union's raw pointer.
+#[derive(Clone, Copy)]
+pub enum GeneralNameValueRef<'a> {
+    Empty,
+    /// Wraps: GENERAL_NAME_st.d.otherName
+    OtherName(Option<OtherNameRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.rfc822Name
+    /// Wraps: GENERAL_NAME_st.d.ia5
+    Email(Option<Asn1StringRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.dNSName
+    Dns(Option<Asn1StringRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.x400Address
+    /// Wraps: GENERAL_NAME_st.d.other
+    X400Address(Option<Asn1StringRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.directoryName
+    /// Wraps: GENERAL_NAME_st.d.dirn
+    DirectoryName(Option<X509NameRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.ediPartyName
+    EdiPartyName(Option<EdiPartyNameRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.uniformResourceIdentifier
+    Uri(Option<Asn1StringRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.iPAddress
+    /// Wraps: GENERAL_NAME_st.d.ip
+    IpAddress(Option<Asn1StringRef<'a>>),
+    /// Wraps: GENERAL_NAME_st.d.registeredID
+    /// Wraps: GENERAL_NAME_st.d.rid
+    RegisteredId(Option<Asn1ObjectRef<'a>>),
+    Unknown(i32),
+}
+
+/// Exclusive tagged view of the active union member.
+pub enum GeneralNameValueMut<'a> {
+    Empty,
+    OtherName(Option<OtherNameMut<'a>>),
+    Email(Option<Asn1StringMut<'a>>),
+    Dns(Option<Asn1StringMut<'a>>),
+    X400Address(Option<Asn1StringMut<'a>>),
+    DirectoryName(Option<X509NameMut<'a>>),
+    EdiPartyName(Option<EdiPartyNameMut<'a>>),
+    Uri(Option<Asn1StringMut<'a>>),
+    IpAddress(Option<Asn1StringMut<'a>>),
+    RegisteredId(Option<crate::asn1::asn1::Asn1ObjectMut<'a>>),
+    Unknown(i32),
+}
+
+/// Owning tagged value accepted by [`GeneralNameMut::set_value`] and returned
+/// by [`GeneralNameMut::take_value`].
+pub enum GeneralNameValue {
+    Empty,
+    OtherName(Option<CBox<OtherName>>),
+    Email(Option<CBox<Asn1String>>),
+    Dns(Option<CBox<Asn1String>>),
+    X400Address(Option<CBox<Asn1String>>),
+    DirectoryName(Option<CBox<X509Name>>),
+    EdiPartyName(Option<CBox<EdiPartyName>>),
+    Uri(Option<CBox<Asn1String>>),
+    IpAddress(Option<CBox<Asn1String>>),
+    RegisteredId(Option<CBox<Asn1Object>>),
+}
+
+impl GeneralName {
+    /// Allocates an empty, fully initialized ASN.1 choice.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh complete `GENERAL_NAME` carrying
+        // exactly one `GENERAL_NAME_free` obligation.
+        unsafe { CBox::from_raw(ffi::GENERAL_NAME_new()) }
+    }
+
+    /// Allocates a choice and installs `value`, returning it on allocation
+    /// failure.
+    pub fn from_value(value: GeneralNameValue) -> Result<CBox<Self>, GeneralNameValue> {
+        let Some(mut general_name) = Self::new() else {
+            return Err(value);
+        };
+        general_name.as_mut().set_value(value)?;
+        Ok(general_name)
+    }
+}
+
+impl<'a> GeneralNameRef<'a> {
+    /// Returns the raw discriminator after validating known variants.
+    pub fn kind(&self) -> Result<Option<GeneralNameType>, i32> {
+        // SAFETY: raw-place projection copies the scalar discriminator without
+        // forming a reference over C-owned storage.
+        let kind = unsafe { ptr::addr_of!((*self.as_ptr()).type_).read() };
+        if kind == -1 {
+            Ok(None)
+        } else {
+            GeneralNameType::try_from(kind).map(Some)
+        }
+    }
+
+    /// Borrows the active union member according to the discriminator.
+    #[must_use]
+    pub fn value(&self) -> GeneralNameValueRef<'a> {
+        let raw = self.as_ptr();
+        match self.kind() {
+            Ok(None) => GeneralNameValueRef::Empty,
+            Ok(Some(GeneralNameType::OtherName)) => {
+                // SAFETY: the discriminator selects `otherName`; the enclosing
+                // choice owns any non-null child for the handle's `'a`.
+                let value = unsafe { ptr::addr_of!((*raw).d.otherName).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::OtherName(unsafe { OtherNameRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::Email)) => {
+                // SAFETY: the discriminator selects the IA5 string member.
+                let value = unsafe { ptr::addr_of!((*raw).d.rfc822Name).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::Email(unsafe { Asn1StringRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::Dns)) => {
+                // SAFETY: the discriminator selects the IA5 string member.
+                let value = unsafe { ptr::addr_of!((*raw).d.dNSName).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::Dns(unsafe { Asn1StringRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::X400Address)) => {
+                // SAFETY: the discriminator selects the ASN.1 string member.
+                let value = unsafe { ptr::addr_of!((*raw).d.x400Address).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::X400Address(unsafe { Asn1StringRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::DirectoryName)) => {
+                // SAFETY: the discriminator selects the X509 name member.
+                let value = unsafe { ptr::addr_of!((*raw).d.directoryName).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::DirectoryName(unsafe { X509NameRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::EdiPartyName)) => {
+                // SAFETY: the discriminator selects the EDI party member.
+                let value = unsafe { ptr::addr_of!((*raw).d.ediPartyName).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::EdiPartyName(unsafe { EdiPartyNameRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::Uri)) => {
+                // SAFETY: the discriminator selects the IA5 string member.
+                let value = unsafe { ptr::addr_of!((*raw).d.uniformResourceIdentifier).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::Uri(unsafe { Asn1StringRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::IpAddress)) => {
+                // SAFETY: the discriminator selects the octet-string member,
+                // which shares `asn1_string_st` layout with `Asn1String`.
+                let value = unsafe { ptr::addr_of!((*raw).d.iPAddress).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::IpAddress(unsafe { Asn1StringRef::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::RegisteredId)) => {
+                // SAFETY: the discriminator selects the object member.
+                let value = unsafe { ptr::addr_of!((*raw).d.registeredID).read() };
+                // SAFETY: the child borrow is bounded by the enclosing handle.
+                GeneralNameValueRef::RegisteredId(unsafe { Asn1ObjectRef::from_ptr(value) })
+            }
+            Err(kind) => GeneralNameValueRef::Unknown(kind),
+        }
+    }
+}
+
+impl GeneralNameMut<'_> {
+    /// Exclusively borrows the active union member.
+    #[must_use]
+    pub fn value_mut(&mut self) -> GeneralNameValueMut<'_> {
+        let raw = self.as_mut_ptr();
+        match self.as_ref().kind() {
+            Ok(None) => GeneralNameValueMut::Empty,
+            Ok(Some(GeneralNameType::OtherName)) => {
+                // SAFETY: the discriminator selects this member and the
+                // exclusive parent handle bounds the child reborrow.
+                let value = unsafe { ptr::addr_of!((*raw).d.otherName).read() };
+                // SAFETY: the child handle is bounded by the exclusive parent
+                // reborrow and the selected pointer may be null.
+                GeneralNameValueMut::OtherName(unsafe { OtherNameMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::Email)) => {
+                // SAFETY: as above for the IA5 email member.
+                let value = unsafe { ptr::addr_of!((*raw).d.rfc822Name).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::Email(unsafe { Asn1StringMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::Dns)) => {
+                // SAFETY: as above for the IA5 DNS member.
+                let value = unsafe { ptr::addr_of!((*raw).d.dNSName).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::Dns(unsafe { Asn1StringMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::X400Address)) => {
+                // SAFETY: as above for the ASN.1 string member.
+                let value = unsafe { ptr::addr_of!((*raw).d.x400Address).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::X400Address(unsafe { Asn1StringMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::DirectoryName)) => {
+                // SAFETY: as above for the X509 name member.
+                let value = unsafe { ptr::addr_of!((*raw).d.directoryName).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::DirectoryName(unsafe { X509NameMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::EdiPartyName)) => {
+                // SAFETY: as above for the EDI party member.
+                let value = unsafe { ptr::addr_of!((*raw).d.ediPartyName).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::EdiPartyName(unsafe { EdiPartyNameMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::Uri)) => {
+                // SAFETY: as above for the IA5 URI member.
+                let value = unsafe { ptr::addr_of!((*raw).d.uniformResourceIdentifier).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::Uri(unsafe { Asn1StringMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::IpAddress)) => {
+                // SAFETY: as above; octet strings share the wrapped ASN.1
+                // string layout.
+                let value = unsafe { ptr::addr_of!((*raw).d.iPAddress).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::IpAddress(unsafe { Asn1StringMut::from_ptr(value) })
+            }
+            Ok(Some(GeneralNameType::RegisteredId)) => {
+                // SAFETY: as above for the object member.
+                let value = unsafe { ptr::addr_of!((*raw).d.registeredID).read() };
+                // SAFETY: the child handle is bounded by the parent reborrow.
+                GeneralNameValueMut::RegisteredId(unsafe {
+                    crate::asn1::asn1::Asn1ObjectMut::from_ptr(value)
+                })
+            }
+            Err(kind) => GeneralNameValueMut::Unknown(kind),
+        }
+    }
+
+    /// Replaces the active owned member, releasing the previous member.
+    ///
+    /// If C supplied an unknown discriminator, no union member can safely be
+    /// released and `value` is returned unchanged.
+    pub fn set_value(&mut self, value: GeneralNameValue) -> Result<(), GeneralNameValue> {
+        let old = match self.take_value() {
+            Ok(old) => old,
+            Err(_) => return Err(value),
+        };
+        self.install_value(value);
+        drop(old);
+        Ok(())
+    }
+
+    /// Detaches the active owned member and leaves an empty choice.
+    ///
+    /// An unknown discriminator is reported without reading or modifying the
+    /// union, because its destruction contract is unknowable.
+    pub fn take_value(&mut self) -> Result<GeneralNameValue, i32> {
+        let raw = self.as_mut_ptr();
+        let kind = self.as_ref().kind()?;
+        let value = match kind {
+            None => GeneralNameValue::Empty,
+            Some(GeneralNameType::OtherName) => {
+                // SAFETY: the discriminator selects this owned pointer and the
+                // exclusive handle permits detaching it.
+                let value =
+                    unsafe { ptr::addr_of_mut!((*raw).d.otherName).replace(ptr::null_mut()) };
+                // SAFETY: a detached non-null child carries its unique
+                // `OTHERNAME_free` obligation.
+                GeneralNameValue::OtherName(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::Email) => {
+                // SAFETY: as above for the email IA5 string.
+                let value =
+                    unsafe { ptr::addr_of_mut!((*raw).d.rfc822Name).replace(ptr::null_mut()) };
+                // SAFETY: a detached child carries one ASN.1 string free.
+                GeneralNameValue::Email(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::Dns) => {
+                // SAFETY: as above for the DNS IA5 string.
+                let value = unsafe { ptr::addr_of_mut!((*raw).d.dNSName).replace(ptr::null_mut()) };
+                // SAFETY: a detached child carries one ASN.1 string free.
+                GeneralNameValue::Dns(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::X400Address) => {
+                // SAFETY: as above for the X.400 ASN.1 string.
+                let value =
+                    unsafe { ptr::addr_of_mut!((*raw).d.x400Address).replace(ptr::null_mut()) };
+                // SAFETY: a detached child carries one ASN.1 string free.
+                GeneralNameValue::X400Address(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::DirectoryName) => {
+                // SAFETY: as above for the directory-name member.
+                let value =
+                    unsafe { ptr::addr_of_mut!((*raw).d.directoryName).replace(ptr::null_mut()) };
+                // SAFETY: a detached child carries one X509 name free.
+                GeneralNameValue::DirectoryName(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::EdiPartyName) => {
+                // SAFETY: as above for the EDI party member.
+                let value =
+                    unsafe { ptr::addr_of_mut!((*raw).d.ediPartyName).replace(ptr::null_mut()) };
+                // SAFETY: a detached child carries one EDI party free.
+                GeneralNameValue::EdiPartyName(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::Uri) => {
+                // SAFETY: as above for the URI IA5 string.
+                let value = unsafe {
+                    ptr::addr_of_mut!((*raw).d.uniformResourceIdentifier).replace(ptr::null_mut())
+                };
+                // SAFETY: a detached child carries one ASN.1 string free.
+                GeneralNameValue::Uri(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::IpAddress) => {
+                // SAFETY: as above for the octet string, whose raw type aliases
+                // the wrapped ASN.1 string layout.
+                let value =
+                    unsafe { ptr::addr_of_mut!((*raw).d.iPAddress).replace(ptr::null_mut()) };
+                // SAFETY: a detached child carries one ASN.1 string free.
+                GeneralNameValue::IpAddress(unsafe { CBox::from_raw(value) })
+            }
+            Some(GeneralNameType::RegisteredId) => {
+                // SAFETY: as above for the object identifier member.
+                let value =
+                    unsafe { ptr::addr_of_mut!((*raw).d.registeredID).replace(ptr::null_mut()) };
+                // SAFETY: a detached child carries one ASN.1 object free.
+                GeneralNameValue::RegisteredId(unsafe { CBox::from_raw(value) })
+            }
+        };
+        // SAFETY: the exclusive handle permits updating the discriminator; the
+        // selected pointer was detached first, leaving an empty choice.
+        unsafe { ptr::addr_of_mut!((*raw).type_).write(-1) };
+        Ok(value)
+    }
+
+    fn install_value(&mut self, value: GeneralNameValue) {
+        let raw = self.as_mut_ptr();
+        let (kind, value): (i32, *mut c_void) = match value {
+            GeneralNameValue::Empty => (-1, ptr::null_mut()),
+            GeneralNameValue::OtherName(value) => (
+                GeneralNameType::OtherName as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::Email(value) => (
+                GeneralNameType::Email as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::Dns(value) => (
+                GeneralNameType::Dns as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::X400Address(value) => (
+                GeneralNameType::X400Address as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::DirectoryName(value) => (
+                GeneralNameType::DirectoryName as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::EdiPartyName(value) => (
+                GeneralNameType::EdiPartyName as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::Uri(value) => (
+                GeneralNameType::Uri as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::IpAddress(value) => (
+                GeneralNameType::IpAddress as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+            GeneralNameValue::RegisteredId(value) => (
+                GeneralNameType::RegisteredId as i32,
+                value.map_or(ptr::null_mut(), CBox::into_raw).cast(),
+            ),
+        };
+        // SAFETY: every union member is one pointer wide. Writing the common
+        // raw slot installs the transferred pointer, then the matching tag
+        // makes that member active for OpenSSL and future Rust access.
+        unsafe {
+            ptr::addr_of_mut!((*raw).d.ptr).write(value.cast());
+            ptr::addr_of_mut!((*raw).type_).write(kind);
+        }
+    }
+}
+
+#[cfg(test)]
+mod general_name_tests {
+    use core::mem::{align_of, size_of};
+
+    use ffibox::{CCell, CCloned, CDropped};
+
+    use super::*;
+    use crate::asn1::asn1_lib::ASN1_STRING_new;
+
+    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+
+    #[test]
+    fn layout_and_empty_choice_match_c() {
+        assert_owned_cloneable_cell::<GeneralName>();
+        assert_eq!(size_of::<GeneralName>(), size_of::<ffi::GENERAL_NAME_st>());
+        assert_eq!(
+            align_of::<GeneralName>(),
+            align_of::<ffi::GENERAL_NAME_st>()
+        );
+
+        let name = GeneralName::new().expect("GENERAL_NAME_new");
+        assert_eq!(name.as_ref().kind(), Ok(None));
+        assert!(matches!(name.as_ref().value(), GeneralNameValueRef::Empty));
+    }
+
+    #[test]
+    fn tagged_value_can_be_borrowed_mutated_taken_and_reinstalled() {
+        let string = ASN1_STRING_new().expect("ASN1_STRING_new");
+        let mut name = match GeneralName::from_value(GeneralNameValue::Email(Some(string))) {
+            Ok(name) => name,
+            Err(_) => panic!("GENERAL_NAME_new failed"),
+        };
+        assert_eq!(name.as_ref().kind(), Ok(Some(GeneralNameType::Email)));
+        assert!(matches!(
+            name.as_ref().value(),
+            GeneralNameValueRef::Email(Some(_))
+        ));
+        assert!(matches!(
+            name.as_mut().value_mut(),
+            GeneralNameValueMut::Email(Some(_))
+        ));
+
+        let duplicate = name.try_clone().expect("GENERAL_NAME_dup");
+        assert!(matches!(
+            duplicate.as_ref().value(),
+            GeneralNameValueRef::Email(Some(_))
+        ));
+
+        let value = name.as_mut().take_value().expect("known discriminator");
+        assert!(matches!(value, GeneralNameValue::Email(Some(_))));
+        assert!(matches!(name.as_ref().value(), GeneralNameValueRef::Empty));
+        assert!(name.as_mut().set_value(value).is_ok());
+        assert!(matches!(
+            name.as_ref().value(),
+            GeneralNameValueRef::Email(Some(_))
+        ));
+    }
+
+    #[test]
+    fn distinct_string_tags_do_not_expose_inactive_union_members() {
+        let dns = ASN1_STRING_new().expect("ASN1_STRING_new");
+        let mut name = match GeneralName::from_value(GeneralNameValue::Dns(Some(dns))) {
+            Ok(name) => name,
+            Err(_) => panic!("GENERAL_NAME_new failed"),
+        };
+        assert!(matches!(
+            name.as_ref().value(),
+            GeneralNameValueRef::Dns(Some(_))
+        ));
+
+        let uri = ASN1_STRING_new().expect("ASN1_STRING_new");
+        assert!(
+            name.as_mut()
+                .set_value(GeneralNameValue::Uri(Some(uri)))
+                .is_ok()
+        );
+        assert_eq!(name.as_ref().kind(), Ok(Some(GeneralNameType::Uri)));
+        assert!(matches!(
+            name.as_ref().value(),
+            GeneralNameValueRef::Uri(Some(_))
+        ));
+    }
+}

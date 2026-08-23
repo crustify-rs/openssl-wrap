@@ -243,18 +243,9 @@ pub type DistPointStackRef<'a> = StackRef<'a, DistPoint>;
 /// Exclusive borrowed handle to a `STACK_OF(DIST_POINT)`.
 pub type DistPointStackMut<'a> = StackMut<'a, DistPoint>;
 
-/// Opaque element marker for the `GENERAL_NAME` records stored in a general
-/// names stack.
-///
-/// The element layout has not yet been wrapped, so this unconstructible marker
-/// retains the generated stack's element type without exposing or
-/// dereferencing it. The plain stack owns only its pointer array; callers that
-/// transfer ownership of the names must select the generic stack's pop-free
-/// policy explicitly.
-#[repr(C)]
-pub struct GeneralName {
-    _opaque: [u8; 0],
-}
+// The public definition and its lifecycle live in the header-authored module;
+// the generated stack remains homed here and names that concrete element.
+pub use crate::x509::x509v3::GeneralName;
 
 /// Wraps: stack_st_GENERAL_NAME
 ///

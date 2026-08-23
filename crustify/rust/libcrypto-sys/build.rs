@@ -29,6 +29,7 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "DIST_POINT",
     "DIST_POINT_NAME",
     "EDIPARTYNAME",
+    "GENERAL_NAME",
     "OBJ_NAME",
     "POLICYINFO",
     "OPENSSL_INIT_SETTINGS",
@@ -168,6 +169,9 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "DIST_POINT_new",
     "EDIPARTYNAME_free",
     "EDIPARTYNAME_new",
+    "GENERAL_NAME_dup",
+    "GENERAL_NAME_free",
+    "GENERAL_NAME_new",
     "GENERAL_NAMES_free",
     "GENERAL_SUBTREE_free",
     "NAME_CONSTRAINTS_free",
@@ -562,6 +566,15 @@ const AGENT_ALLOWED_VARS: &[&str] = &[
     "NID_info_access",
     "NID_subject_alt_name",
     "NID_tlsfeature",
+    "GEN_OTHERNAME",
+    "GEN_EMAIL",
+    "GEN_DNS",
+    "GEN_X400",
+    "GEN_DIRNAME",
+    "GEN_EDIPARTY",
+    "GEN_URI",
+    "GEN_IPADD",
+    "GEN_RID",
 ];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end

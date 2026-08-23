@@ -362,6 +362,238 @@
    ]
   },
   {
+   "name": "GENERAL_NAME_st",
+   "defined_in": "include/openssl/x509v3.h",
+   "_comment_agent": "GENERAL_NAME is an ASN.1 CHOICE. Its discriminator selects one uniquely owned nullable child; GENERAL_NAME_free releases that child, GENERAL_NAME_dup deep-copies it, and GENERAL_NAME_new creates an empty type=-1 value. Union aliases share the same ownership.",
+   "fields": [
+    {
+     "name": "d.dNSName",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.directoryName",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.dirn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.ediPartyName",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.iPAddress",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.ia5",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.ip",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.other",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.otherName",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.ptr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.registeredID",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.rfc822Name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.rid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.uniformResourceIdentifier",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    },
+    {
+     "name": "d.x400Address",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active union member is uniquely owned by GENERAL_NAME and released according to type; aliases name the same slot. NULL is representable in fresh, malformed, or manually constructed public-layout values."
+     }
+    }
+   ]
+  },
+  {
    "name": "NAME_CONSTRAINTS_st",
    "defined_in": "include/openssl/x509v3.h",
    "_comment_agent": "Both optional subtree stacks and all their elements are owned by NAME_CONSTRAINTS and released by its generated ASN.1 destructor.",
@@ -11235,6 +11467,97 @@
      "nullable": true,
      "mutable": true,
      "note": "Null on failure or a fresh empty generated ASN.1 stack whose matching full destructor releases every owned element."
+    }
+   }
+  },
+  {
+   "name": "GENERAL_NAME_dup",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads a complete source choice for the duration of the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh deep ASN.1 copy or NULL on failure."
+    }
+   }
+  },
+  {
+   "name": "GENERAL_NAME_free",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and fully frees the choice and its active owned member; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "GENERAL_NAME_new",
+   "defined_in": "crypto/x509/v3_genn.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh fully initialized ASN.1 CHOICE allocation; NULL reports allocation failure."
     }
    }
   },
