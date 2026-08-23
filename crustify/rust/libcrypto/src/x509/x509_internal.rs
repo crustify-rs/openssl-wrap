@@ -224,18 +224,10 @@ mod x509_name_entry_tests {
     }
 }
 
-/// Opaque element marker for the `DIST_POINT` records stored in a CRL
-/// distribution-point stack.
-///
-/// The element layout has not yet been wrapped, so this unconstructible marker
-/// retains the generated stack's element type without exposing or
-/// dereferencing it. The plain stack owns only its pointer array; callers that
-/// transfer ownership of the distribution points must select the generic
-/// stack's pop-free policy explicitly.
-#[repr(C)]
-pub struct DistPoint {
-    _opaque: [u8; 0],
-}
+// The element's public layout wrapper is authored with the other x509v3.h
+// records. Re-exporting it here preserves the established stack home while
+// removing the temporary opaque marker.
+pub use crate::x509::x509v3::DistPoint;
 
 /// Wraps: stack_st_DIST_POINT
 ///

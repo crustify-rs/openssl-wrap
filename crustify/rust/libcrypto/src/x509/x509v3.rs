@@ -6,7 +6,7 @@ use core::ptr::{self, NonNull};
 use ffibox::{CBox, CBoxWith, CDropper, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
-use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef, Asn1String, Asn1StringMut, Asn1StringRef};
 use crate::asn1::openssl_asn1::{Asn1Type, Asn1TypeMut, Asn1TypeRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 pub use crate::x509::v3_info::{AuthorityInfoAccess, AuthorityInfoAccessFree};
@@ -1437,5 +1437,393 @@ mod wrapped_x509v3_tests {
             .expect("installed tagged value");
         assert!(other_name.as_ref().value().is_none());
         other_name.as_mut().set_value(Some(value));
+    }
+}
+
+define_ctype!(
+    /// Wraps: DIST_POINT_st
+    ///
+    /// Layout-compatible storage for an ASN.1 CRL distribution point. Its
+    /// three optional pointer fields are uniquely owned by the record;
+    /// borrowed access is carried by [`DistPointRef`] and [`DistPointMut`].
+    DistPoint,
+    DistPointRef,
+    DistPointMut,
+    ffi::DIST_POINT_st
+);
+
+// The generated ASN.1 destructor recursively releases every optional child
+// and the record allocation itself.
+impl_dropped!(DistPoint, ffi::DIST_POINT_st, ffi::DIST_POINT_free);
+
+impl DistPoint {
+    /// Allocates an empty distribution point.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh, fully initialized generated
+        // ASN.1 record carrying one `DIST_POINT_free` obligation.
+        unsafe { CBox::from_raw(ffi::DIST_POINT_new()) }
+    }
+}
+
+impl<'a> DistPointRef<'a> {
+    /// Wraps: DIST_POINT_st.dp_reasons
+    ///
+    /// Returns OpenSSL's derived reason-mask cache.
+    #[must_use]
+    pub fn dp_reasons(&self) -> i32 {
+        // SAFETY: raw-place projection copies the initialized scalar without
+        // forming a reference over storage OpenSSL may mutate.
+        unsafe { ptr::addr_of!((*self.as_ptr()).dp_reasons).read() }
+    }
+
+    /// Wraps: DIST_POINT_st.reasons
+    ///
+    /// Borrows the optional owned reason bit string.
+    #[must_use]
+    pub fn reasons(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null child remains alive for the enclosing handle's `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).reasons).read() };
+        // SAFETY: the enclosing record owns the child for the returned borrow.
+        unsafe { Asn1StringRef::from_ptr(raw) }
+    }
+
+    /// Wraps: DIST_POINT_st.distpoint
+    ///
+    /// Borrows the optional owned distribution-point name.
+    #[must_use]
+    pub fn dist_point_name(&self) -> Option<DistPointNameRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null child remains alive for the enclosing handle's `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).distpoint).read() };
+        // SAFETY: the enclosing record owns the child for the returned borrow.
+        unsafe { DistPointNameRef::from_ptr(raw) }
+    }
+
+    /// Wraps: DIST_POINT_st.CRLissuer
+    ///
+    /// Borrows the optional issuer-name sequence and all its elements.
+    #[must_use]
+    pub fn crl_issuer(&self) -> Option<GeneralNameStackRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null generated stack remains alive for the record borrow.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).CRLissuer).read() };
+        // SAFETY: the generated stack tag erases to the common representation,
+        // and the enclosing record supplies the returned lifetime.
+        unsafe { GeneralNameStackRef::from_ptr(raw.cast()) }
+    }
+}
+
+impl DistPointMut<'_> {
+    /// Updates OpenSSL's derived reason-mask cache.
+    pub fn set_dp_reasons(&mut self, value: i32) {
+        // SAFETY: raw-place projection writes the scalar through the exclusive
+        // record handle without forming a Rust reference to C storage.
+        unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).dp_reasons).write(value) }
+    }
+
+    /// Exclusively reborrows the optional reason bit string.
+    #[must_use]
+    pub fn reasons_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // its owned child for the duration of this call's result.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).reasons).read() };
+        // SAFETY: the result is bounded by the exclusive reborrow above.
+        unsafe { Asn1StringMut::from_ptr(raw) }
+    }
+
+    /// Replaces the owned reason string and releases the previous value.
+    pub fn set_reasons(&mut self, value: Option<CBox<Asn1String>>) {
+        let value = value.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned field.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).reasons).replace(value) };
+        // SAFETY: a detached non-null child remains a complete ASN.1 string
+        // carrying exactly one `ASN1_STRING_free` obligation.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the owned reason string, leaving the optional field empty.
+    #[must_use]
+    pub fn take_reasons(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique ownership into the returned owner.
+        let raw =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).reasons).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null value is still complete and uniquely
+        // owns its registered free obligation.
+        unsafe { CBox::from_raw(raw) }
+    }
+
+    /// Exclusively reborrows the optional distribution-point name.
+    #[must_use]
+    pub fn dist_point_name_mut(&mut self) -> Option<DistPointNameMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive child
+        // reborrow bounded by the returned handle's lifetime.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).distpoint).read() };
+        // SAFETY: the result is bounded by the exclusive reborrow above.
+        unsafe { DistPointNameMut::from_ptr(raw) }
+    }
+
+    /// Replaces the owned distribution-point name and frees the old value.
+    pub fn set_dist_point_name(&mut self, value: Option<CBox<DistPointName>>) {
+        let value = value.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned field.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).distpoint).replace(value) };
+        // SAFETY: a detached non-null child remains complete and uniquely
+        // carries one `DIST_POINT_NAME_free` obligation.
+        drop(unsafe { CBox::<DistPointName>::from_raw(previous) });
+    }
+
+    /// Takes the owned distribution-point name, leaving the field empty.
+    #[must_use]
+    pub fn take_dist_point_name(&mut self) -> Option<CBox<DistPointName>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique ownership into the returned owner.
+        let raw =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).distpoint).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null value remains a complete owned choice.
+        unsafe { CBox::from_raw(raw) }
+    }
+
+    /// Exclusively reborrows the optional issuer-name sequence.
+    #[must_use]
+    pub fn crl_issuer_mut(&mut self) -> Option<GeneralNameStackMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive reborrow of
+        // the owned generated sequence.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).CRLissuer).read() };
+        // SAFETY: the generated tag erases to the common stack representation,
+        // and the result is bounded by the exclusive record reborrow.
+        unsafe { GeneralNameStackMut::from_ptr(raw.cast()) }
+    }
+
+    /// Replaces the owned issuer sequence and releases all old elements.
+    pub fn set_crl_issuer(&mut self, value: Option<GeneralNames>) {
+        let value: *mut ffi::stack_st_GENERAL_NAME = value.map_or(ptr::null_mut(), |value| {
+            let (raw, _dropper) = value.into_raw();
+            raw.cast()
+        });
+        // SAFETY: the exclusive handle permits replacing this owned sequence.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).CRLissuer).replace(value) };
+        // SAFETY: the detached non-null sequence and each of its elements were
+        // uniquely owned and match `GeneralNamesFree`.
+        drop(unsafe { GeneralNames::from_raw(previous.cast(), GeneralNamesFree) });
+    }
+
+    /// Takes the issuer-name sequence, leaving the optional field empty.
+    #[must_use]
+    pub fn take_crl_issuer(&mut self) -> Option<GeneralNames> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // ownership of the sequence and all elements to the returned owner.
+        let raw =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).CRLissuer).replace(ptr::null_mut()) };
+        // SAFETY: the detached non-null sequence remains complete and uniquely
+        // owned under the matching generated full-destructor policy.
+        unsafe { GeneralNames::from_raw(raw.cast(), GeneralNamesFree) }
+    }
+}
+
+define_ctype!(
+    /// Wraps: EDIPartyName_st
+    ///
+    /// Layout-compatible storage for an EDI party name. Both directory-string
+    /// pointers are owned; `nameAssigner` is optional, while a manually
+    /// modified or malformed `partyName` may be null even though valid ASN.1
+    /// encodings require it.
+    EdiPartyName,
+    EdiPartyNameRef,
+    EdiPartyNameMut,
+    ffi::EDIPartyName_st
+);
+
+// The generated ASN.1 destructor releases both directory strings and the
+// containing allocation.
+impl_dropped!(EdiPartyName, ffi::EDIPartyName_st, ffi::EDIPARTYNAME_free);
+
+impl EdiPartyName {
+    /// Allocates an empty EDI party-name record.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null result is a fresh initialized generated record
+        // carrying exactly one `EDIPARTYNAME_free` obligation.
+        unsafe { CBox::from_raw(ffi::EDIPARTYNAME_new()) }
+    }
+}
+
+impl<'a> EdiPartyNameRef<'a> {
+    /// Wraps: EDIPartyName_st.partyName
+    ///
+    /// Borrows the owned party name. The option preserves construction and
+    /// malformed or manually modified states even though ASN.1 encoding
+    /// requires this field.
+    #[must_use]
+    pub fn party_name(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null string remains alive for the enclosing handle's `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).partyName).read() };
+        // SAFETY: the enclosing record owns the child for the returned borrow.
+        unsafe { Asn1StringRef::from_ptr(raw) }
+    }
+
+    /// Wraps: EDIPartyName_st.nameAssigner
+    ///
+    /// Borrows the optional owned name assigner.
+    #[must_use]
+    pub fn name_assigner(&self) -> Option<Asn1StringRef<'a>> {
+        // SAFETY: raw-place projection copies the nullable owned pointer. A
+        // non-null string remains alive for the enclosing handle's `'a`.
+        let raw = unsafe { ptr::addr_of!((*self.as_ptr()).nameAssigner).read() };
+        // SAFETY: the enclosing record owns the child for the returned borrow.
+        unsafe { Asn1StringRef::from_ptr(raw) }
+    }
+}
+
+impl EdiPartyNameMut<'_> {
+    /// Exclusively reborrows the owned party name.
+    #[must_use]
+    pub fn party_name_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive child
+        // reborrow bounded by the returned handle's lifetime.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).partyName).read() };
+        // SAFETY: the result is bounded by the exclusive reborrow above.
+        unsafe { Asn1StringMut::from_ptr(raw) }
+    }
+
+    /// Replaces the owned party name and frees the previous string.
+    pub fn set_party_name(&mut self, value: Option<CBox<Asn1String>>) {
+        let value = value.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned field.
+        let previous = unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).partyName).replace(value) };
+        // SAFETY: a detached non-null child remains a complete uniquely owned
+        // ASN.1 string with one matching free obligation.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the party name, leaving the field empty.
+    #[must_use]
+    pub fn take_party_name(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique ownership into the returned owner.
+        let raw =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).partyName).replace(ptr::null_mut()) };
+        // SAFETY: a detached non-null value remains a complete owned string.
+        unsafe { CBox::from_raw(raw) }
+    }
+
+    /// Exclusively reborrows the optional name assigner.
+    #[must_use]
+    pub fn name_assigner_mut(&mut self) -> Option<Asn1StringMut<'_>> {
+        // SAFETY: the exclusive record handle permits an exclusive child
+        // reborrow bounded by the returned handle's lifetime.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).nameAssigner).read() };
+        // SAFETY: the result is bounded by the exclusive reborrow above.
+        unsafe { Asn1StringMut::from_ptr(raw) }
+    }
+
+    /// Replaces the owned name assigner and frees the previous string.
+    pub fn set_name_assigner(&mut self, value: Option<CBox<Asn1String>>) {
+        let value = value.map_or(ptr::null_mut(), CBox::into_raw);
+        // SAFETY: the exclusive handle permits replacing this owned field.
+        let previous =
+            unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).nameAssigner).replace(value) };
+        // SAFETY: a detached non-null child remains a complete uniquely owned
+        // ASN.1 string with one matching free obligation.
+        drop(unsafe { CBox::<Asn1String>::from_raw(previous) });
+    }
+
+    /// Takes the optional name assigner, leaving the field empty.
+    #[must_use]
+    pub fn take_name_assigner(&mut self) -> Option<CBox<Asn1String>> {
+        // SAFETY: the exclusive handle permits clearing the field and moving
+        // its unique ownership into the returned owner.
+        let raw = unsafe {
+            ptr::addr_of_mut!((*self.as_mut_ptr()).nameAssigner).replace(ptr::null_mut())
+        };
+        // SAFETY: a detached non-null value remains a complete owned string.
+        unsafe { CBox::from_raw(raw) }
+    }
+}
+
+#[cfg(test)]
+mod distribution_point_and_edi_tests {
+    use core::mem::{align_of, size_of};
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+    use crate::asn1::asn1_lib::ASN1_STRING_new;
+    use crate::stack::stack::OPENSSL_sk_num;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn distribution_point_owns_and_reborrows_all_optional_children() {
+        assert_owned_cell::<DistPoint>();
+        assert_eq!(size_of::<DistPoint>(), size_of::<ffi::DIST_POINT_st>());
+        assert_eq!(align_of::<DistPoint>(), align_of::<ffi::DIST_POINT_st>());
+
+        let mut point = DistPoint::new().expect("DIST_POINT_new");
+        assert!(point.as_ref().reasons().is_none());
+        assert!(point.as_ref().dist_point_name().is_none());
+        assert!(point.as_ref().crl_issuer().is_none());
+
+        point.as_mut().set_dp_reasons(0x807f);
+        assert_eq!(point.as_ref().dp_reasons(), 0x807f);
+
+        point.as_mut().set_reasons(ASN1_STRING_new());
+        assert!(point.as_ref().reasons().is_some());
+        assert!(point.as_mut().reasons_mut().is_some());
+        let reasons = point.as_mut().take_reasons().expect("owned reasons");
+        assert!(point.as_ref().reasons().is_none());
+        point.as_mut().set_reasons(Some(reasons));
+
+        point.as_mut().set_dist_point_name(DistPointName::new());
+        assert!(point.as_ref().dist_point_name().is_some());
+        assert!(point.as_mut().dist_point_name_mut().is_some());
+        drop(
+            point
+                .as_mut()
+                .take_dist_point_name()
+                .expect("owned distribution point name"),
+        );
+
+        // A generated empty sequence is a complete full-destructor owner.
+        // SAFETY: OpenSSL returns null or a fresh complete GENERAL_NAMES stack.
+        let issuers =
+            unsafe { GeneralNames::from_raw(ffi::GENERAL_NAMES_new().cast(), GeneralNamesFree) };
+        point.as_mut().set_crl_issuer(issuers);
+        assert_eq!(OPENSSL_sk_num(point.as_ref().crl_issuer()), Some(0));
+        assert!(point.as_mut().crl_issuer_mut().is_some());
+        drop(point.as_mut().take_crl_issuer().expect("owned issuers"));
+    }
+
+    #[test]
+    fn edi_party_name_owns_both_directory_strings() {
+        assert_owned_cell::<EdiPartyName>();
+        assert_eq!(size_of::<EdiPartyName>(), size_of::<ffi::EDIPartyName_st>());
+        assert_eq!(
+            align_of::<EdiPartyName>(),
+            align_of::<ffi::EDIPartyName_st>()
+        );
+
+        let mut edi = EdiPartyName::new().expect("EDIPARTYNAME_new");
+        // The generated constructor materializes the required directory
+        // string, while leaving the optional assigner absent.
+        assert!(edi.as_ref().party_name().is_some());
+        assert!(edi.as_ref().name_assigner().is_none());
+
+        edi.as_mut().set_party_name(ASN1_STRING_new());
+        edi.as_mut().set_name_assigner(ASN1_STRING_new());
+        assert!(edi.as_ref().party_name().is_some());
+        assert!(edi.as_ref().name_assigner().is_some());
+        assert!(edi.as_mut().party_name_mut().is_some());
+        assert!(edi.as_mut().name_assigner_mut().is_some());
+
+        let party = edi.as_mut().take_party_name().expect("owned party name");
+        let assigner = edi.as_mut().take_name_assigner().expect("owned assigner");
+        assert!(edi.as_ref().party_name().is_none());
+        assert!(edi.as_ref().name_assigner().is_none());
+        edi.as_mut().set_party_name(Some(party));
+        edi.as_mut().set_name_assigner(Some(assigner));
     }
 }
