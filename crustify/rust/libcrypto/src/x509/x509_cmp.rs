@@ -6,8 +6,9 @@ use core::ptr;
 use ffibox::CBox;
 use libcrypto_sys as ffi;
 
+use crate::asn1::asn1::{Asn1StringMut, Asn1StringRef};
 use crate::evp::evp::{EvpPkey, EvpPkeyRef};
-use crate::x509::x509_internal::{X509NameRef, X509Ref};
+use crate::x509::x509_internal::{X509Mut, X509NameRef, X509Ref};
 
 /// Wraps: X509_cmp
 /// Compares complete certificate identities, allowing OpenSSL to refresh its
@@ -120,5 +121,44 @@ mod tests {
 
         X509_free(second);
         X509_free(first);
+    }
+}
+
+/// Wraps: X509_get0_serialNumber
+/// Borrows the certificate's embedded serial number without write access.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get0_serialNumber<'a>(certificate: X509Ref<'a>) -> Asn1StringRef<'a> {
+    // SAFETY: a complete X509 contains an initialized embedded serial number
+    // retained for the certificate borrow.
+    unsafe { Asn1StringRef::from_ptr(ffi::X509_get0_serialNumber(certificate.as_ptr()).cast_mut()) }
+        .expect("a complete X509 has a serial number")
+}
+
+/// Wraps: X509_get_serialNumber
+/// Exclusively borrows the certificate's embedded mutable serial number.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get_serialNumber<'a>(certificate: &'a mut X509Mut<'_>) -> Asn1StringMut<'a> {
+    // SAFETY: the exclusive certificate reborrow permits exclusive access to
+    // its embedded serial number for precisely the returned handle lifetime.
+    unsafe { Asn1StringMut::from_ptr(ffi::X509_get_serialNumber(certificate.as_mut_ptr())) }
+        .expect("a complete X509 has a serial number")
+}
+
+#[cfg(test)]
+mod scheduled_tests {
+    use super::*;
+    use crate::x509::x_x509::{X509_free, X509_new};
+
+    #[test]
+    fn serial_number_supports_shared_and_exclusive_reborrows() {
+        let mut certificate = X509_new().expect("certificate");
+        let shared = X509_get0_serialNumber(certificate.as_ref());
+        assert!(!shared.as_ptr().is_null());
+        let mut certificate_mut = certificate.as_mut();
+        let mut exclusive = X509_get_serialNumber(&mut certificate_mut);
+        assert!(!exclusive.as_mut_ptr().is_null());
+        X509_free(certificate);
     }
 }

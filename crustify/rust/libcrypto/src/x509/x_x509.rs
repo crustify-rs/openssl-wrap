@@ -7,8 +7,10 @@ use core::ptr;
 use ffibox::{CBox, CType};
 use libcrypto_sys as ffi;
 
+use crate::asn1::asn1::Asn1StringRef;
 use crate::bio::context::OsslLibCtxRef;
 use crate::x509::x_pubkey::encode_der;
+use crate::x509::x509::X509AlgorRef;
 use crate::x509::x509_internal::{X509, X509Mut, X509Ref};
 
 /// An owned X509 certificate whose library context is borrowed for `'a`.
@@ -167,5 +169,48 @@ mod tests {
         let certificate = X509_new_ex(Some(context.as_ref()), None).expect("certificate");
         drop(certificate);
         drop(context);
+    }
+}
+
+/// Borrowed outer-signature fields of an X509 certificate.
+#[derive(Clone, Copy)]
+pub struct X509Signature<'a> {
+    /// Encoded signature bit string.
+    pub value: Asn1StringRef<'a>,
+    /// AlgorithmIdentifier paired with the signature.
+    pub algorithm: X509AlgorRef<'a>,
+}
+
+/// Wraps: X509_get0_signature
+/// Borrows the certificate's outer signature value and algorithm.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get0_signature<'a>(certificate: X509Ref<'a>) -> X509Signature<'a> {
+    let mut signature = ptr::null();
+    let mut algorithm = ptr::null();
+    // SAFETY: both outputs are valid disjoint scalar slots and the shared
+    // certificate retains the two embedded results for its handle lifetime.
+    unsafe { ffi::X509_get0_signature(&mut signature, &mut algorithm, certificate.as_ptr()) };
+    // SAFETY: every complete certificate has an initialized embedded
+    // signature bit string retained by the source certificate.
+    let value = unsafe { Asn1StringRef::from_ptr(signature.cast_mut()) }
+        .expect("a complete X509 has a signature bit string");
+    // SAFETY: likewise for its outer signature AlgorithmIdentifier.
+    let algorithm = unsafe { X509AlgorRef::from_ptr(algorithm.cast_mut()) }
+        .expect("a complete X509 has a signature algorithm");
+    X509Signature { value, algorithm }
+}
+
+#[cfg(test)]
+mod scheduled_tests {
+    use super::*;
+
+    #[test]
+    fn outer_signature_borrows_both_embedded_fields() {
+        let certificate = X509_new().expect("certificate");
+        let signature = X509_get0_signature(certificate.as_ref());
+        assert!(!signature.value.as_ptr().is_null());
+        assert!(!signature.algorithm.as_ptr().is_null());
+        X509_free(certificate);
     }
 }

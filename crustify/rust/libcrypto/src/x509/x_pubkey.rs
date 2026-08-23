@@ -2,13 +2,16 @@
 
 use core::ffi::{CStr, c_long, c_void};
 use core::marker::PhantomData;
-use core::ptr;
+use core::ptr::{self, NonNull};
 
-use ffibox::{CBox, CType, define_ctype, impl_cloned, impl_dropped};
+use ffibox::{CBox, CSlice, CType, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
+use crate::asn1::asn1::{Asn1ObjectRef, Asn1StringRef};
 use crate::bio::context::OsslLibCtxRef;
 use crate::evp::evp::{EvpPkey, EvpPkeyRef};
+use crate::x509::x509::X509AlgorRef;
+use crate::x509::x509_internal::X509Ref;
 
 define_ctype!(
     /// Wraps: X509_pubkey_st
@@ -118,8 +121,16 @@ mod tests {
         assert!(i2d_X509_PUBKEY(pubkey.as_ref()).is_some());
         assert!(X509_PUBKEY_get0(pubkey.as_ref()).is_none());
         assert!(X509_PUBKEY_get(pubkey.as_ref()).is_none());
+        let parameters = X509_PUBKEY_get0_param(pubkey.as_ref()).expect("parameters");
+        assert!(parameters.algorithm.is_some());
+        assert!(parameters.algorithm_identifier.is_some());
+        let encoded = parameters.encoded_key.expect("encoded key");
+        assert_eq!(encoded.len(), key_bytes.len());
+        assert_eq!(encoded.elems().collect::<Vec<_>>(), key_bytes);
 
         let duplicate = pubkey.try_clone().expect("X509_PUBKEY_dup");
+        assert_ne!(duplicate.as_ptr(), raw);
+        let duplicate = X509_PUBKEY_dup(pubkey.as_ref()).expect("safe X509_PUBKEY_dup");
         assert_ne!(duplicate.as_ptr(), raw);
     }
 
@@ -280,5 +291,147 @@ mod wrapper_tests {
         assert!(X509_PUBKEY_get0(public_key.as_ref()).is_none());
         drop(public_key);
         drop(context);
+    }
+}
+
+/// Wraps: X509_PUBKEY_dup
+/// Deep-copies a complete public-key container.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_PUBKEY_dup(public_key: X509PubkeyRef<'_>) -> Option<CBox<X509Pubkey>> {
+    // SAFETY: the required source is live and shared. A non-null result is an
+    // independent allocation with one `X509_PUBKEY_free` obligation.
+    unsafe { CBox::from_raw(ffi::X509_PUBKEY_dup(public_key.as_ptr())) }
+}
+
+/// Wraps: X509_PUBKEY_eq
+/// Tests semantic key equality, preserving OpenSSL's negative error codes.
+#[allow(non_snake_case)]
+pub fn X509_PUBKEY_eq(
+    a: Option<X509PubkeyRef<'_>>,
+    b: Option<X509PubkeyRef<'_>>,
+) -> Result<bool, i32> {
+    let (Some(a), Some(b)) = (a, b) else {
+        return Ok(a.is_none() && b.is_none());
+    };
+    if a.as_ptr() == b.as_ptr() {
+        return Ok(true);
+    }
+    // The C equality routine passes the inner algorithm object to `OBJ_cmp`
+    // without checking it, so reject a malformed or incomplete C-created
+    // container before entering that path.
+    if X509_PUBKEY_get0_param(a)
+        .and_then(|parameters| parameters.algorithm)
+        .is_none()
+        || X509_PUBKEY_get0_param(b)
+            .and_then(|parameters| parameters.algorithm)
+            .is_none()
+    {
+        return Err(-2);
+    }
+    // SAFETY: both pointers come from live shared handles, and the required
+    // algorithm object fields were checked non-null above.
+    match unsafe { ffi::X509_PUBKEY_eq(a.as_ptr(), b.as_ptr()) } {
+        1 => Ok(true),
+        0 => Ok(false),
+        error => Err(error),
+    }
+}
+
+/// Borrowed SubjectPublicKeyInfo components.
+#[derive(Clone, Copy)]
+pub struct X509PubkeyParameters<'a> {
+    /// Algorithm object installed in the AlgorithmIdentifier.
+    pub algorithm: Option<Asn1ObjectRef<'a>>,
+    /// Encoded subject-public-key bytes, when a non-null byte run is present.
+    pub encoded_key: Option<CSlice<'a, u8>>,
+    /// Complete AlgorithmIdentifier retained by the public-key container.
+    pub algorithm_identifier: Option<X509AlgorRef<'a>>,
+}
+
+/// Wraps: X509_PUBKEY_get0_param
+/// Borrows the algorithm and encoded key from a public-key container.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_PUBKEY_get0_param<'a>(
+    public_key: X509PubkeyRef<'a>,
+) -> Option<X509PubkeyParameters<'a>> {
+    let mut algorithm = ptr::null_mut();
+    let mut encoded = ptr::null();
+    let mut encoded_len = 0;
+    let mut identifier = ptr::null_mut();
+    // SAFETY: all outputs are valid disjoint scalar slots and the shared
+    // container remains live, retaining each returned child and byte run.
+    let result = unsafe {
+        ffi::X509_PUBKEY_get0_param(
+            &mut algorithm,
+            &mut encoded,
+            &mut encoded_len,
+            &mut identifier,
+            public_key.as_ptr(),
+        )
+    };
+    if result != 1 {
+        return None;
+    }
+    let encoded_len = usize::try_from(encoded_len).ok()?;
+    let encoded_key = NonNull::new(encoded.cast_mut()).map(|encoded| {
+        // SAFETY: OpenSSL reports `encoded_len` initialized bytes retained by
+        // `public_key`; `CSlice` copies bytes out without forming a reference.
+        unsafe { CSlice::from_raw_parts(encoded, encoded_len) }
+    });
+    // SAFETY: non-null child pointers are owned by the live public-key
+    // container, and each handle is bounded by that container borrow.
+    let algorithm = unsafe { Asn1ObjectRef::from_ptr(algorithm) };
+    // SAFETY: as above, for the complete AlgorithmIdentifier child.
+    let algorithm_identifier = unsafe { X509AlgorRef::from_ptr(identifier) };
+    Some(X509PubkeyParameters {
+        algorithm,
+        encoded_key,
+        algorithm_identifier,
+    })
+}
+
+/// Wraps: X509_get0_pubkey_bitstr
+/// Borrows a certificate's encoded public-key bit string.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get0_pubkey_bitstr<'a>(certificate: Option<X509Ref<'a>>) -> Option<Asn1StringRef<'a>> {
+    let certificate = certificate.map_or(ptr::null(), |value| value.as_ptr());
+    // SAFETY: the pointer is null or a live shared certificate. A non-null
+    // result is retained by the certificate for the source handle lifetime.
+    unsafe { Asn1StringRef::from_ptr(ffi::X509_get0_pubkey_bitstr(certificate).cast_mut()) }
+}
+
+#[cfg(test)]
+mod scheduled_tests {
+    use super::*;
+
+    #[test]
+    fn null_equality_and_optional_certificate_are_preserved() {
+        use crate::x509::x_x509::{X509_free, X509_new};
+
+        assert_eq!(X509_PUBKEY_eq(None, None), Ok(true));
+        assert!(X509_get0_pubkey_bitstr(None).is_none());
+
+        let certificate = X509_new().expect("certificate");
+        assert!(X509_get0_pubkey_bitstr(Some(certificate.as_ref())).is_some());
+        X509_free(certificate);
+
+        // SAFETY: OpenSSL returns null or a fresh complete public-key owner.
+        let raw = unsafe { ffi::X509_PUBKEY_new() };
+        // SAFETY: the fresh allocation transfers once to its matching owner.
+        let public_key = unsafe { CBox::<X509Pubkey>::from_raw(raw) }.expect("public key");
+        assert_eq!(X509_PUBKEY_eq(Some(public_key.as_ref()), None), Ok(false));
+        // SAFETY: OpenSSL returns null or a fresh complete public-key owner.
+        let other_raw = unsafe { ffi::X509_PUBKEY_new() };
+        // SAFETY: the fresh allocation transfers once to its matching owner.
+        let other = unsafe { CBox::<X509Pubkey>::from_raw(other_raw) }.expect("other public key");
+        assert_eq!(
+            X509_PUBKEY_eq(Some(public_key.as_ref()), Some(other.as_ref())),
+            Err(-2)
+        );
+        let parameters = X509_PUBKEY_get0_param(public_key.as_ref()).expect("parameters");
+        assert!(parameters.algorithm_identifier.is_some());
     }
 }

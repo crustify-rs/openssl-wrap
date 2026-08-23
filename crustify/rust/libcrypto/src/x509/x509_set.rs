@@ -1,11 +1,14 @@
 //! Wrappers assigned from `crypto/x509/x509_set.c`.
 
+use core::ffi::c_long;
+
 use libcrypto_sys as ffi;
 
+use crate::asn1::asn1::Asn1StringRef;
 use crate::stack::stack::StackRef;
 use crate::x509::x_pubkey::X509PubkeyRef;
 use crate::x509::x_x509::BorrowedX509;
-use crate::x509::x509::{X509Extension, X509ExtensionStackRef};
+use crate::x509::x509::{X509AlgorRef, X509Extension, X509ExtensionStackRef};
 use crate::x509::x509_internal::X509Ref;
 
 /// Wraps: X509_get0_extensions
@@ -114,6 +117,64 @@ mod tests {
         let shared = X509_up_ref(certificate.as_ref()).expect("up-ref");
         assert_eq!(shared.as_ref().as_ptr(), certificate.as_ptr().cast_const());
         drop(shared);
+        X509_free(certificate);
+    }
+}
+
+/// Wraps: X509_get0_notAfter
+/// Borrows the certificate's embedded not-after time.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get0_notAfter<'a>(certificate: X509Ref<'a>) -> Asn1StringRef<'a> {
+    // SAFETY: a complete X509 contains a live not-after string retained for
+    // the certificate lifetime.
+    unsafe { Asn1StringRef::from_ptr(ffi::X509_get0_notAfter(certificate.as_ptr()).cast_mut()) }
+        .expect("a complete X509 has a not-after time")
+}
+
+/// Wraps: X509_get0_notBefore
+/// Borrows the certificate's embedded not-before time.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get0_notBefore<'a>(certificate: X509Ref<'a>) -> Asn1StringRef<'a> {
+    // SAFETY: a complete X509 contains a live not-before string retained for
+    // the certificate lifetime.
+    unsafe { Asn1StringRef::from_ptr(ffi::X509_get0_notBefore(certificate.as_ptr()).cast_mut()) }
+        .expect("a complete X509 has a not-before time")
+}
+
+/// Wraps: X509_get0_tbs_sigalg
+/// Borrows the certificate's embedded to-be-signed signature algorithm.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get0_tbs_sigalg<'a>(certificate: X509Ref<'a>) -> X509AlgorRef<'a> {
+    // SAFETY: the getter addresses an embedded, initialized field retained for
+    // the live certificate handle's lifetime.
+    unsafe { X509AlgorRef::from_ptr(ffi::X509_get0_tbs_sigalg(certificate.as_ptr()).cast_mut()) }
+        .expect("a complete X509 has a TBS signature algorithm")
+}
+
+/// Wraps: X509_get_version
+/// Returns the certificate's zero-based X509 version number.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_get_version(certificate: X509Ref<'_>) -> c_long {
+    // SAFETY: the shared certificate contains an initialized version value.
+    unsafe { ffi::X509_get_version(certificate.as_ptr()) }
+}
+
+#[cfg(test)]
+mod scheduled_tests {
+    use super::*;
+    use crate::x509::x_x509::{X509_free, X509_new};
+
+    #[test]
+    fn version_times_and_tbs_algorithm_are_lifetime_bound() {
+        let certificate = X509_new().expect("certificate");
+        assert_eq!(X509_get_version(certificate.as_ref()), 0);
+        let _ = X509_get0_notBefore(certificate.as_ref());
+        let _ = X509_get0_notAfter(certificate.as_ref());
+        let _ = X509_get0_tbs_sigalg(certificate.as_ref());
         X509_free(certificate);
     }
 }

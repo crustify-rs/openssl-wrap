@@ -12859,6 +12859,46 @@
    }
   },
   {
+   "name": "X509_ALGOR_cmp",
+   "defined_in": "crypto/asn1/x_algor.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared AlgorithmIdentifier read synchronously during comparison."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared AlgorithmIdentifier read synchronously during comparison."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_ALGOR_dup",
    "defined_in": "crypto/asn1/x_algor.c",
    "lifetime": {
@@ -12927,6 +12967,90 @@
       "nullable": true,
       "mutable": true,
       "note": "Consumes a complete X509_ALGOR, releases both owned fields through its ASN.1 template, then releases the allocation; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_ALGOR_get0",
+   "defined_in": "crypto/asn1/x_algor.c",
+   "ptr_args": [
+    {
+     "name": "algor",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algor"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared AlgorithmIdentifier that retains every returned child borrow."
+     }
+    },
+    {
+     "name": "paobj",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:algor"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:paobj"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional out-slot receives an object borrowed from algor."
+     }
+    },
+    {
+     "name": "pptype",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pptype"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional scalar out-slot receives the parameter tag."
+     }
+    },
+    {
+     "name": "ppval",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:algor"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppval"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional type-erased out-slot receives the active parameter payload borrowed from algor; written only when pptype is supplied and the parameter exists."
      }
     }
    ]
@@ -13087,6 +13211,46 @@
    }
   },
   {
+   "name": "X509_PUBKEY_eq",
+   "defined_in": "crypto/x509/x_pubkey.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable shared key container; NULL participates in the documented equality cases."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable shared key container; NULL participates in the documented equality cases."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_PUBKEY_free",
    "defined_in": "crypto/x509/x_pubkey.c",
    "lifetime": {
@@ -13188,6 +13352,112 @@
      "note": "Null or cached EVP_PKEY storage retained by the X509_PUBKEY container."
     }
    }
+  },
+  {
+   "name": "X509_PUBKEY_get0_param",
+   "defined_in": "crypto/x509/x_pubkey.c",
+   "ptr_args": [
+    {
+     "name": "pa",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:pub"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pa"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional out-slot receives the AlgorithmIdentifier borrowed from pub."
+     }
+    },
+    {
+     "name": "pk",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:pub"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pk"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional out-slot receives the encoded key byte run borrowed from pub."
+     }
+    },
+    {
+     "name": "ppkalg",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:pub"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppkalg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional out-slot receives the algorithm object borrowed from pub."
+     }
+    },
+    {
+     "name": "ppklen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppklen"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Length out-slot is optional only when pk is omitted; when pk is supplied C requires this slot."
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared public-key container retaining all returned borrows."
+     }
+    }
+   ]
   },
   {
    "name": "X509_PUBKEY_new_ex",
@@ -13396,6 +13666,84 @@
    }
   },
   {
+   "name": "X509_get0_notAfter",
+   "defined_in": "crypto/x509/x509_set.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Certificate is read only and retains the returned embedded child."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:x"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns the embedded notAfter string borrowed from the certificate."
+    }
+   }
+  },
+  {
+   "name": "X509_get0_notBefore",
+   "defined_in": "crypto/x509/x509_set.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Certificate is read only and retains the returned embedded child."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:x"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns the embedded notBefore string borrowed from the certificate."
+    }
+   }
+  },
+  {
    "name": "X509_get0_pubkey",
    "defined_in": "crypto/x509/x509_cmp.c",
    "ptr_args": [
@@ -13431,6 +13779,190 @@
      "nullable": true,
      "mutable": false,
      "note": "Null or cached EVP_PKEY retained by the certificate public-key container."
+    }
+   }
+  },
+  {
+   "name": "X509_get0_pubkey_bitstr",
+   "defined_in": "crypto/x509/x_pubkey.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Certificate is read only and retains the returned embedded child."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:x"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Returns NULL for a NULL certificate, otherwise its public-key bit string borrow."
+    }
+   }
+  },
+  {
+   "name": "X509_get0_serialNumber",
+   "defined_in": "crypto/x509/x509_cmp.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Certificate is read only and retains the returned embedded child."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:a"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns the embedded serial-number string borrowed shared from the certificate."
+    }
+   }
+  },
+  {
+   "name": "X509_get0_signature",
+   "defined_in": "crypto/x509/x_x509.c",
+   "ptr_args": [
+    {
+     "name": "palg",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:x"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:palg"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional out-slot receives the embedded signature AlgorithmIdentifier borrowed from x."
+     }
+    },
+    {
+     "name": "psig",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:x"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:psig"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional out-slot receives the embedded signature bit string borrowed from x."
+     }
+    },
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate retaining both returned embedded borrows."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_get0_tbs_sigalg",
+   "defined_in": "crypto/x509/x509_set.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Certificate is read only and retains the returned embedded child."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:x"
+     },
+     "nullable": false,
+     "mutable": false,
+     "note": "Returns the embedded to-be-signed AlgorithmIdentifier borrowed from the certificate."
     }
    }
   },
@@ -13546,6 +14078,45 @@
      "nullable": true,
      "mutable": true,
      "note": "Null on failure or one newly up-refed EVP_PKEY reference owned by the caller."
+    }
+   }
+  },
+  {
+   "name": "X509_get_serialNumber",
+   "defined_in": "crypto/x509/x509_cmp.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required live certificate; safe use needs exclusive access because the returned embedded serial can be mutated."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:a"
+     },
+     "nullable": false,
+     "mutable": true,
+     "note": "Returns an exclusive borrow of the embedded serial-number string."
     }
    }
   },
@@ -13724,6 +14295,29 @@
      "note": "The complete certificate owns its subject name; the result is tied to that certificate."
     }
    }
+  },
+  {
+   "name": "X509_get_version",
+   "defined_in": "crypto/x509/x509_set.c",
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared certificate read synchronously."
+     }
+    }
+   ]
   },
   {
    "name": "X509_issuer_and_serial_cmp",
@@ -14178,6 +14772,70 @@
    }
   },
   {
+   "name": "d2i_X509_ALGOR",
+   "defined_in": "crypto/asn1/x_algor.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "arg:a"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional in/out owner slot: NULL requests a fresh allocation; an existing owned pointee may be reused, replaced, or cleared on decode failure."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:in"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required cursor slot over a borrowed encoded byte run; the outer cursor advances while input bytes remain read-only."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "On success returns the destination owner (fresh or reused); NULL reports failure."
+    }
+   }
+  },
+  {
    "name": "d2i_X509_PUBKEY",
    "defined_in": "crypto/x509/x_pubkey.c",
    "ptr_args": [
@@ -14309,6 +14967,51 @@
       "nullable": true,
       "mutable": true,
       "note": "Optional output-pointer slot: null requests a length; a null inner pointer requests an owned allocation; otherwise C advances within caller storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "i2d_X509_ALGOR",
+   "defined_in": "crypto/asn1/x_algor.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared AlgorithmIdentifier read during DER encoding."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": {
+         "lifetime": "arg:out"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "NULL performs a length query; otherwise the slot either receives an allocated DER buffer or supplies a caller-owned writable buffer, and its cursor advances."
      }
     }
    ]
