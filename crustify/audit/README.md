@@ -12,14 +12,16 @@ Hunting undefined behaviour reachable from safe Rust.
 | [`bio-dup-chain-double-close.md`](advisories/bio-dup-chain-double-close.md) | one descriptor closed twice; std aborts | Rust std I/O-safety check |
 | [`obj-sigid-comparator-signed-overflow.md`](advisories/obj-sigid-comparator-signed-overflow.md) | signed integer overflow in a C comparator | UBSan (tree build) |
 
+All five safe wrapper routes are remediated by `589b6078ec`; each advisory
+ends with the focused regression and instrument rerun that verifies its guard.
+
 All five root-cause in OpenSSL C and are reachable from this crate's safe API
 with no `unsafe` in the caller; each advisory says which side it thinks should
-be fixed, and four of the five also carry a non-breaking wrapper-side guard.
-They are listed most-severe first.
+be fixed. They are listed most-severe first.
 
 The first one is the one to read if you only read one: it needs no exotic
-argument, only `std::thread::spawn`, and the crate already has the mutex that
-fixes it sitting in its own `#[cfg(test)]` block.
+argument, only `std::thread::spawn`. Its repair promoted the crate's former
+test-only serialization into the safe production wrappers.
 
 ## `notes/` — every lead chased, including the ones that went nowhere
 

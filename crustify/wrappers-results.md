@@ -15,7 +15,7 @@
 - **`--max-loc`** — `1000`
 - **`--min-fields`** — `10`
 - **`--parallel-max`** — `8`
-- **branch** — `crustify/libcrypto-gpt-5.6-sol`, code tip `32ada326d7`
+- **branch** — `crustify/libcrypto-gpt-5.6-sol`, code tip `589b6078ec`
 - **deps** — crustify-cli `ae596e5` (`fix/review-unplaced-context`), ffibox `c2178c4` (`main`)
 
 ## Review pass
@@ -638,10 +638,10 @@ the default reviewed surface compiles and links.
 
 ### Regression gates
 
-The promoted review passes `cargo fmt --check`, `cargo check --workspace`,
-strict Clippy across all targets, and 247 UBSan-backed Rust tests (22 `libc`,
-225 `libcrypto`). The pre-review foundation also passed all 4,463 native
-OpenSSL tests. No C source changed during review.
+The promoted campaign passes `cargo fmt --check`, workspace-wide tests, strict
+Clippy across all targets, and 252 UBSan-backed Rust tests (22 `libc`, 230
+`libcrypto`). The pre-review foundation also passed all 4,463 native OpenSSL
+tests. No C source changed during review or UB remediation.
 
 ### Accounting
 
@@ -657,4 +657,19 @@ recorded API-billed work remains `$268.76`.
 
 ### Post-campaign UB pass
 
-Explicitly approved and pending immediately after this report snapshot.
+Explicitly approved and completed under Opus 5 subscription billing: five
+safe-to-UB routes were demonstrated in 56m04s (`$43.48` API-equivalent), then
+remediated in wrapper commit `589b6078ec`:
+
+- caller-selected non-string ASN.1 tags are rejected by both safe string
+  constructors;
+- every safe ASN.1 string-table and default-mask access shares one mutex;
+- `BIO_dup_chain` rejects an owning descriptor anywhere in its input chain;
+- `BIO_gets` rejects an unchained buffer filter; and
+- signature-ID wrappers reject non-positive NIDs before C's subtraction
+  comparators.
+
+All six reproduction routes now exit 0 without their original diagnostic or
+double close. The ASan table workload survived 10/10 runs at 16 threads over
+3,000 fresh NIDs, versus 0/10 before remediation. Each advisory under
+`crustify/audit/advisories/` records its focused test and instrument result.

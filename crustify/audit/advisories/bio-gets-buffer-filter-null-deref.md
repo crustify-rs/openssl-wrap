@@ -229,3 +229,14 @@ filters already do internally for read and write.
   Not a bug — and the crate has a regression test for it.
 - The other five filter methods the crate exposes, unchained, across ten
   operations each. All clean.
+
+## Remediation
+
+Fixed on `crustify/orchestrator/ub-remediation` by `589b6078ec`. The safe
+`BIO_gets` wrapper now identifies an unchained `BIO_TYPE_BUFFER` before calling
+C and returns `-1`; other BIO methods and chained buffers retain their existing
+behavior. A focused regression constructs the exact safe failing state.
+
+The original UBSan workload exited 0 and printed `BIO_gets returned -1` with no
+diagnostic. The complete Rust workspace tests, formatting, warnings-denied
+clippy, and the seeded deterministic unsafe scan also passed.

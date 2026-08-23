@@ -247,3 +247,18 @@ methods where the duplicate really does own something.
   when no `dup_func` is registered, which would double-free on teardown — but
   registering an ex_data class is not wrapped and `BIO_set_ex_data` is `unsafe`,
   so safe code cannot populate a slot. Not reachable.
+
+## Remediation
+
+Fixed on `crustify/orchestrator/ub-remediation` by `589b6078ec`.
+`BIO_dup_chain` now walks the complete source chain before entering C and
+returns `None` if any descriptor-class node has `shutdown` set. The regression
+constructs a harmless head with an owned file-descriptor tail, proving the
+check is not head-only.
+
+Both safe routes exited 0 after remediation: the one-node `BIO_new_fd` workload
+reported that duplication was blocked, and the live accept workload built its
+real `accept -> socket` chain then reported the same for the owning tail. No
+descriptor was duplicated or double-closed. The complete Rust workspace tests,
+formatting, warnings-denied clippy, and the seeded deterministic unsafe scan
+also passed.

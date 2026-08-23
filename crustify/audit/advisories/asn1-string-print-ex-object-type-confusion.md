@@ -238,3 +238,17 @@ may be too incompatible for OpenSSL to take.
   `do_dump`. Clean for tag 6.
 - `ASN1_STRING_to_UTF8` on a tag-6 string: returns an error rather than
   mis-reading. Clean.
+
+## Remediation
+
+Fixed on `crustify/orchestrator/ub-remediation` by `589b6078ec`. Both safe
+constructors that accept a caller-selected tag now require
+`Asn1TypeKind::holds_string()` before entering C, so neither an owned nor a
+borrowed header can claim an `ASN1_OBJECT`, Boolean, NULL, ANY, or UNDEF payload.
+Focused constructor tests cover every rejected representation class.
+
+The remediation-aware ASan reproduction ran against the original instrumented
+libcrypto build and exited 0 with
+`blocked: ASN1_STRING_type_new rejected V_ASN1_OBJECT`; no sanitizer diagnostic
+was emitted. The complete Rust workspace tests, formatting, warnings-denied
+clippy, and the seeded deterministic unsafe scan also passed.

@@ -169,3 +169,15 @@ breaking change across the whole `objects` module and I would not start there.
 - `ossl_bsearch` index arithmetic: bounded by the element count, independent of
   the comparator's return value. A wrong comparator gives a wrong answer, not
   an out-of-bounds read.
+
+## Remediation
+
+Fixed on `crustify/orchestrator/ub-remediation` by `589b6078ec`. All three safe
+wrappers reject non-positive NIDs before C: lookup functions return `None` and
+`OBJ_add_sigid` returns `false`. Focused tests cover `i32::MIN`, `-1`, and zero
+in every argument position.
+
+The original UBSan workload exited 0 with
+`OBJ_find_sigid_algs(i32::MIN) = None` and no diagnostic. The complete Rust
+workspace tests, formatting, warnings-denied clippy, and the seeded
+deterministic unsafe scan also passed.

@@ -235,3 +235,16 @@ not wait for it.
   [obj_xref comparators](obj-sigid-comparator-signed-overflow.md), but both C
   entry points reject `nid <= 0` before the search, so the overflow is not
   reachable here.
+
+## Remediation
+
+Fixed on `crustify/orchestrator/ub-remediation` by `589b6078ec`. A poison-
+recovering crate-level mutex now serializes every safe Rust access to the
+dynamic table and its related default mask: add, get, cleanup, both
+`set_by_NID` forms, and all mask getters/setters. Direct C callers remain an
+embedding-level coordination requirement and are documented at the lock.
+
+A focused eight-thread unit regression passes. More importantly, the original
+ASan workload (16 threads, 3,000 fresh NIDs) survived 10/10 runs with exit 0;
+before the patch, 0/10 survived. The complete Rust workspace tests, formatting,
+warnings-denied clippy, and the seeded deterministic unsafe scan also passed.
