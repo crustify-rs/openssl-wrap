@@ -2364,6 +2364,212 @@
    "defined_in": null,
    "_comment_agent": "DEFINE_STACK_OF only forward-declares this generated tag. It erases to stack_st/OPENSSL_STACK, whose translated generic wrapper owns the pointer array but not X509_EXTENSION elements unless explicitly promoted to pop-free ownership.",
    "fields": []
+  },
+  {
+   "name": "x509_st",
+   "defined_in": "include/crypto/x509.h",
+   "_comment_agent": "The public API exposes X509 only as an opaque forward declaration. X509 owns its optional decoded caches, auxiliary record, lock, property query, and distinguishing identifier; it only borrows libctx. references is the atomic count paired with X509_up_ref and X509_free. None of these internal fields is exposed by this wrap objective.",
+   "fields": [
+    {
+     "name": "akid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional decoded authority-key-identifier cache owned by X509, replaced and freed while rebuilding the cache, then read through const access paths."
+     }
+    },
+    {
+     "name": "altname",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional owned STACK_OF(GENERAL_NAME) cache, installed after decoding, then read for checks and recursively freed by X509_free."
+     }
+    },
+    {
+     "name": "aux",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned certificate auxiliary record, lazily allocated and mutated by alias/keyid/trust APIs, then freed by X509_free."
+     }
+    },
+    {
+     "name": "crldp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional owned STACK_OF(DIST_POINT) cache. Its elements are built before installation, read thereafter, and recursively freed by X509_free."
+     }
+    },
+    {
+     "name": "distinguishing_id",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional ASN1 octet string transferred by the set0 API, returned as const, and freed on replacement or final X509 destruction."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional non-owning library context installed by X509_new_ex/ossl_x509_set0_libctx and used by later fetch operations; X509 never up-refs or frees it."
+     }
+    },
+    {
+     "name": "lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Per-certificate read/write lock allocated for a complete reference-counted X509 and freed on final destruction; lock operations mutate its state."
+     }
+    },
+    {
+     "name": "nc",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional decoded NAME_CONSTRAINTS cache owned by X509, installed after construction and read during validation before X509_free releases it."
+     }
+    },
+    {
+     "name": "policy_cache",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional lazily allocated policy cache owned by X509; policy construction and mapping mutate it in place under the certificate lock before final disposal."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query deep-copied with OPENSSL_strdup and released by X509_free; consumers only read it."
+     }
+    },
+    {
+     "name": "references",
+     "refcount": true
+    },
+    {
+     "name": "rfc3779_addr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned STACK_OF(IPAddressFamily) cache; RFC3779 helpers set its comparator and sort it in place before recursive destruction."
+     }
+    },
+    {
+     "name": "rfc3779_asid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional decoded RFC3779 AS identifiers cache owned by X509 and recursively freed; validation paths only read the installed cache."
+     }
+    },
+    {
+     "name": "skid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional decoded subject-key-identifier cache owned by X509, replaced and freed while rebuilding the cache, and exposed only through const getters."
+     }
+    }
+   ]
   }
  ],
  "symbols": [
@@ -12775,6 +12981,111 @@
       "nullable": true,
       "mutable": true,
       "note": "Consumes and releases one fully formed X509_PUBKEY allocation; NULL is explicitly accepted through ASN1_item_free."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_dup",
+   "defined_in": "crypto/x509/x_x509.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads the source certificate; NULL is accepted and returns NULL."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL or a fresh independently owned certificate with its own reference count."
+    }
+   }
+  },
+  {
+   "name": "X509_free",
+   "defined_in": "crypto/x509/x_x509.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one X509 reference; NULL is accepted. Final release tears down fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_up_ref",
+   "defined_in": "crypto/x509/x509_set.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live X509 and atomically increments its references field; the returned status reports whether a new ownership debt was created."
      }
     }
    ]
