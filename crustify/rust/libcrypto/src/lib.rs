@@ -8,3 +8,5 @@ pub mod o_str;
 pub mod objects;
 pub mod stack;
 pub mod zeroization;
+pub mod evp;
+pub mod x509;

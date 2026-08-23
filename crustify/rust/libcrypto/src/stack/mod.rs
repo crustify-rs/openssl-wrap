@@ -2,3 +2,4 @@
 
 pub mod openssl_stack;
 pub mod stack;
+pub mod openssl_safestack;

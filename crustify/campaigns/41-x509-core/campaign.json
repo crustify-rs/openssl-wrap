@@ -1,0 +1,2684 @@
+{
+  "schema_version": 1,
+  "oracle_target": "crypto",
+  "api_headers_only": true,
+  "budgets": {
+    "max_syms": 50,
+    "max_loc": 1000,
+    "max_types": 2,
+    "min_fields": 10
+  },
+  "summary": {
+    "unit_count": 50,
+    "layer_count": 5,
+    "batch_count": 6,
+    "file_count": 4
+  },
+  "plan_items": [
+    {
+      "name": "X509_ALGOR_cmp",
+      "defined_in": "crypto/asn1/x_algor.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_ALGOR_dup",
+      "defined_in": "crypto/asn1/x_algor.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_ALGOR_free",
+      "defined_in": "crypto/asn1/x_algor.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_ALGOR_get0",
+      "defined_in": "crypto/asn1/x_algor.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_ALGOR_new",
+      "defined_in": "crypto/asn1/x_algor.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_PUBKEY_dup",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 37,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_PUBKEY_eq",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 18,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_PUBKEY_free",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_PUBKEY_get",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_PUBKEY_get0",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 14,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_PUBKEY_get0_param",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 11,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_PUBKEY_new_ex",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_algor_st",
+      "defined_in": "include/openssl/x509.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 3,
+      "loc": 2,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_cmp",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 27,
+      "deps": {
+        "types": [
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_dup",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_free",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_extensions",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "stack_st_X509_EXTENSION",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_notAfter",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_string_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_notBefore",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_string_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_pubkey",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_pubkey_bitstr",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_string_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_serialNumber",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_string_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_signature",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "asn1_string_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get0_tbs_sigalg",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_X509_PUBKEY",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_issuer_name",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_name_st",
+            "defined_in": "include/crypto/x509.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_pubkey",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_serialNumber",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_string_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_signature_info",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_signature_nid",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_signature_type",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_subject_name",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_name_st",
+            "defined_in": "include/crypto/x509.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_get_version",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_string_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_issuer_and_serial_cmp",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 15,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_name_st",
+            "defined_in": "include/crypto/x509.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_issuer_name_cmp",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_name_st",
+            "defined_in": "include/crypto/x509.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_name_st",
+      "defined_in": "include/crypto/x509.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_new",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_new_ex",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_subject_name_cmp",
+      "defined_in": "crypto/x509/x509_cmp.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_name_st",
+            "defined_in": "include/crypto/x509.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "X509_up_ref",
+      "defined_in": "crypto/x509/x509_set.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "d2i_X509",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "d2i_X509_ALGOR",
+      "defined_in": "crypto/asn1/x_algor.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "d2i_X509_PUBKEY",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_pkey_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 21,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "i2d_X509",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "i2d_X509_ALGOR",
+      "defined_in": "crypto/asn1/x_algor.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "i2d_X509_PUBKEY",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 1,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "X509_pubkey_st",
+            "defined_in": "crypto/x509/x_pubkey.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "i2d_re_X509_tbs",
+      "defined_in": "crypto/x509/x_x509.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "x509_st",
+            "defined_in": "include/crypto/x509.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "stack_st_X509_EXTENSION",
+      "defined_in": "include/openssl/x509.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 1,
+      "loc": 0,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "stack_st",
+            "defined_in": "crypto/stack/stack.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "x509_st",
+      "defined_in": "include/crypto/x509.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 1,
+      "loc": 27,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    }
+  ],
+  "dependency_nodes": [
+    {
+      "name": "ASN1_VALUE_st",
+      "defined_in": "include/openssl/asn1.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 0,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "X509_pubkey_st",
+      "defined_in": "crypto/x509/x_pubkey.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "asn1_object_st",
+      "defined_in": "include/crypto/asn1.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "asn1_string_st",
+      "defined_in": "include/crypto/asn1.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 3,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [
+        {
+          "name": "asn1_type_st",
+          "defined_in": "include/openssl/asn1.h"
+        }
+      ],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "asn1_type_st",
+      "defined_in": "include/openssl/asn1.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 2,
+      "loc": 23,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [
+        {
+          "name": "asn1_string_st",
+          "defined_in": "include/crypto/asn1.h"
+        }
+      ],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_lib_ctx_st",
+      "defined_in": "crypto/context.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 24,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "stack_st",
+      "defined_in": "crypto/stack/stack.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 8,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    }
+  ],
+  "waves": [
+    {
+      "layers": [
+        0
+      ],
+      "unit_count": 1,
+      "batches": [
+        {
+          "kind": "type",
+          "source_file": "include/crypto/evp.h",
+          "items": [
+            {
+              "name": "evp_pkey_st",
+              "defined_in": "include/crypto/evp.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 21,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        1
+      ],
+      "unit_count": 3,
+      "batches": [
+        {
+          "kind": "type",
+          "source_file": "include/crypto/x509.h",
+          "items": [
+            {
+              "name": "X509_name_st",
+              "defined_in": "include/crypto/x509.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "stack_st_X509_EXTENSION",
+              "defined_in": "include/openssl/x509.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 1,
+              "loc": 0,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "stack_st",
+                    "defined_in": "crypto/stack/stack.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "type",
+          "source_file": "include/crypto/x509.h",
+          "items": [
+            {
+              "name": "x509_st",
+              "defined_in": "include/crypto/x509.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 1,
+              "loc": 27,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        2
+      ],
+      "unit_count": 27,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "X509_PUBKEY_free",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_PUBKEY_get",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_PUBKEY_get0",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 14,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_PUBKEY_new_ex",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_cmp",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 27,
+              "deps": {
+                "types": [
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_dup",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_free",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_extensions",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "stack_st_X509_EXTENSION",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_pubkey",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_X509_PUBKEY",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_issuer_name",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_name_st",
+                    "defined_in": "include/crypto/x509.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_pubkey",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_signature_info",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_signature_nid",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_signature_type",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_subject_name",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_name_st",
+                    "defined_in": "include/crypto/x509.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_issuer_and_serial_cmp",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 15,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_name_st",
+                    "defined_in": "include/crypto/x509.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_issuer_name_cmp",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_name_st",
+                    "defined_in": "include/crypto/x509.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_new",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_new_ex",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_subject_name_cmp",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_name_st",
+                    "defined_in": "include/crypto/x509.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_up_ref",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "d2i_X509",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "d2i_X509_PUBKEY",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "i2d_X509",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "i2d_X509_PUBKEY",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "i2d_re_X509_tbs",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        3
+      ],
+      "unit_count": 1,
+      "batches": [
+        {
+          "kind": "type",
+          "source_file": "include/openssl/x509.h",
+          "items": [
+            {
+              "name": "X509_algor_st",
+              "defined_in": "include/openssl/x509.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 3,
+              "loc": 2,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "asn1_type_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": [
+                "algorithm",
+                "parameter"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        4
+      ],
+      "unit_count": 18,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "X509_ALGOR_cmp",
+              "defined_in": "crypto/asn1/x_algor.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "asn1_type_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_ALGOR_dup",
+              "defined_in": "crypto/asn1/x_algor.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_ALGOR_free",
+              "defined_in": "crypto/asn1/x_algor.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_ALGOR_get0",
+              "defined_in": "crypto/asn1/x_algor.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_ALGOR_new",
+              "defined_in": "crypto/asn1/x_algor.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_PUBKEY_dup",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 37,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_PUBKEY_eq",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 18,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_PUBKEY_get0_param",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 11,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "X509_pubkey_st",
+                    "defined_in": "crypto/x509/x_pubkey.c"
+                  },
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_notAfter",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_string_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_notBefore",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_string_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_pubkey_bitstr",
+              "defined_in": "crypto/x509/x_pubkey.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_string_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_serialNumber",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_string_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_signature",
+              "defined_in": "crypto/x509/x_x509.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "asn1_string_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get0_tbs_sigalg",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_serialNumber",
+              "defined_in": "crypto/x509/x509_cmp.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_string_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "X509_get_version",
+              "defined_in": "crypto/x509/x509_set.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_string_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "x509_st",
+                    "defined_in": "include/crypto/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "d2i_X509_ALGOR",
+              "defined_in": "crypto/asn1/x_algor.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "i2d_X509_ALGOR",
+              "defined_in": "crypto/asn1/x_algor.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 1,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ASN1_VALUE_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
