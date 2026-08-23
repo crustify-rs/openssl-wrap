@@ -82,7 +82,7 @@ impl BioMethodMmsgCallback {
     pub fn call(
         self,
         bio: &mut BioMut<'_>,
-        messages: &mut CSliceMut<'_, BioMsg>,
+        messages: &mut CSliceMut<'_, BioMsg<'_>>,
         flags: u64,
     ) -> Option<usize> {
         let mut processed = 0;

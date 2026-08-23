@@ -8,9 +8,23 @@ use libcrypto_sys as ffi;
 define_ctype!(
     /// Wraps: bignum_st
     ///
-    /// OpenSSL publishes `BIGNUM` as an opaque type. The wrapper nevertheless
-    /// retains pointer layout compatibility for C-owned allocations while its
-    /// borrowed handles carry Rust lifetimes.
+    /// `BIGNUM` is opaque on OpenSSL's public API and the generated bindings
+    /// reflect that: `ffi::bignum_st` declares no fields. The wrapper is
+    /// therefore a pointer-compatible handle target and nothing more — the
+    /// `d`/`top`/`dmax`/`neg`/`flags` layout in `crypto/bn/bn_local.h` stays
+    /// invisible, and [`Bignum::zeroed`] does **not** produce a usable
+    /// `BIGNUM`. Every owner below starts from a pointer OpenSSL allocated.
+    ///
+    /// Both public destructors are self-gating: `BN_free` and `BN_clear_free`
+    /// release the word buffer only when `BN_FLG_STATIC_DATA` is clear, and
+    /// release the header only when `BN_FLG_MALLOCED` is set. So either may be
+    /// called on any well-formed `BIGNUM`, but only one produced by `BN_new`,
+    /// `BN_secure_new` or `BN_dup` is actually *owned*. A `BN_with_flags`
+    /// view, a static prime from `bn_const.c`, or a `BIGNUM` embedded by value
+    /// in a `BN_MONT_CTX` or `BN_RECP_CTX` must not be adopted by
+    /// [`CBox`](ffibox::CBox) or [`ClearBignum`]: on those the destructors act
+    /// as in-place field disposers driven by the enclosing object, not as
+    /// releasers of storage this handle owns.
     Bignum,
     BignumRef,
     BignumMut,
@@ -46,6 +60,13 @@ unsafe impl CCloner<Bignum> for BignumClearFree {
 }
 
 /// An owning `BIGNUM` handle that clears its allocation before releasing it.
+///
+/// The type's second releaser. `BN_clear_free` accepts exactly the allocations
+/// `BN_free` does and differs only in cleansing the words and the header on
+/// the way out, so it is a policy chosen at the wrapping site rather than a
+/// distinct ownership contract — a [`CDropper`] rather than a second
+/// [`CDropped`](ffibox::CDropped). The strategy is a ZST, so this owner stays
+/// pointer-sized, and cloning it keeps the clearing policy.
 pub type ClearBignum = ffibox::CBoxWith<Bignum, BignumClearFree>;
 
 #[cfg(test)]
@@ -67,6 +88,20 @@ mod tests {
 
         let duplicate = number.try_clone().expect("BN_dup");
         assert_ne!(duplicate.as_ptr(), raw);
+    }
+
+    #[test]
+    fn both_owners_stay_pointer_sized() {
+        // A ZST `CDropper` keeps `CBoxWith` layout-compatible with the raw
+        // pointer, which is what lets either owner cross the FFI seam.
+        assert_eq!(
+            core::mem::size_of::<CBox<Bignum>>(),
+            core::mem::size_of::<*mut ffi::bignum_st>()
+        );
+        assert_eq!(
+            core::mem::size_of::<ClearBignum>(),
+            core::mem::size_of::<*mut ffi::bignum_st>()
+        );
     }
 
     #[test]

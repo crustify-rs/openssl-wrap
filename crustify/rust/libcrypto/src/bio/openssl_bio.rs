@@ -4,9 +4,8 @@
 use core::ffi::CStr;
 use core::ffi::{c_int, c_void};
 use core::marker::PhantomData;
-#[cfg(feature = "deprecated-1-1-0")]
 use core::ptr;
-use core::ptr::{NonNull, addr_of};
+use core::ptr::{NonNull, addr_of, addr_of_mut};
 #[cfg(feature = "deprecated-1-1-0")]
 use std::sync::{Mutex, MutexGuard};
 
@@ -413,58 +412,58 @@ mod tests {
     #[test]
     fn bio_msg_layout_and_borrowed_fields_are_preserved() {
         assert_eq!(
-            core::mem::size_of::<BioMsg>(),
+            core::mem::size_of::<BioMsg<'_>>(),
             core::mem::size_of::<ffi::bio_msg_st>()
         );
         assert_eq!(
-            core::mem::align_of::<BioMsg>(),
+            core::mem::align_of::<BioMsg<'_>>(),
             core::mem::align_of::<ffi::bio_msg_st>()
         );
 
-        let mut message = BioMsg::zeroed();
-        let message_raw = core::ptr::addr_of_mut!(message).cast::<ffi::bio_msg_st>();
         let mut bytes = [1_u8, 2, 3, 4];
         let mut peer = BioAddr::zeroed();
         let peer_raw = core::ptr::addr_of_mut!(peer).cast::<ffi::bio_addr_st>();
 
+        // Safe end to end: the descriptor records the buffer borrow in `'buf`.
+        let mut message = BioMsg::for_slice(&mut bytes);
+        assert_eq!(message.as_ref().data_len(), 4);
+
         {
-            // SAFETY: both raw pointers address initialized stack storage and
-            // no competing handles are used while these exclusive handles are
-            // live.
-            let mut message_mut = unsafe { BioMsgMut::from_ptr(message_raw) }.unwrap();
-            // SAFETY: the byte array remains live and exclusively accessed
-            // through the message for the rest of this test.
-            let bytes_view = unsafe {
-                CSliceMut::from_raw_parts(NonNull::new(bytes.as_mut_ptr()).unwrap(), bytes.len())
-            };
-            // SAFETY: `bytes` remains live and is accessed only through the
-            // descriptor for the remainder of the test.
-            unsafe { message_mut.set_data(Some(bytes_view)) };
+            let mut message_mut = message.as_mut();
             message_mut.set_flags(0x55);
 
-            // SAFETY: `peer` remains live and exclusively accessed through the
-            // message until its pointer is cleared below.
-            let peer_view = unsafe { BioAddrMut::from_ptr(peer_raw) }.unwrap();
-            // SAFETY: the caller obligation described above holds.
-            unsafe { message_mut.set_peer(Some(peer_view)) };
+            // SAFETY: `peer` is live zero-initialized `BIO_ADDR` storage that
+            // outlives the descriptor and is reached only through it until the
+            // handle is taken back below.
+            let peer_view = unsafe { BioAddrMut::from_ptr(peer_raw) }.expect("non-null BIO_ADDR");
+            assert!(message_mut.set_peer(Some(peer_view)).is_none());
 
-            assert_eq!(message_mut.as_ref().data_len(), 4);
             assert_eq!(message_mut.as_ref().flags(), 0x55);
             assert_eq!(message_mut.peer_mut().unwrap().as_mut_ptr(), peer_raw);
             assert!(message_mut.truncate_data(3));
             assert!(!message_mut.truncate_data(4));
             assert!(message_mut.data_mut().unwrap().set_elem(1, 9));
 
-            message_mut.clear_peer();
+            // Replacing a stored borrow hands the previous one back.
+            let mut reclaimed = message_mut.take_peer().expect("the stored peer");
+            assert_eq!(reclaimed.as_mut_ptr(), peer_raw);
+            assert!(message_mut.take_peer().is_none());
         }
 
-        // SAFETY: the initialized message and byte buffer remain live for this
-        // shared handle, and no exclusive handle is now in use.
-        let message_ref = unsafe { BioMsgRef::from_ptr(message_raw) }.unwrap();
-        let data = message_ref.data().unwrap();
-        assert_eq!(data.len(), 3);
-        assert_eq!(data.elems().collect::<Vec<_>>(), vec![1, 9, 3]);
-        assert!(message_ref.peer().is_none());
+        {
+            let message_ref = message.as_ref();
+            let data = message_ref.data().expect("the stored run");
+            assert_eq!(data.len(), 3);
+            assert_eq!(data.elems().collect::<Vec<_>>(), vec![1, 9, 3]);
+            assert!(message_ref.peer().is_none());
+            assert!(message_ref.local().is_none());
+        }
+
+        // The truncated run comes back, and the descriptor is left empty.
+        let reclaimed = message.as_mut().take_data().expect("the stored run");
+        assert_eq!(reclaimed.len(), 3);
+        assert!(message.as_ref().data().is_none());
+        assert_eq!(message.as_ref().data_len(), 0);
     }
 
     #[test]
@@ -592,31 +591,154 @@ pub fn BIO_get_port(service: &CStr) -> Option<u16> {
     (ok == 1).then_some(port)
 }
 
-ffibox::define_ctype!(
-    /// Wraps: bio_msg_st
-    ///
-    /// Layout-compatible storage for one non-owning datagram descriptor.
-    BioMsg,
-    BioMsgRef,
-    BioMsgMut,
-    ffi::bio_msg_st
-);
+/// Wraps: bio_msg_st
+///
+/// Layout-compatible storage for one datagram descriptor. `BIO_MSG` owns
+/// nothing: it names a caller-supplied byte buffer and two optional
+/// caller-supplied `BIO_ADDR`s. OpenSSL reads and writes *through* those
+/// pointers — `dgram_recvmmsg` fills the buffer and the addresses and shortens
+/// `data_len` — but no libcrypto path ever replaces a pointer field, so the
+/// descriptor's fields hold exactly the borrows Rust stored in them. The
+/// lifetime parameter records those borrows, which is what lets the setters be
+/// safe: a `BioMsg<'buf>` cannot be used past `'buf`.
+#[repr(transparent)]
+pub struct BioMsg<'buf> {
+    inner: CType<ffi::bio_msg_st>,
+    borrows: PhantomData<(&'buf mut [u8], &'buf mut BioAddr)>,
+}
 
-impl<'a> BioMsgRef<'a> {
+/// Shared borrowed handle to a datagram descriptor.
+#[repr(transparent)]
+pub struct BioMsgRef<'view, 'buf>(CPtr<'view, BioMsg<'buf>>);
+
+impl Clone for BioMsgRef<'_, '_> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl Copy for BioMsgRef<'_, '_> {}
+
+/// Exclusive borrowed handle to a datagram descriptor.
+#[repr(transparent)]
+pub struct BioMsgMut<'view, 'buf>(BioMsgRef<'view, 'buf>);
+
+// SAFETY: `BioMsg` is transparent over `CType<bio_msg_st>`; its borrow marker
+// is zero-sized. Both handles are transparent over a `CPtr`, and the shared
+// handle exposes no operation that writes through its pointer.
+unsafe impl<'buf> CCell for BioMsg<'buf> {
+    type C = ffi::bio_msg_st;
+    type Ref<'view>
+        = BioMsgRef<'view, 'buf>
+    where
+        'buf: 'view;
+    type Mut<'view>
+        = BioMsgMut<'view, 'buf>
+    where
+        'buf: 'view;
+
+    unsafe fn ref_from_raw<'view>(ptr: NonNull<Self>) -> Self::Ref<'view>
+    where
+        'buf: 'view,
+    {
+        // SAFETY: the caller guarantees the descriptor is live for `'view`.
+        BioMsgRef(unsafe { CPtr::new(ptr) })
+    }
+
+    unsafe fn mut_from_raw<'view>(ptr: NonNull<Self>) -> Self::Mut<'view>
+    where
+        'buf: 'view,
+    {
+        // SAFETY: the caller additionally guarantees exclusive access.
+        BioMsgMut(BioMsgRef(unsafe { CPtr::new(ptr) }))
+    }
+}
+
+// SAFETY: the descriptor only borrows its buffer and addresses. Disposing the
+// inline value has no resource to release and deliberately leaves the borrowed
+// storage alone.
+unsafe impl CValued for BioMsg<'_> {
+    unsafe fn c_dispose(_this: NonNull<Self>) {}
+}
+
+impl<'buf> BioMsg<'buf> {
+    /// Creates empty inline descriptor storage: no buffer, no addresses and no
+    /// flags. Fill it through [`CVal::as_mut`].
+    #[must_use]
+    pub fn empty() -> CVal<Self> {
+        CVal::new(Self {
+            inner: CType::new(ffi::bio_msg_st {
+                data: ptr::null_mut(),
+                data_len: 0,
+                peer: ptr::null_mut(),
+                local: ptr::null_mut(),
+                flags: 0,
+            }),
+            borrows: PhantomData,
+        })
+    }
+
+    /// Creates inline descriptor storage naming a byte buffer for OpenSSL to
+    /// send from or receive into. `data_len` starts at the buffer's length,
+    /// which is the byte count on send and the capacity on receive.
+    #[must_use]
+    pub fn for_buffer(data: CSliceMut<'buf, u8>) -> CVal<Self> {
+        let mut message = Self::empty();
+        message.as_mut().set_data(Some(data));
+        message
+    }
+
+    /// Creates inline descriptor storage over Rust-owned bytes. The exclusive
+    /// borrow is what the descriptor stores, so the buffer stays unreachable
+    /// from Rust until the descriptor's `'buf` ends or the run is taken back
+    /// with [`BioMsgMut::take_data`].
+    #[must_use]
+    pub fn for_slice(data: &'buf mut [u8]) -> CVal<Self> {
+        let len = data.len();
+        // SAFETY: an exclusive slice borrow addresses `len` initialized bytes
+        // live for `'buf`, and it is consumed here, so the raw run this
+        // derives is the only remaining path to them.
+        let data =
+            unsafe { CSliceMut::from_raw_parts(NonNull::new_unchecked(data.as_mut_ptr()), len) };
+        Self::for_buffer(data)
+    }
+}
+
+impl<'view, 'buf> BioMsgRef<'view, 'buf> {
+    /// Borrows raw descriptor storage, returning `None` for null.
+    ///
+    /// # Safety
+    ///
+    /// A non-null pointer must address a live, initialized `BIO_MSG` for
+    /// `'view`. Each non-null pointer field must name storage that stays live
+    /// for `'buf` — `data` for at least `data_len` bytes — and must not be
+    /// written through any path other than this descriptor while `'buf` lasts.
+    pub unsafe fn from_ptr(ptr: *mut ffi::bio_msg_st) -> Option<Self> {
+        NonNull::new(ptr.cast::<BioMsg<'buf>>()).map(|ptr| {
+            // SAFETY: the caller supplies the required liveness and invariants.
+            Self(unsafe { CPtr::new(ptr) })
+        })
+    }
+
+    /// Read-only pointer for the raw FFI seam.
+    #[must_use]
+    pub fn as_ptr(&self) -> *const ffi::bio_msg_st {
+        self.0.as_non_null().as_ptr().cast()
+    }
+
     /// Wraps: bio_msg_st.data
     ///
     /// Returns the borrowed byte buffer together with the capacity or received
-    /// length currently held in `data_len`.
+    /// length currently held in `data_len`. The view is bound to this shared
+    /// borrow, not to `'buf`, so a later exclusive handle can replace it.
     #[must_use]
-    pub fn data(&self) -> Option<CSlice<'a, u8>> {
-        // SAFETY: both fields are copied through raw-place projections. A
-        // well-formed BIO_MSG keeps `data` live for `data_len` bytes for the
-        // descriptor's borrow, as required by the C API.
+    pub fn data(&self) -> Option<CSlice<'view, u8>> {
+        // SAFETY: both fields are copied through raw-place projections; the
+        // handle's construction contract keeps `data` live for `data_len`
+        // bytes throughout `'buf`, which outlives `'view`.
         unsafe {
-            let data = core::ptr::addr_of!((*self.as_ptr()).data)
-                .read()
-                .cast::<u8>();
-            let len = core::ptr::addr_of!((*self.as_ptr()).data_len).read();
+            let data = addr_of!((*self.as_ptr()).data).read().cast::<u8>();
+            let len = addr_of!((*self.as_ptr()).data_len).read();
             NonNull::new(data).map(|data| CSlice::from_raw_parts(data, len))
         }
     }
@@ -626,27 +748,27 @@ impl<'a> BioMsgRef<'a> {
     pub fn flags(&self) -> u64 {
         // SAFETY: `self` guarantees a live initialized descriptor and this is
         // a copy of its scalar field through a raw-place projection.
-        unsafe { core::ptr::addr_of!((*self.as_ptr()).flags).read() }
+        unsafe { addr_of!((*self.as_ptr()).flags).read() }
     }
 
     /// Wraps: bio_msg_st.peer
     #[must_use]
-    pub fn peer(&self) -> Option<BioAddrRef<'a>> {
-        // SAFETY: a non-null peer is caller-owned initialized BIO_ADDR storage
-        // whose lifetime is part of the well-formed BIO_MSG contract.
+    pub fn peer(&self) -> Option<BioAddrRef<'view>> {
+        // SAFETY: a non-null peer is caller-supplied initialized BIO_ADDR
+        // storage live for `'buf`, which outlives `'view`.
         unsafe {
-            let peer = core::ptr::addr_of!((*self.as_ptr()).peer).read();
+            let peer = addr_of!((*self.as_ptr()).peer).read();
             BioAddrRef::from_ptr(peer)
         }
     }
 
     /// Wraps: bio_msg_st.local
     #[must_use]
-    pub fn local(&self) -> Option<BioAddrRef<'a>> {
+    pub fn local(&self) -> Option<BioAddrRef<'view>> {
         // SAFETY: a non-null local address obeys the same borrowed-storage
         // contract as `peer`.
         unsafe {
-            let local = core::ptr::addr_of!((*self.as_ptr()).local).read();
+            let local = addr_of!((*self.as_ptr()).local).read();
             BioAddrRef::from_ptr(local)
         }
     }
@@ -656,22 +778,47 @@ impl<'a> BioMsgRef<'a> {
     pub fn data_len(&self) -> usize {
         // SAFETY: `self` guarantees a live initialized descriptor and this is
         // a copy of its scalar field through a raw-place projection.
-        unsafe { core::ptr::addr_of!((*self.as_ptr()).data_len).read() }
+        unsafe { addr_of!((*self.as_ptr()).data_len).read() }
     }
 }
 
-impl<'a> BioMsgMut<'a> {
-    /// Exclusively views the byte buffer currently named by this descriptor.
+impl<'view, 'buf> BioMsgMut<'view, 'buf> {
+    /// Exclusively borrows raw descriptor storage, returning `None` for null.
+    ///
+    /// # Safety
+    ///
+    /// As [`BioMsgRef::from_ptr`], plus: the buffer and addresses named by its
+    /// pointer fields must be *exclusively* borrowed for `'buf`, and no
+    /// competing descriptor handle may be used while the result lives.
+    pub unsafe fn from_ptr(ptr: *mut ffi::bio_msg_st) -> Option<Self> {
+        NonNull::new(ptr.cast::<BioMsg<'buf>>()).map(|ptr| {
+            // SAFETY: the caller supplies liveness, exclusivity and lifetimes.
+            Self(BioMsgRef(unsafe { CPtr::new(ptr) }))
+        })
+    }
+
+    /// Writable pointer for the raw FFI seam.
+    #[must_use]
+    pub fn as_mut_ptr(&mut self) -> *mut ffi::bio_msg_st {
+        self.0.0.as_non_null().as_ptr().cast()
+    }
+
+    /// Reborrows shared, for reaching the getters.
+    #[must_use]
+    pub fn as_ref(&self) -> BioMsgRef<'_, 'buf> {
+        self.0
+    }
+
+    /// Exclusively views the byte buffer currently named by this descriptor,
+    /// without giving up the descriptor's hold on it.
     #[must_use]
     pub fn data_mut(&mut self) -> Option<CSliceMut<'_, u8>> {
-        // SAFETY: the exclusive descriptor handle prevents another Rust path
-        // through this wrapper while the returned view is live. A well-formed
-        // BIO_MSG guarantees the pointer is valid for `data_len` bytes.
+        // SAFETY: the exclusive descriptor handle is the only path to the
+        // buffer while the returned view is live, and the handle's contract
+        // guarantees `data` is valid for `data_len` bytes.
         unsafe {
-            let data = core::ptr::addr_of!((*self.as_mut_ptr()).data)
-                .read()
-                .cast::<u8>();
-            let len = core::ptr::addr_of!((*self.as_mut_ptr()).data_len).read();
+            let data = addr_of!((*self.as_mut_ptr()).data).read().cast::<u8>();
+            let len = addr_of!((*self.as_mut_ptr()).data_len).read();
             NonNull::new(data).map(|data| CSliceMut::from_raw_parts(data, len))
         }
     }
@@ -679,10 +826,11 @@ impl<'a> BioMsgMut<'a> {
     /// Exclusively views the optional peer address.
     #[must_use]
     pub fn peer_mut(&mut self) -> Option<BioAddrMut<'_>> {
-        // SAFETY: the field's non-null value is initialized BIO_ADDR storage,
-        // and the result is restricted to this exclusive reborrow.
+        // SAFETY: the field's non-null value is initialized BIO_ADDR storage
+        // exclusively borrowed by this descriptor, and the result is
+        // restricted to this exclusive reborrow.
         unsafe {
-            let peer = core::ptr::addr_of!((*self.as_mut_ptr()).peer).read();
+            let peer = addr_of!((*self.as_mut_ptr()).peer).read();
             BioAddrMut::from_ptr(peer)
         }
     }
@@ -692,7 +840,7 @@ impl<'a> BioMsgMut<'a> {
     pub fn local_mut(&mut self) -> Option<BioAddrMut<'_>> {
         // SAFETY: as `peer_mut`, for the local-address field.
         unsafe {
-            let local = core::ptr::addr_of!((*self.as_mut_ptr()).local).read();
+            let local = addr_of!((*self.as_mut_ptr()).local).read();
             BioAddrMut::from_ptr(local)
         }
     }
@@ -701,91 +849,90 @@ impl<'a> BioMsgMut<'a> {
     pub fn set_flags(&mut self, flags: u64) {
         // SAFETY: the exclusive handle supplies writable provenance for this
         // scalar field and no reference to the C object is formed.
-        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).flags).write(flags) }
+        unsafe { addr_of_mut!((*self.as_mut_ptr()).flags).write(flags) }
     }
 
     /// Shrinks the visible data run without permitting it to exceed the
-    /// existing buffer bound.
+    /// existing buffer bound — the operation a receive path performs when it
+    /// reports how many of the offered bytes arrived.
     pub fn truncate_data(&mut self, new_len: usize) -> bool {
         if new_len > self.as_ref().data_len() {
             return false;
         }
         // SAFETY: the exclusive handle supplies writable provenance and the
         // check preserves the current buffer bound.
-        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).data_len).write(new_len) };
+        unsafe { addr_of_mut!((*self.as_mut_ptr()).data_len).write(new_len) };
         true
     }
 
-    /// Stores a new borrowed byte run.
+    /// Stores a byte run for OpenSSL to send from or receive into, returning
+    /// the run this descriptor held before. `None` clears the field and
+    /// reclaims the previous borrow.
     ///
-    /// # Safety
-    ///
-    /// The buffer must remain live and exclusively available to C until this
-    /// field is cleared or the descriptor can no longer be used. The wrapper
-    /// cannot encode that obligation because `BioMsg` is an ABI value without
-    /// a lifetime parameter.
-    pub unsafe fn set_data(&mut self, data: Option<CSliceMut<'a, u8>>) {
-        let (data, len) = data.map_or((core::ptr::null_mut(), 0), |data| {
-            (data.as_elem_ptr().cast::<c_void>(), data.len())
+    /// Safe because `'buf` outlives every use of the descriptor: the stored
+    /// pointer cannot dangle, and taking the run by value leaves this
+    /// descriptor its only Rust-visible writer.
+    pub fn set_data(&mut self, data: Option<CSliceMut<'buf, u8>>) -> Option<CSliceMut<'buf, u8>> {
+        let (data, len) = data.map_or((ptr::null_mut(), 0), |mut data| {
+            (data.as_mut_elem_ptr().cast::<c_void>(), data.len())
         });
-        // SAFETY: the caller guarantees the stored borrow remains valid; this
-        // exclusive handle permits both raw-place writes.
+        // SAFETY: the exclusive handle permits both raw-place writes; the
+        // previous field value was, by this handle's contract, a run of
+        // `data_len` bytes exclusively borrowed for `'buf`, and clearing the
+        // field makes it unreachable through the descriptor.
         unsafe {
-            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data).write(data);
-            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data_len).write(len);
+            let previous = addr_of!((*self.as_mut_ptr()).data).read().cast::<u8>();
+            let previous_len = addr_of!((*self.as_mut_ptr()).data_len).read();
+            addr_of_mut!((*self.as_mut_ptr()).data).write(data);
+            addr_of_mut!((*self.as_mut_ptr()).data_len).write(len);
+            NonNull::new(previous).map(|previous| CSliceMut::from_raw_parts(previous, previous_len))
         }
     }
 
-    /// Clears the data pointer and its length together.
-    pub fn clear_data(&mut self) {
-        // SAFETY: null plus zero is a valid empty BIO_MSG buffer and this
-        // exclusive handle permits both raw-place writes.
+    /// Reclaims the stored byte run and clears the field.
+    pub fn take_data(&mut self) -> Option<CSliceMut<'buf, u8>> {
+        self.set_data(None)
+    }
+
+    /// Stores the peer address OpenSSL sends to or reports the sender in,
+    /// returning the address this descriptor held before. `None` clears the
+    /// field and reclaims the previous borrow.
+    ///
+    /// Safe for the same reason as [`set_data`](Self::set_data).
+    pub fn set_peer(&mut self, peer: Option<BioAddrMut<'buf>>) -> Option<BioAddrMut<'buf>> {
+        let peer = peer.map_or(ptr::null_mut(), |mut peer| peer.as_mut_ptr());
+        // SAFETY: the exclusive handle permits the raw-place write, and the
+        // previous field value was an initialized BIO_ADDR exclusively
+        // borrowed for `'buf` that the write makes unreachable here.
         unsafe {
-            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data).write(core::ptr::null_mut());
-            core::ptr::addr_of_mut!((*self.as_mut_ptr()).data_len).write(0);
+            let previous = addr_of!((*self.as_mut_ptr()).peer).read();
+            addr_of_mut!((*self.as_mut_ptr()).peer).write(peer);
+            BioAddrMut::from_ptr(previous)
         }
     }
 
-    /// Stores a borrowed peer address.
-    ///
-    /// # Safety
-    ///
-    /// The address must remain live and exclusively available to C until this
-    /// field is cleared or the descriptor can no longer be used.
-    pub unsafe fn set_peer(&mut self, mut peer: Option<BioAddrMut<'a>>) {
-        let peer = peer
-            .as_mut()
-            .map_or(core::ptr::null_mut(), BioAddrMut::as_mut_ptr);
-        // SAFETY: the caller upholds the stored-borrow contract and the
-        // exclusive descriptor handle permits the raw-place write.
-        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).peer).write(peer) }
+    /// Reclaims the stored peer address and clears the field.
+    pub fn take_peer(&mut self) -> Option<BioAddrMut<'buf>> {
+        self.set_peer(None)
     }
 
-    /// Stores a borrowed local address.
+    /// Stores the local address OpenSSL sends from or reports the receiving
+    /// interface in, returning the address this descriptor held before.
     ///
-    /// # Safety
-    ///
-    /// The address must remain live and exclusively available to C until this
-    /// field is cleared or the descriptor can no longer be used.
-    pub unsafe fn set_local(&mut self, mut local: Option<BioAddrMut<'a>>) {
-        let local = local
-            .as_mut()
-            .map_or(core::ptr::null_mut(), BioAddrMut::as_mut_ptr);
+    /// Safe for the same reason as [`set_data`](Self::set_data).
+    pub fn set_local(&mut self, local: Option<BioAddrMut<'buf>>) -> Option<BioAddrMut<'buf>> {
+        let local = local.map_or(ptr::null_mut(), |mut local| local.as_mut_ptr());
         // SAFETY: as `set_peer`, for the local-address field.
-        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).local).write(local) }
+        unsafe {
+            let previous = addr_of!((*self.as_mut_ptr()).local).read();
+            addr_of_mut!((*self.as_mut_ptr()).local).write(local);
+            BioAddrMut::from_ptr(previous)
+        }
     }
 
-    /// Clears the peer pointer without touching its external storage.
-    pub fn clear_peer(&mut self) {
-        // SAFETY: null is a valid optional peer and the handle is exclusive.
-        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).peer).write(core::ptr::null_mut()) }
-    }
-
-    /// Clears the local pointer without touching its external storage.
-    pub fn clear_local(&mut self) {
-        // SAFETY: null is a valid optional local address and the handle is
-        // exclusive.
-        unsafe { core::ptr::addr_of_mut!((*self.as_mut_ptr()).local).write(core::ptr::null_mut()) }
+    /// Reclaims the stored local address and clears the field.
+    pub fn take_local(&mut self) -> Option<BioAddrMut<'buf>> {
+        self.set_local(None)
     }
 }
 
@@ -1625,10 +1772,17 @@ mod mmsg_method_getter_tests {
         let receive = BIO_meth_get_recvmmsg(method.as_ref()).expect("receive callback");
         let send = BIO_meth_get_sendmmsg(method.as_ref()).expect("send callback");
         let mut bio = BIO_new(method.as_ref()).expect("BIO_new");
-        let mut message = BioMsg::zeroed();
-        // SAFETY: `message` is initialized layout-compatible storage and the
-        // one-element mutable view cannot outlive or alias its stack slot.
-        let mut messages = unsafe { CSliceMut::from_raw_parts(NonNull::from(&mut message), 1) };
+        let mut message = BioMsg::empty();
+        // SAFETY: `CVal` is transparent over its inline descriptor, which is
+        // live and initialized for the rest of this scope; the one-element
+        // view is the only handle to it, and no reference to the C object is
+        // formed on the way.
+        let mut messages = unsafe {
+            CSliceMut::from_raw_parts(
+                NonNull::new_unchecked(addr_of_mut!(message).cast::<BioMsg<'_>>()),
+                1,
+            )
+        };
 
         assert_eq!(receive.call(&mut bio.as_mut(), &mut messages, 0), Some(1));
         assert_eq!(send.call(&mut bio.as_mut(), &mut messages, 0), Some(1));

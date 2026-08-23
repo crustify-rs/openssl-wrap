@@ -843,7 +843,7 @@ pub fn BIO_get_wpoll_descriptor(
 #[allow(non_snake_case)]
 pub fn BIO_recvmmsg(
     bio: &mut BioMut<'_>,
-    messages: &mut CSliceMut<'_, BioMsg>,
+    messages: &mut CSliceMut<'_, BioMsg<'_>>,
     flags: u64,
 ) -> Option<usize> {
     let mut processed = 0;
@@ -868,7 +868,7 @@ pub fn BIO_recvmmsg(
 #[allow(non_snake_case)]
 pub fn BIO_sendmmsg(
     bio: &mut BioMut<'_>,
-    messages: &mut CSliceMut<'_, BioMsg>,
+    messages: &mut CSliceMut<'_, BioMsg<'_>>,
     flags: u64,
 ) -> Option<usize> {
     let mut processed = 0;
