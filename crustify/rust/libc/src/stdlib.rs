@@ -12,6 +12,8 @@ use libc_sys as ffi;
 pub struct LibcFree;
 
 /// An owned NUL-terminated string allocated by the C runtime.
+///
+/// Dropping releases it with `free`; cloning duplicates it with `strdup`.
 pub type LibcString = CrustifyStr<LibcFree>;
 
 // SAFETY: `c_drop` delegates to the matching C allocator's release primitive.
@@ -33,19 +35,31 @@ unsafe impl CLenDropped for LibcFree {
 }
 
 /// Wraps: strdup
-// SAFETY: `strdup` returns an independent malloc-family string allocation,
-// which the `LibcFree` supertrait strategy releases with `free`.
+//
+// This impl carries a precondition the `CCloned` contract does not state on
+// its own: `strdup` copies up to the first NUL, so `obj` must denote a
+// NUL-terminated allocation, not an arbitrary malloc buffer. That holds for
+// every reachable caller: `LibcFree` is a deleter strategy rather than a
+// `CCell`, so the only consumer of its `CCloned` impl is
+// `CrustifyStr<LibcFree>`, whose type invariant is exactly a live
+// NUL-terminated string; `CVoidBox` and `CVec` expose no clone.
+//
+// SAFETY: `strdup` leaves its source untouched and returns an independent
+// malloc-family allocation, so the copy owes exactly one `free`, the
+// `CDropped` supertrait's `c_drop`; null means the copy failed.
 unsafe impl CCloned for LibcFree {
     unsafe fn c_clone(obj: NonNull<Self>) -> Option<NonNull<Self>> {
-        // SAFETY: the trait contract guarantees that `obj` points to a live,
-        // NUL-terminated string; `strdup` reads it without taking ownership.
+        // SAFETY: `obj` denotes a live, uniquely owned, NUL-terminated
+        // malloc-family string; `strdup` reads it without taking ownership.
         NonNull::new(unsafe { ffi::strdup(obj.as_ptr().cast()) }.cast())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use ffibox::CVoidBox;
+    use core::ptr;
+
+    use ffibox::{CVec, CVoidBox};
 
     use super::*;
 
@@ -57,6 +71,26 @@ mod tests {
         // represented by `LibcFree`; ownership is transferred to the handle.
         let owned = unsafe { CVoidBox::<LibcFree>::from_raw(ptr) };
         assert!(owned.is_some());
+    }
+
+    #[test]
+    fn libc_owner_releases_counted_storage() {
+        let source = [9_u8, 8, 7, 6];
+
+        // SAFETY: `malloc` returns a uniquely owned allocation of the
+        // requested four bytes, or null.
+        let raw = unsafe { ffi::malloc(4) }.cast::<u8>();
+        assert!(!raw.is_null());
+        // SAFETY: the fresh allocation holds the four writable bytes being
+        // written and cannot overlap the stack array being read.
+        unsafe { ptr::copy_nonoverlapping(source.as_ptr(), raw, source.len()) };
+        // SAFETY: `raw` owns `source.len()` initialized bytes from the C
+        // runtime allocator, whose length-aware releaser is `LibcFree`; `free`
+        // ignores the byte count handed back to it.
+        let buffer = unsafe { CVec::<u8, LibcFree>::from_raw_parts(raw, source.len()) }
+            .expect("malloc allocation");
+
+        assert_eq!(buffer.as_slice(), source);
     }
 
     #[test]
