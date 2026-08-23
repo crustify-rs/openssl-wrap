@@ -8,6 +8,7 @@
 #include <openssl/objects.h>
 #include <openssl/stack.h>
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 #include <internal/bio.h>
 #include "internal/bio_addr.h"
 /* crustify:includes:end */

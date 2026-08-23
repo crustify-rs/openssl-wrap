@@ -9,20 +9,7 @@ use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
 use crate::asn1::openssl_asn1::{Asn1Type, Asn1TypeMut, Asn1TypeRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 use crate::x509::x509_internal::X509NameEntry;
-
-/// Opaque element marker for the `X509_EXTENSION` records stored in this
-/// stack.
-///
-/// The element type has its own authored home and is not part of this
-/// worklist. Until that wrapper is available, this unconstructible marker
-/// retains the generated stack's element type without exposing or
-/// dereferencing an extension layout. The stack itself owns only its pointer
-/// array; element ownership must be selected explicitly with the generic
-/// stack's pop-free policy.
-#[repr(C)]
-pub struct X509Extension {
-    _opaque: [u8; 0],
-}
+pub use crate::x509::x509_local::X509Extension;
 
 /// Wraps: stack_st_X509_EXTENSION
 ///

@@ -1,5 +1,10 @@
 //! Wrappers assigned from `include/openssl/x509v3.h`.
 
+use core::ptr::NonNull;
+
+use ffibox::{CBoxWith, CDropper};
+use libcrypto_sys as ffi;
+
 use crate::stack::stack::{Stack, StackMut, StackRef};
 
 /// Opaque element marker for the `GENERAL_SUBTREE` records stored in this
@@ -31,6 +36,73 @@ pub type GeneralSubtreeStackRef<'a> = StackRef<'a, GeneralSubtree>;
 
 /// Exclusive borrowed handle to a `STACK_OF(GENERAL_SUBTREE)`.
 pub type GeneralSubtreeStackMut<'a> = StackMut<'a, GeneralSubtree>;
+
+/// Opaque element marker for the `ACCESS_DESCRIPTION` records stored in this
+/// stack.
+///
+/// The element record has its own public definition and lifecycle, but that
+/// higher-layer type is not part of this worklist. Until its wrapper is
+/// available, this unconstructible marker retains the generated stack's
+/// element type without exposing or dereferencing an element layout.
+#[repr(C)]
+pub struct AccessDescription {
+    _opaque: [u8; 0],
+}
+
+/// Wraps: stack_st_ACCESS_DESCRIPTION
+///
+/// Typed view of OpenSSL's `STACK_OF(ACCESS_DESCRIPTION)`. The generated C tag
+/// is a forward declaration and every stack operation erases it to the common
+/// `OPENSSL_STACK *` representation, so this is the generic container with its
+/// element type retained.
+///
+/// A plain [`ffibox::CBox<AccessDescriptionStack>`] owns only the stack and its
+/// pointer array. [`AuthorityInfoAccess`] additionally owns every stored
+/// access description and uses the ASN.1 full destructor.
+pub type AccessDescriptionStack = Stack<AccessDescription>;
+
+/// Shared borrowed handle to a `STACK_OF(ACCESS_DESCRIPTION)`.
+pub type AccessDescriptionStackRef<'a> = StackRef<'a, AccessDescription>;
+
+/// Exclusive borrowed handle to a `STACK_OF(ACCESS_DESCRIPTION)`.
+pub type AccessDescriptionStackMut<'a> = StackMut<'a, AccessDescription>;
+
+/// Selects the ASN.1 full destructor for an authority-information-access
+/// sequence, including every `ACCESS_DESCRIPTION` element.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct AuthorityInfoAccessFree;
+
+// SAFETY: `AUTHORITY_INFO_ACCESS_free` accepts a fully initialized generated
+// stack, releases every owned access-description element, and finally releases
+// the common stack allocation.
+unsafe impl CDropper<AccessDescriptionStack> for AuthorityInfoAccessFree {
+    unsafe fn c_drop(&self, object: NonNull<AccessDescriptionStack>) {
+        // SAFETY: the `CDropper` contract supplies sole ownership of a complete
+        // authority-info-access value. Its generated stack tag and
+        // `OPENSSL_STACK` have the same pointer representation.
+        unsafe { ffi::AUTHORITY_INFO_ACCESS_free(object.as_ptr().cast()) }
+    }
+}
+
+/// Owning authority-information-access sequence whose elements are released
+/// together with its generated stack.
+pub type AuthorityInfoAccess = CBoxWith<AccessDescriptionStack, AuthorityInfoAccessFree>;
+
+impl AccessDescriptionStack {
+    /// Allocates a complete empty authority-information-access sequence.
+    #[must_use]
+    pub fn new_authority_info_access() -> Option<AuthorityInfoAccess> {
+        // SAFETY: a non-null ASN.1 constructor result is a fresh, fully
+        // initialized generated stack carrying one
+        // `AUTHORITY_INFO_ACCESS_free` obligation.
+        unsafe {
+            CBoxWith::from_raw(
+                ffi::AUTHORITY_INFO_ACCESS_new().cast(),
+                AuthorityInfoAccessFree,
+            )
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -107,5 +179,42 @@ mod tests {
         drop(duplicate);
         drop(stack);
         assert_eq!(*subtree_storage, 0x5a);
+    }
+
+    #[test]
+    fn generated_access_stack_keeps_its_typed_erased_surface() {
+        assert_owned_cloneable_cell::<AccessDescriptionStack>();
+        assert_eq!(
+            size_of::<CBox<AccessDescriptionStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<AccessDescriptionStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<AccessDescriptionStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+
+        let mut stack = OPENSSL_sk_new_null::<AccessDescription>().expect("access stack");
+        let raw = stack.as_ptr();
+        assert_eq!(stack.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(stack.as_mut().as_mut_ptr(), raw);
+        assert_eq!(OPENSSL_sk_num(Some(stack.as_ref())), Some(0));
+    }
+
+    #[test]
+    fn authority_owner_preserves_the_full_drop_policy() {
+        let mut access =
+            AccessDescriptionStack::new_authority_info_access().expect("AUTHORITY_INFO_ACCESS_new");
+        let raw = access.as_ptr();
+        assert_eq!(access.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(access.as_mut().as_mut_ptr(), raw);
+        assert_eq!(OPENSSL_sk_num(Some(access.as_ref())), Some(0));
+        assert_eq!(
+            size_of::<AuthorityInfoAccess>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
     }
 }

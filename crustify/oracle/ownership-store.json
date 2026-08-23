@@ -184,6 +184,28 @@
    ]
   },
   {
+   "name": "X509_extension_st",
+   "defined_in": "crypto/x509/x509_local.h",
+   "_comment_agent": "The mandatory object pointer is an owned ASN.1 child. The ASN.1 sequence template initializes and frees it, and X509_EXTENSION_set_object replaces it after OBJ_dup while X509_EXTENSION_get_object only lends it.",
+   "fields": [
+    {
+     "name": "object",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory ASN1_SIMPLE child owned by the extension; full destruction releases its free obligation and set_object replaces the slot with an OBJ_dup result. The pointee remains shared because built-in objects may be static."
+     }
+    }
+   ]
+  },
+  {
    "name": "X509_name_entry_st",
    "defined_in": "include/crypto/x509.h",
    "_comment_agent": "Both pointer fields are mandatory owned children of a fully initialized X509_NAME_ENTRY, as established by its ASN1_SEQUENCE template and public setter/free implementations.",
@@ -3646,6 +3668,51 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns a fresh fully initialized ASN1_TYPE allocation, or null on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "AUTHORITY_INFO_ACCESS_free",
+   "defined_in": "crypto/x509/v3_info.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the authority-info-access stack, pop-frees every ACCESS_DESCRIPTION, and accepts null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "AUTHORITY_INFO_ACCESS_new",
+   "defined_in": "crypto/x509/v3_info.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh empty authority-info-access stack whose full destructor is AUTHORITY_INFO_ACCESS_free."
     }
    }
   },
@@ -13119,6 +13186,97 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns a fresh fully initialized X509_ALGOR allocation, or NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "X509_EXTENSION_dup",
+   "defined_in": "crypto/x509/x_exten.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Shared source for ASN.1 deep duplication; null produces no duplicate."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or a fresh independent deep duplicate owing X509_EXTENSION_free."
+    }
+   }
+  },
+  {
+   "name": "X509_EXTENSION_free",
+   "defined_in": "crypto/x509/x_exten.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and fully destroys one extension; null is accepted as a no-op by ASN1_item_free."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_EXTENSION_new",
+   "defined_in": "crypto/x509/x_exten.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on allocation or initialization failure, otherwise a fresh extension owing X509_EXTENSION_free."
     }
    }
   },
