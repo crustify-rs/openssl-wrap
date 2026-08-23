@@ -1382,7 +1382,7 @@
   {
    "name": "crypto_ex_data_st",
    "defined_in": "include/openssl/crypto.h",
-   "_comment_agent": "Field ownership established from crypto/ex_data.c across initialization, duplication, access, mutation, and cleanup paths.",
+   "_comment_agent": "Field ownership established from crypto/ex_data.c across initialization, duplication, access, mutation, and cleanup paths. Reviewed 2026-08-23: both blocks hold. crypto/ex_data.c is the only file that reads or writes either field, and CRYPTO_free_ex_data is the field disposer (it frees ad->sk and NULLs both fields while keeping the CRYPTO_EX_DATA storage). CRYPTO_dup_ex_data copies from->to but allocates no destination and needs the class index, so it is deliberately not recorded as a cloner.",
    "fields": [
     {
      "name": "ctx",
@@ -1398,7 +1398,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Borrowed library context installed by ossl_crypto_new_ex_data_ex; NULL selects the default context. CRYPTO_EX_DATA never increments or frees it, and callers must keep the selected context alive while ex-data operations use it."
+      "note": "Borrowed library context installed by ossl_crypto_new_ex_data_ex; NULL selects the default context. CRYPTO_EX_DATA never increments or frees it, and callers must keep the selected context alive while ex-data operations use it; CRYPTO_free_ex_data only clears the field to NULL. The field additionally selects the class registry: every ex-data index resolves through ossl_lib_ctx_get_ex_data_global(ad->ctx), so changing it on a populated value pairs the stored slots with a different context's EX_CALLBACK set."
      }
     },
     {
@@ -1413,7 +1413,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Nullable owned STACK_OF(void) container. CRYPTO_set_ex_data lazily allocates it and CRYPTO_free_ex_data releases the container with sk_void_free, then clears the field. Stack elements are type-erased callback-managed values and are not freed by the stack destructor itself."
+      "note": "Nullable owned STACK_OF(void) container. CRYPTO_set_ex_data lazily allocates it and CRYPTO_free_ex_data releases the container with sk_void_free, then clears the field. Stack elements are type-erased callback-managed values and are not freed by the stack destructor itself; slot i belongs to the EX_CALLBACK registered at index i for the class, so the container is only meaningful together with that class and ad->ctx."
      }
     }
    ]
@@ -9367,6 +9367,16 @@
      }
     }
    ]
+  },
+  {
+   "name": "CRYPTO_free_ex_data",
+   "defined_in": "crypto/ex_data.c",
+   "lifetime": {
+    "for": "ad",
+    "is_dropper": false,
+    "is_disposer": true,
+    "is_cloner": null
+   }
   },
   {
    "name": "CRYPTO_memdup",
