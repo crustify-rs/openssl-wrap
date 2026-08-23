@@ -178,13 +178,18 @@ unsafe impl<'addr> CCell for BioSockInfo<'addr> {
     }
 }
 
-impl<'addr> BioSockInfo<'addr> {
+impl BioSockInfo<'_> {
     /// Creates inline union storage borrowing an address for OpenSSL to fill.
+    ///
+    /// The union reborrows `address` exclusively for as long as it lives, which
+    /// is what `BIO_sock_info` needs: it writes through the stored pointer, so
+    /// no second handle to that address may be usable meanwhile.
     #[must_use]
-    pub fn for_address(mut address: BioAddrMut<'addr>) -> CVal<Self> {
-        let address = address.as_mut_ptr();
-        CVal::new(Self {
-            inner: CType::new(ffi::BIO_sock_info_u { addr: address }),
+    pub fn for_address<'a>(address: &'a mut BioAddrMut<'_>) -> CVal<BioSockInfo<'a>> {
+        CVal::new(BioSockInfo {
+            inner: CType::new(ffi::BIO_sock_info_u {
+                addr: address.as_mut_ptr(),
+            }),
             address: PhantomData,
         })
     }
@@ -293,8 +298,8 @@ mod tests {
         let raw = core::ptr::addr_of_mut!(storage).cast::<ffi::bio_addr_st>();
         // SAFETY: `storage` is initialized layout-compatible address storage
         // and is exclusively available for the union's lifetime.
-        let address = unsafe { BioAddrMut::from_ptr(raw) }.expect("live BIO_ADDR");
-        let mut info = BioSockInfo::for_address(address);
+        let mut address = unsafe { BioAddrMut::from_ptr(raw) }.expect("live BIO_ADDR");
+        let mut info = BioSockInfo::for_address(&mut address);
 
         assert_eq!(
             info.as_ref().address().expect("address variant").as_ptr(),

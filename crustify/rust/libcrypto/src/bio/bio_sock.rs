@@ -6,7 +6,7 @@ use libcrypto_sys as ffi;
 
 use super::bio_sock2::BioSocket;
 use super::internal_bio_addr::BioAddrMut;
-use super::openssl_bio::BioSockInfoType;
+use super::openssl_bio::{BioSockInfo, BioSockInfoType};
 
 /// Wraps: BIO_set_tcp_ndelay
 #[must_use]
@@ -76,16 +76,16 @@ pub fn BIO_socket_wait(socket: &BioSocket, for_read: bool, deadline: ffi::time_t
 #[must_use]
 #[allow(non_snake_case)]
 pub fn BIO_sock_info(socket: &BioSocket, address: &mut BioAddrMut<'_>) -> bool {
-    let mut info = ffi::BIO_sock_info_u {
-        addr: address.as_mut_ptr(),
-    };
-    // SAFETY: the socket remains owned and open; the exclusive address handle
-    // supplies the union's live writable address arm for this synchronous call.
+    let mut info = BioSockInfo::for_address(address);
+    let mut handle = info.as_mut();
+    // SAFETY: the socket remains owned and open; the union handle supplies the
+    // live writable address arm `BIO_SOCK_INFO_ADDRESS` fills, and OpenSSL
+    // neither retains nor frees the address beyond this synchronous call.
     unsafe {
         ffi::BIO_sock_info(
             socket.as_raw_socket(),
             BioSockInfoType::ADDRESS.as_raw(),
-            &mut info,
+            handle.as_mut_ptr(),
         ) == 1
     }
 }
@@ -96,6 +96,7 @@ mod tests {
     use std::os::fd::IntoRawFd;
 
     use super::*;
+    use crate::bio::bio_addr::{BIO_ADDR_family, BIO_ADDR_new, BIO_ADDR_rawport};
 
     /// Linux `FIONBIO` from `<asm-generic/ioctls.h>`; the request
     /// `BIO_socket_nbio` itself forwards to `BIO_socket_ioctl`.
@@ -126,6 +127,29 @@ mod tests {
         let mut disable: i32 = 0;
         // SAFETY: as above.
         assert_eq!(unsafe { BIO_socket_ioctl(&socket, FIONBIO, &mut disable) }, 0);
+    }
+
+    #[test]
+    fn socket_info_writes_the_bound_address_through_the_union() {
+        assert!(BIO_sock_init());
+        let listener = TcpListener::bind("127.0.0.1:0").expect("loopback listener");
+        let expected = listener.local_addr().expect("bound address");
+        let socket = BioSocket::from_result(listener.into_raw_fd()).expect("owned socket");
+
+        let mut storage = BIO_ADDR_new().expect("BIO_ADDR_new");
+        let mut address = storage.as_mut();
+        assert!(BIO_sock_info(&socket, &mut address));
+
+        // The union that reborrowed the address is gone with the call, so the
+        // address storage reads back through its own handles again.
+        assert_eq!(
+            BIO_ADDR_family(&storage.as_ref()),
+            i32::try_from(ffi::AF_INET).expect("AF_INET fits in a C int")
+        );
+        assert_eq!(
+            u16::from_be(BIO_ADDR_rawport(&storage.as_ref())),
+            expected.port()
+        );
     }
 
     #[test]

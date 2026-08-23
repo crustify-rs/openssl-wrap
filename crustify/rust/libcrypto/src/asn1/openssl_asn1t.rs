@@ -208,7 +208,12 @@ pub struct Asn1Item(CType<ffi::ASN1_ITEM_st>);
 #[derive(Clone, Copy)]
 pub struct Asn1ItemRef<'a>(CPtr<'a, Asn1Item>);
 
-/// Exclusive borrowed handle for code initializing an ASN.1 item descriptor.
+/// Exclusive borrowed handle to ASN.1 item descriptor storage Rust owns.
+///
+/// Every descriptor OpenSSL itself publishes is a `static const ASN1_ITEM`
+/// emitted by `ASN1_ITEM_start`, and nothing in the library ever writes one,
+/// so this handle exists for Rust-built descriptor storage rather than for
+/// mutating a C-owned one.
 #[repr(transparent)]
 pub struct Asn1ItemMut<'a>(Asn1ItemRef<'a>);
 
@@ -231,7 +236,12 @@ unsafe impl CCell for Asn1Item {
     }
 }
 
-/// Opaque borrowed view of an item's type-specific static function table.
+/// Opaque borrowed view of one of an item's static function tables.
+///
+/// `ASN1_PRIMITIVE_FUNCS`, `ASN1_EXTERN_FUNCS` and `ASN1_AUX` have no wrappers
+/// yet, so each table is exposed only as an identity carrying the borrow that
+/// keeps it alive. Which of the three a value denotes is recorded by the
+/// [`Asn1ItemFuncs`] arm it arrives in, never by this type alone.
 #[derive(Clone, Copy)]
 pub struct Asn1ItemFuncsRef<'a> {
     ptr: NonNull<c_void>,
@@ -245,6 +255,83 @@ impl PartialEq for Asn1ItemFuncsRef<'_> {
 }
 
 impl Eq for Asn1ItemFuncsRef<'_> {}
+
+/// The classification an ASN.1 item descriptor's `itype` slot records.
+///
+/// This is the discriminator OpenSSL switches on throughout `crypto/asn1`
+/// (`asn1_item_embed_d2i`, `ASN1_item_ex_i2d`, `asn1_item_embed_new`,
+/// `ossl_asn1_item_embed_free`, `asn1_item_print_ctx`). It selects which C
+/// function table [`Asn1ItemRef::functions`] returns and reinterprets both
+/// [`Asn1ItemRef::underlying_type`] and [`Asn1ItemRef::size`].
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Asn1ItemKind {
+    /// A primitive type, or the template wrapper `ASN1_ITEM_TEMPLATE` builds.
+    Primitive,
+    /// A SEQUENCE with a definite-length encoding.
+    Sequence,
+    /// A CHOICE, whose `utype` is the selector field's offset.
+    Choice,
+    /// A type whose whole implementation lives in its function table.
+    Extern,
+    /// A multi-string type, whose `utype` is a permitted-tag bit mask.
+    MString,
+    /// A SEQUENCE that may also be encoded with an indefinite length.
+    NdefSequence,
+    /// A value no `ASN1_ITYPE_*` constant names.
+    Unknown(c_char),
+}
+
+impl Asn1ItemKind {
+    /// Converts an OpenSSL `itype` byte into a lossless Rust discriminator.
+    #[must_use]
+    pub fn from_raw(raw: c_char) -> Self {
+        match raw {
+            value if value == ffi::ASN1_ITYPE_PRIMITIVE as c_char => Self::Primitive,
+            value if value == ffi::ASN1_ITYPE_SEQUENCE as c_char => Self::Sequence,
+            value if value == ffi::ASN1_ITYPE_CHOICE as c_char => Self::Choice,
+            value if value == ffi::ASN1_ITYPE_EXTERN as c_char => Self::Extern,
+            value if value == ffi::ASN1_ITYPE_MSTRING as c_char => Self::MString,
+            value if value == ffi::ASN1_ITYPE_NDEF_SEQUENCE as c_char => Self::NdefSequence,
+            other => Self::Unknown(other),
+        }
+    }
+
+    /// Returns the `itype` byte OpenSSL stores for this classification.
+    #[must_use]
+    pub fn as_raw(self) -> c_char {
+        match self {
+            Self::Primitive => ffi::ASN1_ITYPE_PRIMITIVE as c_char,
+            Self::Sequence => ffi::ASN1_ITYPE_SEQUENCE as c_char,
+            Self::Choice => ffi::ASN1_ITYPE_CHOICE as c_char,
+            Self::Extern => ffi::ASN1_ITYPE_EXTERN as c_char,
+            Self::MString => ffi::ASN1_ITYPE_MSTRING as c_char,
+            Self::NdefSequence => ffi::ASN1_ITYPE_NDEF_SEQUENCE as c_char,
+            Self::Unknown(raw) => raw,
+        }
+    }
+}
+
+/// The static function table an ASN.1 item's `funcs` slot points at.
+///
+/// One `const void *` carries three unrelated C types, and `itype` is what
+/// picks between them: OpenSSL reads the slot as `ASN1_PRIMITIVE_FUNCS` in
+/// `asn1_primitive_new` and `ossl_asn1_primitive_free`, as `ASN1_EXTERN_FUNCS`
+/// in every `ASN1_ITYPE_EXTERN` arm, and as `ASN1_AUX` for the constructed
+/// types. Tagging here is what keeps one table from being read as another.
+#[derive(Clone, Copy)]
+pub enum Asn1ItemFuncs<'a> {
+    /// This item has no function table.
+    None,
+    /// An `ASN1_PRIMITIVE_FUNCS` overriding a primitive type's operations.
+    Primitive(Asn1ItemFuncsRef<'a>),
+    /// An `ASN1_EXTERN_FUNCS` supplying an extern type's whole implementation.
+    Extern(Asn1ItemFuncsRef<'a>),
+    /// An `ASN1_AUX` carrying a constructed type's callbacks and offsets.
+    Auxiliary(Asn1ItemFuncsRef<'a>),
+    /// A table reached through an `itype` no `ASN1_ITYPE_*` constant names, so
+    /// its concrete type is unknown.
+    Unclassified(Asn1ItemFuncsRef<'a>),
+}
 
 /// The cardinality encoded by an ASN.1 item's template pointer and count.
 #[derive(Clone, Copy)]
@@ -281,6 +368,11 @@ impl<'a> Asn1ItemRef<'a> {
     }
 
     /// Wraps: ASN1_ITEM_st.size
+    ///
+    /// The allocation size for a constructed type, but the slot is reused by
+    /// primitives: `asn1_primitive_new` reads it as a `BOOLEAN` default,
+    /// `asn1_ex_i2c` as an indefinite-length flag, and the `INT32` and
+    /// `BIGNUM` families store their own flag words in it.
     #[must_use]
     pub fn size(&self) -> c_long {
         // SAFETY: the handle carries a live borrow and raw-place projection
@@ -299,25 +391,48 @@ impl<'a> Asn1ItemRef<'a> {
     }
 
     /// Wraps: ASN1_ITEM_st.itype
+    ///
+    /// Returns the lossless classification that selects how the remaining
+    /// slots are read.
     #[must_use]
-    pub fn item_type(&self) -> c_char {
+    pub fn item_type(&self) -> Asn1ItemKind {
         // SAFETY: as `size`, for the `itype` scalar.
-        unsafe { addr_of!((*self.as_ptr()).itype).read() }
+        let raw = unsafe { addr_of!((*self.as_ptr()).itype).read() };
+        Asn1ItemKind::from_raw(raw)
     }
 
     /// Wraps: ASN1_ITEM_st.funcs
+    ///
+    /// Reads the table and tags it with the item's classification, so no arm
+    /// can be mistaken for another.
     #[must_use]
-    pub fn functions(&self) -> Option<Asn1ItemFuncsRef<'a>> {
-        // SAFETY: the handle carries a live borrow; the pointer is copied by
-        // raw-place read and remains opaque because its concrete type varies.
+    pub fn functions(&self) -> Asn1ItemFuncs<'a> {
+        // SAFETY: the handle carries a live borrow; the pointer is copied by a
+        // raw-place read and is not dereferenced here.
         let ptr = unsafe { addr_of!((*self.as_ptr()).funcs).read() };
-        NonNull::new(ptr.cast_mut()).map(|ptr| Asn1ItemFuncsRef {
+        let Some(ptr) = NonNull::new(ptr.cast_mut()) else {
+            return Asn1ItemFuncs::None;
+        };
+        let table = Asn1ItemFuncsRef {
             ptr,
             lifetime: PhantomData,
-        })
+        };
+        match self.item_type() {
+            Asn1ItemKind::Primitive => Asn1ItemFuncs::Primitive(table),
+            Asn1ItemKind::Extern => Asn1ItemFuncs::Extern(table),
+            Asn1ItemKind::Sequence | Asn1ItemKind::NdefSequence | Asn1ItemKind::Choice => {
+                Asn1ItemFuncs::Auxiliary(table)
+            }
+            Asn1ItemKind::MString | Asn1ItemKind::Unknown(_) => Asn1ItemFuncs::Unclassified(table),
+        }
     }
 
     /// Wraps: ASN1_ITEM_st.utype
+    ///
+    /// The underlying universal tag for a primitive or constructed type, but
+    /// `ASN1_ITYPE_CHOICE` stores its selector field's offset here and
+    /// `ASN1_ITYPE_MSTRING` a permitted-tag bit mask, so read it against
+    /// [`item_type`](Self::item_type).
     #[must_use]
     pub fn underlying_type(&self) -> c_long {
         // SAFETY: as `size`, for the `utype` scalar.
@@ -360,7 +475,10 @@ impl Asn1ItemMut<'_> {
     /// # Safety
     ///
     /// As [`Asn1ItemRef::from_ptr`], and no other handle to this descriptor
-    /// may be used while the result lives.
+    /// may be used while the result lives. The storage must additionally be
+    /// writable: every descriptor OpenSSL publishes is a `static const
+    /// ASN1_ITEM`, so this handle belongs on Rust-owned storage, never on the
+    /// result of a generated `<type>_it` accessor.
     pub unsafe fn from_ptr(ptr: *mut ffi::ASN1_ITEM_st) -> Option<Self> {
         NonNull::new(ptr.cast::<Asn1Item>()).map(|ptr| {
             // SAFETY: the caller supplies liveness, invariants and exclusivity.
@@ -493,8 +611,19 @@ mod tests {
         template_count: c_long,
         funcs: *const c_void,
     ) -> ffi::ASN1_ITEM_st {
+        raw_item_of_kind(Asn1ItemKind::Sequence, templates, template_count, funcs)
+    }
+
+    /// One `ASN1_ITEM_start` expansion, with the classification chosen by the
+    /// caller so each `funcs` arm can be reached.
+    fn raw_item_of_kind(
+        kind: Asn1ItemKind,
+        templates: *const ffi::ASN1_TEMPLATE_st,
+        template_count: c_long,
+        funcs: *const c_void,
+    ) -> ffi::ASN1_ITEM_st {
         ffi::ASN1_ITEM_st {
-            itype: 1,
+            itype: kind.as_raw(),
             utype: 16,
             templates,
             tcount: template_count,
@@ -529,13 +658,18 @@ mod tests {
         let item =
             unsafe { Asn1ItemRef::from_ptr(core::ptr::addr_of!(raw)) }.expect("non-null item");
 
-        assert_eq!(item.item_type(), 1);
+        assert_eq!(item.item_type(), Asn1ItemKind::Sequence);
         assert_eq!(item.underlying_type(), 16);
         assert_eq!(item.template_count(), 0);
         assert_eq!(item.size(), 48);
         assert_eq!(item.structure_name(), c"EXAMPLE");
-        let functions = item.functions().expect("function table");
-        assert!(Some(functions) == item.functions());
+        let Asn1ItemFuncs::Auxiliary(functions) = item.functions() else {
+            panic!("a SEQUENCE reads its function table as an ASN1_AUX");
+        };
+        let Asn1ItemFuncs::Auxiliary(again) = item.functions() else {
+            unreachable!("the classification is stable");
+        };
+        assert!(functions == again);
         assert!(matches!(item.templates(), Asn1ItemTemplates::None));
 
         // SAFETY: `raw` is valid and exclusively borrowed for this scope.
@@ -543,6 +677,78 @@ mod tests {
             unsafe { Asn1ItemMut::from_ptr(core::ptr::addr_of_mut!(raw)) }.expect("non-null item");
         assert_eq!(item_mut.as_ref().size(), 48);
         assert_eq!(item_mut.as_mut_ptr(), core::ptr::addr_of_mut!(raw));
+    }
+
+    #[test]
+    fn item_type_classifies_every_named_itype_losslessly() {
+        for kind in [
+            Asn1ItemKind::Primitive,
+            Asn1ItemKind::Sequence,
+            Asn1ItemKind::Choice,
+            Asn1ItemKind::Extern,
+            Asn1ItemKind::MString,
+            Asn1ItemKind::NdefSequence,
+        ] {
+            assert_eq!(Asn1ItemKind::from_raw(kind.as_raw()), kind);
+        }
+        // 0x3 is the one value `asn1t.h` marks unused.
+        assert_eq!(Asn1ItemKind::from_raw(3), Asn1ItemKind::Unknown(3));
+        assert_eq!(Asn1ItemKind::Unknown(3).as_raw(), 3);
+    }
+
+    #[test]
+    fn function_table_is_tagged_by_the_items_classification() {
+        let table = 0_u8;
+        let table_ptr = core::ptr::addr_of!(table).cast::<c_void>();
+
+        for (kind, expected) in [
+            (Asn1ItemKind::Primitive, "primitive"),
+            (Asn1ItemKind::Extern, "extern"),
+            (Asn1ItemKind::Sequence, "auxiliary"),
+            (Asn1ItemKind::NdefSequence, "auxiliary"),
+            (Asn1ItemKind::Choice, "auxiliary"),
+            (Asn1ItemKind::MString, "unclassified"),
+            (Asn1ItemKind::Unknown(3), "unclassified"),
+        ] {
+            let raw = raw_item_of_kind(kind, core::ptr::null(), 0, table_ptr);
+            // SAFETY: every pointer field satisfies the constructor contract
+            // and its pointee outlives the handle below.
+            let item =
+                unsafe { Asn1ItemRef::from_ptr(core::ptr::addr_of!(raw)) }.expect("non-null item");
+            let arm = match item.functions() {
+                Asn1ItemFuncs::Primitive(_) => "primitive",
+                Asn1ItemFuncs::Extern(_) => "extern",
+                Asn1ItemFuncs::Auxiliary(_) => "auxiliary",
+                Asn1ItemFuncs::Unclassified(_) => "unclassified",
+                Asn1ItemFuncs::None => "none",
+            };
+            assert_eq!(arm, expected, "{kind:?} selected the wrong table type");
+        }
+
+        let raw = raw_item_of_kind(
+            Asn1ItemKind::Sequence,
+            core::ptr::null(),
+            0,
+            core::ptr::null(),
+        );
+        // SAFETY: as above, with an absent function table.
+        let item =
+            unsafe { Asn1ItemRef::from_ptr(core::ptr::addr_of!(raw)) }.expect("non-null item");
+        assert!(matches!(item.functions(), Asn1ItemFuncs::None));
+    }
+
+    #[test]
+    fn a_linked_openssl_descriptor_reads_back_as_the_macros_wrote_it() {
+        // `IMPLEMENT_ASN1_TYPE(ASN1_OBJECT)` in `crypto/asn1/tasn_typ.c`.
+        let item = crate::asn1::tasn_typ::ASN1_OBJECT_it();
+
+        assert_eq!(item.item_type(), Asn1ItemKind::Primitive);
+        assert_eq!(item.underlying_type(), c_long::from(ffi::V_ASN1_OBJECT));
+        assert_eq!(item.structure_name(), c"ASN1_OBJECT");
+        assert_eq!(item.template_count(), 0);
+        assert_eq!(item.size(), 0);
+        assert!(matches!(item.templates(), Asn1ItemTemplates::None));
+        assert!(matches!(item.functions(), Asn1ItemFuncs::None));
     }
 
     #[test]
