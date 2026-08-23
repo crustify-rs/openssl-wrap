@@ -2434,6 +2434,18 @@
    ]
   },
   {
+   "name": "stack_st_GENERAL_SUBTREE",
+   "defined_in": null,
+   "_comment_agent": "Generated STACK_OF instance is an opaque tag with no fields; it erases to stack_st and inherits the generic stack lifecycle.",
+   "fields": []
+  },
+  {
+   "name": "stack_st_OPENSSL_STRING",
+   "defined_in": null,
+   "_comment_agent": "Generated special string-stack instance is an opaque tag with no fields; it erases to stack_st and inherits the generic stack lifecycle.",
+   "fields": []
+  },
+  {
    "name": "stack_st_X509_EXTENSION",
    "defined_in": null,
    "_comment_agent": "DEFINE_STACK_OF only forward-declares this generated tag. It erases to stack_st/OPENSSL_STACK, whose translated generic wrapper owns the pointer array but not X509_EXTENSION elements unless explicitly promoted to pop-free ownership.",
