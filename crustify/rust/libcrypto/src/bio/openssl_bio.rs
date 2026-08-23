@@ -45,6 +45,7 @@ impl BioHostservPriorities {
     pub const SERVICE: Self = Self(ffi::BIO_hostserv_priorities_BIO_PARSE_PRIO_SERV);
 
     /// Validates and wraps a raw OpenSSL priority value.
+    #[must_use]
     pub const fn from_raw(raw: ffi::BIO_hostserv_priorities) -> Option<Self> {
         match raw {
             ffi::BIO_hostserv_priorities_BIO_PARSE_PRIO_HOST
@@ -54,6 +55,7 @@ impl BioHostservPriorities {
     }
 
     /// Returns the raw value expected by OpenSSL.
+    #[must_use]
     pub const fn as_raw(self) -> ffi::BIO_hostserv_priorities {
         self.0
     }
@@ -72,6 +74,7 @@ impl BioLookupType {
     pub const SERVER: Self = Self(ffi::BIO_lookup_type_BIO_LOOKUP_SERVER);
 
     /// Validates and wraps a raw OpenSSL lookup type.
+    #[must_use]
     pub const fn from_raw(raw: ffi::BIO_lookup_type) -> Option<Self> {
         match raw {
             ffi::BIO_lookup_type_BIO_LOOKUP_CLIENT | ffi::BIO_lookup_type_BIO_LOOKUP_SERVER => {
@@ -82,6 +85,7 @@ impl BioLookupType {
     }
 
     /// Returns the raw value expected by OpenSSL.
+    #[must_use]
     pub const fn as_raw(self) -> ffi::BIO_lookup_type {
         self.0
     }
@@ -93,7 +97,7 @@ impl BioLookupType {
 /// Keeping the bindgen integer private prevents safe Rust from inventing a C
 /// enum value that OpenSSL's switch does not handle.
 #[repr(transparent)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct BioSockInfoType(ffi::BIO_sock_info_type);
 
 impl BioSockInfoType {

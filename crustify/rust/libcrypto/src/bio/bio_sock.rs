@@ -4,6 +4,7 @@ use libcrypto_sys as ffi;
 
 use super::bio_sock2::BioSocket;
 use super::internal_bio_addr::BioAddrMut;
+use super::openssl_bio::BioSockInfoType;
 
 /// Wraps: BIO_set_tcp_ndelay
 #[must_use]
@@ -79,7 +80,7 @@ pub fn BIO_sock_info(socket: &BioSocket, address: &mut BioAddrMut<'_>) -> bool {
     unsafe {
         ffi::BIO_sock_info(
             socket.as_raw_socket(),
-            ffi::BIO_sock_info_type_BIO_SOCK_INFO_ADDRESS,
+            BioSockInfoType::ADDRESS.as_raw(),
             &mut info,
         ) == 1
     }

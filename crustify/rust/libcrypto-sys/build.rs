@@ -356,6 +356,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "OPENSSL_LH_num_items",
 ];
 const AGENT_ALLOWED_VARS: &[&str] = &[
+    "ASN1_TFLG_ADB_MASK",
     "V_ASN1_BIT_STRING",
     "V_ASN1_BMPSTRING",
     "V_ASN1_BOOLEAN",

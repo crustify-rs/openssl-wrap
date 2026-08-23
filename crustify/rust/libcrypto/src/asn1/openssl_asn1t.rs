@@ -43,27 +43,38 @@ unsafe impl CCell for Asn1Template {
     }
 }
 
-/// A process-lifetime OpenSSL function that resolves a template's item.
+/// Opaque borrowed view of an `ANY DEFINED BY` selector table.
 ///
-/// The returned function remains unsafe to call because the template flags
-/// determine whether its raw result denotes an `ASN1_ITEM` or an `ASN1_ADB`.
+/// `ASN1_ADB` has no wrapper yet, so the table is exposed only as an identity
+/// carrying the borrow that keeps it alive.
 #[derive(Clone, Copy)]
-pub struct Asn1ItemProvider(unsafe extern "C" fn() -> *const ffi::ASN1_ITEM);
+pub struct Asn1AdbRef<'a> {
+    ptr: NonNull<c_void>,
+    lifetime: PhantomData<&'a c_void>,
+}
 
-impl Asn1ItemProvider {
-    /// Resolves an ordinary ASN.1 item descriptor.
-    ///
-    /// Returns `None` if a nonconforming resolver returns null.
-    ///
-    /// # Safety
-    ///
-    /// The template flags must identify this provider as an `ASN1_ITEM`
-    /// resolver rather than an `ASN1_ADB` resolver.
-    pub unsafe fn resolve_item(self) -> Option<Asn1ItemRef<'static>> {
-        // SAFETY: the caller distinguishes the erased resolver kind. OpenSSL's
-        // item macros return immutable process-lifetime descriptor storage.
-        unsafe { Asn1ItemRef::from_ptr((self.0)()) }
+impl PartialEq for Asn1AdbRef<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.ptr == other.ptr
     }
+}
+
+impl Eq for Asn1AdbRef<'_> {}
+
+/// The descriptor an ASN.1 template's exported `item` slot resolves to.
+///
+/// Both kinds are reached through one `const ASN1_ITEM *(*)(void)` slot, and
+/// the template flags are the discriminator: OpenSSL reads the result as an
+/// `ASN1_ADB` exactly when `flags & ASN1_TFLG_ADB_MASK` is nonzero, in
+/// `ossl_asn1_do_adb`, `asn1_template_new` and `asn1_item_embed_d2i`.
+/// Classifying here is what keeps either descriptor from being read as the
+/// other without an unsafe step in the caller.
+#[derive(Clone, Copy)]
+pub enum Asn1TemplateItem<'a> {
+    /// An ordinary field naming one ASN.1 type descriptor.
+    Item(Asn1ItemRef<'a>),
+    /// An `ANY DEFINED BY` field naming a selector table.
+    AnyDefinedBy(Asn1AdbRef<'a>),
 }
 
 impl<'a> Asn1TemplateRef<'a> {
@@ -74,7 +85,9 @@ impl<'a> Asn1TemplateRef<'a> {
     /// A non-null pointer must address a live `ASN1_TEMPLATE` for `'a`. Its
     /// `field_name` must remain a valid NUL-terminated string and its `item`
     /// slot must contain the process-lifetime resolver established by the
-    /// OpenSSL template macros.
+    /// OpenSSL template macros. `flags` must classify that resolver the way
+    /// OpenSSL does: `ASN1_TFLG_ADB_MASK` set exactly when it yields an
+    /// `ASN1_ADB` table rather than an `ASN1_ITEM`.
     pub unsafe fn from_ptr(ptr: *mut ffi::ASN1_TEMPLATE_st) -> Option<Self> {
         NonNull::new(ptr.cast::<Asn1Template>()).map(|ptr| {
             // SAFETY: the caller supplies the required liveness and invariants.
@@ -105,12 +118,35 @@ impl<'a> Asn1TemplateRef<'a> {
     }
 
     /// Wraps: ASN1_TEMPLATE_st.item
+    ///
+    /// Resolves the exported descriptor and tags it with the template flags,
+    /// so neither arm can be read as the other.
     #[must_use]
-    pub fn item(&self) -> Asn1ItemProvider {
+    pub fn item(&self) -> Asn1TemplateItem<'a> {
         // SAFETY: `self` carries a live shared borrow; raw-place projection
         // reads the function pointer without referencing the C object.
-        let provider = unsafe { addr_of!((*self.as_ptr()).item).read() };
-        Asn1ItemProvider(provider.expect("valid ASN1_TEMPLATE item resolver"))
+        let resolver = unsafe { addr_of!((*self.as_ptr()).item).read() };
+        let resolver = resolver.expect("ASN1_TEMPLATE constructor requires an item resolver");
+        // SAFETY: `from_ptr` requires this slot to hold a resolver established
+        // by the OpenSSL template macros. Both `ASN1_ITEM_ref` and the ADB
+        // macros expand to a nullary function returning the address of `static
+        // const` storage, so the call itself has no further precondition.
+        let descriptor = unsafe { resolver() };
+        if self.flags() & c_ulong::from(ffi::ASN1_TFLG_ADB_MASK) == 0 {
+            // SAFETY: with no ADB flag the constructor contract makes this an
+            // `ASN1_ITEM_ref` resolver, whose immutable process-lifetime
+            // `ASN1_ITEM` satisfies every `Asn1ItemRef::from_ptr` invariant.
+            let item = unsafe { Asn1ItemRef::from_ptr(descriptor) }
+                .expect("ASN1_ITEM resolvers return process-lifetime storage");
+            Asn1TemplateItem::Item(item)
+        } else {
+            let table = NonNull::new(descriptor.cast_mut().cast::<c_void>())
+                .expect("ASN1_ADB resolvers return process-lifetime storage");
+            Asn1TemplateItem::AnyDefinedBy(Asn1AdbRef {
+                ptr: table,
+                lifetime: PhantomData,
+            })
+        }
     }
 
     /// Wraps: ASN1_TEMPLATE_st.tag
@@ -349,8 +385,34 @@ impl Asn1ItemMut<'_> {
 mod tests {
     use super::*;
 
+    /// An immutable descriptor standing in for one `ASN1_ITEM_start` expansion.
+    struct StaticItem(ffi::ASN1_ITEM_st);
+
+    // SAFETY: the descriptor is never mutated and its only pointer field
+    // addresses a `'static` string literal, exactly as the ASN.1 item macros
+    // emit it.
+    unsafe impl Sync for StaticItem {}
+
+    static RESOLVED_ITEM: StaticItem = StaticItem(ffi::ASN1_ITEM_st {
+        itype: 1,
+        utype: 16,
+        templates: core::ptr::null(),
+        tcount: 0,
+        funcs: core::ptr::null(),
+        size: 48,
+        sname: c"RESOLVED".as_ptr(),
+    });
+
+    /// Stands in for an `ASN1_ITEM_ref(type)` slot.
     unsafe extern "C" fn item_provider() -> *const ffi::ASN1_ITEM {
-        core::ptr::null()
+        core::ptr::addr_of!(RESOLVED_ITEM.0)
+    }
+
+    static ADB_TABLE: u8 = 0;
+
+    /// Stands in for the `tblname##_adb` slot an `ASN1_ADB_OBJECT` records.
+    unsafe extern "C" fn adb_provider() -> *const ffi::ASN1_ITEM {
+        core::ptr::addr_of!(ADB_TABLE).cast()
     }
 
     fn raw_template() -> ffi::ASN1_TEMPLATE_st {
@@ -391,9 +453,29 @@ mod tests {
         assert_eq!(template.tag(), -7);
         assert_eq!(template.offset(), 24);
         assert_eq!(template.field_name(), c"member");
-        // SAFETY: the test callback has the ordinary item-resolver signature,
-        // rather than the alternate ASN1_ADB interpretation.
-        assert!(unsafe { template.item().resolve_item() }.is_none());
+        let Asn1TemplateItem::Item(item) = template.item() else {
+            panic!("a template without an ADB flag names an ASN1_ITEM");
+        };
+        assert_eq!(item.structure_name(), c"RESOLVED");
+    }
+
+    #[test]
+    fn adb_flagged_template_keeps_its_table_opaque() {
+        let mut raw = raw_template();
+        raw.flags |= c_ulong::from(ffi::ASN1_TFLG_ADB_MASK);
+        raw.item = Some(adb_provider);
+        // SAFETY: `raw` is a live template whose flags classify its resolver as
+        // an ASN1_ADB table, matching the constructor contract.
+        let template = unsafe { Asn1TemplateRef::from_ptr(core::ptr::addr_of_mut!(raw)) }
+            .expect("non-null template");
+
+        let Asn1TemplateItem::AnyDefinedBy(table) = template.item() else {
+            panic!("an ADB-flagged template names an ASN1_ADB table");
+        };
+        let Asn1TemplateItem::AnyDefinedBy(again) = template.item() else {
+            unreachable!("the classification is stable");
+        };
+        assert!(table == again);
     }
 
     #[test]

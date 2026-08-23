@@ -62,7 +62,7 @@
   {
    "name": "ASN1_TEMPLATE_st",
    "defined_in": "include/openssl/asn1t.h",
-   "_comment_agent": "ASN1_TEMPLATE values are generated as static const descriptors by the public asn1t.h macros. They own neither their item callback nor their field-name string.",
+   "_comment_agent": "ASN1_TEMPLATE values are generated as static const descriptors by the public asn1t.h macros. They own neither their item callback nor their field-name string. The item slot is a two-way discriminated union resolved through one function-pointer type: flags & ASN1_TFLG_ADB_MASK selects the ASN1_ADB reading, and is zero for an ordinary ASN1_ITEM.",
    "fields": [
     {
      "name": "field_name",
@@ -93,7 +93,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "ASN1 template macros initialize this slot with an ASN1_ITEM_ref function symbol. Templates are static const descriptors, so the callable is non-null, immutable, and process-lifetime borrowed."
+      "note": "ASN1_EX_TYPE and ASN1_EX_TEMPLATE_TYPE initialize this slot with ASN1_ITEM_ref(type) = type##_it; ASN1_ADB_OBJECT and ASN1_ADB_INTEGER initialize it with tblname##_adb. Both expand to a nullary function returning the address of static const storage, so the callable is non-null, immutable and process-lifetime borrowed. Its RESULT is discriminated, not the slot: flags & ASN1_TFLG_ADB_MASK nonzero means the returned pointer is an ASN1_ADB table rather than an ASN1_ITEM, which is exactly the test ossl_asn1_do_adb (crypto/asn1/tasn_utl.c:236), asn1_template_new (crypto/asn1/tasn_new.c:222) and asn1_item_embed_d2i (crypto/asn1/tasn_dec.c:402) apply before reading it."
      }
     }
    ]
@@ -102,6 +102,24 @@
    "name": "ASN1_VALUE_st",
    "defined_in": null,
    "_comment_agent": "OpenSSL deliberately never defines ASN1_VALUE_st; include/openssl/asn1.h documents it as an opaque type-erased pointer equivalent to void *. It has no layout or lifecycle of its own.",
+   "fields": []
+  },
+  {
+   "name": "BIO_hostserv_priorities",
+   "defined_in": "include/openssl/bio.h",
+   "_comment_agent": "Closed two-value selector passed by value to BIO_parse_hostserv; BIO_PARSE_PRIO_HOST and BIO_PARSE_PRIO_SERV only choose how an unqualified hostserv string is read. No pointer slots and no lifecycle of its own.",
+   "fields": []
+  },
+  {
+   "name": "BIO_lookup_type",
+   "defined_in": "include/openssl/bio.h",
+   "_comment_agent": "Closed two-value selector passed by value to BIO_lookup; BIO_LOOKUP_CLIENT and BIO_LOOKUP_SERVER only pick whether AI_PASSIVE is requested. BIO_lookup_ex takes the same values through a plain int parameter. No pointer slots and no lifecycle of its own.",
+   "fields": []
+  },
+  {
+   "name": "BIO_sock_info_type",
+   "defined_in": "include/openssl/bio.h",
+   "_comment_agent": "Single-value selector passed by value to BIO_sock_info, whose switch rejects anything but BIO_SOCK_INFO_ADDRESS with BIO_R_UNKNOWN_INFO_TYPE (crypto/bio/bio_sock.c:402). The value chooses the active arm of the BIO_sock_info_u union the caller supplies. No pointer slots and no lifecycle of its own.",
    "fields": []
   },
   {
