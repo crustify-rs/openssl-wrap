@@ -1,4 +1,22 @@
 //! Ownership strategies for ordinary OpenSSL allocations.
+//!
+//! # Allocation-site metadata
+//!
+//! Every `CRYPTO_*` primitive here takes a trailing `(file, line)` pair, and
+//! these strategies always pass `(NULL, 0)`. That is OpenSSL's own
+//! metadata-free convention, and it means something different on each side:
+//!
+//! - On an allocating call, `ossl_report_alloc_err_ex` raises
+//!   `ERR_R_MALLOC_FAILURE` only `if (file != NULL || line != 0)`
+//!   (`include/internal/mem_alloc_utils.h`), so `(NULL, 0)` deliberately
+//!   suppresses the error-queue entry a failed `OPENSSL_strdup` would push;
+//!   OpenSSL itself passes the same pair where a report is unwanted
+//!   (`crypto/err/err_save.c`, `crypto/threads_none.c`). A Rust caller learns
+//!   of the failure from the returned `Option` instead.
+//! - On a releasing call, `CRYPTO_free` never reads the pair. It only forwards
+//!   it to an application-installed `CRYPTO_free_fn` (`crypto/mem.c`), and such
+//!   a callback already has to tolerate a null `file`, because stock OpenSSL
+//!   hands the same null to the `CRYPTO_malloc_fn` installed alongside it.
 
 use core::ffi::CStr;
 use core::ptr::{self, NonNull};
@@ -19,7 +37,9 @@ pub type CryptoString = CrustifyStr<CryptoFree>;
 unsafe impl CDropped for CryptoFree {
     unsafe fn c_drop(obj: NonNull<Self>) {
         // SAFETY: the trait contract requires a uniquely owned allocation from
-        // the active OpenSSL allocator. OpenSSL accepts null file metadata.
+        // the active OpenSSL allocator, which is the one `CRYPTO_free`
+        // dispatches to. Null allocation-site metadata is the module-level
+        // convention documented above.
         unsafe { ffi::CRYPTO_free(obj.as_ptr().cast(), ptr::null(), 0) }
     }
 }
@@ -28,7 +48,10 @@ unsafe impl CDropped for CryptoFree {
 unsafe impl CLenDropped for CryptoFree {
     unsafe fn c_drop_len(ptr: *mut u8, _byte_len: usize) {
         // SAFETY: the trait contract requires a uniquely owned allocation from
-        // the active OpenSSL allocator. OpenSSL accepts null file metadata.
+        // the active OpenSSL allocator, which is the one `CRYPTO_free`
+        // dispatches to; it releases the whole allocation, so discarding the
+        // byte length loses nothing. Null allocation-site metadata is the
+        // module-level convention documented above.
         unsafe { ffi::CRYPTO_free(ptr.cast(), ptr::null(), 0) }
     }
 }

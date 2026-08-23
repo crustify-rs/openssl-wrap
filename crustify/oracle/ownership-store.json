@@ -8679,7 +8679,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Transient optional source-file string used only by a configured free callback."
+      "note": "Transient optional source-file string. CRYPTO_free never reads it: the pair (file, line) is only forwarded verbatim to an application-installed CRYPTO_free_fn, and the stock path calls free(str) alone (crypto/mem.c). NULL is inside that contract rather than merely tolerated, because stock OpenSSL also hands (NULL, 0) to the CRYPTO_malloc_fn installed by the same CRYPTO_set_mem_functions call (crypto/err/err_save.c, crypto/threads_none.c). In-tree C callers instead expand OPENSSL_FILE, which is __FILE__ or \"\" (include/openssl/macros.h)."
      }
     },
     {
@@ -8747,7 +8747,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Transient optional source-file string forwarded to the allocator."
+      "note": "Transient optional source-file string forwarded to CRYPTO_malloc. The value is load-bearing on failure: ossl_report_alloc_err_ex raises ERR_R_MALLOC_FAILURE only when file != NULL || line != 0, so (NULL, 0) deliberately suppresses the error-queue entry while any non-null pointer, including \"\", enables it (include/internal/mem_alloc_utils.h). Not retained -- err_set_debug copies the string and maps NULL or \"\" to no recorded file (crypto/err/err_local.h)."
      }
     }
    ],
@@ -8762,7 +8762,7 @@
      "borrowed": null,
      "nullable": true,
      "mutable": true,
-     "note": "Fresh byte-for-byte copy of siz bytes, owned by the caller and releasable with CRYPTO_free; NULL on invalid input or allocation failure."
+     "note": "Fresh byte-for-byte copy of siz bytes, owned by the caller and releasable with CRYPTO_free. NULL covers four cases, indistinguishable to the caller: data == NULL, siz >= INT_MAX (both rejected up front in crypto/o_str.c), siz == 0 (CRYPTO_malloc returns NULL for a zero request under the default allocator, crypto/mem.c), and allocation failure. A wrapper that duplicates a possibly empty buffer must therefore treat NULL as a normal outcome, not only as an error."
     }
    }
   },
@@ -8889,7 +8889,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Transient optional source-file string forwarded to the OpenSSL allocator."
+      "note": "Transient optional source-file string forwarded to CRYPTO_malloc. The value is load-bearing on failure: ossl_report_alloc_err_ex raises ERR_R_MALLOC_FAILURE only when file != NULL || line != 0, so (NULL, 0) deliberately suppresses the error-queue entry while any non-null pointer, including \"\", enables it (include/internal/mem_alloc_utils.h). Not retained -- err_set_debug copies the string and maps NULL or \"\" to no recorded file (crypto/err/err_local.h)."
      }
     },
     {
@@ -8960,7 +8960,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Transient source buffer readable for up to s bytes; no NUL is required within that bound, and NULL yields NULL."
+      "note": "Transient source buffer readable for up to s bytes; no NUL is required within that bound (OPENSSL_strnlen stops at either), and NULL yields NULL. Deliberately carries no cloner lifetime role, unlike CRYPTO_strdup: the bound truncates, so the result is a new value rather than a duplicate of the source object, and neither a pointer-only clone contract nor an equal-byte-length buffer copy can express it. Its results are ordinary CRYPTO_free-releasable strings and are adopted by the existing CRYPTO_free string owner (for example the host and service outputs of BIO_parse_hostserv, crypto/bio/bio_addr.c)."
      }
     }
    ],
