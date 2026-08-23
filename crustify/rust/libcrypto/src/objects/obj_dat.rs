@@ -8,7 +8,7 @@ use std::ffi::CString;
 use ffibox::{CBox, CSlice};
 use libcrypto_sys as ffi;
 
-use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectDuplicate, Asn1ObjectRef};
 use crate::bio::bio_bio_local::BioMut;
 use crate::stack::openssl_stack::OpenSslSkCompFunc;
 
@@ -193,13 +193,23 @@ fn detached_object(raw: *mut ffi::ASN1_OBJECT) -> Option<CBox<Asn1Object>> {
 }
 
 /// Wraps: OBJ_add_object
-/// Registers a detached copy, so the supplied borrow is never retained.
+/// Registers a deep copy — short and long names included — so the supplied
+/// borrow is never retained by the process-global registry.
+///
+/// OpenSSL's own copy step is `OBJ_dup`, which hands back its argument
+/// unchanged for a non-dynamic object; registering one would leave the
+/// registry holding this borrow for the rest of the process. Such a source is
+/// refused instead. Every object built through this crate's safe constructors
+/// is dynamic, so the refusal is unreachable from safe code.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn OBJ_add_object(object: Asn1ObjectRef<'_>) -> Option<i32> {
-    let copy = detached_object(object.as_ptr().cast_mut())?;
-    // SAFETY: `copy` is a live dynamic object. OpenSSL deep-copies it into the
-    // registry before returning and does not consume this temporary owner.
+    let Asn1ObjectDuplicate::Owned(copy) = object.try_dup()? else {
+        return None;
+    };
+    // SAFETY: `copy` is a live dynamic object owned here. `add_object` takes
+    // its own `OBJ_dup` of it before installing anything and never consumes
+    // this owner, so the registry entry shares no storage with it.
     let nid = unsafe { ffi::OBJ_add_object(copy.as_ptr()) };
     (nid != 0).then_some(nid)
 }
@@ -387,6 +397,34 @@ mod tests {
         let common_name = OBJ_sn2nid(c"CN");
         assert_ne!(common_name, 0);
         assert_eq!(OBJ_nid2sn(common_name).unwrap().as_c_str(), c"CN");
+    }
+
+    #[test]
+    fn adding_an_object_registers_it_under_all_three_of_its_names() {
+        use crate::asn1::a_object::ASN1_OBJECT_create;
+
+        let parsed = OBJ_txt2obj(c"1.3.6.1.4.1.57264.9201", true).expect("numeric OID");
+        let mut content = vec![0_u8; OBJ_length(Some(parsed.as_ref()))];
+        assert!(
+            OBJ_get0_data(parsed.as_ref())
+                .expect("OID bytes")
+                .copy_to_slice(&mut content)
+        );
+
+        let nid = OBJ_new_nid(1);
+        let object = ASN1_OBJECT_create(
+            nid,
+            &content,
+            Some(c"crustifyAddedObj"),
+            Some(c"crustify added object"),
+        )
+        .expect("ASN1_OBJECT_create");
+        assert_eq!(OBJ_add_object(object.as_ref()), Some(nid));
+
+        // The registry keeps the names, not just the OID bytes.
+        assert_eq!(OBJ_sn2nid(c"crustifyAddedObj"), nid);
+        assert_eq!(OBJ_ln2nid(c"crustify added object"), nid);
+        assert_eq!(OBJ_txt2nid(c"1.3.6.1.4.1.57264.9201"), nid);
     }
 
     #[test]

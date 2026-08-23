@@ -1782,6 +1782,17 @@ impl Asn1PsCallbacks {
     /// `cleanup`, when present, must accept every successful state produced by
     /// `setup`, when present. Their ownership protocol must release each state
     /// exactly once without retaining any stack slots or unwinding.
+    ///
+    /// This pair is what
+    /// [`BIO_asn1_set_prefix`](crate::asn1::bio_asn1::BIO_asn1_set_prefix) and
+    /// [`BIO_asn1_set_suffix`](crate::asn1::bio_asn1::BIO_asn1_set_suffix)
+    /// install, and an installed pair is driven by the ASN.1 BIO itself, over
+    /// the BIO's own `ex_buf`/`ex_len`/`ex_arg` slots rather than a state the
+    /// caller chose. `asn1_bio_new` zeroes those slots and no wrapper sets
+    /// `ex_arg`, so both callbacks must additionally tolerate a null context —
+    /// which `ndef_prefix` and `ndef_suffix` do not — or this pair must never
+    /// be installed on a BIO. `asn1_bio_free` then runs `cleanup` over the
+    /// same slots whether or not `setup` ever ran.
     #[must_use]
     pub unsafe fn new(setup: Option<Asn1PsSetupFunc>, cleanup: Option<Asn1PsCleanupFunc>) -> Self {
         Self { setup, cleanup }

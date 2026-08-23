@@ -10,7 +10,7 @@ use super::o_names::ObjNameValue;
 
 /// `OBJ_NAME_ALIAS`, the bit `OBJ_NAME_add` copies out of its class argument
 /// into [`obj_name_st::alias`](ObjNameRef::alias).
-const ALIAS_FLAG: i32 = ffi::OBJ_NAME_ALIAS as i32;
+pub(crate) const ALIAS_FLAG: i32 = ffi::OBJ_NAME_ALIAS as i32;
 
 define_ctype!(
     /// Wraps: obj_name_st

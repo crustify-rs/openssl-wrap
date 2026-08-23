@@ -9657,14 +9657,14 @@
        "by_val": true
       },
       "array": null,
-      "string": true,
+      "string": false,
       "owned": false,
       "borrowed": {
        "lifetime": "global:obj_name_registry"
       },
       "nullable": false,
       "mutable": false,
-      "note": "NUL string payload retained without copying until removal/cleanup."
+      "note": "Payload retained without copying until removal/cleanup. Its meaning is discriminated by the OBJ_NAME_ALIAS bit of the type argument, which OBJ_NAME_add copies into the entry's alias field: with the bit set this is the NUL-terminated name of another entry of the same class, which OBJ_NAME_get follows as its next lookup key; with the bit clear it is the class's registered object and NOT a string at all, as in EVP_add_cipher's (const char *)cipher and EVP_add_digest's (const char *)md."
      }
     },
     {
@@ -9905,7 +9905,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Source object read and normally deep-copied into the global registry before return."
+      "note": "Source object read and deep-copied into the global registry, but only when it is dynamic: add_object copies with OBJ_dup, which returns its argument unchanged for an object without ASN1_OBJECT_FLAG_DYNAMIC, and then stores that same pointer in the registry's ADDED_OBJ entries for the rest of the process. A non-dynamic source is therefore retained at global:object_registry rather than arg:obj. The registered copy also carries the source's sn and ln, which is what makes the entry reachable by OBJ_sn2nid and OBJ_ln2nid; add_object clears the dynamic flags on it, so the entry it installs is itself non-dynamic."
      }
     }
    ]

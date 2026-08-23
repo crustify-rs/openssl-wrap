@@ -1,6 +1,6 @@
 //! Wrappers assigned from `crypto/objects/o_names.c`.
 
-use core::ffi::{CStr, c_void};
+use core::ffi::{CStr, c_char, c_void};
 use core::marker::PhantomData;
 use core::ptr::NonNull;
 use std::any::Any;
@@ -8,7 +8,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 
 use libcrypto_sys as ffi;
 
-use super::openssl_objects::ObjNameRef;
+use super::openssl_objects::{ALIAS_FLAG, ObjNameData, ObjNameRef};
 
 type RawNameHash = unsafe extern "C" fn(*const core::ffi::c_char) -> core::ffi::c_ulong;
 type RawNameCompare =
@@ -73,6 +73,19 @@ impl<'a> ObjNameValue<'a> {
             ptr,
             marker: PhantomData,
         }
+    }
+
+    /// Builds a payload view over a pointer that is about to be registered as
+    /// an entry's [`ObjNameData::Value`].
+    ///
+    /// # Safety
+    ///
+    /// `'a` must not outlive the storage `ptr` addresses. The class the
+    /// payload is registered under fixes its concrete type, so it must be the
+    /// type every reader of that class casts it back to.
+    #[must_use]
+    pub unsafe fn from_raw(ptr: NonNull<c_void>) -> Self {
+        Self::from_ptr(ptr)
     }
 
     /// The erased pointer, for storing the payload back into an entry.
@@ -199,21 +212,40 @@ where
 }
 
 /// Wraps: OBJ_NAME_add
+/// Installs one entry, taking its `OBJ_NAME_ALIAS` discriminator from the
+/// payload rather than from the class argument.
+///
+/// C spells both payload arms `const char *`, but only
+/// [`ObjNameData::Alias`] is a string: a non-alias entry stores the class's
+/// registered object, the way `EVP_add_cipher` stores a `const EVP_CIPHER *`.
+/// Deriving the bit from `data` keeps the stored discriminator in step with
+/// the slot it describes, exactly as
+/// [`ObjNameMut::set_data`](super::openssl_objects::ObjNameMut::set_data)
+/// does, so [`OBJ_NAME_get`] and [`ObjNameRef::data`] read it back the way it
+/// was written. `type_id` therefore names only the class.
 ///
 /// # Safety
-/// `name` and `data` are stored without copying. They must remain live and
-/// immutable until this entry is removed or its class is cleaned up, and they
-/// must satisfy the registered class disposal callback's ownership contract.
+/// `name` and the payload are stored without copying. They must remain live
+/// and immutable until this entry is removed or its class is cleaned up, and
+/// they must satisfy the registered class disposal callback's ownership
+/// contract.
 ///
 /// Replacing an existing entry invokes the class disposal callback, which
 /// OpenSSL calls without a null check. When this call replaces an entry, the
 /// class must therefore have been created with a disposal callback.
 #[must_use]
 #[allow(non_snake_case)]
-pub unsafe fn OBJ_NAME_add(name: &CStr, type_id: i32, data: &CStr) -> bool {
+pub unsafe fn OBJ_NAME_add(name: &CStr, type_id: i32, data: ObjNameData<'_>) -> bool {
+    let (type_id, data): (i32, *const c_char) = match data {
+        ObjNameData::Alias(target) => (type_id | ALIAS_FLAG, target.as_ptr()),
+        ObjNameData::Value(payload) => (
+            type_id & !ALIAS_FLAG,
+            payload.as_non_null().as_ptr().cast_const().cast(),
+        ),
+    };
     // SAFETY: the caller supplies the otherwise-unexpressible stored lifetimes
-    // and disposal contract for both strings.
-    unsafe { ffi::OBJ_NAME_add(name.as_ptr(), type_id, data.as_ptr()) == 1 }
+    // and disposal contract for the name and the payload.
+    unsafe { ffi::OBJ_NAME_add(name.as_ptr(), type_id, data) == 1 }
 }
 
 /// Wraps: OBJ_NAME_cleanup
@@ -289,6 +321,16 @@ mod tests {
     /// other rather than relying on the harness thread schedule.
     static REGISTRY: Mutex<()> = Mutex::new(());
 
+    /// A non-alias payload over a `'static` string, so the tests can read it
+    /// back as one while it is still stored as an erased pointer.
+    fn payload(value: &'static CStr) -> ObjNameData<'static> {
+        // SAFETY: `value` is `'static` and the tests cast the payload back to
+        // the `c_char` run it was registered from.
+        ObjNameData::Value(unsafe {
+            ObjNameValue::from_raw(NonNull::new(value.as_ptr().cast_mut().cast()).unwrap())
+        })
+    }
+
     #[test]
     fn initialization_is_idempotent() {
         assert!(OBJ_NAME_init());
@@ -307,7 +349,7 @@ mod tests {
             // SAFETY: both strings are `'static` literals, so they outlive the
             // entry. Nothing replaces, removes or cleans up these entries, so
             // the class needs no disposal callback.
-            assert!(unsafe { OBJ_NAME_add(name, class, data) });
+            assert!(unsafe { OBJ_NAME_add(name, class, payload(data)) });
         }
 
         let mut visited = Vec::new();
@@ -368,14 +410,60 @@ mod tests {
         // SAFETY: both strings are `'static` literals, so they outlive the
         // entry. The test never replaces, removes or cleans up this entry, so
         // the class needs no disposal callback.
-        assert!(unsafe { OBJ_NAME_add(c"crustify-review-name", class, c"crustify-review-data") });
+        assert!(unsafe {
+            OBJ_NAME_add(
+                c"crustify-review-name",
+                class,
+                payload(c"crustify-review-data"),
+            )
+        });
 
         let value = OBJ_NAME_get(c"crustify-review-name", class).expect("registered payload");
         // SAFETY: the entry added above is still installed, and its payload is
         // the `c"crustify-review-data"` literal — a live NUL-terminated string.
-        let payload = unsafe { CStr::from_ptr(value.cast::<core::ffi::c_char>().as_ptr()) };
-        assert_eq!(payload, c"crustify-review-data");
+        let stored = unsafe { CStr::from_ptr(value.cast::<core::ffi::c_char>().as_ptr()) };
+        assert_eq!(stored, c"crustify-review-data");
 
         assert!(OBJ_NAME_get(c"crustify-review-absent", class).is_none());
+    }
+
+    #[test]
+    fn an_alias_entry_resolves_to_the_payload_it_names() {
+        let _registry = REGISTRY.lock().unwrap_or_else(PoisonError::into_inner);
+        let class = OBJ_NAME_new_index(None, None, None).expect("object-name class");
+        // A payload that is not a C string at all: reading it as one would run
+        // past its end. This is the shape `EVP_add_cipher` registers.
+        static METHOD: [u8; 8] = [0xff; 8];
+        let method = NonNull::from(&METHOD).cast::<c_void>();
+
+        // SAFETY: `METHOD` is `'static`, so it outlives the entry, and nothing
+        // replaces, removes or cleans up these entries.
+        let stored = unsafe {
+            let value = ObjNameValue::from_raw(method);
+            OBJ_NAME_add(c"crustify-review-method", class, ObjNameData::Value(value))
+                && OBJ_NAME_add(
+                    c"crustify-review-method-alias",
+                    class,
+                    ObjNameData::Alias(c"crustify-review-method"),
+                )
+        };
+        assert!(stored);
+
+        // A lookup of the alias follows it to the aliased entry's payload, so
+        // both names report the same erased pointer.
+        for name in [c"crustify-review-method", c"crustify-review-method-alias"] {
+            let value = OBJ_NAME_get(name, class).expect("registered payload");
+            // SAFETY: the entries above are still installed and `METHOD` is
+            // the byte array both of them resolve to.
+            assert_eq!(unsafe { value.cast::<u8>() }, method.cast());
+        }
+
+        // The alias arm is only reachable through the discriminator: asking
+        // for the alias entry itself hands back its target name instead.
+        let raw = OBJ_NAME_get(c"crustify-review-method-alias", class | ALIAS_FLAG)
+            .expect("alias entry");
+        // SAFETY: an alias entry's payload is the name literal stored above.
+        let target = unsafe { CStr::from_ptr(raw.cast::<core::ffi::c_char>().as_ptr()) };
+        assert_eq!(target, c"crustify-review-method");
     }
 }
