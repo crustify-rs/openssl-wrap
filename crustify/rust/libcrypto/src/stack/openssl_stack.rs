@@ -323,6 +323,36 @@ mod tests {
         unsafe { free.expect("free callback")(value) }
     }
 
+    unsafe extern "C" fn compare_i32(left: *const c_void, right: *const c_void) -> i32 {
+        // SAFETY: the wrapper is only associated with two live shared `i32`s.
+        let (left, right) = unsafe { (*left.cast::<i32>(), *right.cast::<i32>()) };
+        left - right
+    }
+
+    #[test]
+    fn the_comparator_wrapper_calls_through_with_typed_operands() {
+        // SAFETY: `compare_i32` reads exactly the two live `i32` values it is
+        // handed, retains nothing, and cannot unwind.
+        let comparator = unsafe { OpenSslSkCompFunc::<i32>::from_raw(Some(compare_i32)) }.unwrap();
+        assert!(comparator.compare(&1, &2) < 0);
+        assert_eq!(comparator.compare(&2, &2), 0);
+        assert!(comparator.compare(&3, &2) > 0);
+        // The wrapper is `Copy`, so a comparator can be reused after a move.
+        let alias = comparator;
+        assert_eq!(alias.compare(&5, &5), 0);
+    }
+
+    #[test]
+    fn null_callbacks_are_rejected_by_every_constructor() {
+        // SAFETY: a null callback is exactly the case each constructor rejects.
+        unsafe {
+            assert!(OpenSslSkCompFunc::<i32>::from_raw(None).is_none());
+            assert!(OpenSslSkStackCompFunc::<i32>::from_raw(None).is_none());
+            assert!(OpenSslSkCopyFunc::<i32>::from_raw(None).is_none());
+            assert!(OpenSslSkFreeFunc::<i32>::from_raw(None).is_none());
+        }
+    }
+
     #[test]
     fn copy_callback_carries_its_runtime_destructor() {
         FREED.store(0, Ordering::Relaxed);

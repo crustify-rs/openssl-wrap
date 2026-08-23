@@ -2,13 +2,21 @@
 
 use core::ffi::{c_int, c_void};
 use core::slice;
-use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::any::Any;
+use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 
 use libcrypto_sys as ffi;
 
 use libc::x86_64_linux_gnu_bits_types_struct_file::IoFileMut;
 
 use super::bio_bio_local::BioMut;
+
+/// The exclusively borrowed closure plus the slot that carries a Rust panic
+/// back across the C frames instead of losing it.
+struct DumpContext<'a, F> {
+    callback: &'a mut F,
+    panic: Option<Box<dyn Any + Send>>,
+}
 
 unsafe extern "C" fn dump_trampoline<F>(
     data: *const c_void,
@@ -18,15 +26,25 @@ unsafe extern "C" fn dump_trampoline<F>(
 where
     F: FnMut(&[u8]) -> i32,
 {
+    // SAFETY: the wrapper supplies this exact context type and keeps it
+    // exclusively borrowed for the complete synchronous C traversal.
+    let context = unsafe { &mut *context.cast::<DumpContext<'_, F>>() };
+    if context.panic.is_some() {
+        return -1;
+    }
     // SAFETY: BIO invokes the callback synchronously with `len` readable bytes
-    // and the same non-null context pointer supplied by the wrapper.
-    let (bytes, callback) = unsafe {
-        (
-            slice::from_raw_parts(data.cast::<u8>(), len),
-            &mut *context.cast::<F>(),
-        )
-    };
-    catch_unwind(AssertUnwindSafe(|| callback(bytes))).unwrap_or(-1)
+    // starting at the non-null formatting buffer it owns.
+    let bytes = unsafe { slice::from_raw_parts(data.cast::<u8>(), len) };
+    let outcome = catch_unwind(AssertUnwindSafe(|| (context.callback)(bytes)));
+    match outcome {
+        Ok(written) => written,
+        Err(panic) => {
+            // A negative result stops the C loop; the panic resumes in the
+            // wrapper rather than crossing the C ABI here.
+            context.panic = Some(panic);
+            -1
+        }
+    }
 }
 
 /// Wraps: BIO_dump_cb
@@ -49,18 +67,26 @@ where
     let Ok(len) = i32::try_from(data.len()) else {
         return -1;
     };
-    // SAFETY: the byte slice remains readable and the callback context remains
+    let mut context = DumpContext {
+        callback,
+        panic: None,
+    };
+    // SAFETY: the byte slice remains readable and the context remains
     // exclusively borrowed for the synchronous duration of this call. The
     // trampoline catches Rust panics before they can cross the C ABI boundary.
-    unsafe {
+    let result = unsafe {
         ffi::BIO_dump_indent_cb(
             Some(dump_trampoline::<F>),
-            core::ptr::from_mut(callback).cast(),
+            core::ptr::from_mut(&mut context).cast(),
             data.as_ptr().cast(),
             len,
             indent,
         )
+    };
+    if let Some(panic) = context.panic {
+        resume_unwind(panic);
     }
+    result
 }
 
 /// Wraps: BIO_dump
@@ -132,6 +158,24 @@ mod tests {
         });
         assert_eq!(usize::try_from(result).unwrap(), output.len());
         assert!(output.ends_with(b"ABC\n"));
+    }
+
+    #[test]
+    fn indented_dump_prefixes_every_produced_line() {
+        let mut lines = Vec::new();
+        let result = BIO_dump_indent_cb(b"ABCDEFGHIJKLMNOPQRSTUVWXYZ", 4, &mut |line: &[u8]| {
+            lines.push(line.to_vec());
+            i32::try_from(line.len()).unwrap()
+        });
+        assert!(result > 0);
+        assert!(lines.len() > 1);
+        assert!(lines.iter().all(|line| line.starts_with(b"    ")));
+    }
+
+    #[test]
+    #[should_panic(expected = "dump callback failed")]
+    fn a_panicking_callback_resumes_in_the_caller() {
+        let _ = BIO_dump_cb(b"ABC", &mut |_: &[u8]| panic!("dump callback failed"));
     }
 
     #[test]

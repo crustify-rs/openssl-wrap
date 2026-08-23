@@ -39,12 +39,13 @@ impl Drop for BioSocket {
 }
 
 /// Wraps: BIO_closesocket
-/// Consumes and closes an OpenSSL socket immediately.
+/// Consumes and closes an OpenSSL socket immediately, reporting whether the
+/// close succeeded. The descriptor is surrendered either way.
 #[allow(non_snake_case)]
-pub fn BIO_closesocket(socket: BioSocket) -> i32 {
+pub fn BIO_closesocket(socket: BioSocket) -> bool {
     let fd = socket.into_raw_socket();
     // SAFETY: ownership of the live descriptor was consumed above.
-    unsafe { ffi::BIO_closesocket(fd) }
+    unsafe { ffi::BIO_closesocket(fd) == 1 }
 }
 
 /// Wraps: BIO_socket
@@ -93,4 +94,35 @@ pub fn BIO_connect(socket: &BioSocket, address: &BioAddrRef<'_>, options: i32) -
 pub fn BIO_listen(socket: &BioSocket, address: BioAddrRef<'_>, options: i32) -> bool {
     // SAFETY: both borrowed operands remain live for the synchronous call.
     unsafe { ffi::BIO_listen(socket.as_raw_socket(), address.as_ptr(), options) == 1 }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Linux `<sys/socket.h>` values; `BIO_socket` forwards them to `socket(2)`.
+    const AF_INET: i32 = 2;
+    const SOCK_STREAM: i32 = 1;
+
+    #[test]
+    fn a_created_socket_is_owned_and_closes_exactly_once() {
+        let socket = BIO_socket(AF_INET, SOCK_STREAM, 0, 0).expect("TCP socket");
+        assert!(socket.as_raw_socket() >= 0);
+        assert!(BIO_closesocket(socket));
+    }
+
+    #[test]
+    fn an_unsupported_domain_yields_no_owner() {
+        assert!(BIO_socket(-1, SOCK_STREAM, 0, 0).is_none());
+    }
+
+    #[test]
+    fn surrendering_the_descriptor_disarms_the_owner() {
+        let socket = BIO_socket(AF_INET, SOCK_STREAM, 0, 0).expect("TCP socket");
+        let fd = socket.into_raw_socket();
+        assert!(fd >= 0);
+        // SAFETY: `into_raw_socket` transferred the close obligation here, so
+        // this is the descriptor's single close.
+        assert_eq!(unsafe { ffi::BIO_closesocket(fd) }, 1);
+    }
 }

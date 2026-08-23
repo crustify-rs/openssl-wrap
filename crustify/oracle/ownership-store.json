@@ -3725,7 +3725,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Optional borrowed output slot. On successful accept it receives a newly allocated OpenSSL-owned NUL string; failure may write NULL."
+      "note": "Optional output slot the caller must pre-initialize, because the accept-failure paths return without writing it. A successful accept stores a newly allocated OpenSSL-owned \"host:port\" NUL string that the caller must free; if that allocation fails the slot is set to NULL, the accepted socket is closed and the result becomes INVALID_SOCKET."
      }
     }
    ]
@@ -10817,7 +10817,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Borrowed type-erased first element, valid only for the callback invocation."
+      "note": "Borrowed type-erased first comparison operand, valid only for the invocation. Two distributions share this typedef and the pointee is fixed by the registering call, never by the typedef: OPENSSL_STACK (sk_new/sk_set_cmp_func/sk_find) passes a pointer to the element POINTER slot (const T *const *), while OBJ_bsearch_/OBJ_bsearch_ex_/ossl_bsearch pass a pointer to the search KEY itself, which need not have the element's type."
      }
     },
     {
@@ -10834,7 +10834,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Borrowed type-erased second element, valid only for the callback invocation."
+      "note": "Borrowed type-erased second comparison operand, valid only for the invocation. Matching the first operand's distribution: a pointer to the element POINTER slot under OPENSSL_STACK, or a pointer to one element of the sorted base array under OBJ_bsearch_/OBJ_bsearch_ex_/ossl_bsearch."
      }
     }
    ]

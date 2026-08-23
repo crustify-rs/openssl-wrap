@@ -1,6 +1,6 @@
 //! Wrappers assigned from `crypto/asn1/a_strnid.c`.
 
-use core::ffi::CStr;
+use core::ffi::{CStr, c_long, c_ulong};
 
 use libcrypto_sys as ffi;
 
@@ -12,10 +12,10 @@ use super::openssl_asn1::Asn1StringTableRef;
 #[allow(non_snake_case)]
 pub fn ASN1_STRING_TABLE_add(
     nid: i32,
-    min_size: i64,
-    max_size: i64,
-    mask: u64,
-    flags: u64,
+    min_size: c_long,
+    max_size: c_long,
+    mask: c_ulong,
+    flags: c_ulong,
 ) -> bool {
     // SAFETY: this call has only by-value scalar arguments.
     unsafe { ffi::ASN1_STRING_TABLE_add(nid, min_size, max_size, mask, flags) == 1 }
@@ -24,14 +24,14 @@ pub fn ASN1_STRING_TABLE_add(
 /// Wraps: ASN1_STRING_get_default_mask
 #[must_use]
 #[allow(non_snake_case)]
-pub fn ASN1_STRING_get_default_mask() -> u64 {
+pub fn ASN1_STRING_get_default_mask() -> c_ulong {
     // SAFETY: the getter has no caller-side memory obligations.
     unsafe { ffi::ASN1_STRING_get_default_mask() }
 }
 
 /// Wraps: ASN1_STRING_set_default_mask
 #[allow(non_snake_case)]
-pub fn ASN1_STRING_set_default_mask(mask: u64) {
+pub fn ASN1_STRING_set_default_mask(mask: c_ulong) {
     // SAFETY: the setter has only a by-value scalar argument.
     unsafe { ffi::ASN1_STRING_set_default_mask(mask) }
 }
@@ -45,12 +45,18 @@ pub fn ASN1_STRING_set_default_mask_asc(value: &CStr) -> bool {
     unsafe { ffi::ASN1_STRING_set_default_mask_asc(value.as_ptr()) == 1 }
 }
 
+/// OpenSSL sorts and mutates the process-global ASN.1 string table without
+/// holding a lock, so every test that reaches it runs one at a time.
+#[cfg(test)]
+static STRING_TABLE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn mask_round_trips_and_ascii_presets_are_checked() {
+        let _guard = STRING_TABLE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let saved = ASN1_STRING_get_default_mask();
         ASN1_STRING_set_default_mask(0x1234);
         assert_eq!(ASN1_STRING_get_default_mask(), 0x1234);
@@ -61,10 +67,37 @@ mod tests {
 
     #[test]
     fn table_lookup_returns_a_detached_scalar_snapshot() {
+        let _guard = STRING_TABLE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let nid = crate::objects::obj_dat::OBJ_sn2nid(c"CN");
         let values = ASN1_STRING_TABLE_get(nid).expect("commonName table entry");
         assert_eq!(values.nid, nid);
         assert!(values.max_size >= values.min_size);
+    }
+
+    #[test]
+    fn added_constraints_are_visible_and_invalid_ranges_are_rejected() {
+        /// `B_ASN1_UTF8STRING` from `<openssl/asn1.h>`.
+        const MASK: c_ulong = 0x2000;
+
+        let _guard = STRING_TABLE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+        let nid = crate::objects::obj_dat::OBJ_create(
+            Some(c"1.3.6.1.4.1.57264.9002"),
+            Some(c"crustifyStringTable"),
+            Some(c"crustify string table entry"),
+        );
+        assert_ne!(nid, 0);
+
+        assert!(ASN1_STRING_TABLE_add(nid, 2, 8, MASK, 0));
+        let values = ASN1_STRING_TABLE_get(nid).expect("added table entry");
+        assert_eq!(values.nid, nid);
+        assert_eq!(values.min_size, 2);
+        assert_eq!(values.max_size, 8);
+        assert_eq!(values.mask, MASK);
+
+        // A non-positive NID and an inverted size range are both refused.
+        assert!(!ASN1_STRING_TABLE_add(0, 1, 2, MASK, 0));
+        assert!(!ASN1_STRING_TABLE_add(nid, 9, 8, MASK, 0));
+        assert_eq!(ASN1_STRING_TABLE_get(nid).map(|v| v.max_size), Some(8));
     }
 }
 
@@ -72,10 +105,10 @@ mod tests {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Asn1StringTableValues {
     pub nid: i32,
-    pub min_size: core::ffi::c_long,
-    pub max_size: core::ffi::c_long,
-    pub mask: core::ffi::c_ulong,
-    pub flags: core::ffi::c_ulong,
+    pub min_size: c_long,
+    pub max_size: c_long,
+    pub mask: c_ulong,
+    pub flags: c_ulong,
 }
 
 /// Wraps: ASN1_STRING_TABLE_cleanup
@@ -164,6 +197,7 @@ mod set_by_nid_tests {
 
     #[test]
     fn creates_and_reuses_constrained_strings() {
+        let _guard = STRING_TABLE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
         let nid = crate::objects::obj_dat::OBJ_sn2nid(c"CN");
         let mut string = ASN1_STRING_set_by_NID(b"example", ffi::MBSTRING_ASC as i32, nid)
             .expect("constrained common name");

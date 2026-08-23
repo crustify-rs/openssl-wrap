@@ -306,6 +306,51 @@ mod tests {
     }
 
     #[test]
+    fn bsearch_ex_can_report_the_element_the_search_stopped_at() {
+        /// `OBJ_BSEARCH_VALUE_ON_NOMATCH` from `<openssl/objects.h>`.
+        const VALUE_ON_NOMATCH: i32 = 0x01;
+
+        // SAFETY: `compare_i32` reads two live `i32` values and does not retain them.
+        let comparator = unsafe { OpenSslSkCompFunc::from_raw(Some(compare_i32)) }.unwrap();
+        let values = [1, 3, 5, 7];
+        assert_eq!(OBJ_bsearch_ex_(&5, &values, comparator, 0), Some(&5));
+        assert_eq!(OBJ_bsearch_ex_(&4, &values, comparator, 0), None);
+        // The result stays inside the borrowed slice even without a match.
+        assert_eq!(
+            OBJ_bsearch_ex_(&4, &values, comparator, VALUE_ON_NOMATCH),
+            Some(&3)
+        );
+    }
+
+    #[test]
+    fn a_dynamic_object_is_reachable_by_both_of_its_names() {
+        let nid = OBJ_create(
+            Some(c"1.3.6.1.4.1.57264.9001"),
+            Some(c"crustifyReview"),
+            Some(c"crustify review object"),
+        );
+        assert_ne!(nid, 0);
+        assert_eq!(OBJ_sn2nid(c"crustifyReview"), nid);
+        assert_eq!(OBJ_ln2nid(c"crustify review object"), nid);
+        assert_eq!(OBJ_nid2sn(nid).unwrap().as_c_str(), c"crustifyReview");
+        assert_eq!(
+            OBJ_nid2ln(nid).unwrap().as_c_str(),
+            c"crustify review object"
+        );
+        // Re-registering the same names is refused rather than duplicated.
+        assert_eq!(OBJ_create(None, Some(c"crustifyReview"), None), 0);
+    }
+
+    #[test]
+    fn new_nid_hands_out_strictly_increasing_identifiers() {
+        let first = OBJ_new_nid(1);
+        let second = OBJ_new_nid(2);
+        assert!(first > 0);
+        assert!(second > first);
+        assert!(OBJ_new_nid(1) > second);
+    }
+
+    #[test]
     fn nid_names_are_copied() {
         let common_name = OBJ_sn2nid(c"CN");
         assert_ne!(common_name, 0);

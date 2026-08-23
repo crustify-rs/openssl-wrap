@@ -56,5 +56,11 @@ mod scheduled_tests {
         let digest = OBJ_txt2nid(c"SHA256");
         let public_key = OBJ_txt2nid(c"rsaEncryption");
         assert_eq!(OBJ_find_sigid_by_algs(digest, public_key), Some(signature));
+        assert_eq!(OBJ_find_sigid_algs(signature), Some((digest, public_key)));
+    }
+
+    #[test]
+    fn an_unregistered_signature_nid_has_no_algorithms() {
+        assert_eq!(OBJ_find_sigid_algs(0), None);
     }
 }

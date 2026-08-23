@@ -1,5 +1,7 @@
 //! Wrappers assigned from `crypto/bio/bio_sock.c`.
 
+use core::ffi::c_long;
+
 use libcrypto_sys as ffi;
 
 use super::bio_sock2::BioSocket;
@@ -38,7 +40,7 @@ pub fn BIO_sock_init() -> bool {
 /// `request` must designate an operation whose argument is a live `T`, with
 /// the exact size, alignment, initialization, and access mode supplied here.
 #[allow(non_snake_case)]
-pub unsafe fn BIO_socket_ioctl<T>(socket: &BioSocket, request: i64, argument: &mut T) -> i32 {
+pub unsafe fn BIO_socket_ioctl<T>(socket: &BioSocket, request: c_long, argument: &mut T) -> i32 {
     // SAFETY: the caller establishes the request-to-`T` contract; the socket
     // owner and mutable reference keep both operands live for this call.
     unsafe {
@@ -59,10 +61,12 @@ pub fn BIO_socket_nbio(socket: &BioSocket, enabled: bool) -> bool {
 }
 
 /// Wraps: BIO_socket_wait
-/// Waits until `deadline` (an absolute Unix `time_t` value).
+/// Waits until `deadline`, an absolute `time_t`. A `0` deadline means "do not
+/// wait" and reports readiness immediately; a deadline already in the past
+/// reports `0`.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn BIO_socket_wait(socket: &BioSocket, for_read: bool, deadline: i64) -> i32 {
+pub fn BIO_socket_wait(socket: &BioSocket, for_read: bool, deadline: ffi::time_t) -> i32 {
     // SAFETY: the borrowed owner keeps the socket open; the remaining values are scalars.
     unsafe { ffi::BIO_socket_wait(socket.as_raw_socket(), i32::from(for_read), deadline) }
 }
@@ -83,5 +87,51 @@ pub fn BIO_sock_info(socket: &BioSocket, address: &mut BioAddrMut<'_>) -> bool {
             BioSockInfoType::ADDRESS.as_raw(),
             &mut info,
         ) == 1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::net::TcpListener;
+    use std::os::fd::IntoRawFd;
+
+    use super::*;
+
+    /// Linux `FIONBIO` from `<asm-generic/ioctls.h>`; the request
+    /// `BIO_socket_nbio` itself forwards to `BIO_socket_ioctl`.
+    const FIONBIO: c_long = 0x5421;
+
+    fn loopback_listener() -> BioSocket {
+        let listener = TcpListener::bind("127.0.0.1:0").expect("loopback listener");
+        BioSocket::from_result(listener.into_raw_fd()).expect("owned listening socket")
+    }
+
+    #[test]
+    fn socket_options_apply_to_a_live_listener() {
+        assert!(BIO_sock_init());
+        let socket = loopback_listener();
+        assert_eq!(BIO_sock_error(&socket), 0);
+        assert!(BIO_socket_nbio(&socket, true));
+        assert!(BIO_set_tcp_ndelay(&socket, true));
+        assert!(BIO_socket_nbio(&socket, false));
+    }
+
+    #[test]
+    fn ioctl_passes_a_typed_in_out_argument() {
+        let socket = loopback_listener();
+        let mut enable: i32 = 1;
+        // SAFETY: `FIONBIO` takes a live writable `int`, which is exactly what
+        // this argument supplies for the duration of the call.
+        assert_eq!(unsafe { BIO_socket_ioctl(&socket, FIONBIO, &mut enable) }, 0);
+        let mut disable: i32 = 0;
+        // SAFETY: as above.
+        assert_eq!(unsafe { BIO_socket_ioctl(&socket, FIONBIO, &mut disable) }, 0);
+    }
+
+    #[test]
+    fn wait_separates_an_absent_deadline_from_an_expired_one() {
+        let socket = loopback_listener();
+        assert_eq!(BIO_socket_wait(&socket, true, 0), 1);
+        assert_eq!(BIO_socket_wait(&socket, true, 1), 0);
     }
 }

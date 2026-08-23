@@ -43,3 +43,20 @@ pub fn BIO_s_datagram() -> Option<BioMethodRef<'static>> {
     // process-lifetime borrow `static_bio_method` requires.
     unsafe { static_bio_method(ffi::BIO_s_datagram()) }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Linux errno values: `EAGAIN`/`EWOULDBLOCK` is one of the codes the
+    /// classifier accepts, `EBADF` is not.
+    const EAGAIN: i32 = 11;
+    const EBADF: i32 = 9;
+
+    #[test]
+    fn only_the_recoverable_datagram_errnos_are_non_fatal() {
+        assert!(BIO_dgram_non_fatal_error(EAGAIN));
+        assert!(!BIO_dgram_non_fatal_error(EBADF));
+        assert!(!BIO_dgram_non_fatal_error(0));
+    }
+}

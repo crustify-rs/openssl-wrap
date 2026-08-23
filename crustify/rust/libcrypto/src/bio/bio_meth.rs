@@ -397,6 +397,14 @@ mod tests {
     }
 
     #[test]
+    fn new_type_indices_are_distinct_and_increasing() {
+        let first = BIO_get_new_index();
+        let second = BIO_get_new_index();
+        assert!(first > 0);
+        assert!(second > first);
+    }
+
+    #[test]
     fn callback_slots_accept_explicit_absence() {
         let mut method = BIO_meth_new(74, c"empty callbacks").expect("BIO_meth_new");
         assert!(BIO_meth_set_write(method.as_mut(), None));

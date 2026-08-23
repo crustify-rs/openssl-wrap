@@ -51,3 +51,27 @@ pub fn BIO_s_fd() -> Option<BioMethodRef<'static>> {
     // process-lifetime borrow `static_bio_method` requires.
     unsafe { static_bio_method(ffi::BIO_s_fd()) }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Linux errno values: `EAGAIN`/`EWOULDBLOCK` is one of the codes the
+    /// classifier accepts, `EBADF` is not.
+    const EAGAIN: i32 = 11;
+    const EBADF: i32 = 9;
+
+    #[test]
+    fn only_the_recoverable_descriptor_errnos_are_non_fatal() {
+        assert!(BIO_fd_non_fatal_error(EAGAIN));
+        assert!(!BIO_fd_non_fatal_error(EBADF));
+        assert!(!BIO_fd_non_fatal_error(0));
+    }
+
+    #[test]
+    fn a_successful_result_never_asks_for_a_retry() {
+        // Only 0 and -1 consult errno; any other result is a completed operation.
+        assert!(!BIO_fd_should_retry(1));
+        assert!(!BIO_fd_should_retry(42));
+    }
+}

@@ -728,6 +728,21 @@ mod scheduled_tests {
     }
 
     #[test]
+    fn non_fatal_classification_reads_the_packed_system_errno() {
+        /// `ERR_SYSTEM_FLAG` from `<openssl/err.h>`: the bit marking a packed
+        /// code whose reason is a raw system errno.
+        const ERR_SYSTEM_FLAG: u32 = 0x8000_0000;
+        /// Linux `EAGAIN`, which `BIO_sock_non_fatal_error` accepts, and
+        /// `EBADF`, which it does not.
+        const EAGAIN: u32 = 11;
+        const EBADF: u32 = 9;
+
+        assert!(BIO_err_is_non_fatal(ERR_SYSTEM_FLAG | EAGAIN));
+        assert!(!BIO_err_is_non_fatal(ERR_SYSTEM_FLAG | EBADF));
+        assert!(!BIO_err_is_non_fatal(0));
+    }
+
+    #[test]
     fn extended_callback_slot_round_trips_absence() {
         let mut bio = null_bio();
         BIO_set_callback_ex(&mut bio.as_mut(), None);

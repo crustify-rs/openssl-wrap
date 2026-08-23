@@ -93,7 +93,9 @@ impl<'a> ObjNameValue<'a> {
 }
 
 /// Wraps: OBJ_NAME_get
-/// Looks up an opaque payload. The borrow prevents treating it as owned data.
+/// Looks up an opaque payload. The borrow only prevents treating the result as
+/// owned data; it does not track how long the registry entry stays installed,
+/// which is the obligation [`ObjNameValue::cast`] states.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn OBJ_NAME_get(name: &CStr, type_id: i32) -> Option<ObjNameValue<'_>> {
@@ -202,6 +204,10 @@ where
 /// `name` and `data` are stored without copying. They must remain live and
 /// immutable until this entry is removed or its class is cleaned up, and they
 /// must satisfy the registered class disposal callback's ownership contract.
+///
+/// Replacing an existing entry invokes the class disposal callback, which
+/// OpenSSL calls without a null check. When this call replaces an entry, the
+/// class must therefore have been created with a disposal callback.
 #[must_use]
 #[allow(non_snake_case)]
 pub unsafe fn OBJ_NAME_add(name: &CStr, type_id: i32, data: &CStr) -> bool {
@@ -215,6 +221,10 @@ pub unsafe fn OBJ_NAME_add(name: &CStr, type_id: i32, data: &CStr) -> bool {
 /// # Safety
 /// No C or Rust code may concurrently traverse or use entries in the selected
 /// class. A negative class tears down the complete process-global registry.
+///
+/// Cleanup removes every selected entry, and OpenSSL invokes each entry's
+/// class disposal callback without a null check, so every class reached here
+/// must have been created with one.
 #[allow(non_snake_case)]
 pub unsafe fn OBJ_NAME_cleanup(type_id: i32) {
     // SAFETY: the caller excludes all registry users invalidated by cleanup.
@@ -223,6 +233,13 @@ pub unsafe fn OBJ_NAME_cleanup(type_id: i32) {
 
 /// Wraps: OBJ_NAME_new_index
 /// Allocates a new object-name class and installs optional static callbacks.
+///
+/// Passing `free = None` leaves the class without a disposal callback. OpenSSL
+/// calls that callback unconditionally when an entry of the class is replaced
+/// or removed, so a class created this way must never reach
+/// [`OBJ_NAME_add`]'s replacement path, [`OBJ_NAME_remove`], or
+/// [`OBJ_NAME_cleanup`]. Creating any class also extends the callback table
+/// over the built-in classes, which have no disposer either.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn OBJ_NAME_new_index(
@@ -242,10 +259,48 @@ pub fn OBJ_NAME_new_index(
 }
 
 /// Wraps: OBJ_NAME_remove
+///
+/// # Safety
+/// When an entry is found, OpenSSL calls the class disposal callback without
+/// checking it for null, so `type_id` must name a class created with one. The
+/// built-in classes and any class created through [`OBJ_NAME_new_index`] with
+/// `free = None` have no disposer, and removing an entry from those calls a
+/// null function pointer.
+///
+/// The disposal callback also runs against the stored `name`/`data` pointers,
+/// so it must own exactly what [`OBJ_NAME_add`] recorded for this entry.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn OBJ_NAME_remove(name: &CStr, type_id: i32) -> bool {
-    // SAFETY: the string is live for the lookup; OpenSSL synchronizes removal
-    // and invokes any registered static disposer before returning.
+pub unsafe fn OBJ_NAME_remove(name: &CStr, type_id: i32) -> bool {
+    // SAFETY: the string is live for the lookup; the caller guarantees the
+    // class has a disposal callback matching the entry's stored pointers.
     unsafe { ffi::OBJ_NAME_remove(name.as_ptr(), type_id) == 1 }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn initialization_is_idempotent() {
+        assert!(OBJ_NAME_init());
+        assert!(OBJ_NAME_init());
+    }
+
+    #[test]
+    fn lookups_return_the_registered_opaque_payload() {
+        let class = OBJ_NAME_new_index(None, None, None).expect("object-name class");
+        // SAFETY: both strings are `'static` literals, so they outlive the
+        // entry. The test never replaces, removes or cleans up this entry, so
+        // the class needs no disposal callback.
+        assert!(unsafe { OBJ_NAME_add(c"crustify-review-name", class, c"crustify-review-data") });
+
+        let value = OBJ_NAME_get(c"crustify-review-name", class).expect("registered payload");
+        // SAFETY: the entry added above is still installed, and its payload is
+        // the `c"crustify-review-data"` literal — a live NUL-terminated string.
+        let payload = unsafe { CStr::from_ptr(value.cast::<core::ffi::c_char>().as_ptr()) };
+        assert_eq!(payload, c"crustify-review-data");
+
+        assert!(OBJ_NAME_get(c"crustify-review-absent", class).is_none());
+    }
 }
