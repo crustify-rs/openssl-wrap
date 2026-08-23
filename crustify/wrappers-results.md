@@ -76,6 +76,28 @@ the campaign's.
   serial-sum multiple. A Σ row sums the columns it can and carries the same
   longest-agent reading for `wall`
 
+## Overview
+
+Every recorded campaign/session, including work later superseded. `API-equiv`
+prices the recorded token classes at provider API rates; `billed API` is zero
+for subscription-authenticated Claude runs. The orchestrator row is live at the
+report checkpoint and is not part of `crustify-log-cost`'s agent total.
+
+| campaign | objective | model | billing | agents | session wall | status | API-equiv | billed API |
+|---|---|---|---|---|---|---|---|---|
+| `00-lifetime-void` | raw lifetime | `openai/gpt-5.6-sol` | API | `1` | `24m20s` | landed | `$7.94` | `$7.94` |
+| `01-lifetime-string` | raw lifetime | `openai/gpt-5.6-sol` | API | `1` | `15m05s` | landed | `$5.69` | `$5.69` |
+| `02-review-void` | review | `openai/gpt-5.5` | API | `4` | `25m18s` | superseded | `$10.79` | `$10.79` |
+| `03-review-string` | review | `openai/gpt-5.5` | API | unmetered | unmetered | superseded | — | — |
+| `04-review-lifetimes` | review | `anthropic/claude-opus-5` | subscription | `4` | `47m01s` | landed | `$18.82` | `$0.00` |
+| `10-foundation` | wrap | `openai/gpt-5.6-sol` | API | `43` | `2h45m09s` | mixed landed/superseded | `$241.75` | `$241.75` |
+| `11-foundation-audit` | corrective wrap | `openai/gpt-5.6-sol` | API | `1` | `5m42s` | landed | `$2.59` | `$2.59` |
+| `20-review-foundation` | review | `anthropic/claude-opus-5` | subscription | `25` | `2h03m21s` | landed | `$217.23` | `$0.00` |
+| `ub-20260823-025523` | UB audit | `anthropic/claude-opus-5` | subscription | `1` | `56m04s` | five advisories under triage | `$43.48` | `$0.00` |
+| orchestrator | orchestration | `openai/gpt-5.6-sol` | API | `1` | live | live | `$77.52` | `$77.52` |
+| **Σ recorded agents** | | | | **`79` + UB** | | | **`$548.29`** | **`$268.76`** |
+| **Σ including orchestrator** | | | | | | | **`$625.81`** | **`$346.28`** |
+
 ## Raw lifetime discovery
 
 Goal: turn the untyped lifecycle primitives into Rust lifetime contracts before
@@ -143,6 +165,29 @@ bottom-up by DAG layer, then the symbols over them.
 | `2` | `crypto_ex_data_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
 | `3` | `asn1_string_st` | struct | `4` | `4` | `1` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
 | **Σ `42`** | | | **`205`** | **`144`** | **`76`** | **`58`** | **`44`** | **`$126.91`** | | **`4,189`** | **`$130.58`** | | **`+3,602/-464`** | **`42`/`42` reviewed** |
+
+### Batches — type review
+
+| session | batch | units | rv loc | rv $ | rv wall | $/type |
+|---|---|---|---|---|---|---|
+| `2026-08-23_00-42-36_ea63` | `review-type_ASN1_TEMPLATE_st` | `6` types | `+115/-27` | `$9.94` | `20m22s` | `$1.66` |
+| `2026-08-23_00-42-36_ea63` | `review-type__IO_FILE` | `1` type | `+52/-4` | `$4.67` | `13m38s` | `$4.67` |
+| `2026-08-23_00-42-36_ea63` | `review-type_addrinfo` | `2` types | `+370/-0` | `$7.13` | `20m05s` | `$3.57` |
+| `2026-08-23_00-42-36_ea63` | `review-type_bio_addr_st` | `1` type | `+167/-7` | `$6.61` | `18m45s` | `$6.61` |
+| `2026-08-23_00-42-36_ea63` | `review-type_bio_method_st` | `1` type | `+118/-36` | `$8.22` | `16m30s` | `$8.22` |
+| `2026-08-23_00-42-36_ea63` | `review-type_bio_st` | `1` type | `+61/-6` | `$4.83` | `9m56s` | `$4.83` |
+| `2026-08-23_00-42-36_ea63` | `review-type_hostent` | `3` types | `+293/-35` | `$7.35` | `19m39s` | `$2.45` |
+| `2026-08-23_00-42-36_ea63` | `review-type_lhash_st` | `1` type | `+122/-3` | `$6.19` | `14m03s` | `$6.19` |
+| `2026-08-23_00-42-36_ea63` | `review-type_obj_name_st` | `2` types | `+306/-37` | `$8.21` | `18m21s` | `$4.10` |
+| `2026-08-23_00-42-36_ea63` | `review-type_ossl_lib_ctx_st` | `1` type | `+134/-10` | `$7.54` | `18m16s` | `$7.54` |
+| `2026-08-23_00-42-36_ea63` | `review-type_stack_st` | `1` type | `+121/-0` | `$5.40` | `15m17s` | `$5.40` |
+| `2026-08-23_00-42-36_ea63` | `review-type_ASN1_ITEM_st` | `3` types | `+269/-28` | `$11.75` | `21m27s` | `$3.92` |
+| `2026-08-23_00-42-36_ea63` | `review-type_bignum_st` | `2` types | `+329/-140` | `$8.81` | `19m10s` | `$4.40` |
+| `2026-08-23_00-42-36_ea63` | `review-type_bio_poll_descriptor_st` | `6` types | `+540/-74` | `$13.62` | `20m54s` | `$2.27` |
+| `2026-08-23_00-42-36_ea63` | `review-type_asn1_type_st` | `1` type | `+158/-30` | `$5.22` | `12m17s` | `$5.22` |
+| `2026-08-23_00-42-36_ea63` | `review-type_crypto_ex_data_st` | `1` type | `+311/-20` | `$7.88` | `20m00s` | `$7.88` |
+| `2026-08-23_00-42-36_ea63` | `review-type_asn1_string_st` | `1` type | `+136/-7` | `$7.21` | `18m58s` | `$7.21` |
+| **Σ** | **`17` agents** | **`42` types** | **`+3,602/-464`** | **`$130.58`** | **`21m27s`** (longest; `4h57m46s` serial, `13.9`x) | **`$3.11`** |
 
 ### Batches — types
 
@@ -436,6 +481,21 @@ bottom-up by DAG layer, then the symbols over them.
 | `4` | `ASN1_STRING_type` | function | `0` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
 | `4` | `ASN1_STRING_type_new` | function | `22` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
 | **Σ `277`** | | | **`5,734`** | | **`277`** | **`9` batches** | **`8` batches** | **`277`/`277` reviewed** |
+
+### Batches — symbol review
+
+| session | batch | units | rv loc | rv $ | rv wall | $/symbol |
+|---|---|---|---|---|---|---|
+| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_STRING_TABLE_add` | `39` symbols | `+417/-33` | `$9.44` | `17m34s` | `$0.24` |
+| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_ADDRINFO_address` | `50` symbols | `+655/-28` | `$20.31` | `33m38s` | `$0.41` |
+| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_get_ex_data` | `50` symbols | `+148/-26` | `$11.22` | `20m48s` | `$0.22` |
+| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_new_mem_buf` | `50` symbols | `+150/-18` | `$8.91` | `19m28s` | `$0.18` |
+| `2026-08-23_00-42-36_ea63` | `review-symbol_OBJ_NAME_do_all` | `32` symbols | `+589/-41` | `$14.38` | `28m31s` | `$0.45` |
+| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_OBJECT_create` | `41` symbols | `+155/-18` | `$10.16` | `18m10s` | `$0.25` |
+| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_dup_chain` | `1` symbol | `+79/-6` | `$3.86` | `10m10s` | `$3.86` |
+| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_STRING_clear_free` | `22` symbols | `+233/-7` | `$8.36` | `16m25s` | `$0.38` |
+| **Σ** | **`8` agents** | **`277` symbols** | **`+2,426/-177`** | **`$86.65`** | **`33m38s`** (longest; `2h44m47s` serial, `4.9`x) | **`$0.31`** |
+
 ### Batches — symbols
 
 | DAG layer | units | loc | $ | wall | $/unit | $/loc |
@@ -446,41 +506,6 @@ bottom-up by DAG layer, then the symbols over them.
 | `3` | `1` | `108` | `$3.50` | `6m15s` (`1.0`x) | `$3.50` | `$0.032` |
 | `4` | `22` | `590` | `$7.77` | `26m17s` (`1.0`x) | `$0.35` | `$0.013` |
 | **Σ** | **`287` submissions (`285` unique)** | **`6,418`** | **`$91.82`** | **`2h39m45s`** (`1.3`x, session wall) | **`$0.32`** | **`$0.014`** |
-### Batches — review
-
-One agent per judged batch, same split as the wave it judges. `rv loc` is the
-net `.rs` delta of the landing commit; a review that confirms without changing
-code reads `+0/-0`.
-
-| session | batch | units | rv loc | rv $ | rv wall | $/symbol | $/type |
-|---|---|---|---|---|---|---|---|
-| `2026-08-23_00-42-36_ea63` | `review-type_ASN1_TEMPLATE_st` | `6` types | `+115/-27` | `$9.94` | `20m22s` | — | `$1.66` |
-| `2026-08-23_00-42-36_ea63` | `review-type__IO_FILE` | `1` types | `+52/-4` | `$4.67` | `13m38s` | — | `$4.67` |
-| `2026-08-23_00-42-36_ea63` | `review-type_addrinfo` | `2` types | `+370/-0` | `$7.13` | `20m05s` | — | `$3.57` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_addr_st` | `1` types | `+167/-7` | `$6.61` | `18m45s` | — | `$6.61` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_method_st` | `1` types | `+118/-36` | `$8.22` | `16m30s` | — | `$8.22` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_st` | `1` types | `+61/-6` | `$4.83` | `9m56s` | — | `$4.83` |
-| `2026-08-23_00-42-36_ea63` | `review-type_hostent` | `3` types | `+293/-35` | `$7.35` | `19m39s` | — | `$2.45` |
-| `2026-08-23_00-42-36_ea63` | `review-type_lhash_st` | `1` types | `+122/-3` | `$6.19` | `14m03s` | — | `$6.19` |
-| `2026-08-23_00-42-36_ea63` | `review-type_obj_name_st` | `2` types | `+306/-37` | `$8.21` | `18m21s` | — | `$4.10` |
-| `2026-08-23_00-42-36_ea63` | `review-type_ossl_lib_ctx_st` | `1` types | `+134/-10` | `$7.54` | `18m16s` | — | `$7.54` |
-| `2026-08-23_00-42-36_ea63` | `review-type_stack_st` | `1` types | `+121/-0` | `$5.40` | `15m17s` | — | `$5.40` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_STRING_TABLE_add` | `39` symbols | `+417/-33` | `$9.44` | `17m34s` | `$0.24` | — |
-| `2026-08-23_00-42-36_ea63` | `review-type_ASN1_ITEM_st` | `3` types | `+269/-28` | `$11.75` | `21m27s` | — | `$3.92` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bignum_st` | `2` types | `+329/-140` | `$8.81` | `19m10s` | — | `$4.40` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_poll_descriptor_st` | `6` types | `+540/-74` | `$13.62` | `20m54s` | — | `$2.27` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_ADDRINFO_address` | `50` symbols | `+655/-28` | `$20.31` | `33m38s` | `$0.41` | — |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_get_ex_data` | `50` symbols | `+148/-26` | `$11.22` | `20m48s` | `$0.22` | — |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_new_mem_buf` | `50` symbols | `+150/-18` | `$8.91` | `19m28s` | `$0.18` | — |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_OBJ_NAME_do_all` | `32` symbols | `+589/-41` | `$14.38` | `28m31s` | `$0.45` | — |
-| `2026-08-23_00-42-36_ea63` | `review-type_asn1_type_st` | `1` types | `+158/-30` | `$5.22` | `12m17s` | — | `$5.22` |
-| `2026-08-23_00-42-36_ea63` | `review-type_crypto_ex_data_st` | `1` types | `+311/-20` | `$7.88` | `20m00s` | — | `$7.88` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_OBJECT_create` | `41` symbols | `+155/-18` | `$10.16` | `18m10s` | `$0.25` | — |
-| `2026-08-23_00-42-36_ea63` | `review-type_asn1_string_st` | `1` types | `+136/-7` | `$7.21` | `18m58s` | — | `$7.21` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_dup_chain` | `1` symbols | `+79/-6` | `$3.86` | `10m10s` | `$3.86` | — |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_STRING_clear_free` | `22` symbols | `+233/-7` | `$8.36` | `16m25s` | `$0.38` | — |
-| **Σ** | **`25` agents** | **`42` types · `277` symbols** | **`+6,028/-641`** | **`$217.23`** | **`33m38s`** (longest; `7h42m34s` serial, `3.7`x) | **`$0.31`** | **`$3.84`** |
-
 ## Safety audit
 
 `crustify-audit <crate> unsafe`, unseeded — tree-wide, not
