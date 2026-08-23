@@ -2954,7 +2954,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Resets one non-null address in place without releasing its storage."
+      "note": "Resets one non-null address in place. bio_addr_st is a union of by-value sockaddr variants with no owned field storage, so this memset plus AF_UNSPEC frees nothing and is a plain mutator, not a field disposer."
      }
     }
    ]

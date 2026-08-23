@@ -385,6 +385,9 @@ const AGENT_ALLOWED_VARS: &[&str] = &[
     "BIO_SOCK_INFO_ADDRESS",
     "BIO_CLOSE",
     "BIO_NOCLOSE",
+    "AF_INET",
+    "AF_INET6",
+    "AF_UNIX",
 ];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end
