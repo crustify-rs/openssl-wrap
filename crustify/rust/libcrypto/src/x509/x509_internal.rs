@@ -3,6 +3,8 @@
 use ffibox::{define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
+use crate::stack::stack::{Stack, StackMut, StackRef};
+
 define_ctype!(
     /// Wraps: X509_name_st
     ///
@@ -219,5 +221,144 @@ mod x509_name_entry_tests {
             size_of::<CBox<X509NameEntry>>(),
             size_of::<*mut ffi::X509_name_entry_st>()
         );
+    }
+}
+
+/// Opaque element marker for the `DIST_POINT` records stored in a CRL
+/// distribution-point stack.
+///
+/// The element layout has not yet been wrapped, so this unconstructible marker
+/// retains the generated stack's element type without exposing or
+/// dereferencing it. The plain stack owns only its pointer array; callers that
+/// transfer ownership of the distribution points must select the generic
+/// stack's pop-free policy explicitly.
+#[repr(C)]
+pub struct DistPoint {
+    _opaque: [u8; 0],
+}
+
+/// Wraps: stack_st_DIST_POINT
+///
+/// Typed view of OpenSSL's `STACK_OF(DIST_POINT)`, also published as
+/// `CRL_DIST_POINTS`. The generated C tag is only a forward declaration and
+/// every stack operation erases it to `OPENSSL_STACK *`, so this alias retains
+/// the element type while using the common generic container representation.
+pub type DistPointStack = Stack<DistPoint>;
+
+/// Shared borrowed handle to a `STACK_OF(DIST_POINT)`.
+pub type DistPointStackRef<'a> = StackRef<'a, DistPoint>;
+
+/// Exclusive borrowed handle to a `STACK_OF(DIST_POINT)`.
+pub type DistPointStackMut<'a> = StackMut<'a, DistPoint>;
+
+/// Opaque element marker for the `GENERAL_NAME` records stored in a general
+/// names stack.
+///
+/// The element layout has not yet been wrapped, so this unconstructible marker
+/// retains the generated stack's element type without exposing or
+/// dereferencing it. The plain stack owns only its pointer array; callers that
+/// transfer ownership of the names must select the generic stack's pop-free
+/// policy explicitly.
+#[repr(C)]
+pub struct GeneralName {
+    _opaque: [u8; 0],
+}
+
+/// Wraps: stack_st_GENERAL_NAME
+///
+/// Typed view of OpenSSL's `STACK_OF(GENERAL_NAME)`, also published as
+/// `GENERAL_NAMES`. The generated C tag is only a forward declaration and
+/// every stack operation erases it to `OPENSSL_STACK *`, so this alias retains
+/// the element type while using the common generic container representation.
+pub type GeneralNameStack = Stack<GeneralName>;
+
+/// Shared borrowed handle to a `STACK_OF(GENERAL_NAME)`.
+pub type GeneralNameStackRef<'a> = StackRef<'a, GeneralName>;
+
+/// Exclusive borrowed handle to a `STACK_OF(GENERAL_NAME)`.
+pub type GeneralNameStackMut<'a> = StackMut<'a, GeneralName>;
+
+#[cfg(test)]
+mod generated_x509_stack_tests {
+    use core::mem::size_of;
+    use core::ptr;
+
+    use ffibox::{CBox, CCell, CCloned, CDropped};
+
+    use super::*;
+    use crate::stack::stack::{
+        OPENSSL_sk_new_null, OPENSSL_sk_num, OPENSSL_sk_push, OPENSSL_sk_value, StackElement,
+    };
+
+    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+
+    #[test]
+    fn generated_stacks_use_the_typed_erased_container() {
+        assert_owned_cloneable_cell::<DistPointStack>();
+        assert_owned_cloneable_cell::<GeneralNameStack>();
+
+        assert_eq!(
+            size_of::<CBox<DistPointStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<DistPointStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<DistPointStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<CBox<GeneralNameStack>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<GeneralNameStackRef<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+        assert_eq!(
+            size_of::<GeneralNameStackMut<'static>>(),
+            size_of::<*mut ffi::OPENSSL_STACK>()
+        );
+
+        let mut dist_points = OPENSSL_sk_new_null::<DistPoint>().expect("DIST_POINT stack");
+        let raw = dist_points.as_ptr();
+        let shared: DistPointStackRef<'_> = dist_points.as_ref();
+        assert_eq!(shared.as_ptr(), raw.cast_const());
+        let mut exclusive: DistPointStackMut<'_> = dist_points.as_mut();
+        assert_eq!(exclusive.as_mut_ptr(), raw);
+
+        let names = OPENSSL_sk_new_null::<GeneralName>().expect("GENERAL_NAME stack");
+        let duplicate = names.try_clone().expect("duplicate GENERAL_NAME stack");
+        assert_ne!(duplicate.as_ptr(), names.as_ptr());
+        assert_eq!(OPENSSL_sk_num(Some(duplicate.as_ref())), Some(0));
+    }
+
+    #[test]
+    fn plain_generated_stack_preserves_borrowed_element_addresses() {
+        let storage = Box::new(0x5a_u8);
+        // SAFETY: the stable box address outlives both stacks, which only move
+        // the opaque address between pointer slots and never dereference it.
+        let element = unsafe {
+            StackElement::from_raw(ptr::from_ref(&*storage).cast_mut().cast::<GeneralName>())
+        }
+        .expect("non-null GENERAL_NAME address");
+
+        let mut names = OPENSSL_sk_new_null::<GeneralName>().expect("GENERAL_NAME stack");
+        assert_eq!(
+            // SAFETY: `storage` remains live through the final stack use and
+            // this stack has no comparator that could inspect the marker.
+            unsafe { OPENSSL_sk_push(Some(&mut names.as_mut()), Some(element)) },
+            Some(1)
+        );
+        assert_eq!(
+            OPENSSL_sk_value(Some(names.as_ref()), 0).map(StackElement::as_non_null),
+            Some(element.as_non_null())
+        );
+
+        // Plain stack destruction releases only its pointer array.
+        drop(names);
+        assert_eq!(*storage, 0x5a);
     }
 }
