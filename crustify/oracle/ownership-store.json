@@ -1403,7 +1403,7 @@
   {
    "name": "hostent",
    "defined_in": "/usr/include/netdb.h",
-   "_comment_agent": "hostent has no independent lifecycle primitive. Its pointer fields borrow static resolver storage, caller-provided reentrant storage, or the surrounding fallback object's storage; callers must not free them.",
+   "_comment_agent": "hostent has no independent lifecycle primitive: nothing in the tree allocates, frees or duplicates an entry or any buffer it points at, so it gets borrowed handles and no owning pointer form. The pointer fields are recorded borrowed with lifetime `self` rather than `static` deliberately. gethostbyname's storage is statically allocated but NOT valid for the life of the program -- the next lookup on the same thread overwrites it in place -- so the name, alias and address buffers are exactly as valid as the entry handle that reached them, and binding them to 'static would be wrong. The other producer, crypto/bio/bio_addr.c's `static const struct hostent he_fallback`, points h_addr_list at file-scope statics and is itself const, i.e. read-only storage; between the two, no producer in this tree yields a writable entry, so an exclusive handle is only ever legitimate over caller-owned storage. BIO_lookup_ex is the only in-tree field reader: it takes h_addrtype, h_length and h_addr_list, and walks the address vector without a NULL check on the vector itself. h_name and h_aliases are never read in-tree; their records describe the public struct hostent surface rather than observed OpenSSL behaviour.",
    "fields": [
     {
      "name": "h_addr_list",
@@ -1424,7 +1424,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Borrowed NULL-terminated array; each non-null element borrows h_length address bytes from the host database result. No observed consumer writes through it."
+      "note": "Borrowed NULL-terminated vector; each non-null element borrows h_length address bytes from the host database result and is valid only while the entry is. BIO_lookup_ex reads the vector and every element but writes through neither, and dereferences the vector pointer without a NULL check -- nullable stays true because the public struct permits NULL, so a Rust getter should hand back an Option rather than inherit that assumption."
      }
     },
     {
@@ -1446,7 +1446,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Borrowed NULL-terminated array of borrowed NUL-terminated aliases; no observed consumer writes through it."
+      "note": "Borrowed NULL-terminated vector of borrowed NUL-terminated aliases, valid only while the entry is. The fallback initializer stores NULL, and no in-tree consumer reads or writes it."
      }
     },
     {
@@ -1461,7 +1461,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Optional borrowed official host name. The fallback initializer stores NULL and no observed consumer writes through the string."
+      "note": "Optional borrowed official host name, valid only while the entry is. The fallback initializer stores NULL, and no in-tree consumer reads or writes it."
      }
     }
    ]
@@ -1469,7 +1469,13 @@
   {
    "name": "in6_addr",
    "defined_in": "/usr/include/netinet/in.h",
-   "_comment_agent": "in6_addr is a by-value 16-byte address with no pointer fields and no lifecycle primitive.",
+   "_comment_agent": "in6_addr is a by-value 16-byte address with no pointer fields, no refcount and no lifecycle primitive. Its three C union members alias the same 16 bytes: s6_addr keeps the network-order octets, while s6_addr16 and s6_addr32 reinterpret those bytes in host order, so the word views are byte-swapped against the wire on a little-endian target. Like in_addr it is read through BIO_ADDR_rawmake's untyped `const void *where` (`*(struct in6_addr *)where`, crypto/bio/bio_addr.c:158), so a wrapper must not assume the union's 4-byte alignment: the byte view is alignment-free, but the 16- and 32-bit views need unaligned loads and stores.",
+   "fields": []
+  },
+  {
+   "name": "in_addr",
+   "defined_in": "/usr/include/netinet/in.h",
+   "_comment_agent": "in_addr is a by-value 4-byte IPv4 address. Its single s_addr field is network-order scalar data; there is no pointer field, no refcount and no lifecycle primitive, so it needs no owner and no releaser. It is NOT always reached through a properly aligned pointer: BIO_ADDR_rawmake takes an untyped `const void *where` and executes `*(struct in_addr *)where` at crypto/bio/bio_addr.c:148, and on the BIO_lookup_ex gethostbyname fallback path that argument is a hostent::h_addr_list element whose alignment the resolver does not promise. enable-ubsan reports exactly that misaligned load on the unmodified C tree (the disabled 90-test_quic_memfail.t baseline in crustify/build.json), so a Rust accessor over this type must use an unaligned load/store rather than assume the struct's 4-byte alignment.",
    "fields": []
   },
   {

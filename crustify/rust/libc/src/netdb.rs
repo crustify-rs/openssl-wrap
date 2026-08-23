@@ -19,6 +19,24 @@ ffibox::define_ctype!(
     /// Layout-compatible storage for a C host database entry. The resolver or
     /// the caller owns the strings and address buffers referenced by the
     /// entry, so this type has borrowed handles but no owning pointer form.
+    ///
+    /// Those buffers are borrowed for the entry's own validity window, not for
+    /// `'static`. `gethostbyname` returns statically allocated storage that the
+    /// next lookup overwrites in place, so a handle's `'a` must end before
+    /// another lookup can run — which is what
+    /// `libcrypto::bio::openssl_bio::BioHostEntGuard` holds its mutex for.
+    ///
+    /// [`HostEntRef`]'s getters follow those pointers with no further unsafe
+    /// step, so `from_ptr` requires a well-formed entry as part of "live and
+    /// initialized": `h_name` NULL or NUL-terminated, `h_aliases` NULL or a
+    /// NULL-terminated vector of NUL-terminated strings, and `h_addr_list` NULL
+    /// or a NULL-terminated vector of buffers each holding `h_length` readable
+    /// bytes.
+    ///
+    /// Every producer in this tree hands back an entry the caller must treat as
+    /// read-only — the resolver's shared static, and `crypto/bio/bio_addr.c`'s
+    /// `static const he_fallback`, which lives in read-only storage — so
+    /// [`HostEntMut`] is for caller-owned storage only.
     HostEnt,
     HostEntRef,
     HostEntMut,
@@ -92,7 +110,7 @@ impl HostEntStringRef<'_> {
     }
 }
 
-/// A borrowed, NUL-terminated list of alias strings from a [`HostEnt`].
+/// A borrowed, NULL-terminated list of alias strings from a [`HostEnt`].
 #[derive(Clone, Copy)]
 pub struct HostEntAliasesRef<'a> {
     ptr: NonNull<*mut core::ffi::c_char>,
@@ -104,7 +122,7 @@ impl<'a> HostEntAliasesRef<'a> {
     #[must_use]
     pub fn get(&self, index: usize) -> Option<HostEntStringRef<'a>> {
         for offset in 0..=index {
-            // SAFETY: a `hostent` alias vector is a NUL-terminated array of
+            // SAFETY: a `hostent` alias vector is a NULL-terminated array of
             // initialized pointers; iteration stops at its first terminator.
             let alias = unsafe { self.ptr.as_ptr().add(offset).read() };
             let alias = NonNull::new(alias)?;
@@ -123,7 +141,7 @@ impl<'a> HostEntAliasesRef<'a> {
         let mut next = self.ptr.as_ptr();
         core::iter::from_fn(move || {
             // SAFETY: `next` advances only within the initialized,
-            // NUL-terminated pointer vector and is not read after its first
+            // NULL-terminated pointer vector and is not read after its first
             // null element.
             let alias = unsafe { next.read() };
             let alias = NonNull::new(alias)?;
@@ -185,7 +203,7 @@ impl HostEntAddressRef<'_> {
     }
 }
 
-/// A borrowed, NUL-terminated list of fixed-length host addresses.
+/// A borrowed, NULL-terminated list of fixed-length host addresses.
 #[derive(Clone, Copy)]
 pub struct HostEntAddressesRef<'a> {
     ptr: NonNull<*mut core::ffi::c_char>,
@@ -198,8 +216,9 @@ impl<'a> HostEntAddressesRef<'a> {
     #[must_use]
     pub fn get(&self, index: usize) -> Option<HostEntAddressRef<'a>> {
         for offset in 0..=index {
-            // SAFETY: a `hostent` address vector is a NUL-terminated array of
-            // initialized pointers; iteration stops at its first terminator.
+            // SAFETY: a `hostent` address vector is a NULL-terminated array
+            // of initialized pointers; iteration stops at its first
+            // terminator.
             let address = unsafe { self.ptr.as_ptr().add(offset).read() };
             let address = NonNull::new(address.cast::<u8>())?;
             if offset == index {
@@ -219,7 +238,7 @@ impl<'a> HostEntAddressesRef<'a> {
         let len = self.address_len;
         core::iter::from_fn(move || {
             // SAFETY: `next` advances only within the initialized,
-            // NUL-terminated pointer vector and is not read after its first
+            // NULL-terminated pointer vector and is not read after its first
             // null element.
             let address = unsafe { next.read() };
             let address = NonNull::new(address.cast::<u8>())?;
@@ -248,7 +267,7 @@ impl<'a> HostEntRef<'a> {
         })
     }
 
-    /// Borrow the optional NUL-terminated alias list.
+    /// Borrow the optional NULL-terminated alias list.
     #[must_use]
     pub fn aliases(&self) -> Option<HostEntAliasesRef<'a>> {
         // SAFETY: raw projection copies the initialized borrowed list pointer
@@ -277,7 +296,7 @@ impl<'a> HostEntRef<'a> {
         usize::try_from(length).ok()
     }
 
-    /// Borrow the optional NUL-terminated address list.
+    /// Borrow the optional NULL-terminated address list.
     ///
     /// Returns `None` when the list is null or its per-address length is
     /// negative.
@@ -297,6 +316,9 @@ impl<'a> HostEntRef<'a> {
 
 impl HostEntMut<'_> {
     /// Set the address family recorded for the address list.
+    ///
+    /// Reachable only from an exclusive handle, which this tree's host-database
+    /// producers cannot supply; see [`HostEnt`].
     pub fn set_address_type(&mut self, address_type: core::ffi::c_int) {
         // SAFETY: the exclusive handle guarantees writable header storage;
         // raw projection writes the scalar without forming a reference.
@@ -305,7 +327,9 @@ impl HostEntMut<'_> {
 
     /// Set the number of bytes in each address.
     ///
-    /// Values larger than C's signed integer range are rejected.
+    /// Values larger than C's signed integer range are rejected. As with
+    /// [`set_address_type`](Self::set_address_type), this needs caller-owned
+    /// storage.
     pub fn set_address_len(&mut self, length: usize) -> Result<(), HostEntLengthOverflow> {
         let length = core::ffi::c_int::try_from(length).map_err(|_| HostEntLengthOverflow)?;
         // SAFETY: the exclusive handle guarantees writable header storage;
@@ -389,6 +413,113 @@ mod tests {
         assert_eq!(address_copy, [127, 0, 0, 1]);
         assert_eq!(host.address_type(), 2);
         assert_eq!(host.address_len(), Some(4));
+    }
+
+    #[test]
+    fn list_iterators_walk_every_element_and_stop_at_the_terminator() {
+        let mut alias_storage = [*b"aa1\0", *b"bb2\0", *b"cc3\0"];
+        let mut aliases = [
+            alias_storage[0].as_mut_ptr().cast::<core::ffi::c_char>(),
+            alias_storage[1].as_mut_ptr().cast::<core::ffi::c_char>(),
+            alias_storage[2].as_mut_ptr().cast::<core::ffi::c_char>(),
+            ptr::null_mut(),
+        ];
+        let mut address_storage = [[10_u8, 0, 0, 1], [10, 0, 0, 2]];
+        let mut addresses = [
+            address_storage[0].as_mut_ptr().cast::<core::ffi::c_char>(),
+            address_storage[1].as_mut_ptr().cast::<core::ffi::c_char>(),
+            ptr::null_mut(),
+        ];
+        let mut raw = ffi::hostent {
+            h_name: ptr::null_mut(),
+            h_aliases: aliases.as_mut_ptr(),
+            h_addrtype: 2,
+            h_length: 4,
+            h_addr_list: addresses.as_mut_ptr(),
+        };
+
+        // SAFETY: `raw` and every buffer it points at stay live and unchanged
+        // for the whole scope of this shared handle, and the entry is
+        // well-formed: both vectors are NULL-terminated and every address
+        // holds the four bytes `h_length` announces.
+        let host = unsafe { HostEntRef::from_ptr(ptr::addr_of_mut!(raw)) }.expect("hostent");
+
+        let alias_list = host.aliases().expect("aliases");
+        let mut seen_aliases = [[0_u8; 3]; 3];
+        let mut alias_count = 0;
+        for alias in alias_list.iter() {
+            assert!(alias.copy_to_slice(&mut seen_aliases[alias_count]));
+            alias_count += 1;
+        }
+        assert_eq!(alias_count, 3);
+        assert_eq!(seen_aliases, [*b"aa1", *b"bb2", *b"cc3"]);
+        assert_eq!(alias_list.get(2).expect("third alias").len(), 3);
+        assert!(alias_list.get(3).is_none());
+
+        let address_list = host.addresses().expect("addresses");
+        let mut seen_addresses = [[0_u8; 4]; 2];
+        let mut address_count = 0;
+        for address in address_list.iter() {
+            assert_eq!(address.len(), 4);
+            assert!(address.copy_to_slice(&mut seen_addresses[address_count]));
+            address_count += 1;
+        }
+        assert_eq!(address_count, 2);
+        assert_eq!(seen_addresses, [[10, 0, 0, 1], [10, 0, 0, 2]]);
+        assert!(address_list.get(2).is_none());
+    }
+
+    #[test]
+    fn fallback_shaped_entry_reports_an_absent_name_and_alias_list() {
+        // The shape `crypto/bio/bio_addr.c` builds when no host is given:
+        // no name, no aliases, one four-byte IPv4 address.
+        let mut fallback_address = [127_u8, 0, 0, 1];
+        let mut addresses = [
+            fallback_address.as_mut_ptr().cast::<core::ffi::c_char>(),
+            ptr::null_mut(),
+        ];
+        let mut raw = ffi::hostent {
+            h_name: ptr::null_mut(),
+            h_aliases: ptr::null_mut(),
+            h_addrtype: 2,
+            h_length: 4,
+            h_addr_list: addresses.as_mut_ptr(),
+        };
+
+        // SAFETY: as above; a null `h_name` and `h_aliases` are part of the
+        // well-formed shape this getter set is documented to accept.
+        let host = unsafe { HostEntRef::from_ptr(ptr::addr_of_mut!(raw)) }.expect("hostent");
+
+        assert!(host.official_name().is_none());
+        assert!(host.aliases().is_none());
+        let mut copied = [0_u8; 4];
+        assert!(
+            host.addresses()
+                .expect("addresses")
+                .get(0)
+                .expect("address")
+                .copy_to_slice(&mut copied)
+        );
+        assert_eq!(copied, [127, 0, 0, 1]);
+    }
+
+    #[test]
+    fn a_negative_address_length_suppresses_the_address_list() {
+        let mut addresses = [ptr::null_mut::<core::ffi::c_char>()];
+        let mut raw = ffi::hostent {
+            h_name: ptr::null_mut(),
+            h_aliases: ptr::null_mut(),
+            h_addrtype: 2,
+            h_length: -1,
+            h_addr_list: addresses.as_mut_ptr(),
+        };
+
+        // SAFETY: the entry is live; the getters below read only scalars and
+        // the list pointer, and stop before following it.
+        let host = unsafe { HostEntRef::from_ptr(ptr::addr_of_mut!(raw)) }.expect("hostent");
+
+        assert!(host.address_len().is_none());
+        assert!(host.addresses().is_none());
     }
 
     #[test]

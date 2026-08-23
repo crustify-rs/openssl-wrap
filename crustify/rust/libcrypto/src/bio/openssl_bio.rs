@@ -1191,7 +1191,10 @@ impl BioHostEntGuard {
     pub fn as_ref(&self) -> HostEntRef<'_> {
         let _keep_locked = &self.lock;
         // SAFETY: the guard serializes calls that replace the resolver-owned
-        // static entry, and its borrow bounds the returned typed view.
+        // static entry, and its borrow bounds the returned typed view. The
+        // entry the resolver stored is well formed in the sense `HostEnt`
+        // requires: NUL-terminated name, NULL-terminated alias and address
+        // vectors, and `h_length` readable bytes per address.
         unsafe { HostEntRef::from_ptr(self.raw.as_ptr().cast()) }
             .expect("BIO_gethostbyname returned a stored non-null pointer")
     }
