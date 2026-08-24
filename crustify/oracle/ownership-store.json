@@ -5891,6 +5891,43 @@
    "fields": []
   },
   {
+   "name": "x509_attributes_st",
+   "defined_in": "crypto/x509/x509_local.h",
+   "_comment_agent": "X509_ATTRIBUTE is a non-refcounted ASN.1 sequence. Its public full destructor owns both pointer fields; its public duplicate performs a deep ASN.1 copy.",
+   "fields": [
+    {
+     "name": "object",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "The ASN.1 sequence owns this object identifier and X509_ATTRIBUTE_free releases it. X509_ATTRIBUTE_new initially leaves it NULL; set1_object replaces it with an owned OBJ_dup. Published access is const."
+     }
+    },
+    {
+     "name": "set",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "The ASN.1 SET OF template allocates and owns the OPENSSL_STACK container; it owns each ASN1_TYPE element, set1_data pushes new owned elements, and X509_ATTRIBUTE_free recursively releases them."
+     }
+    }
+   ]
+  },
+  {
    "name": "x509_st",
    "defined_in": "include/crypto/x509.h",
    "_comment_agent": "The public API exposes X509 only as an opaque forward declaration. X509 owns its optional decoded caches, auxiliary record, lock, property query, and distinguishing identifier; it only borrows libctx. references is the atomic count paired with X509_up_ref and X509_free. None of these internal fields is exposed by this wrap objective.",
@@ -18646,6 +18683,97 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns a fresh fully initialized X509_ALGOR allocation, or NULL on allocation failure."
+    }
+   }
+  },
+  {
+   "name": "X509_ATTRIBUTE_dup",
+   "defined_in": "crypto/x509/x_attrib.c",
+   "lifetime": {
+    "for": "x",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "x",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:x"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrows the source attribute for a deep ASN.1 duplication."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns an independently owned deep copy, or NULL on failure."
+    }
+   }
+  },
+  {
+   "name": "X509_ATTRIBUTE_free",
+   "defined_in": "crypto/x509/x_attrib.c",
+   "lifetime": {
+    "for": "a",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the attribute allocation; NULL is accepted. ASN1_item_free recursively releases both owned fields and then the record."
+     }
+    }
+   ]
+  },
+  {
+   "name": "X509_ATTRIBUTE_new",
+   "defined_in": "crypto/x509/x_attrib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a newly allocated, fully initialized X509_ATTRIBUTE, or NULL on allocation failure."
     }
    }
   },
