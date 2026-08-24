@@ -6,8 +6,12 @@ use core::ffi::CStr;
 
 use libcrypto_sys as ffi;
 
+use ffibox::CBox;
+
+use crate::asn1::asn1::Asn1ObjectRef;
 use crate::evp::evp::{EvpPkeyMut, EvpPkeyRef};
 use crate::provider::provider_core::OsslProviderRef;
+use crate::x509::x509_local::{X509Attribute, X509AttributeRef};
 
 /// Wraps: EVP_PKEY_add1_attr_by_NID
 /// Adds a copied attribute value identified by numeric object identifier.
@@ -98,6 +102,7 @@ pub fn EVP_PKEY_get_attr_count(pkey: EvpPkeyRef<'_>) -> i32 {
 mod tests {
     use super::*;
     use crate::evp::p_lib::EVP_PKEY_new;
+    use crate::objects::obj_dat::OBJ_txt2obj;
 
     #[test]
     fn fresh_key_has_no_attributes() {
@@ -105,4 +110,99 @@ mod tests {
         assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), -1);
         assert_eq!(EVP_PKEY_get_attr_by_NID(key.as_ref(), 1, -1), -1);
     }
+
+    #[test]
+    fn object_attribute_can_be_added_borrowed_detached_and_readded() {
+        let mut key = EVP_PKEY_new().expect("EVP_PKEY_new");
+        let object = OBJ_txt2obj(c"1.2.840.113549.1.9.7", true).expect("object identifier");
+
+        assert!(EVP_PKEY_add1_attr_by_OBJ(
+            &mut key.as_mut(),
+            object.as_ref(),
+            ffi::V_ASN1_OCTET_STRING as i32,
+            b"secret",
+        ));
+        assert_eq!(
+            EVP_PKEY_get_attr_by_OBJ(key.as_ref(), object.as_ref(), -1),
+            0
+        );
+        assert!(EVP_PKEY_get_attr(key.as_ref(), 0).is_some());
+
+        let detached = EVP_PKEY_delete_attr(&mut key.as_mut(), 0).expect("detached attribute");
+        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), 0);
+        assert!(EVP_PKEY_add1_attr(&mut key.as_mut(), detached.as_ref()));
+        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), 1);
+        assert!(EVP_PKEY_delete_attr(&mut key.as_mut(), 9).is_none());
+    }
+}
+
+/// Wraps: EVP_PKEY_add1_attr
+/// Deep-copies `attribute` into the key's owned attribute stack.
+pub fn EVP_PKEY_add1_attr(key: &mut EvpPkeyMut<'_>, attribute: X509AttributeRef<'_>) -> bool {
+    // SAFETY: both typed handles are live for the call. OpenSSL duplicates the
+    // attribute before storing it, so no borrow is retained.
+    unsafe { ffi::EVP_PKEY_add1_attr(key.as_mut_ptr(), attribute.as_ptr().cast_mut()) == 1 }
+}
+
+/// Wraps: EVP_PKEY_add1_attr_by_OBJ
+/// Adds a copied attribute value identified by an object identifier.
+pub fn EVP_PKEY_add1_attr_by_OBJ(
+    key: &mut EvpPkeyMut<'_>,
+    object: Asn1ObjectRef<'_>,
+    attribute_type: i32,
+    bytes: &[u8],
+) -> bool {
+    let Ok(len) = i32::try_from(bytes.len()) else {
+        return false;
+    };
+    // SAFETY: all handles and the byte run are live for the call. OpenSSL
+    // constructs and stores independent copies rather than retaining inputs.
+    unsafe {
+        ffi::EVP_PKEY_add1_attr_by_OBJ(
+            key.as_mut_ptr(),
+            object.as_ptr(),
+            attribute_type,
+            bytes.as_ptr(),
+            len,
+        ) == 1
+    }
+}
+
+/// Wraps: EVP_PKEY_delete_attr
+/// Detaches the attribute at `location` and transfers its ownership.
+#[must_use]
+pub fn EVP_PKEY_delete_attr(
+    key: &mut EvpPkeyMut<'_>,
+    location: i32,
+) -> Option<CBox<X509Attribute>> {
+    // SAFETY: the exclusive key handle permits removal from its attribute
+    // stack. A non-null result transfers the detached attribute allocation.
+    let raw = unsafe { ffi::EVP_PKEY_delete_attr(key.as_mut_ptr(), location) };
+    // SAFETY: null denotes failure; otherwise the caller owns the returned
+    // attribute and its registered destructor matches the transfer contract.
+    unsafe { CBox::from_raw(raw) }
+}
+
+/// Wraps: EVP_PKEY_get_attr
+/// Borrows the attribute at `location` from its retaining key.
+#[must_use]
+pub fn EVP_PKEY_get_attr<'a>(key: EvpPkeyRef<'a>, location: i32) -> Option<X509AttributeRef<'a>> {
+    // SAFETY: the key remains live for `'a` and retains every attribute still
+    // present in its stack.
+    let raw = unsafe { ffi::EVP_PKEY_get_attr(key.as_ptr(), location) };
+    // SAFETY: null denotes an invalid location; a non-null result is borrowed
+    // from `key`, which supplies the returned handle lifetime.
+    unsafe { X509AttributeRef::from_ptr(raw) }
+}
+
+/// Wraps: EVP_PKEY_get_attr_by_OBJ
+/// Returns the next matching attribute index after `last_position`.
+#[must_use]
+pub fn EVP_PKEY_get_attr_by_OBJ(
+    key: EvpPkeyRef<'_>,
+    object: Asn1ObjectRef<'_>,
+    last_position: i32,
+) -> i32 {
+    // SAFETY: both shared handles are live for the synchronous lookup.
+    unsafe { ffi::EVP_PKEY_get_attr_by_OBJ(key.as_ptr(), object.as_ptr(), last_position) }
 }

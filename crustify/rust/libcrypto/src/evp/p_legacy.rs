@@ -9,6 +9,8 @@ use crate::evp::evp::EvpPkeyRef;
 use crate::keys::ec_local::EcKeyRef;
 #[cfg(feature = "deprecated-3-0")]
 use crate::keys::ec_local::SharedEcKey;
+#[cfg(feature = "deprecated-3-0")]
+use crate::keys::rsa_local::{RsaRef, SharedRsa};
 
 #[cfg(feature = "deprecated-3-0")]
 /// Wraps: EVP_PKEY_get0_EC_KEY
@@ -61,4 +63,58 @@ mod tests {
         assert!(EVP_PKEY_set1_EC_KEY(&mut pkey.as_mut(), key.as_ref()));
         assert!(!key.as_ref().as_ptr().is_null());
     }
+
+    #[cfg(feature = "deprecated-3-0")]
+    #[test]
+    fn rsa_setter_and_getters_preserve_shared_ownership() {
+        use crate::keys::rsa_local::Rsa;
+
+        // SAFETY: both constructors return fresh fully initialized objects or
+        // null, transferring their corresponding public free obligations.
+        let mut pkey =
+            unsafe { CBox::<EvpPkey>::from_raw(ffi::EVP_PKEY_new()) }.expect("EVP_PKEY_new");
+        // SAFETY: as above, for a default-context RSA allocation.
+        let rsa = unsafe { CBox::<Rsa>::from_raw(ffi::RSA_new()) }.expect("RSA_new");
+
+        assert!(EVP_PKEY_set1_RSA(&mut pkey.as_mut(), rsa.as_ref()));
+        assert_eq!(
+            EVP_PKEY_get0_RSA(pkey.as_ref()).expect("get0 RSA").as_ptr(),
+            rsa.as_ref().as_ptr(),
+        );
+        let shared = EVP_PKEY_get1_RSA(pkey.as_ref()).expect("get1 RSA");
+        assert_eq!(shared.as_ref().as_ptr(), rsa.as_ref().as_ptr());
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0_RSA
+/// Borrows the legacy RSA key retained by an EVP key container.
+#[must_use]
+pub fn EVP_PKEY_get0_RSA<'a>(pkey: EvpPkeyRef<'a>) -> Option<RsaRef<'a>> {
+    // SAFETY: the shared container remains live and retains any returned RSA.
+    let raw = unsafe { ffi::EVP_PKEY_get0_RSA(pkey.as_ptr()) };
+    // SAFETY: null is absence; a non-null result is borrowed from `pkey`.
+    unsafe { RsaRef::from_ptr(raw.cast_mut()) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get1_RSA
+/// Raises and owns one shared-only RSA reference.
+#[must_use]
+pub fn EVP_PKEY_get1_RSA<'a>(pkey: EvpPkeyRef<'a>) -> Option<SharedRsa<'a>> {
+    // SAFETY: the live container permits synchronized legacy-cache lookup and
+    // a reference-count increment without transferring the container.
+    let raw = unsafe { ffi::EVP_PKEY_get1_RSA(pkey.as_ptr().cast_mut()) };
+    // SAFETY: a non-null result transfers exactly one RSA_free obligation and
+    // remains conservatively bounded by the retaining PKEY borrow.
+    unsafe { SharedRsa::from_raw(raw) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_set1_RSA
+/// Stores a separately reference-counted share of `key` in `pkey`.
+pub fn EVP_PKEY_set1_RSA(pkey: &mut crate::evp::evp::EvpPkeyMut<'_>, key: RsaRef<'_>) -> bool {
+    // SAFETY: both handles are live. OpenSSL raises the RSA reference count
+    // before replacing the exclusively borrowed PKEY's key material.
+    unsafe { ffi::EVP_PKEY_set1_RSA(pkey.as_mut_ptr(), key.as_ptr().cast_mut()) == 1 }
 }

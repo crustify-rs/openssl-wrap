@@ -40,10 +40,19 @@ DH *DH_new(void);
 void DH_free(DH *dh);
 int DH_up_ref(DH *dh);
 DH *DHparams_dup(const DH *dh);
+const DH *EVP_PKEY_get0_DH(const EVP_PKEY *pkey);
+DH *EVP_PKEY_get1_DH(EVP_PKEY *pkey);
+int EVP_PKEY_set1_DH(EVP_PKEY *pkey, DH *key);
 typedef struct rsa_st RSA;
 RSA *RSA_new(void);
 void RSA_free(RSA *rsa);
 int RSA_up_ref(RSA *rsa);
+const DSA *EVP_PKEY_get0_DSA(const EVP_PKEY *pkey);
+DSA *EVP_PKEY_get1_DSA(EVP_PKEY *pkey);
+int EVP_PKEY_set1_DSA(EVP_PKEY *pkey, DSA *key);
+const RSA *EVP_PKEY_get0_RSA(const EVP_PKEY *pkey);
+RSA *EVP_PKEY_get1_RSA(EVP_PKEY *pkey);
+int EVP_PKEY_set1_RSA(EVP_PKEY *pkey, RSA *key);
 EVP_PKEY *EVP_PKEY_new_CMAC_key(ENGINE *e, const unsigned char *priv,
     size_t len, const EVP_CIPHER *cipher);
 #endif

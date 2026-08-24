@@ -15582,6 +15582,46 @@
    }
   },
   {
+   "name": "EVP_PKEY_add1_attr",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "attr",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:attr"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Transient shared attribute input; X509at_add1_attr deep-duplicates it before storing the copy."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required live EVP_PKEY; the function may allocate or replace its owned attribute stack."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_add1_attr_by_NID",
    "defined_in": "crypto/evp/evp_pkey.c",
    "ptr_args": [
@@ -15617,6 +15657,63 @@
       "nullable": false,
       "mutable": true,
       "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_add1_attr_by_OBJ",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "bytes",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bytes"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed byte run of exactly len bytes; a null pointer is meaningful only with a compatible zero/absent value and the safe wrapper uses a slice."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required live EVP_PKEY; the function may allocate or replace its owned attribute stack."
+     }
+    },
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared object identifier, read only while constructing the copied attribute."
      }
     }
    ]
@@ -16235,6 +16332,43 @@
      }
     }
    ]
+  },
+  {
+   "name": "EVP_PKEY_delete_attr",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required exclusive key; deleting detaches an attribute from its owned stack."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null for an invalid location; otherwise ownership of the detached attribute transfers to the caller."
+    }
+   }
   },
   {
    "name": "EVP_PKEY_derive",
@@ -16953,6 +17087,63 @@
    ]
   },
   {
+   "name": "EVP_PKEY_export",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "export_cb",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:export_cb"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked synchronously; neither callback nor state is retained."
+     }
+    },
+    {
+     "name": "export_cbarg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:export_cbarg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback state borrowed only for synchronous callback invocations and potentially mutated by the callback."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared key; C explicitly rejects null."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_free",
    "defined_in": "crypto/evp/p_lib.c",
    "lifetime": {
@@ -17167,6 +17358,84 @@
    }
   },
   {
+   "name": "EVP_PKEY_get0_DH",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared EVP_PKEY; synchronized legacy-cache population is internal to the logical const query."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed DH retained by the EVP_PKEY and invalidated when that container releases or replaces it."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_DSA",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared EVP_PKEY; synchronized legacy-cache population is internal to the logical const query."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed DSA retained by the EVP_PKEY and invalidated when that container releases or replaces it."
+    }
+   }
+  },
+  {
    "name": "EVP_PKEY_get0_EC_KEY",
    "defined_in": "crypto/evp/p_legacy.c",
    "ptr_args": [
@@ -17202,6 +17471,45 @@
      "nullable": true,
      "mutable": false,
      "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_RSA",
+   "defined_in": "crypto/evp/p_legacy.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared EVP_PKEY; synchronized legacy-cache population is internal to the logical const query."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed RSA retained by the EVP_PKEY and invalidated when that container releases or replaces it."
     }
    }
   },
@@ -17487,6 +17795,84 @@
    }
   },
   {
+   "name": "EVP_PKEY_get1_DH",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required EVP_PKEY; the implementation may populate its synchronized legacy cache before raising the nested key reference."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "On success transfers one raised DH reference; shared-only ownership remains conservatively tied to the EVP_PKEY dependencies."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get1_DSA",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required EVP_PKEY; the implementation may populate its synchronized legacy cache before raising the nested key reference."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "On success transfers one raised DSA reference; shared-only ownership remains conservatively tied to the EVP_PKEY dependencies."
+    }
+   }
+  },
+  {
    "name": "EVP_PKEY_get1_EC_KEY",
    "defined_in": "crypto/evp/p_legacy.c",
    "ptr_args": [
@@ -17522,6 +17908,45 @@
      "nullable": true,
      "mutable": false,
      "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get1_RSA",
+   "defined_in": "crypto/evp/p_legacy.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required EVP_PKEY; the implementation may populate its synchronized legacy cache before raising the nested key reference."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "On success transfers one raised RSA reference; shared-only ownership remains conservatively tied to the EVP_PKEY dependencies."
     }
    }
   },
@@ -17569,6 +17994,45 @@
    ]
   },
   {
+   "name": "EVP_PKEY_get_attr",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared key retaining its attribute stack."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:key"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed attribute retained by key; null for an invalid location."
+    }
+   }
+  },
+  {
    "name": "EVP_PKEY_get_attr_by_NID",
    "defined_in": "crypto/evp/evp_pkey.c",
    "ptr_args": [
@@ -17587,6 +18051,46 @@
       "nullable": false,
       "mutable": false,
       "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_attr_by_OBJ",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared key retaining its attribute stack."
+     }
+    },
+    {
+     "name": "obj",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:obj"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared object identifier used only for comparison during the call."
      }
     }
    ]
@@ -17656,6 +18160,64 @@
       "nullable": true,
       "mutable": false,
       "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_bn_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "bn",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bn"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required borrowed output slot; success stores a newly allocated owned BIGNUM."
+     }
+    },
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required borrowed NUL-terminated parameter name."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared key queried synchronously."
      }
     }
    ]
@@ -19578,6 +20140,86 @@
    ]
   },
   {
+   "name": "EVP_PKEY_set1_DH",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "dhkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dhkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required live DH; only its reference count is mutated, and success stores a separately owned raised reference without consuming the caller share."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required exclusive EVP_PKEY; success replaces its prior key material."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set1_DSA",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required live DSA; only its reference count is mutated, and success stores a separately owned raised reference without consuming the caller share."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required exclusive EVP_PKEY; success replaces its prior key material."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_set1_EC_KEY",
    "defined_in": "crypto/evp/p_legacy.c",
    "ptr_args": [
@@ -19618,6 +20260,46 @@
    ]
   },
   {
+   "name": "EVP_PKEY_set1_RSA",
+   "defined_in": "crypto/evp/p_legacy.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required live RSA; only its reference count is mutated, and success stores a separately owned raised reference without consuming the caller share."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required exclusive EVP_PKEY; success replaces its prior key material."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_set1_encoded_public_key",
    "defined_in": "crypto/evp/p_lib.c",
    "ptr_args": [
@@ -19653,6 +20335,61 @@
       "nullable": true,
       "mutable": false,
       "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_bn_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "bn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required shared BIGNUM, serialized into transient provider parameter bytes and not retained."
+     }
+    },
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required borrowed NUL-terminated parameter name."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required exclusive assigned key; provider state may be replaced."
      }
     }
    ]

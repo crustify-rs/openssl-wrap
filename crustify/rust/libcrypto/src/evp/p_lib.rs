@@ -11,10 +11,15 @@ use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::Asn1PctxMut;
 use crate::bio::bio_bio_local::BioMut;
+use crate::bio::bn_bn_local::{Bignum, BignumRef};
 use crate::bio::context::OsslLibCtxRef;
 use crate::core::openssl_core::{OsslParam, OsslParamListMut, OsslParamRef, terminated_param_len};
 use crate::evp::evp::{EvpCipherRef, EvpPkey, EvpPkeyMut, EvpPkeyRef};
 use crate::evp::evp_local::EvpKeymgmtRef;
+#[cfg(feature = "deprecated-3-0")]
+use crate::keys::dh_local::{DhRef, SharedDh};
+#[cfg(feature = "deprecated-3-0")]
+use crate::keys::dsa_local::{DsaRef, SharedDsa};
 #[cfg(feature = "deprecated-3-0")]
 use crate::keys::ec_local::EcKey;
 use crate::mem::CryptoFree;
@@ -1098,5 +1103,157 @@ mod setter_tests {
             c"encoded-pub-key",
             &[1, 2, 3],
         ));
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0_DH
+/// Borrows the legacy DH key retained by an EVP key container.
+#[must_use]
+pub fn EVP_PKEY_get0_DH<'a>(pkey: EvpPkeyRef<'a>) -> Option<DhRef<'a>> {
+    // SAFETY: the shared container remains live and retains any returned DH.
+    let raw = unsafe { ffi::EVP_PKEY_get0_DH(pkey.as_ptr()) };
+    // SAFETY: null is absence; a non-null result is borrowed from `pkey`.
+    unsafe { DhRef::from_ptr(raw.cast_mut()) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0_DSA
+/// Borrows the legacy DSA key retained by an EVP key container.
+#[must_use]
+pub fn EVP_PKEY_get0_DSA<'a>(pkey: EvpPkeyRef<'a>) -> Option<DsaRef<'a>> {
+    // SAFETY: the shared container remains live and retains any returned DSA.
+    let raw = unsafe { ffi::EVP_PKEY_get0_DSA(pkey.as_ptr()) };
+    // SAFETY: null is absence; a non-null result is borrowed from `pkey`.
+    unsafe { DsaRef::from_ptr(raw.cast_mut()) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get1_DH
+/// Raises and owns one shared-only DH reference.
+#[must_use]
+pub fn EVP_PKEY_get1_DH<'a>(pkey: EvpPkeyRef<'a>) -> Option<SharedDh<'a>> {
+    // SAFETY: the live container permits synchronized legacy-cache lookup and
+    // a reference-count increment without transferring the container.
+    let raw = unsafe { ffi::EVP_PKEY_get1_DH(pkey.as_ptr().cast_mut()) };
+    // SAFETY: a non-null result transfers one DH_free obligation and remains
+    // conservatively bounded by the PKEY borrow.
+    unsafe { SharedDh::from_raw(raw) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get1_DSA
+/// Raises and owns one shared-only DSA reference.
+#[must_use]
+pub fn EVP_PKEY_get1_DSA<'a>(pkey: EvpPkeyRef<'a>) -> Option<SharedDsa<'a>> {
+    // SAFETY: the live container permits synchronized legacy-cache lookup and
+    // a reference-count increment without transferring the container.
+    let raw = unsafe { ffi::EVP_PKEY_get1_DSA(pkey.as_ptr().cast_mut()) };
+    // SAFETY: a non-null result transfers one DSA_free obligation and remains
+    // conservatively bounded by the PKEY borrow.
+    unsafe { SharedDsa::from_raw(raw) }
+}
+
+/// Wraps: EVP_PKEY_get_bn_param
+/// Returns an independently allocated parameter value.
+#[must_use]
+pub fn EVP_PKEY_get_bn_param(pkey: EvpPkeyRef<'_>, key_name: &CStr) -> Option<CBox<Bignum>> {
+    let mut raw = ptr::null_mut();
+    // SAFETY: the key and name are live, and `raw` is a writable owner slot
+    // initialized to null. Success transfers a fresh BIGNUM allocation.
+    let ok = unsafe { ffi::EVP_PKEY_get_bn_param(pkey.as_ptr(), key_name.as_ptr(), &mut raw) };
+    // SAFETY: any non-null output carries one BN_free obligation, even on an
+    // unexpected failing-provider path, so adopting it prevents a leak.
+    let output = unsafe { CBox::<Bignum>::from_raw(raw) };
+    if ok == 1 { output } else { None }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_set1_DH
+/// Stores a separately reference-counted share of `key` in `pkey`.
+pub fn EVP_PKEY_set1_DH(pkey: &mut EvpPkeyMut<'_>, key: DhRef<'_>) -> bool {
+    // SAFETY: both handles are live. OpenSSL raises the DH reference count
+    // before replacing the exclusively borrowed PKEY's key material.
+    unsafe { ffi::EVP_PKEY_set1_DH(pkey.as_mut_ptr(), key.as_ptr().cast_mut()) == 1 }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_set1_DSA
+/// Stores a separately reference-counted share of `key` in `pkey`.
+pub fn EVP_PKEY_set1_DSA(pkey: &mut EvpPkeyMut<'_>, key: DsaRef<'_>) -> bool {
+    // SAFETY: both handles are live. OpenSSL raises the DSA reference count
+    // before replacing the exclusively borrowed PKEY's key material.
+    unsafe { ffi::EVP_PKEY_set1_DSA(pkey.as_mut_ptr(), key.as_ptr().cast_mut()) == 1 }
+}
+
+/// Wraps: EVP_PKEY_set_bn_param
+/// Copies a big-number value into the named provider parameter.
+pub fn EVP_PKEY_set_bn_param(
+    pkey: &mut EvpPkeyMut<'_>,
+    key_name: &CStr,
+    value: BignumRef<'_>,
+) -> bool {
+    // SAFETY: all typed borrows remain live for the synchronous conversion and
+    // provider call. OpenSSL retains neither the name nor the BIGNUM pointer.
+    unsafe { ffi::EVP_PKEY_set_bn_param(pkey.as_mut_ptr(), key_name.as_ptr(), value.as_ptr()) == 1 }
+}
+
+#[cfg(test)]
+mod scheduled_tests {
+    use super::*;
+
+    #[test]
+    fn big_number_access_rejects_an_unassigned_key() {
+        // SAFETY: a non-null result transfers one fresh PKEY reference.
+        let mut key =
+            unsafe { CBox::<EvpPkey>::from_raw(ffi::EVP_PKEY_new()) }.expect("EVP_PKEY_new");
+        // SAFETY: a non-null result transfers one fresh BIGNUM allocation.
+        let number = unsafe { CBox::<Bignum>::from_raw(ffi::BN_new()) }.expect("BN_new");
+
+        assert!(EVP_PKEY_get_bn_param(key.as_ref(), c"n").is_none());
+        assert!(!EVP_PKEY_set_bn_param(
+            &mut key.as_mut(),
+            c"n",
+            number.as_ref(),
+        ));
+    }
+
+    #[cfg(feature = "deprecated-3-0")]
+    #[test]
+    fn dh_and_dsa_setters_and_getters_preserve_shared_ownership() {
+        use crate::keys::dh_local::Dh;
+        use crate::keys::dsa_local::Dsa;
+
+        // SAFETY: each non-null constructor result transfers one public free
+        // obligation for a fully initialized default-context object.
+        let mut dh_pkey =
+            unsafe { CBox::<EvpPkey>::from_raw(ffi::EVP_PKEY_new()) }.expect("EVP_PKEY_new");
+        // SAFETY: as above, for a DH allocation.
+        let dh = unsafe { CBox::<Dh>::from_raw(ffi::DH_new()) }.expect("DH_new");
+        assert!(EVP_PKEY_set1_DH(&mut dh_pkey.as_mut(), dh.as_ref()));
+        assert_eq!(
+            EVP_PKEY_get0_DH(dh_pkey.as_ref())
+                .expect("get0 DH")
+                .as_ptr(),
+            dh.as_ref().as_ptr(),
+        );
+        let dh_shared = EVP_PKEY_get1_DH(dh_pkey.as_ref()).expect("get1 DH");
+        assert_eq!(dh_shared.as_ref().as_ptr(), dh.as_ref().as_ptr());
+
+        // SAFETY: each non-null constructor result transfers one public free
+        // obligation for a fully initialized default-context object.
+        let mut dsa_pkey =
+            unsafe { CBox::<EvpPkey>::from_raw(ffi::EVP_PKEY_new()) }.expect("EVP_PKEY_new");
+        // SAFETY: as above, for a DSA allocation.
+        let dsa = unsafe { CBox::<Dsa>::from_raw(ffi::DSA_new()) }.expect("DSA_new");
+        assert!(EVP_PKEY_set1_DSA(&mut dsa_pkey.as_mut(), dsa.as_ref()));
+        assert_eq!(
+            EVP_PKEY_get0_DSA(dsa_pkey.as_ref())
+                .expect("get0 DSA")
+                .as_ptr(),
+            dsa.as_ref().as_ptr(),
+        );
+        let dsa_shared = EVP_PKEY_get1_DSA(dsa_pkey.as_ref()).expect("get1 DSA");
+        assert_eq!(dsa_shared.as_ref().as_ptr(), dsa.as_ref().as_ptr());
     }
 }

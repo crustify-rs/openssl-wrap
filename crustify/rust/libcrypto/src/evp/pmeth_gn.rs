@@ -8,7 +8,7 @@ use core::ptr::NonNull;
 use ffibox::{CBox, CLenDropped, CSlice, CVec};
 use libcrypto_sys as ffi;
 
-use crate::core::openssl_core::{OsslParam, OsslParamArray, terminated_param_len};
+use crate::core::openssl_core::{OsslCallback, OsslParam, OsslParamArray, terminated_param_len};
 use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyRef};
 use crate::evp::p_lib::BorrowedEvpPkey;
 
@@ -208,4 +208,46 @@ mod tests {
         let key = EVP_PKEY_keygen(&mut context_mut).expect("ED25519 keygen");
         assert!(EVP_PKEY_is_a(key.as_ref(), c"ED25519"));
     }
+
+    #[test]
+    fn provider_key_can_be_exported_through_a_safe_callback() {
+        // SAFETY: null selects the default process context, both C strings are
+        // live, and a non-null result is a fresh operation context.
+        let raw = unsafe {
+            ffi::EVP_PKEY_CTX_new_from_name(ptr::null_mut(), c"ED25519".as_ptr(), ptr::null())
+        };
+        // SAFETY: ownership of the fresh context transfers to its destructor.
+        let mut context = unsafe { CBox::<crate::evp::evp::EvpPkeyCtx>::from_raw(raw) }
+            .expect("EVP_PKEY_CTX_new_from_name");
+        let mut context_mut = context.as_mut();
+        assert_eq!(EVP_PKEY_keygen_init(&mut context_mut), 1);
+        let key = EVP_PKEY_keygen(&mut context_mut).expect("ED25519 keygen");
+
+        let mut parameter_count = 0usize;
+        let mut closure = |params: CSlice<'_, OsslParam<'_>>| {
+            parameter_count = params.len();
+            1
+        };
+        let mut callback = OsslCallback::new(&mut closure);
+        assert_eq!(EVP_PKEY_export(key.as_ref(), 0x03, &mut callback), 1);
+        assert!(parameter_count > 0);
+    }
+}
+
+/// Wraps: EVP_PKEY_export
+/// Invokes `callback` synchronously with the selected key parameters.
+pub fn EVP_PKEY_export<F>(
+    pkey: EvpPkeyRef<'_>,
+    selection: i32,
+    callback: &mut OsslCallback<'_, F>,
+) -> i32
+where
+    F: for<'params> FnMut(CSlice<'params, OsslParam<'params>>) -> i32,
+{
+    // SAFETY: `raw_parts` is consumed only by this synchronous FFI call while
+    // the callback remains exclusively borrowed; OpenSSL does not retain it.
+    let (function, argument) = unsafe { callback.raw_parts() };
+    // SAFETY: the key is live, and the callback/function state pair is valid
+    // and uniquely borrowed for the complete synchronous export operation.
+    unsafe { ffi::EVP_PKEY_export(pkey.as_ptr(), selection, function, argument) }
 }
