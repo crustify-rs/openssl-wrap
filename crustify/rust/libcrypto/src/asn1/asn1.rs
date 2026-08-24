@@ -413,3 +413,169 @@ mod stack_tests {
         assert_eq!(OPENSSL_sk_num(Some(object_exclusive.as_ref())), Some(0));
     }
 }
+
+define_ctype!(
+    /// Wraps: asn1_pctx_st
+    ///
+    /// OpenSSL publishes `ASN1_PCTX` as an opaque print-options handle. Its
+    /// five flag words remain behind the public getter/setter functions, while
+    /// owned values use [`CBox<Asn1Pctx>`] and `ASN1_PCTX_free`.
+    Asn1Pctx,
+    Asn1PctxRef,
+    Asn1PctxMut,
+    ffi::asn1_pctx_st
+);
+
+impl_dropped!(Asn1Pctx, ffi::asn1_pctx_st, ffi::ASN1_PCTX_free);
+
+impl Asn1Pctx {
+    /// Allocates a zero-initialized ASN.1 print context.
+    #[must_use]
+    pub fn new() -> Option<CBox<Self>> {
+        // SAFETY: a non-null `ASN1_PCTX_new` result is a fresh, fully
+        // initialized allocation released by the registered destructor.
+        unsafe { CBox::from_raw(ffi::ASN1_PCTX_new()) }
+    }
+}
+
+impl Asn1PctxRef<'_> {
+    /// Field: asn1_pctx_st.flags
+    #[must_use]
+    pub fn flags(&self) -> core::ffi::c_ulong {
+        // SAFETY: this handle carries a live shared borrow and the public
+        // getter only copies the initialized flag word.
+        unsafe { ffi::ASN1_PCTX_get_flags(self.as_ptr()) }
+    }
+
+    /// Field: asn1_pctx_st.nm_flags
+    #[must_use]
+    pub fn nm_flags(&self) -> core::ffi::c_ulong {
+        // SAFETY: this handle carries a live shared borrow and the public
+        // getter only copies the initialized flag word.
+        unsafe { ffi::ASN1_PCTX_get_nm_flags(self.as_ptr()) }
+    }
+
+    /// Field: asn1_pctx_st.cert_flags
+    #[must_use]
+    pub fn cert_flags(&self) -> core::ffi::c_ulong {
+        // SAFETY: this handle carries a live shared borrow and the public
+        // getter only copies the initialized flag word.
+        unsafe { ffi::ASN1_PCTX_get_cert_flags(self.as_ptr()) }
+    }
+
+    /// Field: asn1_pctx_st.oid_flags
+    #[must_use]
+    pub fn oid_flags(&self) -> core::ffi::c_ulong {
+        // SAFETY: this handle carries a live shared borrow and the public
+        // getter only copies the initialized flag word.
+        unsafe { ffi::ASN1_PCTX_get_oid_flags(self.as_ptr()) }
+    }
+
+    /// Field: asn1_pctx_st.str_flags
+    #[must_use]
+    pub fn str_flags(&self) -> core::ffi::c_ulong {
+        // SAFETY: this handle carries a live shared borrow and the public
+        // getter only copies the initialized flag word.
+        unsafe { ffi::ASN1_PCTX_get_str_flags(self.as_ptr()) }
+    }
+}
+
+impl Asn1PctxMut<'_> {
+    /// Field: asn1_pctx_st.flags
+    ///
+    /// Sets the general print flags.
+    pub fn set_flags(&mut self, flags: core::ffi::c_ulong) {
+        // SAFETY: this handle carries exclusive access and the public setter
+        // writes only this context's scalar flag word.
+        unsafe { ffi::ASN1_PCTX_set_flags(self.as_mut_ptr(), flags) }
+    }
+
+    /// Field: asn1_pctx_st.nm_flags
+    ///
+    /// Sets the distinguished-name print flags.
+    pub fn set_nm_flags(&mut self, flags: core::ffi::c_ulong) {
+        // SAFETY: this handle carries exclusive access and the public setter
+        // writes only this context's scalar flag word.
+        unsafe { ffi::ASN1_PCTX_set_nm_flags(self.as_mut_ptr(), flags) }
+    }
+
+    /// Field: asn1_pctx_st.cert_flags
+    ///
+    /// Sets the certificate print flags.
+    pub fn set_cert_flags(&mut self, flags: core::ffi::c_ulong) {
+        // SAFETY: this handle carries exclusive access and the public setter
+        // writes only this context's scalar flag word.
+        unsafe { ffi::ASN1_PCTX_set_cert_flags(self.as_mut_ptr(), flags) }
+    }
+
+    /// Field: asn1_pctx_st.oid_flags
+    ///
+    /// Sets the object-identifier print flags.
+    pub fn set_oid_flags(&mut self, flags: core::ffi::c_ulong) {
+        // SAFETY: this handle carries exclusive access and the public setter
+        // writes only this context's scalar flag word.
+        unsafe { ffi::ASN1_PCTX_set_oid_flags(self.as_mut_ptr(), flags) }
+    }
+
+    /// Field: asn1_pctx_st.str_flags
+    ///
+    /// Sets the ASN.1 string print flags.
+    pub fn set_str_flags(&mut self, flags: core::ffi::c_ulong) {
+        // SAFETY: this handle carries exclusive access and the public setter
+        // writes only this context's scalar flag word.
+        unsafe { ffi::ASN1_PCTX_set_str_flags(self.as_mut_ptr(), flags) }
+    }
+}
+
+#[cfg(test)]
+mod pctx_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn owned_context_borrows_and_round_trips_all_flags() {
+        assert_owned_cell::<Asn1Pctx>();
+
+        let mut context = Asn1Pctx::new().expect("ASN1_PCTX_new");
+        assert_eq!(context.as_ref().flags(), 0);
+        assert_eq!(context.as_ref().nm_flags(), 0);
+        assert_eq!(context.as_ref().cert_flags(), 0);
+        assert_eq!(context.as_ref().oid_flags(), 0);
+        assert_eq!(context.as_ref().str_flags(), 0);
+
+        let mut context = context.as_mut();
+        context.set_flags(0x11);
+        context.set_nm_flags(0x22);
+        context.set_cert_flags(0x33);
+        context.set_oid_flags(0x44);
+        context.set_str_flags(0x55);
+
+        let context = context.as_ref();
+        assert_eq!(context.flags(), 0x11);
+        assert_eq!(context.nm_flags(), 0x22);
+        assert_eq!(context.cert_flags(), 0x33);
+        assert_eq!(context.oid_flags(), 0x44);
+        assert_eq!(context.str_flags(), 0x55);
+    }
+
+    #[test]
+    fn opaque_context_handles_and_owner_are_pointer_sized() {
+        assert_eq!(
+            size_of::<Asn1PctxRef<'static>>(),
+            size_of::<*const ffi::asn1_pctx_st>()
+        );
+        assert_eq!(
+            size_of::<Asn1PctxMut<'static>>(),
+            size_of::<*mut ffi::asn1_pctx_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<Asn1Pctx>>(),
+            size_of::<*mut ffi::asn1_pctx_st>()
+        );
+    }
+}

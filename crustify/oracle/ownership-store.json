@@ -1549,6 +1549,12 @@
    ]
   },
   {
+   "name": "asn1_pctx_st",
+   "defined_in": "include/crypto/asn1.h",
+   "_comment_agent": "ASN1_PCTX is a plain five-word flag record. The public API keeps its body opaque, allocates it zeroed with ASN1_PCTX_new, releases it with ASN1_PCTX_free, and exposes each scalar through paired getters and setters; it has no pointer fields or clone operation.",
+   "fields": []
+  },
+  {
    "name": "asn1_string_st",
    "defined_in": "include/crypto/asn1.h",
    "_comment_agent": "The data field has runtime-conditional ownership, selected by ASN1_STRING_FLAG_DATA_NOT_OWNED or ASN1_STRING_FLAG_NDEF; length is authoritative and the contents are not generally NUL-terminated. The header's own storage is equally conditional: ASN1_STRING_FLAG_EMBED, set by asn1_primitive_new for ASN1_EMBED template fields, means the struct lives inside a parent allocation and both destructors then release only the data. ASN1_STRING_free and ASN1_STRING_clear_free are ossl_asn1_string_free_internal with clear=0 and clear=1, so either accepts every string the other does and the choice between them is free.",
@@ -4164,6 +4170,281 @@
      "note": "Deprecated constructor always returns null in the current implementation."
     }
    }
+  },
+  {
+   "name": "ASN1_PCTX_free",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "lifetime": {
+    "for": "p",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes and releases one ASN1_PCTX allocation; OPENSSL_free accepts NULL."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_get_cert_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one flag field from a live shared ASN1_PCTX and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_get_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one flag field from a live shared ASN1_PCTX and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_get_nm_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one flag field from a live shared ASN1_PCTX and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_get_oid_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one flag field from a live shared ASN1_PCTX and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_get_str_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads one flag field from a live shared ASN1_PCTX and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_new",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL on allocation failure, otherwise a fresh zero-initialized ASN1_PCTX allocation owned by the caller."
+    }
+   }
+  },
+  {
+   "name": "ASN1_PCTX_set_cert_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutates one flag field through an exclusive live ASN1_PCTX borrow and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_set_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutates one flag field through an exclusive live ASN1_PCTX borrow and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_set_nm_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutates one flag field through an exclusive live ASN1_PCTX borrow and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_set_oid_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutates one flag field through an exclusive live ASN1_PCTX borrow and does not retain the pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ASN1_PCTX_set_str_flags",
+   "defined_in": "crypto/asn1/tasn_prn.c",
+   "ptr_args": [
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutates one flag field through an exclusive live ASN1_PCTX borrow and does not retain the pointer."
+     }
+    }
+   ]
   },
   {
    "name": "ASN1_STRING_TABLE_cleanup",
