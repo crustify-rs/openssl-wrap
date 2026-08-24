@@ -313,3 +313,59 @@ mod skey_tests {
         assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
     }
 }
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_decrypt_old
+/// Runs the legacy private-key decrypt operation after verifying output capacity.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_decrypt_old(
+    output: &mut [u8],
+    encrypted: &[u8],
+    private_key: EvpPkeyRef<'_>,
+) -> Option<i32> {
+    let input_len = i32::try_from(encrypted.len()).ok()?;
+    // SAFETY: the shared key is live and the size query retains no pointers.
+    let required = unsafe { ffi::EVP_PKEY_get_size(private_key.as_ptr()) };
+    if required <= 0 || output.len() < usize::try_from(required).ok()? {
+        return None;
+    }
+    // SAFETY: `output` has at least the key's documented maximum result size,
+    // and `encrypted` supplies exactly `input_len` readable bytes.
+    Some(unsafe {
+        ffi::EVP_PKEY_decrypt_old(
+            output.as_mut_ptr(),
+            encrypted.as_ptr(),
+            input_len,
+            private_key.as_ptr().cast_mut(),
+        )
+    })
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_encrypt_old
+/// Runs the legacy public-key encrypt operation after verifying output capacity.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_encrypt_old(
+    output: &mut [u8],
+    plaintext: &[u8],
+    public_key: EvpPkeyRef<'_>,
+) -> Option<i32> {
+    let input_len = i32::try_from(plaintext.len()).ok()?;
+    // SAFETY: the shared key is live and the size query retains no pointers.
+    let required = unsafe { ffi::EVP_PKEY_get_size(public_key.as_ptr()) };
+    if required <= 0 || output.len() < usize::try_from(required).ok()? {
+        return None;
+    }
+    // SAFETY: `output` has at least the key's documented maximum result size,
+    // and `plaintext` supplies exactly `input_len` readable bytes.
+    Some(unsafe {
+        ffi::EVP_PKEY_encrypt_old(
+            output.as_mut_ptr(),
+            plaintext.as_ptr(),
+            input_len,
+            public_key.as_ptr().cast_mut(),
+        )
+    })
+}

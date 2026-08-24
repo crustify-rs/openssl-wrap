@@ -1,12 +1,16 @@
 //! Wrappers assigned from `crypto/evp/pmeth_gn.c`.
 
-use core::ptr;
+#![allow(non_snake_case)]
 
-use ffibox::{CBox, CLenDropped, CVec};
+use core::ptr;
+use core::ptr::NonNull;
+
+use ffibox::{CBox, CLenDropped, CSlice, CVec};
 use libcrypto_sys as ffi;
 
-use crate::core::openssl_core::{OsslParam, terminated_param_len};
+use crate::core::openssl_core::{OsslParam, OsslParamArray, terminated_param_len};
 use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyRef};
+use crate::evp::p_lib::BorrowedEvpPkey;
 
 fn generate(
     context: &mut EvpPkeyCtxMut<'_>,
@@ -114,6 +118,73 @@ pub fn EVP_PKEY_todata(pkey: EvpPkeyRef<'_>, selection: i32) -> Result<OwnedOssl
     // the scan established `len` initialized descriptors before its terminator,
     // and this policy releases the whole allocation without needing the length.
     unsafe { CVec::from_raw_parts(params.cast::<OsslParam<'static>>(), len) }.ok_or(0)
+}
+
+/// Wraps: EVP_PKEY_fromdata
+/// Imports one independently owned key from a terminated parameter array.
+pub fn EVP_PKEY_fromdata<'a>(
+    ctx: &'a mut EvpPkeyCtxMut<'_>,
+    selection: i32,
+    params: &mut OsslParamArray<'_>,
+) -> Result<BorrowedEvpPkey<'a>, i32> {
+    let mut raw = ptr::null_mut();
+    // SAFETY: the output slot is writable, the context is exclusive, and the
+    // parameter owner supplies a live terminated mutable descriptor array.
+    let status = unsafe {
+        ffi::EVP_PKEY_fromdata(ctx.as_mut_ptr(), &mut raw, selection, params.as_mut_ptr())
+    };
+    // SAFETY: any non-null output transfers one `EVP_PKEY_free` obligation.
+    let key = unsafe { BorrowedEvpPkey::from_raw(raw) };
+    if status > 0 {
+        key.ok_or(status)
+    } else {
+        drop(key);
+        Err(status)
+    }
+}
+
+/// Wraps: EVP_PKEY_fromdata_init
+pub fn EVP_PKEY_fromdata_init(ctx: &mut EvpPkeyCtxMut<'_>) -> i32 {
+    // SAFETY: the exclusive handle supplies a live operation context.
+    unsafe { ffi::EVP_PKEY_fromdata_init(ctx.as_mut_ptr()) }
+}
+
+/// Wraps: EVP_PKEY_fromdata_settable
+/// Borrows the provider's null-key-terminated table of accepted descriptors.
+#[must_use]
+pub fn EVP_PKEY_fromdata_settable<'a>(
+    ctx: &'a mut EvpPkeyCtxMut<'_>,
+    selection: i32,
+) -> Option<CSlice<'a, OsslParam<'a>>> {
+    // SAFETY: the context is exclusively borrowed and retains the returned
+    // provider method table for the duration of this borrow.
+    let raw = unsafe { ffi::EVP_PKEY_fromdata_settable(ctx.as_mut_ptr(), selection) };
+    let start = NonNull::new(raw.cast_mut().cast::<OsslParam<'a>>())?;
+    let mut len = 0usize;
+    // SAFETY: OpenSSL's return contract is a valid null-key-terminated
+    // OSSL_PARAM table. Read only the key scalar while finding the terminator.
+    unsafe {
+        while !(*raw.add(len)).key.is_null() {
+            len += 1;
+        }
+        Some(CSlice::from_raw_parts(start, len))
+    }
+}
+
+/// Wraps: EVP_PKEY_generate
+/// Runs the initialized generation operation and adopts its fresh key.
+pub fn EVP_PKEY_generate<'a>(ctx: &'a mut EvpPkeyCtxMut<'_>) -> Result<BorrowedEvpPkey<'a>, i32> {
+    let mut raw = ptr::null_mut();
+    // SAFETY: the context is exclusive and `raw` is a writable owner out-slot.
+    let status = unsafe { ffi::EVP_PKEY_generate(ctx.as_mut_ptr(), &mut raw) };
+    // SAFETY: any non-null output transfers one `EVP_PKEY_free` obligation.
+    let key = unsafe { BorrowedEvpPkey::from_raw(raw) };
+    if status > 0 {
+        key.ok_or(status)
+    } else {
+        drop(key);
+        Err(status)
+    }
 }
 
 #[cfg(test)]

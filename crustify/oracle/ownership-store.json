@@ -15513,6 +15513,1069 @@
    ]
   },
   {
+   "name": "EVP_PKEY_Q_keygen",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:libctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_add1_attr_by_NID",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "bytes",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bytes"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_add1_attr_by_txt",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "attrname",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:attrname"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "bytes",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:bytes"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_assign",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_auth_decapsulate_init",
+   "defined_in": "crypto/evp/kem.c",
+   "ptr_args": [
+    {
+     "name": "authpub",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:authpub"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Authentication key is transiently borrowed; null is accepted but reports failure."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_auth_encapsulate_init",
+   "defined_in": "crypto/evp/kem.c",
+   "ptr_args": [
+    {
+     "name": "authpriv",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:authpriv"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Authentication key is transiently borrowed; null is accepted but reports failure."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_can_sign",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_check",
+   "defined_in": "crypto/evp/pmeth_check.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_cmp",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_cmp_parameters",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_copy_parameters",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "from",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:from"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "to",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:to"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_decapsulate",
+   "defined_in": "crypto/evp/kem.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "secret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:secret"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "secretlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:secretlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_decapsulate_init",
+   "defined_in": "crypto/evp/kem.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_decrypt",
+   "defined_in": "crypto/evp/asymcipher.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "outlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_decrypt_init",
+   "defined_in": "crypto/evp/asymcipher.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_decrypt_init_ex",
+   "defined_in": "crypto/evp/asymcipher.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_decrypt_old",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "dec_key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dec_key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "enc_key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:enc_key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "private_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:private_key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_derive",
+   "defined_in": "crypto/evp/exchange.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "pkeylen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkeylen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_derive_SKEY",
+   "defined_in": "crypto/evp/exchange.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "key_type",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_type"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "mgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mgmt"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "propquery",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propquery"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_derive_init",
+   "defined_in": "crypto/evp/exchange.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_derive_init_ex",
+   "defined_in": "crypto/evp/exchange.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_derive_set_peer",
+   "defined_in": "crypto/evp/exchange.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "peer",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:peer"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_derive_set_peer_ex",
+   "defined_in": "crypto/evp/exchange.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "peer",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:peer"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_digestsign_supports_digest",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_dup",
    "defined_in": "crypto/evp/p_lib.c",
    "lifetime": {
@@ -15559,6 +16622,337 @@
    }
   },
   {
+   "name": "EVP_PKEY_encapsulate",
+   "defined_in": "crypto/evp/kem.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "outlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "secret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:secret"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "secretlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:secretlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_encapsulate_init",
+   "defined_in": "crypto/evp/kem.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_encrypt",
+   "defined_in": "crypto/evp/asymcipher.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "outlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_encrypt_init",
+   "defined_in": "crypto/evp/asymcipher.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_encrypt_init_ex",
+   "defined_in": "crypto/evp/asymcipher.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_encrypt_old",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "enc_key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:enc_key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Plaintext is a required borrowed byte array of the supplied length."
+     }
+    },
+    {
+     "name": "pub_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub_key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_eq",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_free",
    "defined_in": "crypto/evp/p_lib.c",
    "lifetime": {
@@ -15584,6 +16978,552 @@
      }
     }
    ]
+  },
+  {
+   "name": "EVP_PKEY_fromdata",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "ppkey",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable pointer out-slot; a successful call transfers the inner owner."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_fromdata_init",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_fromdata_settable",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_generate",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "ppkey",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable pointer out-slot; a successful call transfers the inner owner."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get0",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_EC_KEY",
+   "defined_in": "crypto/evp/p_legacy.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_description",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_hmac",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:len"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_poly1305",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:len"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_provider",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:key"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_siphash",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:len"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get0_type_name",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:key"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get1_EC_KEY",
+   "defined_in": "crypto/evp/p_legacy.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the public contract and implementation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the public contract and implementation."
+    }
+   }
   },
   {
    "name": "EVP_PKEY_get1_encoded_public_key",

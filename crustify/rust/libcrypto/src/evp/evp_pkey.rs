@@ -1,13 +1,87 @@
 //! Wrappers assigned from `crypto/evp/evp_pkey.c`.
 
+#![allow(non_snake_case)]
+
+use core::ffi::CStr;
+
 use libcrypto_sys as ffi;
 
-use crate::evp::evp::EvpPkeyRef;
+use crate::evp::evp::{EvpPkeyMut, EvpPkeyRef};
+use crate::provider::provider_core::OsslProviderRef;
+
+/// Wraps: EVP_PKEY_add1_attr_by_NID
+/// Adds a copied attribute value identified by numeric object identifier.
+pub fn EVP_PKEY_add1_attr_by_NID(
+    key: &mut EvpPkeyMut<'_>,
+    nid: i32,
+    attribute_type: i32,
+    bytes: &[u8],
+) -> bool {
+    let Ok(len) = i32::try_from(bytes.len()) else {
+        return false;
+    };
+    // SAFETY: the exclusive key is live and `bytes` supplies exactly `len`
+    // readable bytes. OpenSSL copies the attribute value on success.
+    unsafe {
+        ffi::EVP_PKEY_add1_attr_by_NID(key.as_mut_ptr(), nid, attribute_type, bytes.as_ptr(), len)
+            == 1
+    }
+}
+
+/// Wraps: EVP_PKEY_add1_attr_by_txt
+/// Adds a copied attribute value identified by a NUL-terminated object name.
+pub fn EVP_PKEY_add1_attr_by_txt(
+    key: &mut EvpPkeyMut<'_>,
+    attribute_name: &CStr,
+    attribute_type: i32,
+    bytes: &[u8],
+) -> bool {
+    let Ok(len) = i32::try_from(bytes.len()) else {
+        return false;
+    };
+    // SAFETY: all borrowed inputs are live for the call and OpenSSL copies the
+    // name interpretation and value into the key's owned attribute stack.
+    unsafe {
+        ffi::EVP_PKEY_add1_attr_by_txt(
+            key.as_mut_ptr(),
+            attribute_name.as_ptr(),
+            attribute_type,
+            bytes.as_ptr(),
+            len,
+        ) == 1
+    }
+}
+
+/// Wraps: EVP_PKEY_get0_provider
+/// Borrows the provider retained by a provider-backed key.
+#[must_use]
+pub fn EVP_PKEY_get0_provider<'a>(key: EvpPkeyRef<'a>) -> Option<OsslProviderRef<'a>> {
+    // SAFETY: the shared key handle is live; the returned provider is retained
+    // by the key management method and therefore cannot outlive `key`.
+    let raw = unsafe { ffi::EVP_PKEY_get0_provider(key.as_ptr()) };
+    // SAFETY: null is absence; a non-null result is live for the key borrow and
+    // is borrowed rather than adopted as an active provider owner.
+    unsafe { OsslProviderRef::from_ptr(raw.cast_mut()) }
+}
+
+/// Wraps: EVP_PKEY_get0_type_name
+/// Borrows the key type name stored by its method table.
+#[must_use]
+pub fn EVP_PKEY_get0_type_name<'a>(key: EvpPkeyRef<'a>) -> Option<&'a CStr> {
+    // SAFETY: the key is live and retains the returned NUL-terminated method
+    // name for at least the handle's lifetime.
+    let raw = unsafe { ffi::EVP_PKEY_get0_type_name(key.as_ptr()) };
+    if raw.is_null() {
+        None
+    } else {
+        // SAFETY: the C API promises a borrowed NUL-terminated type name.
+        Some(unsafe { CStr::from_ptr(raw) })
+    }
+}
 
 /// Wraps: EVP_PKEY_get_attr_by_NID
 /// Returns the next matching attribute index after `last_position`.
 #[must_use]
-#[allow(non_snake_case)]
 pub fn EVP_PKEY_get_attr_by_NID(pkey: EvpPkeyRef<'_>, nid: i32, last_position: i32) -> i32 {
     // SAFETY: the shared key keeps its attribute stack live for the lookup.
     unsafe { ffi::EVP_PKEY_get_attr_by_NID(pkey.as_ptr(), nid, last_position) }
@@ -15,7 +89,6 @@ pub fn EVP_PKEY_get_attr_by_NID(pkey: EvpPkeyRef<'_>, nid: i32, last_position: i
 
 /// Wraps: EVP_PKEY_get_attr_count
 #[must_use]
-#[allow(non_snake_case)]
 pub fn EVP_PKEY_get_attr_count(pkey: EvpPkeyRef<'_>) -> i32 {
     // SAFETY: the shared key keeps its attribute stack live for the count.
     unsafe { ffi::EVP_PKEY_get_attr_count(pkey.as_ptr()) }

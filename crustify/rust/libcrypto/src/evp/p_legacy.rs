@@ -1,22 +1,46 @@
 //! Wrappers assigned from `crypto/evp/p_legacy.c`.
 
-use crate::evp::evp::EvpPkeyMut;
-use crate::keys::ec_local::EcKeyRef;
+#![allow(non_snake_case)]
+
 use libcrypto_sys as ffi;
 
-/// Wraps: EVP_PKEY_set1_EC_KEY
-///
-/// Stores an independently reference-counted share of `key` in `pkey`. The
-/// caller retains its own key reference, and replacement releases any previous
-/// key material held by `pkey`.
-#[allow(non_snake_case)]
-pub fn EVP_PKEY_set1_EC_KEY(pkey: &mut EvpPkeyMut<'_>, key: EcKeyRef<'_>) -> bool {
-    // SAFETY: both handles identify live objects. The exclusive PKEY handle
-    // permits replacement, while OpenSSL raises `key`'s atomic reference count
-    // before storing it and leaves the caller's shared borrow untouched.
-    unsafe { ffi::EVP_PKEY_set1_EC_KEY(pkey.as_mut_ptr(), key.as_ptr().cast_mut()) == 1 }
+#[cfg(feature = "deprecated-3-0")]
+use crate::evp::evp::EvpPkeyRef;
+use crate::keys::ec_local::EcKeyRef;
+#[cfg(feature = "deprecated-3-0")]
+use crate::keys::ec_local::SharedEcKey;
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0_EC_KEY
+/// Borrows the legacy EC key retained by an EVP key container.
+#[must_use]
+pub fn EVP_PKEY_get0_EC_KEY<'a>(pkey: EvpPkeyRef<'a>) -> Option<EcKeyRef<'a>> {
+    // SAFETY: the key container is live and retains any returned EC key.
+    let raw = unsafe { ffi::EVP_PKEY_get0_EC_KEY(pkey.as_ptr()) };
+    // SAFETY: null is absence; a non-null result remains borrowed from `pkey`.
+    unsafe { EcKeyRef::from_ptr(raw.cast_mut()) }
 }
 
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get1_EC_KEY
+/// Raises and owns one shared-only EC key reference.
+#[must_use]
+pub fn EVP_PKEY_get1_EC_KEY<'a>(pkey: EvpPkeyRef<'a>) -> Option<SharedEcKey<'a>> {
+    // SAFETY: the live EVP key permits OpenSSL to locate and up-reference its
+    // legacy EC key without transferring the EVP key itself.
+    let raw = unsafe { ffi::EVP_PKEY_get1_EC_KEY(pkey.as_ptr().cast_mut()) };
+    // SAFETY: a non-null result transfers one matching `EC_KEY_free`
+    // obligation; tying it to `pkey` conservatively preserves dependencies.
+    unsafe { SharedEcKey::from_raw(raw) }
+}
+
+/// Wraps: EVP_PKEY_set1_EC_KEY
+/// Stores a separately reference-counted share of `key` in `pkey`.
+pub fn EVP_PKEY_set1_EC_KEY(pkey: &mut crate::evp::evp::EvpPkeyMut<'_>, key: EcKeyRef<'_>) -> bool {
+    // SAFETY: both handles identify live objects. OpenSSL raises `key`'s
+    // reference count before storing it in the exclusively borrowed PKEY.
+    unsafe { ffi::EVP_PKEY_set1_EC_KEY(pkey.as_mut_ptr(), key.as_ptr().cast_mut()) == 1 }
+}
 #[cfg(test)]
 mod tests {
     use ffibox::CBox;

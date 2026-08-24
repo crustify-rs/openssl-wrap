@@ -4,6 +4,15 @@ use libcrypto_sys as ffi;
 
 use crate::evp::evp::EvpPkeyCtxMut;
 
+/// Wraps: EVP_PKEY_check
+/// Runs the algorithm's full key-pair consistency check.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_check(ctx: &mut EvpPkeyCtxMut<'_>) -> i32 {
+    // SAFETY: the exclusive handle supplies a live operation context; the C
+    // function retains no pointer supplied by this call.
+    unsafe { ffi::EVP_PKEY_check(ctx.as_mut_ptr()) }
+}
+
 /// Wraps: EVP_PKEY_pairwise_check
 #[allow(non_snake_case)]
 pub fn EVP_PKEY_pairwise_check(context: &mut EvpPkeyCtxMut<'_>) -> i32 {

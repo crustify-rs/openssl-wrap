@@ -4,6 +4,7 @@ use core::ffi::{CStr, c_int, c_void};
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 use core::ptr::{NonNull, addr_of, addr_of_mut};
+use std::vec::Vec;
 
 use ffibox::{CCell, CPtr, CSlice, CSliceMut, CType, CVal, CValued};
 use libcrypto_sys as ffi;
@@ -137,6 +138,50 @@ impl<'data> OsslParam<'data> {
         let data =
             unsafe { CSliceMut::from_raw_parts(NonNull::new_unchecked(data.as_mut_ptr()), len) };
         Self::for_buffer(key, data_type, data)
+    }
+}
+
+/// An owned, automatically terminated array of borrowed `OSSL_PARAM` descriptors.
+///
+/// Descriptor headers are copied into stable Rust-owned storage; their keys
+/// and data remain borrowed for `'data`. This lets safe wrappers pass the C
+/// array convention without exposing a raw pointer or asking callers to
+/// manufacture the trailing null-key sentinel.
+pub struct OsslParamArray<'data> {
+    descriptors: Vec<ffi::ossl_param_st>,
+    borrows: PhantomData<&'data mut [MaybeUninit<u8>]>,
+}
+
+impl<'data> OsslParamArray<'data> {
+    /// Copies descriptor headers and appends the required terminator.
+    #[must_use]
+    pub fn new(params: &[OsslParamRef<'_, 'data>]) -> Self {
+        let mut descriptors = Vec::with_capacity(params.len() + 1);
+        for param in params {
+            // SAFETY: each shared handle addresses one initialized descriptor;
+            // copying its plain C header preserves, rather than consumes, all
+            // referents carried by the array's `'data` marker.
+            descriptors.push(unsafe { param.as_ptr().read() });
+        }
+        descriptors.push(ffi::ossl_param_st {
+            key: core::ptr::null(),
+            data_type: 0,
+            data: core::ptr::null_mut(),
+            data_size: 0,
+            return_size: usize::MAX,
+        });
+        Self {
+            descriptors,
+            borrows: PhantomData,
+        }
+    }
+
+    pub(crate) fn as_ptr(&self) -> *const ffi::ossl_param_st {
+        self.descriptors.as_ptr()
+    }
+
+    pub(crate) fn as_mut_ptr(&mut self) -> *mut ffi::ossl_param_st {
+        self.descriptors.as_mut_ptr()
     }
 }
 
@@ -565,5 +610,12 @@ mod tests {
         let status = unsafe { function.expect("trampoline")(raw.as_ptr(), argument) };
         assert_eq!(status, 1);
         assert_eq!(seen, 1);
+    }
+
+    #[test]
+    fn parameter_array_adds_its_terminator() {
+        let array = OsslParamArray::new(&[]);
+        // SAFETY: the array always owns at least its initialized terminator.
+        assert!(unsafe { (*array.as_ptr()).key.is_null() });
     }
 }

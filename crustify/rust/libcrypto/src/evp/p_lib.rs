@@ -1,5 +1,7 @@
 //! Wrappers assigned from `crypto/evp/p_lib.c`.
 
+#![allow(non_snake_case)]
+
 use core::ffi::{CStr, c_char, c_void};
 use core::marker::PhantomData;
 use core::ptr::{self, NonNull, null_mut};
@@ -13,6 +15,8 @@ use crate::bio::context::OsslLibCtxRef;
 use crate::core::openssl_core::{OsslParam, OsslParamListMut, OsslParamRef, terminated_param_len};
 use crate::evp::evp::{EvpCipherRef, EvpPkey, EvpPkeyMut, EvpPkeyRef};
 use crate::evp::evp_local::EvpKeymgmtRef;
+#[cfg(feature = "deprecated-3-0")]
+use crate::keys::ec_local::EcKey;
 use crate::mem::CryptoFree;
 use libc::x86_64_linux_gnu_bits_types_struct_file::IoFileMut;
 
@@ -24,7 +28,7 @@ pub struct BorrowedEvpPkey<'a> {
 }
 
 impl BorrowedEvpPkey<'_> {
-    unsafe fn from_raw(raw: *mut ffi::evp_pkey_st) -> Option<Self> {
+    pub(crate) unsafe fn from_raw(raw: *mut ffi::evp_pkey_st) -> Option<Self> {
         // SAFETY: the caller transfers one fully initialized EVP_PKEY reference.
         unsafe { CBox::from_raw(raw) }.map(|inner| Self {
             inner,
@@ -861,6 +865,173 @@ pub fn EVP_PKEY_type_names_do_all<F: FnMut(&CStr)>(pkey: EvpPkeyRef<'_>, callbac
         ) == 1
     };
     ok && state.valid
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// A borrowed, runtime-typed legacy key payload.
+///
+/// The payload deliberately exposes no raw pointer or typed access: callers
+/// should use a type-specific `get0` wrapper when that type has been wrapped.
+pub struct LegacyEvpPkeyRef<'a> {
+    ptr: NonNull<c_void>,
+    borrow: PhantomData<EvpPkeyRef<'a>>,
+}
+
+#[cfg(feature = "deprecated-3-0")]
+impl LegacyEvpPkeyRef<'_> {
+    /// Whether this borrowed legacy payload is present.
+    #[must_use]
+    pub const fn is_present(&self) -> bool {
+        let _ = self.ptr;
+        true
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_assign
+/// Transfers an independently owned legacy EC key into an EVP container.
+pub fn EVP_PKEY_assign_EC_KEY(
+    pkey: &mut EvpPkeyMut<'_>,
+    key: CBox<EcKey>,
+) -> Result<(), CBox<EcKey>> {
+    let raw = key.into_raw();
+    // SAFETY: the destination is exclusive and `raw` transfers one EC_KEY
+    // ownership obligation only if the C function reports success.
+    if unsafe {
+        ffi::EVP_PKEY_assign(
+            pkey.as_mut_ptr(),
+            ffi::EVP_PKEY_EC as i32,
+            raw.cast::<c_void>(),
+        )
+    } == 1
+    {
+        Ok(())
+    } else {
+        // SAFETY: failure leaves the non-null input ownership unconsumed.
+        Err(unsafe { CBox::from_raw(raw) }.expect("non-null EC key"))
+    }
+}
+
+/// Wraps: EVP_PKEY_can_sign
+#[must_use]
+pub fn EVP_PKEY_can_sign(pkey: EvpPkeyRef<'_>) -> bool {
+    // SAFETY: the shared handle supplies a live key and the query retains no
+    // borrowed pointer.
+    unsafe { ffi::EVP_PKEY_can_sign(pkey.as_ptr()) == 1 }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_cmp
+#[must_use]
+pub fn EVP_PKEY_cmp(a: EvpPkeyRef<'_>, b: EvpPkeyRef<'_>) -> i32 {
+    // SAFETY: both shared key handles remain live for the comparison.
+    unsafe { ffi::EVP_PKEY_cmp(a.as_ptr(), b.as_ptr()) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_cmp_parameters
+#[must_use]
+pub fn EVP_PKEY_cmp_parameters(a: EvpPkeyRef<'_>, b: EvpPkeyRef<'_>) -> i32 {
+    // SAFETY: both shared key handles remain live for the comparison.
+    unsafe { ffi::EVP_PKEY_cmp_parameters(a.as_ptr(), b.as_ptr()) }
+}
+
+/// Wraps: EVP_PKEY_copy_parameters
+pub fn EVP_PKEY_copy_parameters(to: &mut EvpPkeyMut<'_>, from: EvpPkeyRef<'_>) -> i32 {
+    // SAFETY: the destination is exclusive, the source is shared and live,
+    // and OpenSSL duplicates or raises every stored dependency it retains.
+    unsafe { ffi::EVP_PKEY_copy_parameters(to.as_mut_ptr(), from.as_ptr()) }
+}
+
+/// Wraps: EVP_PKEY_digestsign_supports_digest
+#[must_use]
+pub fn EVP_PKEY_digestsign_supports_digest(
+    pkey: &mut EvpPkeyMut<'_>,
+    library_context: Option<OsslLibCtxRef<'_>>,
+    digest_name: &CStr,
+    property_query: Option<&CStr>,
+) -> i32 {
+    let library_context =
+        library_context.map_or(ptr::null_mut(), |context| context.as_ptr().cast_mut());
+    let property_query = property_query.map_or(ptr::null(), CStr::as_ptr);
+    // SAFETY: the exclusive key and every optional borrowed pointer remain
+    // live for the transient digest-sign initialization query.
+    unsafe {
+        ffi::EVP_PKEY_digestsign_supports_digest(
+            pkey.as_mut_ptr(),
+            library_context,
+            digest_name.as_ptr(),
+            property_query,
+        )
+    }
+}
+
+/// Wraps: EVP_PKEY_eq
+#[must_use]
+pub fn EVP_PKEY_eq(a: EvpPkeyRef<'_>, b: EvpPkeyRef<'_>) -> i32 {
+    // SAFETY: both shared key handles remain live for the comparison.
+    unsafe { ffi::EVP_PKEY_eq(a.as_ptr(), b.as_ptr()) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0
+#[must_use]
+pub fn EVP_PKEY_get0<'a>(pkey: EvpPkeyRef<'a>) -> Option<LegacyEvpPkeyRef<'a>> {
+    // SAFETY: the key is live; the result is borrowed from its legacy payload.
+    let raw = unsafe { ffi::EVP_PKEY_get0(pkey.as_ptr()) };
+    NonNull::new(raw).map(|ptr| LegacyEvpPkeyRef {
+        ptr,
+        borrow: PhantomData,
+    })
+}
+
+/// Wraps: EVP_PKEY_get0_description
+#[must_use]
+pub fn EVP_PKEY_get0_description<'a>(pkey: EvpPkeyRef<'a>) -> Option<&'a CStr> {
+    // SAFETY: the key retains the returned static or method-owned description.
+    let raw = unsafe { ffi::EVP_PKEY_get0_description(pkey.as_ptr()) };
+    if raw.is_null() {
+        None
+    } else {
+        // SAFETY: the API returns a NUL-terminated string borrowed from `pkey`.
+        Some(unsafe { CStr::from_ptr(raw) })
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+fn legacy_octets<'a>(
+    pkey: EvpPkeyRef<'a>,
+    call: unsafe extern "C" fn(*const ffi::evp_pkey_st, *mut usize) -> *const u8,
+) -> Option<CSlice<'a, u8>> {
+    let mut len = 0;
+    // SAFETY: the key is live and `len` is a writable scalar out-slot.
+    let raw = unsafe { call(pkey.as_ptr(), &mut len) };
+    NonNull::new(raw.cast_mut()).map(|raw| {
+        // SAFETY: a non-null result addresses the `len` bytes stored in the
+        // key's retained ASN.1 string for the key borrow's lifetime.
+        unsafe { CSlice::from_raw_parts(raw, len) }
+    })
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0_hmac
+#[must_use]
+pub fn EVP_PKEY_get0_hmac<'a>(pkey: EvpPkeyRef<'a>) -> Option<CSlice<'a, u8>> {
+    legacy_octets(pkey, ffi::EVP_PKEY_get0_hmac)
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0_poly1305
+#[must_use]
+pub fn EVP_PKEY_get0_poly1305<'a>(pkey: EvpPkeyRef<'a>) -> Option<CSlice<'a, u8>> {
+    legacy_octets(pkey, ffi::EVP_PKEY_get0_poly1305)
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_PKEY_get0_siphash
+#[must_use]
+pub fn EVP_PKEY_get0_siphash<'a>(pkey: EvpPkeyRef<'a>) -> Option<CSlice<'a, u8>> {
+    legacy_octets(pkey, ffi::EVP_PKEY_get0_siphash)
 }
 
 #[cfg(test)]
