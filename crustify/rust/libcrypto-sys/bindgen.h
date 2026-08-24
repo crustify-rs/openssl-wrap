@@ -3,6 +3,7 @@
 #include <openssl/asn1t.h>
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
+#include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
@@ -18,6 +19,11 @@
 typedef long (*crustify_BIO_callback_fn)(BIO *b, int oper,
     const char *argp, int argi, long argl, long ret);
 void BIO_set_callback(BIO *b, crustify_BIO_callback_fn callback);
+typedef struct ec_key_st EC_KEY;
+EC_KEY *EC_KEY_new(void);
+void EC_KEY_free(EC_KEY *key);
+EC_KEY *EC_KEY_dup(const EC_KEY *key);
+int EC_KEY_up_ref(EC_KEY *key);
 #endif
 /* crustify:macros:end */
 

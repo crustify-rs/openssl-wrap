@@ -2408,6 +2408,109 @@
    ]
   },
   {
+   "name": "ec_key_st",
+   "defined_in": "crypto/ec/ec_local.h",
+   "_comment_agent": "ec_key_st is public only as opaque EC_KEY. Its method and library-context links are borrowed; group, public point, private scalar and property query are owned and released on the final EC_KEY_free down-reference.",
+   "fields": [
+    {
+     "name": "group",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional independently owned group; setters copy their input and EC_KEY_free calls EC_GROUP_free."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed library context, null for the default context; EC_KEY_free does not release it and EC key code does not mutate through this pointer."
+     }
+    },
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The key borrows its method table; initialization installs the built-in static method and EC_KEY_set_method may replace it without taking ownership."
+     }
+    },
+    {
+     "name": "priv_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional independently owned BIGNUM; setters copy their input and EC_KEY_free calls BN_clear_free."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional owned NUL-terminated duplicate of the property query; released with OPENSSL_free and only read after initialization."
+     }
+    },
+    {
+     "name": "pub_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional independently owned point; setters copy their input and EC_KEY_free calls EC_POINT_free."
+     }
+    },
+    {
+     "name": "references",
+     "refcount": true
+    }
+   ]
+  },
+  {
    "name": "engine_st",
    "defined_in": null,
    "_comment_agent": "Reviewed the public API view: engine_st is an incomplete forward declaration with no fields. Deprecated APIs are disabled for this campaign, so no active lifecycle operation acts on it and there are no pointer-field findings to submit.",
@@ -11420,6 +11523,129 @@
      "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
     }
    }
+  },
+  {
+   "name": "EC_KEY_dup",
+   "defined_in": "crypto/ec/ec_key.c",
+   "lifetime": {
+    "for": "ec_key",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "ec_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ec_key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads a live source key without retaining it."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or a fresh independent key carrying one EC_KEY_free obligation."
+    }
+   }
+  },
+  {
+   "name": "EC_KEY_free",
+   "defined_in": "crypto/ec/ec_key.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one EC_KEY reference; null is accepted. The final down-reference disposes fields and frees the allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EC_KEY_new",
+   "defined_in": "crypto/ec/ec_key.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on allocation failure or a fresh fully initialized reference-count-one EC_KEY."
+    }
+   }
+  },
+  {
+   "name": "EC_KEY_up_ref",
+   "defined_in": "crypto/ec/ec_key.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:r"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows the live key and mutates only its atomic reference count; success creates one additional EC_KEY_free obligation."
+     }
+    }
+   ]
   },
   {
    "name": "EDIPARTYNAME_free",
