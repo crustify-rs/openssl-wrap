@@ -100,7 +100,15 @@ unsafe fn adopt_decoded(
     }
 }
 
-pub(crate) fn decode_result(
+/// Classifies one `X509V3_EXT_d2i` outcome and adopts a decoded extension.
+///
+/// # Safety
+///
+/// A non-null `raw` must be a freshly decoded, solely owned extension of the
+/// exact syntax `kind` names, produced by a lookup keyed on `kind.nid()`. The
+/// adopted owner runs that syntax's full destructor, so any other pointer
+/// would free storage under the wrong ASN.1 template.
+pub(crate) unsafe fn decode_result(
     kind: X509V3ExtensionKind,
     critical: i32,
     raw: *mut c_void,
@@ -114,8 +122,9 @@ pub(crate) fn decode_result(
             },
         });
     }
-    // SAFETY: `raw` came from decoding exactly `kind.nid()`, so its concrete
-    // syntax and matching full destructor are selected by the same enum arm.
+    // SAFETY: the caller guarantees `raw` came from decoding exactly
+    // `kind.nid()`, so its concrete syntax and matching full destructor are
+    // selected by the same enum arm.
     let value = unsafe { adopt_decoded(kind, raw) }.expect("raw was checked non-null");
     Ok(X509V3Decoded {
         value,
@@ -142,7 +151,9 @@ pub fn X509V3_get_d2i(
             ptr::null_mut(),
         )
     };
-    decode_result(kind, critical, raw)
+    // SAFETY: the lookup above is keyed on `kind.nid()`, so a non-null result
+    // is a freshly decoded, solely owned extension of exactly that syntax.
+    unsafe { decode_result(kind, critical, raw) }
 }
 
 #[cfg(test)]

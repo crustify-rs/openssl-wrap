@@ -65,30 +65,52 @@ pub fn X509_get_subject_name<'a>(certificate: X509Ref<'a>) -> X509NameRef<'a> {
 
 /// Wraps: X509_issuer_and_serial_cmp
 /// Orders optional certificates by serial number and then issuer name.
+///
+/// The issuer comparison delegates to `X509_NAME_cmp`, so `None` reports the
+/// same canonical-encoding failure that [`X509_NAME_cmp`] represents.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_issuer_and_serial_cmp(a: Option<X509Ref<'_>>, b: Option<X509Ref<'_>>) -> Ordering {
+pub fn X509_issuer_and_serial_cmp(
+    a: Option<X509Ref<'_>>,
+    b: Option<X509Ref<'_>>,
+) -> Option<Ordering> {
     let a = a.map_or(ptr::null(), |certificate| certificate.as_ptr());
     let b = b.map_or(ptr::null(), |certificate| certificate.as_ptr());
     // SAFETY: the C comparator explicitly accepts null for either argument;
     // each non-null pointer comes from a live shared handle.
-    unsafe { ffi::X509_issuer_and_serial_cmp(a, b) }.cmp(&0)
+    name_comparison(unsafe { ffi::X509_issuer_and_serial_cmp(a, b) })
 }
 
 /// Wraps: X509_issuer_name_cmp
+/// Orders two certificates by issuer name.
+///
+/// `None` reports the canonical-encoding failure `X509_NAME_cmp` signals with
+/// its distinct `-2` result rather than folding it into an ordering.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_issuer_name_cmp(a: X509Ref<'_>, b: X509Ref<'_>) -> Ordering {
-    // SAFETY: both live certificates own initialized issuer names.
-    unsafe { ffi::X509_issuer_name_cmp(a.as_ptr(), b.as_ptr()) }.cmp(&0)
+pub fn X509_issuer_name_cmp(a: X509Ref<'_>, b: X509Ref<'_>) -> Option<Ordering> {
+    // SAFETY: both live certificates own initialized issuer names. OpenSSL may
+    // refresh their canonical encodings but retains both name allocations.
+    name_comparison(unsafe { ffi::X509_issuer_name_cmp(a.as_ptr(), b.as_ptr()) })
 }
 
 /// Wraps: X509_subject_name_cmp
+/// Orders two certificates by subject name.
+///
+/// `None` reports the canonical-encoding failure `X509_NAME_cmp` signals with
+/// its distinct `-2` result rather than folding it into an ordering.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_subject_name_cmp(a: X509Ref<'_>, b: X509Ref<'_>) -> Ordering {
-    // SAFETY: both live certificates own initialized subject names.
-    unsafe { ffi::X509_subject_name_cmp(a.as_ptr(), b.as_ptr()) }.cmp(&0)
+pub fn X509_subject_name_cmp(a: X509Ref<'_>, b: X509Ref<'_>) -> Option<Ordering> {
+    // SAFETY: both live certificates own initialized subject names. OpenSSL may
+    // refresh their canonical encodings but retains both name allocations.
+    name_comparison(unsafe { ffi::X509_subject_name_cmp(a.as_ptr(), b.as_ptr()) })
+}
+
+/// Maps a distinguished-name comparison result, whose `-2` encodes an encoding
+/// failure rather than an ordering.
+fn name_comparison(comparison: i32) -> Option<Ordering> {
+    (comparison != -2).then(|| comparison.cmp(&0))
 }
 
 #[cfg(test)]
@@ -105,17 +127,20 @@ mod tests {
         assert_ne!(X509_get_subject_name(first.as_ref()).as_ptr(), ptr::null());
         assert_eq!(
             X509_issuer_name_cmp(first.as_ref(), second.as_ref()),
-            Ordering::Equal
+            Some(Ordering::Equal)
         );
         assert_eq!(
             X509_subject_name_cmp(first.as_ref(), second.as_ref()),
-            Ordering::Equal
+            Some(Ordering::Equal)
         );
         assert_eq!(
             X509_issuer_and_serial_cmp(Some(first.as_ref()), None),
-            Ordering::Greater
+            Some(Ordering::Greater)
         );
-        assert_eq!(X509_issuer_and_serial_cmp(None, None), Ordering::Equal);
+        assert_eq!(
+            X509_issuer_and_serial_cmp(None, None),
+            Some(Ordering::Equal)
+        );
         assert!(X509_get0_pubkey(first.as_ref()).is_none());
         assert!(X509_get_pubkey(first.as_ref()).is_none());
 
@@ -197,6 +222,5 @@ pub fn X509_NAME_cmp(a: Option<X509NameRef<'_>>, b: Option<X509NameRef<'_>>) -> 
     let b = b.map_or(ptr::null(), |name| name.as_ptr());
     // SAFETY: each input is null or a live shared name. OpenSSL may refresh
     // internal encoding caches but retains both allocations and their fields.
-    let comparison = unsafe { ffi::X509_NAME_cmp(a, b) };
-    (comparison != -2).then(|| comparison.cmp(&0))
+    name_comparison(unsafe { ffi::X509_NAME_cmp(a, b) })
 }

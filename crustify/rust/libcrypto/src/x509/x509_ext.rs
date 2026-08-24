@@ -8,6 +8,7 @@ use crate::asn1::asn1::Asn1ObjectRef;
 use crate::x509::v3_lib::{X509V3DecodeError, X509V3Decoded, X509V3ExtensionKind, decode_result};
 use crate::x509::x509_internal::X509Ref;
 use crate::x509::x509_local::X509ExtensionRef;
+use crate::x509::x509name::InvalidNid;
 
 fn last_position(position: Option<usize>) -> Option<i32> {
     position.map_or(Some(-1), |value| i32::try_from(value).ok())
@@ -30,17 +31,25 @@ pub fn X509_get_ext<'a>(certificate: X509Ref<'a>, index: usize) -> Option<X509Ex
 
 /// Wraps: X509_get_ext_by_NID
 /// Finds the next extension carrying `nid` after `last`.
-#[must_use]
+///
+/// OpenSSL resolves `nid` to an object identifier first and reports an
+/// unregistered number with a `-2` distinct from its `-1` not-found result, so
+/// the two outcomes stay distinct here as well.
 #[allow(non_snake_case)]
 pub fn X509_get_ext_by_NID(
     certificate: X509Ref<'_>,
     nid: i32,
     last: Option<usize>,
-) -> Option<usize> {
-    let last = last_position(last)?;
+) -> Result<Option<usize>, InvalidNid> {
+    let Some(last) = last_position(last) else {
+        return Ok(None);
+    };
     // SAFETY: the shared certificate is live and the integer arguments carry
     // no pointer obligations.
-    found_position(unsafe { ffi::X509_get_ext_by_NID(certificate.as_ptr(), nid, last) })
+    match unsafe { ffi::X509_get_ext_by_NID(certificate.as_ptr(), nid, last) } {
+        -2 => Err(InvalidNid),
+        position => Ok(found_position(position)),
+    }
 }
 
 /// Wraps: X509_get_ext_by_OBJ
@@ -103,7 +112,9 @@ pub fn X509_get_ext_d2i(
             ptr::null_mut(),
         )
     };
-    decode_result(kind, critical, raw)
+    // SAFETY: the lookup above is keyed on `kind.nid()`, so a non-null result
+    // is a freshly decoded, solely owned extension of exactly that syntax.
+    unsafe { decode_result(kind, critical, raw) }
 }
 
 #[cfg(test)]
@@ -117,7 +128,11 @@ mod tests {
         let certificate = X509_new().expect("certificate");
         assert_eq!(X509_get_ext_count(certificate.as_ref()), 0);
         assert!(X509_get_ext(certificate.as_ref(), 0).is_none());
-        assert!(X509_get_ext_by_NID(certificate.as_ref(), 0, None).is_none());
+        assert_eq!(X509_get_ext_by_NID(certificate.as_ref(), 0, None), Ok(None));
+        assert_eq!(
+            X509_get_ext_by_NID(certificate.as_ref(), i32::MAX, None),
+            Err(InvalidNid)
+        );
         let object = ASN1_OBJECT_create(0, &[0x2a], None, None).expect("OID");
         assert!(X509_get_ext_by_OBJ(certificate.as_ref(), object.as_ref(), None).is_none());
         assert!(X509_get_ext_by_critical(certificate.as_ref(), false, None).is_none());

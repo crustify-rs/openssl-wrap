@@ -69,8 +69,10 @@ pub fn GENERAL_NAME_cmp(a: Option<GeneralNameRef<'_>>, b: Option<GeneralNameRef<
     }
     let a = a.map_or(ptr::null_mut(), |value| value.as_ptr().cast_mut());
     let b = b.map_or(ptr::null_mut(), |value| value.as_ptr().cast_mut());
-    // SAFETY: each pointer is null or a live shared complete choice. Source
-    // inspection confirms that this legacy non-const signature only reads.
+    // SAFETY: each pointer is null or a live shared complete choice. The
+    // legacy non-const signature exists because the `GEN_DIRNAME` arm reaches
+    // `X509_NAME_cmp`, which may refresh a name's cached canonical encoding;
+    // no arm releases or reallocates a choice member.
     unsafe { ffi::GENERAL_NAME_cmp(a, b) }.cmp(&0)
 }
 
