@@ -230,3 +230,86 @@ mod pkey_ctx_tests {
         assert_eq!(duplicate.as_ref().as_ptr(), duplicate.as_ptr().cast_const());
     }
 }
+
+define_ctype!(
+    /// Wraps: evp_skey_st
+    ///
+    /// OpenSSL publishes `EVP_SKEY` as an opaque, reference-counted provider
+    /// secret-key container. The C implementation retains its key-management
+    /// method and uses that method to release the provider-specific key data;
+    /// its allocation and fields therefore remain C-owned.
+    ///
+    /// Public owners use [`SharedEvpSkey`] rather than exposing a
+    /// `CBox<EvpSkey>`: raising the reference count creates another owner of
+    /// the same record, so neither owner may grant exclusive access.
+    EvpSkey,
+    EvpSkeyRef,
+    EvpSkeyMut,
+    ffi::evp_skey_st
+);
+
+// `EVP_SKEY_free` consumes one public reference. The final down-reference
+// releases the provider key data, key-management method, lock, reference-count
+// state, and allocation.
+impl_dropped!(EvpSkey, ffi::evp_skey_st, ffi::EVP_SKEY_free);
+
+// Do not register `EVP_SKEY_up_ref` as `CCloned`: a cloneable `CBox` would let
+// two owners of the same record each request an exclusive borrowed handle.
+
+/// One owned, shared-only reference to a provider secret key.
+///
+/// The lifetime carries the library-context dependency of the retained
+/// key-management method. Keys from the process-wide default context may use
+/// `'static`; keys created in an explicit context retain that context's borrow.
+pub type SharedEvpSkey<'a> = crate::refcount::SharedRef<'a, EvpSkey>;
+
+impl<'a> EvpSkeyRef<'a> {
+    /// Raise this key's public reference count and return a shared-only owner.
+    #[must_use]
+    pub fn try_share(&self) -> Option<SharedEvpSkey<'a>> {
+        // SAFETY: the handle carries a live shared borrow. The C operation only
+        // mutates the atomic reference count and reports whether it created a
+        // matching public release obligation.
+        if unsafe { ffi::EVP_SKEY_up_ref(self.as_ptr().cast_mut()) } != 1 {
+            return None;
+        }
+
+        // SAFETY: successful `EVP_SKEY_up_ref` creates exactly one matching
+        // `EVP_SKEY_free` obligation. The owner retains this handle's context
+        // lifetime and exposes shared access only.
+        unsafe { SharedEvpSkey::from_raw(self.as_ptr().cast_mut()) }
+    }
+}
+
+#[cfg(test)]
+mod skey_tests {
+    use core::ptr;
+
+    use super::*;
+
+    #[test]
+    fn imported_key_and_raised_reference_are_shared_only() {
+        let mut bytes = [0x53_u8; 16];
+        // SAFETY: null selects the process-wide default library context, both
+        // string pointers are live and NUL-terminated, and `bytes` is a live
+        // buffer of the supplied length. A non-null result transfers one
+        // public `EVP_SKEY` reference.
+        let raw = unsafe {
+            ffi::EVP_SKEY_import_raw_key(
+                ptr::null_mut(),
+                c"GENERIC".as_ptr(),
+                bytes.as_mut_ptr(),
+                bytes.len(),
+                ptr::null(),
+            )
+        };
+        // SAFETY: the default library context is process-wide, and the fresh
+        // import result transfers one `EVP_SKEY_free` obligation.
+        let key: SharedEvpSkey<'static> =
+            unsafe { SharedEvpSkey::from_raw(raw) }.expect("EVP_SKEY_import_raw_key");
+
+        let shared = key.as_ref().try_share().expect("EVP_SKEY_up_ref");
+        assert_eq!(shared.as_ptr(), key.as_ptr());
+        assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+}
