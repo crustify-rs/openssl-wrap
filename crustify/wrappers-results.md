@@ -3,7 +3,7 @@
 ## Campaign
 
 - **target repo** — `openssl` @ `2924476b5591e691e904c4baf57894c526c4b8de`
-- **target** — public `libcrypto` subset in two tranches: (1) ASN.1 string/object, generic `STACK_OF`, and BIO; (2) X.509 certificate, name and extension handling. `libssl` excluded; EVP deferred beyond `evp_pkey_st`
+- **target** — public `libcrypto` in three tranches: ASN.1/`STACK_OF`/BIO foundation, X.509 certificate handling, and the `EVP_PKEY` core. `libssl` excluded
 - **campaign objective** — `wrap`
 - **`impl_files`** — `crypto/`, `include/crypto/`, `include/internal/`
 - **`api_headers`** — `include/openssl/`
@@ -14,939 +14,457 @@
 - **`--max-syms`** — `50`
 - **`--max-loc`** — `1000`
 - **`--min-fields`** — `10`
-- **`--parallel-max`** — `8`
-- **branch** — `crustify/libcrypto-gpt-5.6-sol`, code tip `3bb143b635`
-- **deps** — crustify-cli `ae596e5` (`fix/review-unplaced-context`), ffibox `c2178c4` (`main`)
+- **`--parallel-max`** — `8` foundation, `4` X.509 and EVP
+- **branch** — `crustify/libcrypto-gpt-5.6-sol`, tip `c396267745`
+- **deps** — crustify-cli `51d44d1` (`docs/results-template-ub`), crustify-oracle `5582ec8` (`fix/closure-name-resolves-to-walked-node`), ffibox `600399f` (`main`)
 
 ## Review pass
 
-`--objective review`, LLM-as-a-Judge over the landed waves. Run it under a
-DIFFERENT model from the one being judged — a review by the author is
-self-review, and any disagreement is what makes the pass informative.
+`--objective review`, LLM-as-a-Judge over the landed waves.
 
 - **agent backend** — `claude`
 - **model** — `anthropic/claude-opus-5`
 - **`--billing`** — `subscription`
-- **`--max-types`** — `10`
-- **`--max-syms`** — `50`
+- **`--max-types`** — `10` foundation, `30` X.509
+- **`--max-syms`** — `50` foundation, `150` X.509
 - **`--max-loc`** — `1000`
-- **`--min-fields`** — `10`
-- **`--parallel-max`** — `8`
+- **`--min-fields`** — `10` foundation, raised for X.509 so all `32` types fit one agent
+- **`--parallel-max`** — `8` foundation, `4` X.509
 - **branch** — `crustify/session/review-2026-08-24_00-32-55_40aa`, tip `10edf02776`
-- **agents** — `32`: `4` lifetime + `25` foundation + `3` X.509 review agents, over `4` sessions
-- **X.509 review caps** — `--max-syms 150`, `--max-types 30`, raised `--min-fields` so all `32` types fit one agent
+- **agents** — `36`, over `5` session(s)
 
 `rv`-prefixed columns below carry the review pass; the unprefixed ones remain
 the campaign's.
 
+## UB pass
+
+`crustify-audit ub`, an agentic hunt for undefined behaviour reachable from the
+crate's SAFE APIs.
+
+- **agent backend** — `claude`
+- **model** — `anthropic/claude-opus-5`
+- **`--billing`** — `subscription`
+- **`--timeout`** — `60` min
+- **subject** — `10–11-foundation` at `894f727207`, then `40–43-x509` at `10edf02776`
+- **agents** — `2` runs, `56m04s` + `31m15s` wall, `$43.48` + `$23.33`
+- **advisories** — `7` at `crustify/audit/advisories/`
+- **patch** — `crustify/orchestrator/ub-remediation` at `589b6078ec`, merged; `crustify/audit-fix-refcount-alias-and-general-name-cmp` at `3bb143b635`, merged
+
+`ub`-prefixed columns carry this pass.
+
+
 ## Legend
 
-- `DAG layer` — the unit's own wrap DAG layer
-- `kind` — `struct` / `union` / `enum` for a type; `callback`; `function` for
-  every symbol, whatever linkage the C declaration carries
-- `fields` — all declared fields
-- `target fields` / `target ptr` — fields a target-section function touches / of
-  those, pointers
-- `wrapped fields` — fields given an accessor, counted as DISTINCT `type.field`
-  paths; `—` = wrapped with no field accessor (opaque)
-- `newtypes` — distinct Rust types carrying a `/// Wraps: <tag>` anchor; `1` is
-  a plain 1:1 wrap, `>1` where one C type needs several representations (an
-  owned handle beside a borrowed view, a by-value beside a by-pointer form)
-- `target fns` — every target-section function needing the symbol, tree-wide
-- `deps` — import types/callbacks the symbol needs
-- `wrappers` — distinct safe fns emitted over the one C routine; `>1` where the
-  signature forked (a slice-taking beside a `CStr`-taking form, a fallible
-  beside an infallible one)
-- `batch` — the agent that emitted it. Symbols pool, so their cost is per
-  batch, not per symbol — see the batches table
-- `$` / `wall` / `loc` — that agent's own cost, its elapsed time, and the `.rs`
-  insertions of its landing commit. `wall` is `ended_at − started_at` from the
-  agent's own `usage.json`, so it INCLUDES the per-worktree C rebuild
-- `$/unit` / `$/loc` / `$/field` — that row's `$` over its units, its `loc`, or
-  its declared fields
-- `$/symbol` / `$/type` — a batch holds one kind or the other, so one of the
-  two reads `—`; on a Σ row each divides that kind's own cost by its own count
-- `↖ batched` — shares the row above's agent; one usage record covers both
-- `rv $` / `rv wall` / `rv loc` — the REVIEW agent's own cost, elapsed time, and
-  net `.rs` line delta (`+ins/-del`) of its landing commit
-- `verdict` — what the judge concluded: `held` = analysis and code confirmed as
-  emitted, `fixed` = a defect in the emitted Rust corrected, `record` = an
-  ownership finding resubmitted through the oracle. Several may apply
-- In a batches row, `wall` is the layer's LONGEST agent — what the layer would
-  cost with every batch spawned at once — and the parenthetical is the
-  serial-sum multiple. A Σ row sums the columns it can and carries the same
-  longest-agent reading for `wall`
+- `objective` — what the batch's agents were told to do: `wrap`, `port`, or
+  `raw lifetime`. The type tables are split by it, so it appears as a column
+  only in `Batches — symbols`, which mixes the two
+- `types` / `symbols` — scheduler units in the batch. Callbacks are scheduled
+  in symbol batches and counted there
+- `fields` — in-scope fields: the field accessors the oracle assigned to that
+  type batch, not the type's full declared field count
+- `lifecycle prims` — deleters, disposers and cloners the ownership store binds
+  to that batch's types; raw-tier primitives that belong to no type are counted
+  in `Raw lifetime discovery` instead
+- `$` / `wall` / `loc` — that agent's computed cost, its elapsed time, and the
+  `.rs` insertions of its landing commit. `wall` is `ended_at − started_at` from
+  the agent's own `usage.json`, so it INCLUDES the per-worktree C rebuild
+- `$/type` / `$/symbol` / `$/field` / `$/loc` — that row's `$` over its units,
+  its in-scope fields, or its `loc`
+- `$/type` / `$/sym` — in the Overview, a sub-campaign's cost over the types or
+  symbols it was scheduled for; `—` where it was scheduled for none
+- `rv $` / `rv wall` / `rv loc` — the REVIEW agent's cost, elapsed time, and net
+  `.rs` line delta (`+ins/-del`) of its landing commit. Under subscription
+  billing `rv $` is an API-equivalent comparison value, not a charged amount
+- `ub $` / `ub wall` — the UB pass's cost and elapsed time; `—` where the
+  optional pass did not run
+
+Every table below is a heading, a model line and the table. All prose belongs
+in Notes.
 
 ## Overview
 
-Each row groups a reviewee with the campaigns that actually reviewed it.
-Totals price the recorded token classes at provider API rates; the compact
-model tag sits beside each total. The lifetime review total contains metered
-campaigns `02` and `04`; superseded campaign `03` is unmetered. The orchestrator
-row is live at the report checkpoint and is not part of `crustify-log-cost`'s
-agent total. For mixed campaigns, each unit rate uses only its matching cost
-bucket. The 8 callback units are excluded from both counts and folded into the
-type bucket's cost. Rate cells in the Σ row are medians of the displayed
-campaign-level rates. Its unit counts are distinct implementation units, so
-review, audit, and orchestration coverage is not counted again.
+- **Rust LoC, non-test** — `21,080`
+- **Rust LoC, tests** — `10,056`
+- **C LoC** — `336,418` across the `1,044` targeted files
+- **ported types** — `0`
+- **ported symbols** — `1`
+- **wrapped types** — `80`, plus `9` callbacks
+- **wrapped symbols** — `553`
 
-| campaign | objective | nr types | nr symbols | session wall | campaign total | campaign $/type | campaign $/sym | review total | review $/type | review $/sym |
-|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|
-| `00–01-lifetimes` | raw lifetime | `0` | `10` | `39m26s` | `$13.63` (gpt56sol) | — | `$1.36` | `$29.61` (gpt55, opus5) | — | `$2.96` |
-| `10–11-foundation` | wrap + corrective wrap | `34` | `277` | `2h50m51s` | `$244.34` (gpt56sol) | `$4.48` | `$0.33` | `$217.23` (opus5) | `$3.84` | `$0.31` |
-| `ub-20260823-025523` | UB audit | `34` | `277` | `56m04s` | `$43.48` (opus5) | — | — | — | — | — |
-| `40–43-x509` | wrap | `32` | `123` | `4h07m54s` | `$150.39` (gpt56sol) | `$3.13` | `$0.41` | `$23.77` (opus5) | `$0.35` | `$0.10` |
-| `ub-20260824-004145` | UB audit | `66` | `400` | `31m15s` | `$23.33` (opus5) | — | — | — | — | — |
-| orchestrator | orchestration | `66` | `400` | — | `$77.52`+ (gpt56sol) | — | — | — | — | — |
-| **Σ recorded agents** | | **`66`** | **`410`** | | **`$475.17`** | **`$3.81`** | **`$0.41`** | **`$270.61`** | **`$2.10`** | **`$0.31`** |
+Implementation `openai/gpt-5.6-sol` via `codex`; review `anthropic/claude-opus-5`
+via `claude`. Each row names the model that produced it.
+
+| sub-campaign | objective | nr types | nr symbols | session wall | total | $/type | $/sym | ub wall | ub $ |
+|---|---|---:|---:|---|---:|---:|---:|---|---:|
+| `00–01-lifetimes` | raw lifetime | `0` | `10` | `39m26s` | `$10.70` (`gpt56sol`) | — | `$1.07` | — | — |
+| `02`+`04-review-lifetimes` | review | `0` | `10` | `1h12m19s` | `$29.61` (`gpt55, opus5`) | — | `$2.96` | — | — |
+| `10–11-foundation` | wrap | `29` | `287` | `2h50m51s` | `$191.55` (`gpt56sol`) | `$6.61` | `$0.67` | `56m04s` | `$43.48` (`opus5`) |
+| `20-review-foundation` | review | `34` | `285` | `2h03m21s` | `$217.23` (`opus5`) | `$6.39` | `$0.76` | — | — |
+| `40–43-x509` | wrap | `32` | `123` | `4h07m54s` | `$150.39` (`gpt56sol`) | `$4.70` | `$1.22` | `31m15s` | `$23.33` (`opus5`) |
+| `50–51-review-x509` | review | `32` | `124` | `43m33s` | `$23.77` (`opus5`) | `$0.74` | `$0.19` | — | — |
+| `60-evp-pkey-core` | wrap | `15` | `145` | `2h12m59s` | `$105.11` (`gpt56sol`) | `$7.01` | `$0.72` | — | — |
+| orchestrator | orchestration | `76` | `565` | — | `$77.52`+ (`gpt56sol`) | — | — | — | — |
+| **Σ recorded agents** | | **`76`** | **`565`** | **`13h30m`** | **`$728.36`** | **`$9.58`** | **`$1.29`** | | **`$66.81`** |
 
 ## Raw lifetime discovery
 
-Goal: turn the untyped lifecycle primitives into Rust lifetime contracts before
-any wrapper needs one. Oracle `schedule --lifetime-for void` then
-`schedule --lifetime-for string`, one
-agent each, objective `raw` (set by the tier, not `--objective`). `strategies`
-counts the deleter/cloner ZSTs emitted; the four trait columns count the
-`unsafe impl`s that bind them.
+`openai/gpt-5.6-sol` via `codex`.
 
 | tier | symbols submitted | strategies | CDropped | CCloned | CLenDropped | CLenCloned | $ | wall |
 |---|---|---|---|---|---|---|---|---|
-| void | `7` | `6` | `3` | `0` | `6` | `1` | `$7.94` | `24m20s` |
-| string | `3` | `0` | `2` | `3` | `0` | `0` | `$5.69` | `15m05s` |
-| **Σ** | **`10`** | **`6`** | **`5`** | **`3`** | **`6`** | **`1`** | **`$13.64`** | **`39m26s`** |
+| void | `7` | `6` | `3` | `0` | `6` | `1` | `$6.24` | `24m20s` |
+| string | `3` | `0` | `2` | `3` | `0` | `0` | `$4.46` | `15m05s` |
+| **Σ** | **`10`** | **`6`** | **`5`** | **`3`** | **`6`** | **`1`** | **`$10.70`** | **`39m26s`** |
+
+### Review, in-model
+
+`openai/gpt-5.5` via `codex`.
+
+| tier | symbols | batches | $ | wall |
+|---|---|---|---|---|
+| void | `7` | `4` | `$10.79` | `25m18s` |
+| string | — | — | — | — |
+| **Σ** | **`7`** | **`4`** | **`$10.79`** | **`25m18s`** |
+
+### Review, independent
+
+`anthropic/claude-opus-5` via `claude`.
+
+| symbols | rv loc | rv $ | rv wall | rv $/symbol |
+|---|---|---|---|---|
+| `10` | `+626/-118` | `$18.82` | `47m01s` | `$1.88` |
+| **Σ `10`** | **`+626/-118`** | **`$18.82`** | — | **`$1.88`** |
 
 ## Target set
 
-What the campaign wrapped and in what order: types and callbacks first,
-bottom-up by DAG layer, then the symbols over them.
+### Batches — types, wrap
 
-### Types and callbacks
+`openai/gpt-5.6-sol` via `codex`.
 
-| DAG layer | unit | kind | fields | target fields | target ptr | wrapped fields | newtypes | $ | wall | loc | rv $ | rv wall | rv loc | verdict |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `0` | `ASN1_TEMPLATE_st` | struct | `5` | `5` | `2` | `5` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `ASN1_VALUE_st` | struct | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `BIO_hostserv_priorities` | enum | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `BIO_lookup_type` | enum | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `BIO_sock_info_type` | enum | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `DEFINE_LHASH_OF_EX` | macro | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `_IO_FILE` | struct | `29` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `addrinfo` | struct | `8` | `7` | `2` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `asn1_string_table_st` | struct | `5` | `5` | `0` | `5` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `bio_addr_st` | struct | `4` | `4` | `0` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `bio_method_st` | struct | `14` | `14` | `13` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `bio_st` | struct | `16` | `16` | `7` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `hostent` | struct | `5` | `3` | `1` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `in6_addr` | struct | `4` | `1` | `0` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `in_addr` | struct | `1` | `1` | `0` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `lhash_st` | struct | `15` | `15` | `7` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `obj_name_st` | struct | `4` | `4` | `2` | `4` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `ossl_init_settings_st` | struct | `3` | `3` | `2` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `ossl_lib_ctx_st` | struct | `24` | `24` | `21` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `stack_st` | struct | `8` | `8` | `5` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `OPENSSL_sk_compfunc` | callback | `—` | `—` | `—` | `—` | `2` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `OPENSSL_sk_copyfunc` | callback | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `0` | `OPENSSL_sk_freefunc` | callback | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `ASN1_ITEM_st` | struct | `7` | `7` | `3` | `7` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `BIO_sock_info_u` | struct | `1` | `1` | `1` | `1` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `asn1_object_st` | struct | `6` | `6` | `3` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `bignum_st` | struct | `5` | `5` | `1` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `bio_msg_st` | struct | `5` | `5` | `3` | `5` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `bio_poll_descriptor_st` | struct | `6` | `2` | `0` | `6` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `lhash_st_OBJ_NAME` | struct | `1` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_ASN1_STRING_TABLE` | struct | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_NAME_FUNCS` | struct | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_nid_triple` | struct | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_void` | struct | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `BIO_callback_fn_ex` | callback | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `BIO_info_cb` | callback | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `OPENSSL_sk_copyfunc_thunk` | callback | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `OPENSSL_sk_freefunc_thunk` | callback | `—` | `—` | `—` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `asn1_ps_func` | callback | `—` | `—` | `—` | `—` | `2` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `2` | `asn1_type_st` | struct | `23` | `2` | `0` | `23` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `2` | `crypto_ex_data_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `3` | `asn1_string_st` | struct | `4` | `4` | `1` | `—` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| **Σ `42`** | | | **`205`** | **`144`** | **`76`** | **`58`** | **`44`** | **`$126.91`** | | **`4,189`** | **`$130.58`** | | **`+3,602/-464`** | **`42`/`42` reviewed** |
-
-### Batches — type review
-
-| session | batch | units | rv loc | rv $ | rv wall | $/type |
+| types | fields | lifecycle prims | $ | wall | $/type | $/field |
 |---|---|---|---|---|---|---|
-| `2026-08-23_00-42-36_ea63` | `review-type_ASN1_TEMPLATE_st` | `6` types | `+115/-27` | `$9.94` | `20m22s` | `$1.66` |
-| `2026-08-23_00-42-36_ea63` | `review-type__IO_FILE` | `1` type | `+52/-4` | `$4.67` | `13m38s` | `$4.67` |
-| `2026-08-23_00-42-36_ea63` | `review-type_addrinfo` | `2` types | `+370/-0` | `$7.13` | `20m05s` | `$3.57` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_addr_st` | `1` type | `+167/-7` | `$6.61` | `18m45s` | `$6.61` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_method_st` | `1` type | `+118/-36` | `$8.22` | `16m30s` | `$8.22` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_st` | `1` type | `+61/-6` | `$4.83` | `9m56s` | `$4.83` |
-| `2026-08-23_00-42-36_ea63` | `review-type_hostent` | `3` types | `+293/-35` | `$7.35` | `19m39s` | `$2.45` |
-| `2026-08-23_00-42-36_ea63` | `review-type_lhash_st` | `1` type | `+122/-3` | `$6.19` | `14m03s` | `$6.19` |
-| `2026-08-23_00-42-36_ea63` | `review-type_obj_name_st` | `2` types | `+306/-37` | `$8.21` | `18m21s` | `$4.10` |
-| `2026-08-23_00-42-36_ea63` | `review-type_ossl_lib_ctx_st` | `1` type | `+134/-10` | `$7.54` | `18m16s` | `$7.54` |
-| `2026-08-23_00-42-36_ea63` | `review-type_stack_st` | `1` type | `+121/-0` | `$5.40` | `15m17s` | `$5.40` |
-| `2026-08-23_00-42-36_ea63` | `review-type_ASN1_ITEM_st` | `3` types | `+269/-28` | `$11.75` | `21m27s` | `$3.92` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bignum_st` | `2` types | `+329/-140` | `$8.81` | `19m10s` | `$4.40` |
-| `2026-08-23_00-42-36_ea63` | `review-type_bio_poll_descriptor_st` | `6` types | `+540/-74` | `$13.62` | `20m54s` | `$2.27` |
-| `2026-08-23_00-42-36_ea63` | `review-type_asn1_type_st` | `1` type | `+158/-30` | `$5.22` | `12m17s` | `$5.22` |
-| `2026-08-23_00-42-36_ea63` | `review-type_crypto_ex_data_st` | `1` type | `+311/-20` | `$7.88` | `20m00s` | `$7.88` |
-| `2026-08-23_00-42-36_ea63` | `review-type_asn1_string_st` | `1` type | `+136/-7` | `$7.21` | `18m58s` | `$7.21` |
-| **Σ** | **`17` agents** | **`42` types** | **`+3,602/-464`** | **`$130.58`** | **`21m27s`** (longest; `4h57m46s` serial, `13.9`x) | **`$3.11`** |
+| `2` | `5` | `0` | `$3.62` | `10m52s` | `$1.81` | `$0.72` |
+| `2` | `5` | `0` | `$5.32` | `15m26s` | `$2.66` | `$1.06` |
+| `2` | `5` | `2` | `$3.78` | `10m49s` | `$1.89` | `$0.76` |
+| `2` | `5` | `2` | `$4.95` | `8m41s` | `$2.48` | `$0.99` |
+| `1` | `0` | `3` | `$3.24` | `10m48s` | `$3.24` | — |
+| `1` | `0` | `3` | `$3.15` | `8m03s` | `$3.15` | — |
+| `1` | `0` | `1` | `$2.66` | `10m47s` | `$2.66` | — |
+| `1` | `0` | `1` | `$3.80` | `13m31s` | `$3.80` | — |
+| `1` | `0` | `5` | `$3.52` | `10m46s` | `$3.52` | — |
+| `1` | `0` | `5` | `$5.75` | `20m06s` | `$5.75` | — |
+| `2` | `0` | `0` | `$1.19` | `4m25s` | `$0.60` | — |
+| `2` | `0` | `0` | `$5.93` | `16m09s` | `$2.96` | — |
+| `1` | `0` | `0` | `$0.56` | `3m08s` | `$0.56` | — |
+| `1` | `0` | `0` | `$1.92` | `6m22s` | `$1.92` | — |
+| `1` | `0` | `1` | `$0.43` | `0m49s` | `$0.43` | — |
+| `1` | `0` | `1` | `$3.70` | `10m42s` | `$3.70` | — |
+| `2` | `4` | `1` | `$0.27` | `0m12s` | `$0.14` | `$0.07` |
+| `2` | `4` | `1` | `$4.11` | `16m09s` | `$2.05` | `$1.03` |
+| `1` | `0` | `1` | `$0.27` | `0m11s` | `$0.27` | — |
+| `1` | `0` | `1` | `$4.37` | `13m41s` | `$4.37` | — |
+| `1` | `0` | `4` | `$0.27` | `0m10s` | `$0.27` | — |
+| `1` | `0` | `4` | `$4.79` | `15m22s` | `$4.79` | — |
+| `2` | `8` | `0` | `$3.69` | `12m26s` | `$1.85` | `$0.46` |
+| `2` | `0` | `5` | `$8.47` | `15m12s` | `$4.24` | — |
+| `2` | `11` | `0` | `$5.14` | `14m25s` | `$2.57` | `$0.47` |
+| `2` | `0` | `0` | `$3.23` | `10m56s` | `$1.61` | — |
+| `2` | `0` | `0` | `$2.80` | `9m02s` | `$1.40` | — |
+| `1` | `0` | `0` | `$4.83` | `13m50s` | `$4.83` | — |
+| `1` | `23` | `1` | `$5.42` | `15m45s` | `$5.42` | `$0.24` |
+| `1` | `2` | `1` | `$4.73` | `16m48s` | `$4.73` | `$2.37` |
+| `1` | `0` | `3` | `$4.19` | `13m26s` | `$4.19` | — |
+| `1` | `0` | `2` | `$4.37` | `12m27s` | `$4.37` | — |
+| `1` | `0` | `3` | `$4.09` | `16m50s` | `$4.09` | — |
+| `2` | `0` | `2` | `$4.63` | `11m53s` | `$2.32` | — |
+| `1` | `0` | `3` | `$6.19` | `15m07s` | `$6.19` | — |
+| `1` | `2` | `2` | `$6.55` | `15m43s` | `$6.55` | `$3.27` |
+| `2` | `0` | `2` | `$3.50` | `12m08s` | `$1.75` | — |
+| `2` | `0` | `3` | `$5.76` | `15m57s` | `$2.88` | — |
+| `2` | `0` | `2` | `$2.85` | `8m58s` | `$1.43` | — |
+| `2` | `0` | `2` | `$3.39` | `9m39s` | `$1.69` | — |
+| `2` | `0` | `0` | `$4.46` | `12m44s` | `$2.23` | — |
+| `2` | `0` | `1` | `$2.81` | `8m47s` | `$1.40` | — |
+| `2` | `7` | `3` | `$7.72` | `22m32s` | `$3.86` | `$1.10` |
+| `1` | `2` | `1` | `$5.76` | `15m01s` | `$5.76` | `$2.88` |
+| `1` | `2` | `1` | `$4.33` | `14m10s` | `$4.33` | `$2.16` |
+| `2` | `5` | `2` | `$5.62` | `16m31s` | `$2.81` | `$1.12` |
+| `2` | `6` | `2` | `$3.59` | `12m42s` | `$1.79` | `$0.60` |
+| `1` | `2` | `1` | `$5.02` | `20m51s` | `$5.02` | `$2.51` |
+| `1` | `17` | `2` | `$4.73` | `15m01s` | `$4.73` | `$0.28` |
+| `1` | `2` | `1` | `$3.39` | `11m46s` | `$3.39` | `$1.70` |
+| `2` | `5` | `2` | `$5.63` | `20m29s` | `$2.81` | `$1.13` |
+| `1` | `5` | `1` | `$5.92` | `18m44s` | `$5.92` | `$1.18` |
+| `1` | `0` | `1` | `$4.74` | `15m09s` | `$4.74` | — |
+| `1` | `0` | `3` | `$3.76` | `13m56s` | `$3.76` | — |
+| `1` | `0` | `0` | `$2.36` | `7m03s` | `$2.36` | — |
+| `1` | `0` | `2` | `$4.47` | `14m39s` | `$4.47` | — |
+| `1` | `0` | `2` | `$4.76` | `14m24s` | `$4.76` | — |
+| `1` | `0` | `2` | `$3.78` | `10m05s` | `$3.78` | — |
+| `1` | `0` | `2` | `$3.20` | `10m45s` | `$3.20` | — |
+| `1` | `0` | `2` | `$4.28` | `14m15s` | `$4.28` | — |
+| `1` | `0` | `2` | `$3.97` | `13m38s` | `$3.97` | — |
+| `1` | `5` | `0` | `$5.18` | `12m00s` | `$5.18` | `$1.04` |
+| `1` | `0` | `3` | `$4.05` | `14m06s` | `$4.05` | — |
+| `1` | `0` | `3` | `$4.83` | `14m42s` | `$4.83` | — |
+| `1` | `0` | `3` | `$6.25` | `22m34s` | `$6.25` | — |
+| `1` | `0` | `2` | `$5.73` | `14m27s` | `$5.73` | — |
+| `1` | `0` | `2` | `$4.03` | `12m09s` | `$4.03` | — |
+| **Σ `91`** | **`132`** | **`113`** | **`$275.82`** | — | **$3.03** | **$2.09** |
 
-### Batches — types
+### Batches — review types
 
-| DAG layer | units | loc | $ | wall (longest) | wall (actual) | serial Σ | $/unit | $/loc |
-|---|---|---|---|---|---|---|---|---|
-| `0` | `20` | `1,962` | `$72.74` | `20m07s` | **`46m05s`** | `2h48m25s` (`3.7`x) | `$3.64` | `$0.037` |
-| `1` | `11` | `1,489` | `$35.91` | `15m13s` | **`45m24s`** | `1h15m54s` (`1.7`x) | `$3.26` | `$0.024` |
-| `2` | `2` | `633` | `$12.94` | `16m48s` | **`33m54s`** | `32m33s` (`1.0`x) | `$6.47` | `$0.020` |
-| `3` | `1` | `105` | `$5.32` | `13m27s` | **`13m28s`** | `13m27s` (`1.0`x) | `$5.32` | `$0.051` |
-| **Σ** | **`34`** | **`4,189`** | **`$126.91`** | — | **`2h18m51s`** | **`4h50m19s`** (`2.1`x) | **`$3.73`** | **`$0.030`** |
+`anthropic/claude-opus-5` via `claude`.
 
-### Symbols
-
-| DAG layer | symbol | kind | target fns | deps | wrappers | batch | rv batch | verdict |
-|---|---|---|---|---|---|---|---|---|
-| `0` | `ASN1_STRING_TABLE_add` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `ASN1_STRING_get_default_mask` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `ASN1_STRING_set_default_mask` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `ASN1_STRING_set_default_mask_asc` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_accept` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_closesocket` | function | `6` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_dgram_non_fatal_error` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_dump_cb` | function | `2` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_dump_indent_cb` | function | `3` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_err_is_non_fatal` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_fd_non_fatal_error` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_fd_should_retry` | function | `2` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_get_accept_socket` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_get_host_ip` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_get_new_index` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_get_port` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_set_tcp_ndelay` | function | `0` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_sock_error` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_sock_init` | function | `3` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_sock_non_fatal_error` | function | `2` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_sock_should_retry` | function | `9` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_socket` | function | `2` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_socket_ioctl` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_socket_nbio` | function | `4` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `BIO_socket_wait` | function | `2` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_NAME_get` | function | `8` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_NAME_init` | function | `4` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_bsearch_` | function | `11` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_bsearch_ex_` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_create` | function | `3` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_find_sigid_algs` | function | `7` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_ln2nid` | function | `5` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_new_nid` | function | `1` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_nid2ln` | function | `18` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_nid2sn` | function | `54` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `0` | `OBJ_sn2nid` | function | `8` | — | `1` | `wrap-symbol_ASN1_STRING_TABLE_add` | `review-symbol_ASN1_STRING_TABLE_add` | held · fixed (batch) |
-| `1` | `BIO_ADDRINFO_address` | function | `3` | `addrinfo`, `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDRINFO_family` | function | `4` | `addrinfo` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDRINFO_free` | function | `6` | `addrinfo` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDRINFO_next` | function | `2` | `addrinfo` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDRINFO_protocol` | function | `2` | `addrinfo` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDRINFO_socktype` | function | `2` | `addrinfo` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_clear` | function | `5` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_copy` | function | `1` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_dup` | function | `0` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_family` | function | `3` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_free` | function | `3` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_hostname_string` | function | `2` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_new` | function | `2` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_path_string` | function | `0` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_rawaddress` | function | `2` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_rawmake` | function | `1` | `bio_addr_st`, `in6_addr`, `in_addr` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_rawport` | function | `1` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ADDR_service_string` | function | `2` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_accept_ex` | function | `1` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_bind` | function | `1` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_clear_flags` | function | `59` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_connect` | function | `1` | `bio_addr_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_copy_next_retry` | function | `36` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ctrl` | function | `139` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ctrl_get_read_request` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ctrl_get_write_guarantee` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ctrl_pending` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ctrl_reset_read_request` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_ctrl_wpending` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_debug_callback` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_debug_callback_ex` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_do_connect_retry` | function | `1` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_dump` | function | `3` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_dump_fp` | function | `0` | `_IO_FILE` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_dump_indent` | function | `4` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_dump_indent_fp` | function | `0` | `_IO_FILE` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_eof` | function | `7` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_f_buffer` | function | `3` | `bio_method_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_f_linebuffer` | function | `0` | `bio_method_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_f_nbio_test` | function | `0` | `bio_method_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_f_null` | function | `0` | `bio_method_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_f_prefix` | function | `2` | `bio_method_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_f_readbuffer` | function | `2` | `bio_method_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_find_type` | function | `6` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_free` | function | `130` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_free_all` | function | `17` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_get_callback` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_get_callback_arg` | function | `1` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_get_data` | function | `26` | `bio_st` | `1` | `wrap-symbol_BIO_ADDRINFO_address` | `review-symbol_BIO_ADDRINFO_address` | held · fixed (batch) |
-| `1` | `BIO_get_ex_data` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_get_init` | function | `3` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_get_line` | function | `2` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_get_retry_BIO` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_get_retry_reason` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_get_shutdown` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_gethostbyname` | function | `0` | `hostent` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_gets` | function | `17` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_hex_string` | function | `3` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_indent` | function | `11` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_int_ctrl` | function | `6` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_listen` | function | `1` | `bio_addr_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_lookup` | function | `2` | `BIO_lookup_type`, `addrinfo` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_lookup_ex` | function | `1` | `addrinfo` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_free` | function | `0` | `bio_method_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_callback_ctrl` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_create` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_ctrl` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_destroy` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_gets` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_puts` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_read` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_read_ex` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_write` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_get_write_ex` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_new` | function | `0` | `bio_method_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_callback_ctrl` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_create` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_ctrl` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_destroy` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_gets` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_puts` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_read` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_read_ex` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_write` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_meth_set_write_ex` | function | `0` | `bio_method_st`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_method_name` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_method_type` | function | `4` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new` | function | `89` | `bio_method_st`, `bio_st`, `ossl_lib_ctx_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_accept` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_bio_dgram_pair` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_bio_pair` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_connect` | function | `1` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_dgram` | function | `1` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_ex` | function | `2` | `bio_method_st`, `bio_st`, `ossl_lib_ctx_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_fd` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_file` | function | `12` | `_IO_FILE`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_fp` | function | `14` | `_IO_FILE`, `bio_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_from_core_bio` | function | `0` | `bio_st`, `ossl_core_bio_st`, `ossl_lib_ctx_st` | `1` | `wrap-symbol_BIO_get_ex_data` | `review-symbol_BIO_get_ex_data` | held · fixed (batch) |
-| `1` | `BIO_new_mem_buf` | function | `7` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_new_socket` | function | `1` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_next` | function | `26` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_nread` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_nread0` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_number_read` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_number_written` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_nwrite` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_nwrite0` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_parse_hostserv` | function | `3` | `BIO_hostserv_priorities` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_pop` | function | `13` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_printf` | function | `161` | `__va_list_tag`, `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_ptr_ctrl` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_push` | function | `17` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_puts` | function | `82` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_read` | function | `30` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_read_ex` | function | `2` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_accept` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_bio` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_connect` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_core` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_datagram` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_dgram_mem` | function | `0` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_dgram_pair` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_fd` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_file` | function | `48` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_log` | function | `0` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_mem` | function | `20` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_null` | function | `3` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_secmem` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_s_socket` | function | `1` | `bio_method_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_callback` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_callback_arg` | function | `1` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_data` | function | `11` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_ex_data` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_flags` | function | `23` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_init` | function | `14` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_next` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_retry_reason` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_send_flags` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_set_shutdown` | function | `0` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_snprintf` | function | `34` | `__va_list_tag` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_test_flags` | function | `12` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_up_ref` | function | `3` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_vfree` | function | `1` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_vprintf` | function | `2` | `__va_list_tag`, `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_vsnprintf` | function | `3` | `__va_list_tag` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_wait` | function | `2` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_write` | function | `67` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `BIO_write_ex` | function | `3` | `bio_st` | `1` | `wrap-symbol_BIO_new_mem_buf` | `review-symbol_BIO_new_mem_buf` | held · fixed (batch) |
-| `1` | `OBJ_NAME_do_all` | function | `4` | `obj_name_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OBJ_NAME_do_all_sorted` | function | `2` | `obj_name_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OBJ_create_objects` | function | `0` | `bio_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_deep_copy` | function | `54` | `stack_st`, `OPENSSL_sk_copyfunc`, `OPENSSL_sk_freefunc` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_delete` | function | `56` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_delete_ptr` | function | `52` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_dup` | function | `53` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_find` | function | `63` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_find_all` | function | `50` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_find_ex` | function | `49` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_free` | function | `116` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_insert` | function | `54` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_is_sorted` | function | `50` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_new` | function | `64` | `stack_st`, `OPENSSL_sk_compfunc` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_new_null` | function | `133` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_new_reserve` | function | `68` | `stack_st`, `OPENSSL_sk_compfunc` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_num` | function | `399` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_pop` | function | `62` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_pop_free` | function | `155` | `stack_st`, `OPENSSL_sk_freefunc` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_push` | function | `169` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_reserve` | function | `51` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_set` | function | `59` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_set_cmp_func` | function | `54` | `stack_st`, `OPENSSL_sk_compfunc` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_set_cmp_thunks` | function | `367` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_shift` | function | `54` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_sort` | function | `62` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_unshift` | function | `49` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_value` | function | `369` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `1` | `OPENSSL_sk_zero` | function | `49` | `stack_st` | `1` | `wrap-symbol_OBJ_NAME_do_all` | `review-symbol_OBJ_NAME_do_all` | held · fixed (batch) |
-| `2` | `ASN1_OBJECT_create` | function | `0` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `ASN1_OBJECT_free` | function | `48` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `ASN1_OBJECT_it` | function | `0` | `ASN1_ITEM_st`, `ASN1_TEMPLATE_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `ASN1_OBJECT_new` | function | `0` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `ASN1_STRING_TABLE_cleanup` | function | `1` | `stack_st_ASN1_STRING_TABLE` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `ASN1_STRING_TABLE_get` | function | `2` | `asn1_string_table_st`, `ossl_init_settings_st`, `stack_st`, `stack_st_ASN1_STRING_TABLE` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_asn1_get_prefix` | function | `0` | `bio_st`, `asn1_ps_func` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_asn1_get_suffix` | function | `0` | `bio_st`, `asn1_ps_func` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_asn1_set_prefix` | function | `1` | `bio_st`, `asn1_ps_func` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_asn1_set_suffix` | function | `1` | `bio_st`, `asn1_ps_func` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_callback_ctrl` | function | `11` | `bio_st`, `BIO_info_cb` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_get_callback_ex` | function | `2` | `bio_st`, `BIO_callback_fn_ex` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_get_rpoll_descriptor` | function | `0` | `bio_poll_descriptor_st`, `bio_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_get_wpoll_descriptor` | function | `0` | `bio_poll_descriptor_st`, `bio_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_meth_get_recvmmsg` | function | `0` | `bio_method_st`, `bio_msg_st`, `bio_st` | `1` | `wrap-symbol_BIO_meth_get_recvmmsg` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_meth_get_sendmmsg` | function | `0` | `bio_method_st`, `bio_msg_st`, `bio_st` | `1` | `wrap-symbol_BIO_meth_get_recvmmsg` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_meth_set_recvmmsg` | function | `0` | `bio_method_st`, `bio_msg_st`, `bio_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_meth_set_sendmmsg` | function | `0` | `bio_method_st`, `bio_msg_st`, `bio_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_recvmmsg` | function | `1` | `bio_msg_st`, `bio_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_sendmmsg` | function | `1` | `bio_msg_st`, `bio_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_set_callback_ex` | function | `1` | `bio_st`, `BIO_callback_fn_ex` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `BIO_sock_info` | function | `1` | `BIO_sock_info_type`, `BIO_sock_info_u` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_NAME_add` | function | `4` | `stack_st_NAME_FUNCS` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_NAME_cleanup` | function | `1` | `lhash_st_OBJ_NAME`, `stack_st_NAME_FUNCS` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_NAME_new_index` | function | `0` | `stack_st_NAME_FUNCS` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_NAME_remove` | function | `1` | `stack_st_NAME_FUNCS` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_add_object` | function | `0` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_add_sigid` | function | `1` | `stack_st_nid_triple` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_cmp` | function | `26` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_dup` | function | `19` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_find_sigid_by_algs` | function | `4` | `stack_st_nid_triple` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_get0_data` | function | `1` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_length` | function | `4` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_nid2obj` | function | `119` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_obj2nid` | function | `180` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_obj2txt` | function | `41` | `asn1_object_st`, `bignum_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_sigid_free` | function | `1` | `stack_st_nid_triple` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_txt2nid` | function | `6` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OBJ_txt2obj` | function | `19` | `asn1_object_st` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OPENSSL_sk_set_copy_thunks` | function | `367` | `stack_st`, `OPENSSL_sk_copyfunc_thunk` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `2` | `OPENSSL_sk_set_thunks` | function | `416` | `stack_st`, `OPENSSL_sk_freefunc_thunk` | `1` | `wrap-symbol_ASN1_OBJECT_create` | `review-symbol_ASN1_OBJECT_create` | held · fixed (batch) |
-| `3` | `BIO_dup_chain` | function | `1` | `bio_st`, `crypto_ex_data_st` | `1` | `wrap-symbol_BIO_dup_chain` | `review-symbol_BIO_dup_chain` | held · fixed (batch) |
-| `4` | `ASN1_STRING_clear_free` | function | `4` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_cmp` | function | `7` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_copy` | function | `11` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_dup` | function | `14` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_free` | function | `43` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_get0_data` | function | `38` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_get_length` | function | `40` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_length` | function | `0` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_length_set` | function | `0` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_new` | function | `17` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_new_not_owned` | function | `0` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_print` | function | `10` | `asn1_string_st`, `bio_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_print_ex` | function | `2` | `asn1_string_st`, `bio_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_print_ex_fp` | function | `0` | `_IO_FILE`, `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_set` | function | `0` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_set0` | function | `27` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_set1_data` | function | `24` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_set1_string` | function | `13` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_set_by_NID` | function | `2` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_to_UTF8` | function | `4` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_type` | function | `0` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| `4` | `ASN1_STRING_type_new` | function | `22` | `asn1_string_st` | `1` | `wrap-symbol_ASN1_STRING_clear_free` | `review-symbol_ASN1_STRING_clear_free` | held · fixed (batch) |
-| **Σ `277`** | | | **`5,734`** | | **`277`** | **`9` batches** | **`8` batches** | **`277`/`277` reviewed** |
-
-### Batches — symbol review
-
-| session | batch | units | rv loc | rv $ | rv wall | $/symbol |
-|---|---|---|---|---|---|---|
-| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_STRING_TABLE_add` | `39` symbols | `+417/-33` | `$9.44` | `17m34s` | `$0.24` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_ADDRINFO_address` | `50` symbols | `+655/-28` | `$20.31` | `33m38s` | `$0.41` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_get_ex_data` | `50` symbols | `+148/-26` | `$11.22` | `20m48s` | `$0.22` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_new_mem_buf` | `50` symbols | `+150/-18` | `$8.91` | `19m28s` | `$0.18` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_OBJ_NAME_do_all` | `32` symbols | `+589/-41` | `$14.38` | `28m31s` | `$0.45` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_OBJECT_create` | `41` symbols | `+155/-18` | `$10.16` | `18m10s` | `$0.25` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_BIO_dup_chain` | `1` symbol | `+79/-6` | `$3.86` | `10m10s` | `$3.86` |
-| `2026-08-23_00-42-36_ea63` | `review-symbol_ASN1_STRING_clear_free` | `22` symbols | `+233/-7` | `$8.36` | `16m25s` | `$0.38` |
-| **Σ** | **`8` agents** | **`277` symbols** | **`+2,426/-177`** | **`$86.65`** | **`33m38s`** (longest; `2h44m47s` serial, `4.9`x) | **`$0.31`** |
+| types | rv loc | rv $ | rv wall | rv $/type |
+|---|---|---|---|---|
+| `6` | — | `$9.94` | `20m22s` | `$1.66` |
+| `1` | — | `$4.67` | `13m38s` | `$4.67` |
+| `2` | — | `$7.13` | `20m05s` | `$3.57` |
+| `1` | — | `$6.61` | `18m45s` | `$6.61` |
+| `1` | — | `$8.22` | `16m30s` | `$8.22` |
+| `1` | — | `$4.83` | `9m56s` | `$4.83` |
+| `3` | — | `$7.35` | `19m39s` | `$2.45` |
+| `1` | — | `$6.19` | `14m03s` | `$6.19` |
+| `2` | — | `$8.21` | `18m21s` | `$4.10` |
+| `1` | — | `$7.54` | `18m16s` | `$7.54` |
+| `1` | — | `$5.40` | `15m17s` | `$5.40` |
+| `3` | — | `$11.75` | `21m27s` | `$3.92` |
+| `2` | — | `$8.81` | `19m10s` | `$4.40` |
+| `6` | — | `$13.62` | `20m54s` | `$2.27` |
+| `1` | — | `$5.22` | `12m17s` | `$5.22` |
+| `1` | — | `$7.88` | `20m00s` | `$7.88` |
+| `1` | — | `$7.21` | `18m58s` | `$7.21` |
+| `32` | — | `$11.28` | `19m08s` | `$0.35` |
+| **Σ `66`** | — | **`$141.86`** | — | **$2.15** |
 
 ### Batches — symbols
 
-| DAG layer | units | loc | $ | wall | $/unit | $/loc |
+`openai/gpt-5.6-sol` via `codex`.
+
+| objective | symbols | loc | $ | wall | $/symbol | $/loc |
 |---|---|---|---|---|---|---|
-| `0` | `39` | `841` | `$9.73` | `24m09s` (`1.0`x) | `$0.25` | `$0.012` |
-| `1` | `182` | `3,900` | `$54.96` | `34m23s` (`3.1`x) | `$0.30` | `$0.014` |
-| `2` | `43` (`41` unique) | `979` | `$15.86` | `33m52s` (`1.2`x) | `$0.37` | `$0.016` |
-| `3` | `1` | `108` | `$3.50` | `6m15s` (`1.0`x) | `$3.50` | `$0.032` |
-| `4` | `22` | `590` | `$7.77` | `26m17s` (`1.0`x) | `$0.35` | `$0.013` |
-| **Σ** | **`287` submissions (`285` unique)** | **`6,418`** | **`$91.82`** | **`2h39m45s`** (`1.3`x, session wall) | **`$0.32`** | **`$0.014`** |
-## Target set — X.509 tranche
+| raw lifetime | `0` | `0` | `$6.24` | `24m20s` | — | — |
+| raw lifetime | `0` | `0` | `$4.46` | `15m05s` | — | — |
+| wrap | `39` | `711` | `$0.19` | `0m09s` | `$0.00` | `$0.00` |
+| wrap | `39` | `711` | `$7.61` | `24m09s` | `$0.20` | `$0.01` |
+| wrap | `50` | `685` | `$10.23` | `21m48s` | `$0.20` | `$0.01` |
+| wrap | `50` | `857` | `$11.78` | `26m30s` | `$0.24` | `$0.01` |
+| wrap | `50` | `493` | `$9.43` | `22m18s` | `$0.19` | `$0.02` |
+| wrap | `32` | `272` | `$11.61` | `34m23s` | `$0.36` | `$0.04` |
+| wrap | `41` | `800` | `$10.41` | `33m52s` | `$0.25` | `$0.01` |
+| wrap | `1` | `44` | `$2.75` | `6m14s` | `$2.75` | `$0.06` |
+| wrap | `22` | `198` | `$6.08` | `26m16s` | `$0.28` | `$0.03` |
+| wrap | `2` | `0` | `$2.02` | `5m42s` | `$1.01` | — |
+| wrap | `27` | `145` | `$8.82` | `25m21s` | `$0.33` | `$0.06` |
+| wrap | `18` | `122` | `$7.29` | `16m09s` | `$0.41` | `$0.06` |
+| wrap | `20` | `129` | `$6.35` | `14m00s` | `$0.32` | `$0.05` |
+| wrap | `1` | `5` | `$2.47` | `4m26s` | `$2.47` | `$0.49` |
+| wrap | `31` | `103` | `$8.85` | `19m33s` | `$0.29` | `$0.09` |
+| wrap | `6` | `6` | `$2.73` | `5m20s` | `$0.45` | `$0.45` |
+| wrap | `2` | `25` | `$3.60` | `9m29s` | `$1.80` | `$0.14` |
+| wrap | `6` | `6` | `$2.03` | `5m11s` | `$0.34` | `$0.34` |
+| wrap | `6` | `81` | `$5.52` | `12m34s` | `$0.92` | `$0.07` |
+| wrap | `6` | `6` | `$2.44` | `4m31s` | `$0.41` | `$0.41` |
+| wrap | `1` | `21` | `$1.65` | `3m54s` | `$1.65` | `$0.08` |
+| wrap | `44` | `986` | `$13.38` | `1h05m54s` | `$0.30` | `$0.01` |
+| wrap | `50` | `586` | `$8.18` | `15m43s` | `$0.16` | `$0.01` |
+| wrap | `33` | `411` | `$10.71` | `29m49s` | `$0.32` | `$0.03` |
+| wrap | `17` | `204` | `$5.80` | `15m14s` | `$0.34` | `$0.03` |
+| **Σ** | **`594`** | **`7,607`** | **`$172.62`** | | **$0.29** | **$0.02** |
 
-Campaigns `40`–`43`, wrapped bottom-up by DAG layer, then reviewed by
-campaigns `50`–`51` under Opus 5. Layer numbering is this tranche's own.
+### Batches — review symbols
 
-### Types and callbacks — X.509
+`anthropic/claude-opus-5` via `claude`.
 
-| DAG layer | unit | kind | fields | target fields | target ptr | wrapped fields | newtypes | $ | wall | loc | rv $ | rv wall | rv loc | verdict |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `0` | `evp_pkey_st` | struct | `21` | `17` | `6` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `X509_extension_st` | struct | `3` | `3` | `1` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `X509_name_entry_st` | struct | `4` | `3` | `2` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `X509_name_st` | struct | `5` | `5` | `3` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `X509_pubkey_st` | struct | `6` | `6` | `5` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_ACCESS_DESCRIPTION` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_ASN1_INTEGER` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_ASN1_OBJECT` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_DIST_POINT` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_GENERAL_NAME` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_GENERAL_SUBTREE` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_OPENSSL_STRING` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_POLICYINFO` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_POLICYQUALINFO` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_X509_EXTENSION` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `stack_st_X509_NAME_ENTRY` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `1` | `x509_st` | struct | `27` | `27` | `13` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `2` | `DIST_POINT_NAME_st` | struct | `5` | `3` | `1` | `5` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `2` | `NAME_CONSTRAINTS_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `2` | `POLICYINFO_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `3` | `X509_algor_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `3` | `otherName_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `4` | `AUTHORITY_KEYID_st` | struct | `3` | `3` | `3` | `3` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `4` | `BASIC_CONSTRAINTS_st` | struct | `2` | `2` | `1` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `4` | `DIST_POINT_st` | struct | `4` | `4` | `3` | `4` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `4` | `EDIPartyName_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `4` | `NOTICEREF_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `5` | `GENERAL_NAME_st` | struct | `17` | `2` | — | `17` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `5` | `USERNOTICE_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `6` | `ACCESS_DESCRIPTION_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `6` | `GENERAL_SUBTREE_st` | struct | `3` | `3` | `3` | `3` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-| `6` | `POLICYQUALINFO_st` | struct | `5` | `2` | `1` | `5` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
-
-### Batches — type review (X.509)
-
-| session | batch | units | rv loc | rv $ | rv wall | $/type |
-|---|---|---|---|---|---|---|
-| `2026-08-23_23-54-10_7d25` | `review-type_X509_pubkey_st` | `32` types | `+89/-13` | `$11.28` | `19m08s` | `$0.35` |
-| **Σ** | **`1` agent** | **`32` types** | **`+89/-13`** | **`$11.28`** | **`19m08s`** | **`$0.35`** |
-
-### Batches — types (X.509)
-
-| DAG layer | units | loc | $ | wall | $/unit | $/loc |
-|---|---|---|---|---|---|---|
-| `0` | `1` | `21` | `$4.09` | `16m50s` | `$4.09` | `$0.195` |
-| `1` | `16` | `45` | `$37.96` | `15m57s` | `$2.37` | `$0.844` |
-| `2` | `3` | `9` | `$13.48` | `22m32s` | `$4.49` | `$1.498` |
-| `3` | `2` | `4` | `$10.87` | `15m43s` | `$5.44` | `$2.719` |
-| `4` | `5` | `13` | `$14.23` | `20m51s` | `$2.85` | `$1.095` |
-| `5` | `2` | `19` | `$8.12` | `15m01s` | `$4.06` | `$0.427` |
-| `6` | `3` | `10` | `$11.55` | `20m29s` | `$3.85` | `$1.155` |
-| **Σ** | **`32`** | **`121`** | **`$100.30`** | **`2h07m26s`** | **`$3.13`** | **`$0.829`** |
-
-### Symbols — X.509
-
-| DAG layer | symbol | kind | target fns | deps | wrappers | batch | rv batch | verdict |
-|---|---|---|---|---|---|---|---|---|
-| `2` | `AUTHORITY_INFO_ACCESS_free` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `AUTHORITY_INFO_ACCESS_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `CERTIFICATEPOLICIES_free` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `CERTIFICATEPOLICIES_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `CRL_DIST_POINTS_free` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `CRL_DIST_POINTS_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `EXTENDED_KEY_USAGE_free` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `EXTENDED_KEY_USAGE_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `GENERAL_NAMES_free` | function | `10` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `GENERAL_NAMES_new` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `TLS_FEATURE_free` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `TLS_FEATURE_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509V3_get_d2i` | function | `12` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_EXTENSION_dup` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_EXTENSION_free` | function | `9` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_EXTENSION_get_critical` | function | `11` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_EXTENSION_get_object` | function | `12` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_EXTENSION_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_ENTRY_dup` | function | `1` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_ENTRY_free` | function | `7` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_ENTRY_get_object` | function | `2` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_ENTRY_new` | function | `2` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_cmp` | function | `25` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_dup` | function | `14` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_entry_count` | function | `4` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_free` | function | `17` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_get0_der` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_get_entry` | function | `11` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_get_index_by_NID` | function | `5` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_get_index_by_OBJ` | function | `2` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_get_text_by_NID` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_get_text_by_OBJ` | function | `1` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_new` | function | `4` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_NAME_print_ex` | function | `10` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_NAME_print_ex` | held · fixed (batch) |
-| `2` | `X509_PUBKEY_free` | function | `6` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_PUBKEY_get` | function | `6` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_PUBKEY_get0` | function | `8` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_PUBKEY_new_ex` | function | `0` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_check_email` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_check_host` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_check_ip` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_check_ip_asc` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_cmp` | function | `8` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_dup` | function | `6` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_free` | function | `48` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get0_extensions` | function | `6` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get0_pubkey` | function | `20` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get1_email` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_X509_PUBKEY` | function | `4` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_ext` | function | `6` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_ext_by_NID` | function | `7` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_ext_by_OBJ` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_ext_by_critical` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_ext_count` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_ext_d2i` | function | `10` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_issuer_name` | function | `27` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_pubkey` | function | `2` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_signature_info` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_signature_nid` | function | `2` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_signature_type` | function | `0` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_get_subject_name` | function | `29` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_issuer_and_serial_cmp` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_issuer_name_cmp` | function | `0` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_new` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_new_ex` | function | `4` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_subject_name_cmp` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `X509_up_ref` | function | `25` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `d2i_X509` | function | `6` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `d2i_X509_EXTENSION` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `d2i_X509_NAME` | function | `1` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `d2i_X509_NAME_ENTRY` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `d2i_X509_PUBKEY` | function | `3` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `i2d_X509` | function | `3` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `i2d_X509_EXTENSION` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `i2d_X509_NAME` | function | `10` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `i2d_X509_NAME_ENTRY` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `i2d_X509_PUBKEY` | function | `3` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `2` | `i2d_re_X509_tbs` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `3` | `DIST_POINT_NAME_free` | function | `0` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `3` | `DIST_POINT_NAME_new` | function | `3` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `3` | `NAME_CONSTRAINTS_free` | function | `3` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `3` | `NAME_CONSTRAINTS_new` | function | `1` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `3` | `POLICYINFO_free` | function | `2` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `3` | `POLICYINFO_new` | function | `2` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_ALGOR_cmp` | function | `5` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_ALGOR_dup` | function | `5` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_ALGOR_free` | function | `35` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_ALGOR_get0` | function | `27` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_ALGOR_new` | function | `19` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_EXTENSION_get_data` | function | `9` | — | `1` | `wrap-symbol_X509_EXTENSION_get_data` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_NAME_ENTRY_get_data` | function | `7` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_get_data` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_PUBKEY_dup` | function | `1` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_PUBKEY_eq` | function | `1` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_PUBKEY_get0_param` | function | `12` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get0_notAfter` | function | `4` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get0_notBefore` | function | `3` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get0_pubkey_bitstr` | function | `3` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get0_serialNumber` | function | `16` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get0_signature` | function | `1` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get0_tbs_sigalg` | function | `1` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get1_ocsp` | function | `0` | — | `1` | `wrap-symbol_X509_EXTENSION_get_data` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get_serialNumber` | function | `0` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `X509_get_version` | function | `5` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `d2i_X509_ALGOR` | function | `8` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `4` | `i2d_X509_ALGOR` | function | `2` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `5` | `AUTHORITY_KEYID_free` | function | `5` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `5` | `AUTHORITY_KEYID_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `5` | `BASIC_CONSTRAINTS_free` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `5` | `BASIC_CONSTRAINTS_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `5` | `DIST_POINT_free` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `5` | `DIST_POINT_new` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `6` | `GENERAL_NAME_cmp` | function | `2` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `6` | `GENERAL_NAME_dup` | function | `2` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `6` | `GENERAL_NAME_free` | function | `16` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `6` | `GENERAL_NAME_get0_otherName` | function | `0` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `6` | `GENERAL_NAME_get0_value` | function | `0` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `6` | `GENERAL_NAME_new` | function | `8` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `7` | `ACCESS_DESCRIPTION_free` | function | `1` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `7` | `ACCESS_DESCRIPTION_new` | function | `2` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `7` | `GENERAL_SUBTREE_free` | function | `1` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `7` | `GENERAL_SUBTREE_new` | function | `1` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `7` | `POLICYQUALINFO_free` | function | `2` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-| `7` | `POLICYQUALINFO_new` | function | `2` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
-
-### Batches — symbol review (X.509)
-
-| session | batch | units | rv loc | rv $ | rv wall | $/symbol |
-|---|---|---|---|---|---|---|
-| `2026-08-23_23-54-10_7d25` | `review-symbol_X509_ALGOR_cmp` | `123` symbols | `+78/-26` | `$9.36` | `16m21s` | `$0.08` |
-| `2026-08-24_00-32-55_40aa` | `review-symbol_X509_NAME_print_ex` | `1` symbol | `+121/-21` | `$3.13` | `8m01s` | `$3.13` |
-| **Σ** | **`2` agents** | **`124` submissions (`123` unique)** | **`+199/-47`** | **`$12.48`** | **`16m21s`** (longest) | **`$0.10`** |
-
-### Batches — symbols (X.509)
-
-| DAG layer | units | loc | $ | wall | $/unit | $/loc |
-|---|---|---|---|---|---|---|
-| `2` | `78` | `377` | `$24.02` | `25m21s` | `$0.31` | `$0.064` |
-| `3` | `6` | `6` | `$2.73` | `5m20s` | `$0.45` | `$0.455` |
-| `4` | `21` | `152` | `$13.36` | `16m09s` | `$0.64` | `$0.088` |
-| `5` | `6` | `6` | `$2.03` | `5m11s` | `$0.34` | `$0.338` |
-| `6` | `6` | `81` | `$5.52` | `12m34s` | `$0.92` | `$0.068` |
-| `7` | `6` | `6` | `$2.44` | `4m31s` | `$0.41` | `$0.406` |
-| **Σ** | **`123`** | **`628`** | **`$50.09`** | **`1h09m08s`** | **`$0.41`** | **`$0.080`** |
+| symbols | rv loc | rv $ | rv wall | rv $/symbol |
+|---|---|---|---|---|
+| `1` | — | `$3.36` | `5m20s` | `$3.36` |
+| `2` | — | `$2.98` | `9m51s` | `$1.49` |
+| `2` | — | `$1.26` | `3m23s` | `$0.63` |
+| `2` | — | `$3.19` | `6m39s` | `$1.59` |
+| `2` | — | `$4.26` | `10m34s` | `$2.13` |
+| `4` | — | `$6.20` | `15m20s` | `$1.55` |
+| `2` | — | `$4.40` | `11m11s` | `$2.20` |
+| `2` | — | `$3.95` | `9m51s` | `$1.98` |
+| `39` | — | `$9.44` | `17m34s` | `$0.24` |
+| `50` | — | `$20.31` | `33m38s` | `$0.41` |
+| `50` | — | `$11.22` | `20m48s` | `$0.22` |
+| `50` | — | `$8.91` | `19m28s` | `$0.18` |
+| `32` | — | `$14.38` | `28m31s` | `$0.45` |
+| `41` | — | `$10.16` | `18m10s` | `$0.25` |
+| `1` | — | `$3.86` | `10m10s` | `$3.86` |
+| `22` | — | `$8.36` | `16m25s` | `$0.38` |
+| `123` | — | `$9.36` | `16m21s` | `$0.08` |
+| `1` | — | `$3.13` | `8m01s` | `$3.13` |
+| **Σ `426`** | — | **`$128.74`** | — | **$0.30** |
 
 ## Safety audit
 
-`crustify-audit <crate> unsafe`, unseeded — tree-wide, not
-per seed. Three snapshots: the tree the foundation review judged, the tree it
-produced, and the campaign record after the X.509 tranche and both UB passes.
+Deterministic `crustify-audit unsafe`; no model.
 
-| | before review (`894f727207`) | after review (`32ada326d7`) | campaign record (`3bb143b635`) |
+### Snapshots
+
+| | foundation review, before (`894f727207`) | foundation review, after (`32ada326d7`) | campaign record (`c396267745`) |
 |---|---|---|---|
-| unsafe loc | `1,108` | `1,126` | `1,990` |
-| % of loc | `27.87`% | `26.29`% | `27.72`% |
-| blocks | `624` | `641` | `1,230` |
-| % in `impl T` | `42.31`% | `42.59`% | `57.97`% |
-| `unsafe fn` | `232` | `240` | `395` |
-| ...of which not sanctioned | `82` | `90` | `131` |
-| raw-ptr smell | `19` | `19` | `21` |
+| unsafe loc | `1,108` | `1,126` | `2,664` |
+| % of loc | `27.87%` | `26.29%` | `29.43%` |
+| blocks | `624` | `641` | `1,542` |
+| % in `impl T` | `42.31%` | `42.59%` | `55.45%` |
+| `unsafe fn` | `232` | `240` | `497` |
+| ...of which not sanctioned | `82` | `90` | `153` |
+| raw-ptr smell | `19` | `19` | `26` |
 | void-ptr smell | `4` | `4` | `6` |
-| FFI calls | `299` | `299` | `450` |
+| FFI calls | `299` | `299` | `619` |
 | `&`/`&mut` on a wrapper | `0` | `0` | `0` |
 | field proj outside an accessor | `0` | `0` | `0` |
 
-The campaign-record column is the run required at the end of a campaign:
-`crustify-audit <repo_root> unsafe --json` with no seeds, taken after the
-second UB pass's repairs landed, so it postdates every change it describes.
-The tree roughly doubled while unsafe density held within half a point of the
-foundation figure, and the share of unsafe blocks sitting inside a wrapper
-`impl` rose from `42.59`% to `57.97`% — the X.509 tranche added proportionally
-more wrapper-internal unsafety than raw seam. Every hard structural target
-stayed at zero: `wrapper_declared_nonconformant`, `wrapper_newtypes_undeclared`,
-`raw_ptr_in_wrapper`, `ref_to_type_wrapper`, `field_ref_wrapped` and
-`field_proj_outside_impl`, across `46` declared wrapper newtypes.
-
 ### All metrics
 
-| metric | before | after | Δ | reading |
+| metric | foundation before | campaign record | Δ | reading |
 |---|---|---|---|---|
-| `code_lines` | `3,975` | `4,283` | `+308` | union of HIR definition spans (denominator); `cfg`-disabled items excluded |
-| `total_stmts` | `572` | `632` | `+60` | statements |
-| `unsafe_blocks` | `624` | `641` | `+17` | count of `unsafe { }` blocks, macro-expanded included |
-| `unsafe_block_stmts` | `29` | `37` | `+8` | statements inside them |
-| `unsafe_block_lines` | `1,108` | `1,126` | `+18` | their lines, every outermost block |
-| `unsafe_block_code_lines` | `1,108` | `1,126` | `+18` | **`27.87`% → `26.29`%** |
-| `unsafe_blocks_wrapper_impl` | `264` | `273` | `+9` | inside `impl <wrapper T>` |
-| `unsafe_blocks_ffi_export` | `3` | `4` | `+1` | inside the C-ABI gateway |
-| `unsafe_fns` | `232` | `240` | `+8` | `unsafe fn` declarations, post-expansion |
-| `unsafe_fns_seam` | `150` | `150` | `0` | ...the sanctioned subset |
-| **`unsafe fn` smell** | **`82`** | **`90`** | **`+8`** | the remainder — read each and accept or fix it |
-| `unsafe_fns_pub` | `227` | `232` | `+5` | ...of `unsafe_fns`, exported from the crate |
-| `unsafe_impls` / `unsafe_traits` | `64` / `0` | `66` / `0` | `+2` / `0` | lifecycle contracts asserted once per type |
-| `ffi_calls` | `299` | `299` | `0` | calls to a foreign item — the unsafe-FFI-call surface |
-| `wrapper_newtypes` | `25` | `25` | `0` | LAYOUT newtypes — `repr(transparent)` over a `repr(C)` type by value, detected structurally |
-| `wrapper_newtypes_declared` | `25` | `25` | `0` | the `CCell`-declared count, for comparison |
-| `wrapper_declared_nonconformant` | `0` | `0` | `0` | declared but failing the structural test — **target 0** |
-| `wrapper_newtypes_undeclared` | `0` | `0` | `0` | structural but undeclared — a hand-written layout newtype |
-| `raw_ptr_args` | `92` | `91` | `-1` | raw-ptr positions in arguments |
-| `raw_ptr_rets` | `96` | `94` | `-2` | raw-ptr positions in returns |
-| **total positions** | **`188`** | **`185`** | `-3` | args + rets; disjoint, so this is the surface |
-| `raw_ptr_seam` | `169` | `166` | `-3` | sanctioned: seam fn / `mod ffi_export` / `extern "C"` / ptr-to-own-`Self` |
-| **smell (total − seam)** | **`19`** | **`19`** | `0` | the non-seam remainder |
-| `raw_ptr_wrapped` | `4` | `4` | `0` | **of the smell**: pointee is a C type that HAS a wrapper — the actionable defect |
-| `raw_ptr_in_wrapper` | `0` | `0` | `0` | **of the smell**: inside a wrapper impl — the least excusable placement |
-| `raw_ptr_derefs` | `96` | `105` | `+9` | `*p` on a raw pointer (volume) |
-| `ref_to_type_wrapper` | `0` | `0` | `0` | `&`/`&mut` on a layout newtype — **target 0** |
-| `field_proj_wrapped` | `94` | `103` | `+9` | projection VOLUME — shares one HIR shape with `addr_of!`, not a violation |
-| `field_proj_outside_impl` | `0` | `0` | `0` | projections outside any accessor — **target 0** |
-| `field_ref_wrapped` | `0` | `0` | `0` | `&(*p).field` — forbidden by the translator playbook — **target 0** |
-| `void_ptr_sanctioned` | `65` | `62` | `-3` | `*c_void` in a seam / `ffi_export` / `extern "C"` signature |
-| `void_ptr_smell` | `4` | `4` | `0` | `*c_void` elsewhere; `void_ptr_sites` names each one |
-
-### What the review moved
-
-The review added `308` audited code lines and reduced unsafe density by `1.58`
-percentage points. It removed three raw-pointer positions, all from sanctioned
-seams, so raw-pointer smell held at `19`. Every hard structural target held at
-zero: nonconformant and undeclared wrappers, raw pointers inside wrapper impls,
-references to layout wrappers, field references, and field projections outside
-accessors. The four void-pointer smells remain the explicitly localized erased
-payload seams in `bio_lib.rs`, `obj_dat.rs`, and `stack.rs`.
+| `code_lines` | `3,975` | `9,051` | `+5,076` | union of HIR definition spans (denominator); `cfg`-disabled items excluded |
+| `total_stmts` | `572` | `1,457` | `+885` | statements |
+| `unsafe_blocks` | `624` | `1,542` | `+918` | count of `unsafe { }` blocks, macro-expanded included |
+| `unsafe_block_stmts` | `29` | `101` | `+72` | statements inside them |
+| `unsafe_block_lines` | `1,108` | `2,664` | `+1,556` | their lines, every outermost block |
+| `unsafe_blocks_wrapper_impl` | `264` | `855` | `+591` | inside `impl <wrapper T>` |
+| `unsafe_blocks_ffi_export` | `9` | `14` | `+5` | inside the C-ABI gateway |
+| `unsafe_fns` | `232` | `497` | `+265` | `unsafe fn` declarations, post-expansion |
+| `unsafe_fns_seam` | `150` | `344` | `+194` | ...the sanctioned subset |
+| `unsafe_fns_pub` | `228` | `470` | `+242` | ...of `unsafe_fns`, exported from the crate |
+| `ffi_calls` | `299` | `619` | `+320` | calls to a foreign item — the unsafe-FFI-call surface |
+| `wrapper_newtypes` | `30` | `61` | `+31` | LAYOUT newtypes — `repr(transparent)` over a `repr(C)` type by value |
+| `wrapper_newtypes_declared` | `30` | `61` | `+31` | the `CCell`-declared count, for comparison |
+| `wrapper_declared_nonconformant` | `0` | `0` | `+0` | declared but failing the structural test — **target 0** |
+| `wrapper_newtypes_undeclared` | `0` | `0` | `+0` | structural but undeclared — a hand-written layout newtype |
+| `raw_ptr_args` | `96` | `219` | `+123` | raw-ptr positions in arguments |
+| `raw_ptr_rets` | `104` | `245` | `+141` | raw-ptr positions in returns |
+| `raw_ptr_seam` | `181` | `438` | `+257` | sanctioned: seam fn / `mod ffi_export` / `extern "C"` / ptr-to-own-`Self` |
+| `raw_ptr_wrapped` | `4` | `8` | `+4` | **of the smell**: pointee is a C type that HAS a wrapper — the actionable defect |
+| `raw_ptr_in_wrapper` | `0` | `0` | `+0` | **of the smell**: inside a wrapper impl — the least excusable placement |
+| `raw_ptr_derefs` | `151` | `297` | `+146` | `*p` on a raw pointer (volume) |
+| `ref_to_type_wrapper` | `0` | `0` | `+0` | `&`/`&mut` on a layout newtype — **target 0** |
+| `field_proj_wrapped` | `112` | `293` | `+181` | projection VOLUME — shares one HIR shape with `addr_of!`, not a violation |
+| `field_proj_outside_impl` | `0` | `0` | `+0` | projections outside any accessor — **target 0** |
+| `field_ref_wrapped` | `0` | `0` | `+0` | `&(*p).field` — forbidden by the translator playbook — **target 0** |
+| `void_ptr_sanctioned` | `65` | `174` | `+109` | `*c_void` in a seam / `ffi_export` / `extern "C"` signature |
+| `void_ptr_smell` | `4` | `6` | `+2` | `*c_void` elsewhere; `void_ptr_sites` names each one |
 
 ## Notes
 
 ### Campaign result
 
-Two approved subsets are complete. The foundation subset is 319 reviewed DAG
-units — 34 types, eight callbacks, and 277 public symbols; its canonical review
-landed 25 of 25 Opus agents with no failures in `2h03m21s`. The X.509 subset
-adds 155 units — 32 types and 123 public symbols — over campaigns `40`–`43`,
-landing 31 of 31 translator batches with no failures, and reviewed by three
-Opus agents across campaigns `50`–`51`, again with no failures.
+Three approved subsets are complete. The foundation tranche (`10`–`11`) covers
+the ASN.1 string/object layer, the generic `STACK_OF` container and BIO. The
+X.509 tranche (`40`–`43`) covers certificate, name and extension handling. The
+`EVP_PKEY` core tranche (`60`) covers key handles, signatures, key exchange,
+KEM and asymmetric cipher entry points.
 
-Together the campaign has wrapped 66 types, eight callbacks and 400 public
-symbols. No scheduler TODO anchor survives anywhere in the Rust tree, so every
-scheduled item is filled. EVP remains deferred beyond `evp_pkey_st`, which the
-X.509 tranche needed as a layer-0 dependency.
+Tree-wide the campaign has landed `80` wrapped types, `9` callbacks and `553`
+wrapped symbols over `21,080` non-test Rust lines and `10,056` lines of tests.
+One `Replaces:` anchor exists; everything else is a wrap, which is what a wrap
+campaign should produce. No scheduler TODO anchor survives anywhere in the Rust
+tree, so every scheduled item is filled.
 
-### Lifetime review
+### Table ordering
 
-The combined Opus review covered all ten void/string lifetime symbols in four
-dependency batches. It corrected NUL and zero-length preconditions, allocator
-metadata and pairing, cleansing behavior, secure-heap fallback, and the
-corresponding tests and oracle records. Its four agents cost `$18.82`
-API-equivalent and ran for `47m01s` session wall.
+The batch tables carry no batch-name column, so their rows are ordered by
+sub-campaign in the sequence the Overview lists, then by dependency layer
+within each. A row is one agent.
 
-### Alignment and discriminants
+### Sub-campaigns the Overview lists but no table details
 
-The judge reproduced and fixed unaligned `in_addr`/`in6_addr` access. It also
-corrected the `obj_name_st.data` alias-versus-opaque discriminant,
-`ASN1_TEMPLATE` item-versus-ADB handling, ASN.1 item/function-table tags, and
-the `ASN1_TYPE` UNDEF, ANY, unknown, and string-backed arms.
+`02-review-void` ran under `openai/gpt-5.5` before the reviewer model was
+settled, and `03-review-string` was scheduled and then superseded without ever
+running — it has no `campaign.json` and no logs. `10-foundation` ran twice: an
+`11m06s` first session (`e1fa`) whose plan was regenerated after a scheduler
+admission repair, and the `2h34m03s` session (`95ed`) that actually landed. All
+three of `e1fa`'s surviving agent records price into the Σ row but have no
+batch row, because the plan they ran against no longer exists.
 
-### Ownership and callback boundaries
+### Overview unit counts are what a sub-campaign was scheduled for
 
-`BIO_up_ref` now preserves borrowed method/buffer dependencies, `BIO_dup_chain`
-tracks its source dependencies and correct chain destructor, and the non-copying
-BIO regions carry the peer-owned lifetime and are unsafe where C can invalidate
-them. Stack mutation/search/thunk operations no longer manufacture element
-liveness. BIO dump panics resume after crossing the C callback, and
-`CRYPTO_EX_DATA`, `OBJ_NAME`, and `OBJ_add_object` now model their registry,
-disposer, alias-string, and dynamic-object ownership rules.
+The Σ row instead counts DISTINCT implementation units — the raw-lifetime and
+wrap sub-campaigns only — so review coverage is not counted a second time. Its
+`$/type` and `$/sym` are therefore the whole campaign's spend, review and
+orchestration included, over the units that spend produced: `$9.58` per type
+and `$1.29` per symbol are the all-in rates, several times the per-wave rates
+above them.
 
-### C behavior retained by a wrap campaign
+Per the legend, `nr types` / `nr symbols` count the units a sub-campaign was
+scheduled over, taken from its `campaign.json`. Those differ from the landed
+anchor counts: a review sub-campaign re-batches the units it judges, so
+`20-review-foundation` shows `34` types against the wrap tranche's `29` — the
+oracle admitted five more types into the review schedule than the corrected
+wrap plan carried. Reviews are their own sub-campaign rows for exactly this
+reason; their rows never line up with the wave underneath.
 
-The review reproduced two OpenSSL C leaks rather than changing C: duplicating
-an `ASN1_STRING` with `ASN1_STRING_FLAG_NDEF`/non-owned data can inherit a
-non-owning flag on allocated storage, and `ASN1_STRING_length_set(x, 0)` can
-orphan the buffer. The Rust documentation and safer alternatives record both.
-The compatibility shim also rejects lengths at and above `INT_MAX`.
+### The EVP_PKEY wave's field counts are small by construction
 
-### Mixed callback batches
+`60`'s fifteen type batches carry only `5` in-scope fields between them. Under
+`--api-headers-only` a struct keeps its layout only when it is *defined* in an
+`api_headers` file, and almost every EVP type it scheduled — `evp_pkey_ctx_st`,
+`evp_keymgmt_st`, `evp_signature_st`, the four legacy key handles — is defined
+in a private header or a `.c`. They wrap as opaque handles, so `$/field` is not
+a meaningful rate for that tranche and `$/type` is the one to read.
 
-The scheduler pooled eight callbacks into symbol batches. Their rows point to `↖ batch table`; cost, wall, and loc are counted once in **Batches — symbols**.
+### Gate misses at landing
 
-### Scheduler admission repair
+`60` landed 20 of 20 batches with no agent failures, but three gates failed on
+the merged tree and the orchestrator repaired them before promoting.
 
-Twelve superseded agents covering 54 duplicate layer-0 units cost `$25.61`; this is excluded from landed tables but included in gross spend.
+Two agents left items after their test module, which clippy rejects under the
+workspace lint set. Module declaration order in `lib.rs` and `stack/mod.rs` was
+rustfmt-dirty — that one predates this wave: `cargo fmt --check` already failed
+at `c133e571b3`, so the previous revision of this report claiming the promoted
+campaign passed `cargo fmt --check` was not accurate. It passes now.
 
-### Foundation audit correction
+### The post-merge scan caught a hard-target regression
 
-The corrective batch removed the two direct `BIO_METHOD` field projections.
-The final 319-name seeded scan and unseeded scan agree on the whole-tree totals:
-`field_proj_outside_impl = 0`, `field_ref_wrapped = 0`,
-`ref_to_type_wrapper = 0`, and `wrapper_declared_nonconformant = 0`.
+The seeded scan over `60`'s 160 names reported `field_proj_outside_impl = 2`
+against a target of zero. Two callers projected `key` out of a C-contract
+`OSSL_PARAM` array to find its null-key terminator: `terminated_param_len`, and
+a scan `EVP_PKEY_fromdata_settable` had reimplemented inline despite already
+importing that helper.
 
-### Deprecated BIO configuration gap
+The repair adds `OsslParam::is_terminator_at`, putting the projection in the
+descriptor's own accessor, and routes both callers through it. The first
+attempt returned the borrowed `*const c_char` and merely moved the violation:
+`field_proj_outside_impl` went to zero but `raw_ptr_in_wrapper` went to one,
+which the audit calls the least excusable placement. Returning a predicate
+instead keeps the key pointer inside the wrapper and scores zero on both.
+Raw-pointer dereferences outside an accessor fell from `5` to `3` as a side
+effect, since the duplicated scan disappeared.
 
-`BIO_accept`, `BIO_get_accept_socket`, `BIO_get_host_ip`, and `BIO_get_port`
-cannot be link-tested in the configured `no-deprecated` C build. Enabling the
-corresponding Rust feature against that archive still fails by construction;
-the default reviewed surface compiles and links.
+### Remaining leads, accepted
+
+`raw_ptr_wrapped` sits at `8` and `void_ptr_smell` at `6`. The EVP additions are
+private module-local helpers in `evp/kem.rs` and `evp/signature.rs` that map an
+`Option<handle>` onto the nullable raw pointer OpenSSL's API requires, where
+NULL means "no parameters" or "default signature". They are not `pub`, so they
+widen no crate surface, and they sit exactly at the C boundary. The `void_ptr`
+sites remain the explicitly localized erased-payload seams in `bio_lib.rs`,
+`obj_dat.rs`, `stack.rs` and `v3_lib.rs`.
 
 ### Regression gates
 
-The promoted campaign passes `cargo fmt --check`, workspace-wide tests, strict
-Clippy across all targets, and 354 Rust tests (22 `libc`, 329 `libcrypto`, 3
-doctests) at the campaign record `3bb143b635`. The pre-review foundation also
-passed all 4,463 native OpenSSL tests. No C source changed during any review or
-UB remediation, so the native baseline in `build.json` still stands.
+At the campaign record the tree passes `cargo fmt --check`, `cargo build`,
+`cargo clippy --all-targets` with zero warnings under the workspace's
+`undocumented_unsafe_blocks = "deny"`, and `397` Rust tests with no failures.
+The pre-review foundation also passed all `4,463` native OpenSSL tests. No C
+source changed during any wave, review or UB remediation, so `build.json`'s
+`test_baseline` still stands unmodified.
 
 ### Accounting
 
 `crustify-log-cost` prices every request from its recorded provider/model token
-classes. The landed implementation is `$218.73`; raw lifetimes are `$13.64`;
-the Opus lifetime and target reviews are `$18.82` and `$217.23`. Across all 79
-recorded agents—including the superseded scheduling work and earlier review—the
-tool reports `$504.81` API-equivalent and `18h48m` serial agent wall:
-`review-symbol $116.26`, `review-type $130.58`, `wrap-symbol $92.06`,
-`wrap-type $152.28`, and raw/other `$13.64`. The Opus runs used subscription
-billing, so their `$236.05` is a comparison price, not incremental API billing;
-recorded API-billed work remains `$268.76`.
+classes; provider-reported dollars are never used. Across the `133` recorded
+translator and review agents the tool reports `$728.36`. The two
+`crustify-audit ub` runs (`$43.48` and `$23.33`) are priced separately from
+their own usage records and appear only in the Overview's `ub $` column, which
+is why the Σ row and the agent total differ.
 
-After the X.509 tranche and its review the same tool reports `$623.24` across
-113 recorded agents and `26h37m` of serial agent wall: `wrap-type $219.74`
-(55 runs), `wrap-symbol $122.21` (20), `review-type $141.86` (18),
-`review-symbol $128.74` (18), and raw/other `$10.70` (2). That total covers
-translator and review agents only — the two `crustify-audit ub` runs
-(`$43.48` and `$23.33`) and the orchestrator sessions are priced separately
-from their own usage records, which is why the Overview's Σ row and this figure
-differ.
-
-### X.509 tranche
-
-Scheduled as four dependency-ordered wrap campaigns rather than one: the
-`X509_pubkey_st` / `evp_pkey_st` root (`40`), the certificate core (`41`),
-name handling (`42`), and extensions (`43`). Batch budgets stayed at the
-campaign's translation caps (`--max-types 2`, `--max-syms 50`,
-`--max-loc 1000`); the review pass instead ran raised caps so all 32 types fit
-a single agent and the 123 symbols fit one more, which is why the review shows
-three agents against 31 translator batches.
-
-Cost separated cleanly by route: `$100.30` over 32 types (`$3.13`/type) against
-`$50.09` over 123 symbols (`$0.41`/symbol). Symbols pool into batches, so their
-cost is per batch rather than per symbol — the `$/loc` column is the comparable
-figure across the two routes.
-
-### Post-campaign UB pass
-
-Explicitly approved and completed under Opus 5 subscription billing: five
-safe-to-UB routes were demonstrated in 56m04s (`$43.48` API-equivalent), then
-remediated in wrapper commit `589b6078ec`:
-
-- caller-selected non-string ASN.1 tags are rejected by both safe string
-  constructors;
-- every safe ASN.1 string-table and default-mask access shares one mutex;
-- `BIO_dup_chain` rejects an owning descriptor anywhere in its input chain;
-- `BIO_gets` rejects an unchained buffer filter; and
-- signature-ID wrappers reject non-positive NIDs before C's subtraction
-  comparators.
-
-All six reproduction routes now exit 0 without their original diagnostic or
-double close. The ASan table workload survived 10/10 runs at 16 threads over
-3,000 fresh NIDs, versus 0/10 before remediation. Each advisory under
-`crustify/audit/advisories/` records its focused test and instrument result.
-
-### Second UB pass
-
-A second approved Opus 5 run over the X.509 surface
-(`ub-20260824-004145`, `31m15s`, `$23.33` API-equivalent) confirmed two further
-routes from safe code, each with a `#![forbid(unsafe_code)]` reproduction:
-
-- `GENERAL_NAME_cmp`'s `OTHERNAME` guard missed an unset `ASN1_TYPE`, giving a
-  null dereference under both UBSan and ASan; and
-- `X509_up_ref` turned a shared borrow into an exclusive one, so a `CSlice`
-  handed out from a shared handle could be invalidated through the alias —
-  ASan `heap-use-after-free`.
-
-The agent branched, repaired and gated its own patch per the playbook's UB
-promotion rule. The repair introduces `libcrypto::refcount::SharedRef`, which
-makes a reference-count share grant yield shared access only, and applies it to
-the `X509`, `BIO` and `EVP_PKEY` grants. The orchestrator independently
-re-ran the gates before promoting — `cargo build` clean, 354 tests passing,
-`cargo clippy --all-targets` clean under `undocumented_unsafe_blocks = "deny"` —
-and confirmed the diff was confined to the two findings and their evidence.
-Landed as `d5e86577a2`, `bd209c96b8` and `3bb143b635`.
+The Opus reviews and both UB runs used subscription billing, so their figures
+are API-equivalent comparison prices rather than charged amounts. Recorded
+API-billed work is the `openai/gpt-5.6-sol` implementation total.
