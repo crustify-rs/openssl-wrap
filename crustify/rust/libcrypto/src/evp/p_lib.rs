@@ -1,17 +1,18 @@
 //! Wrappers assigned from `crypto/evp/p_lib.c`.
 
-use core::ffi::{CStr, c_void};
+use core::ffi::{CStr, c_char, c_void};
 use core::marker::PhantomData;
-use core::ptr::{self, NonNull};
+use core::ptr::{self, NonNull, null_mut};
 
-use ffibox::{CBox, CType, CVal, CVec};
+use ffibox::{CBox, CSlice, CType, CVal, CVec};
 use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::Asn1PctxMut;
 use crate::bio::bio_bio_local::BioMut;
 use crate::bio::context::OsslLibCtxRef;
-use crate::core::openssl_core::{OsslParam, OsslParamRef};
+use crate::core::openssl_core::{OsslParam, OsslParamListMut, OsslParamRef, terminated_param_len};
 use crate::evp::evp::{EvpCipherRef, EvpPkey, EvpPkeyMut, EvpPkeyRef};
+use crate::evp::evp_local::EvpKeymgmtRef;
 use crate::mem::CryptoFree;
 use libc::x86_64_linux_gnu_bits_types_struct_file::IoFileMut;
 
@@ -664,6 +665,204 @@ pub fn EVP_PKEY_save_parameters(pkey: &mut EvpPkeyMut<'_>, mode: i32) -> i32 {
     unsafe { ffi::EVP_PKEY_save_parameters(pkey.as_mut_ptr(), mode) }
 }
 
+/// Wraps: EVP_PKEY_set1_encoded_public_key
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set1_encoded_public_key(pkey: &mut EvpPkeyMut<'_>, public_key: &[u8]) -> bool {
+    // SAFETY: the exclusive key handle and byte slice remain live for the
+    // synchronous call, which copies the encoded key rather than storing it.
+    unsafe {
+        ffi::EVP_PKEY_set1_encoded_public_key(
+            pkey.as_mut_ptr(),
+            public_key.as_ptr(),
+            public_key.len(),
+        ) == 1
+    }
+}
+
+/// Wraps: EVP_PKEY_set_ex_data
+///
+/// # Safety
+///
+/// OpenSSL stores `data` without a Rust lifetime. Its type, lifetime, and any
+/// registered ex-data duplication or cleanup callback must agree for `index`.
+#[allow(non_snake_case)]
+pub unsafe fn EVP_PKEY_set_ex_data<T>(
+    key: &mut EvpPkeyMut<'_>,
+    index: i32,
+    data: Option<NonNull<T>>,
+) -> bool {
+    // SAFETY: the exclusive key handle permits replacement and the caller
+    // upholds the indexed registry's erased type and lifetime contract.
+    unsafe {
+        ffi::EVP_PKEY_set_ex_data(
+            key.as_mut_ptr(),
+            index,
+            data.map_or(null_mut(), |data| data.as_ptr().cast::<c_void>()),
+        ) == 1
+    }
+}
+
+/// Wraps: EVP_PKEY_set_int_param
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_int_param(pkey: &mut EvpPkeyMut<'_>, key_name: &CStr, value: i32) -> bool {
+    // SAFETY: both borrows are live for the call. OpenSSL constructs a
+    // transient descriptor and copies the scalar into provider state.
+    unsafe { ffi::EVP_PKEY_set_int_param(pkey.as_mut_ptr(), key_name.as_ptr(), value) == 1 }
+}
+
+/// Wraps: EVP_PKEY_set_octet_string_param
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_octet_string_param(
+    pkey: &mut EvpPkeyMut<'_>,
+    key_name: &CStr,
+    value: &[u8],
+) -> bool {
+    // SAFETY: the exclusive key, name, and byte run remain live for this
+    // synchronous setter, which does not retain the descriptor's data pointer.
+    unsafe {
+        ffi::EVP_PKEY_set_octet_string_param(
+            pkey.as_mut_ptr(),
+            key_name.as_ptr(),
+            value.as_ptr(),
+            value.len(),
+        ) == 1
+    }
+}
+
+/// Wraps: EVP_PKEY_set_params
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_params(
+    pkey: &mut EvpPkeyMut<'_>,
+    params: &mut OsslParamListMut<'_, '_>,
+) -> bool {
+    // SAFETY: the list type guarantees an initialized null-key terminator and
+    // carries exclusive access to every descriptor for the duration of C use.
+    unsafe { ffi::EVP_PKEY_set_params(pkey.as_mut_ptr(), params.as_mut_ptr()) == 1 }
+}
+
+/// Wraps: EVP_PKEY_set_size_t_param
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_size_t_param(pkey: &mut EvpPkeyMut<'_>, key_name: &CStr, value: usize) -> bool {
+    // SAFETY: the live name and exclusive key are borrowed for the synchronous
+    // call; provider state receives the copied scalar value.
+    unsafe { ffi::EVP_PKEY_set_size_t_param(pkey.as_mut_ptr(), key_name.as_ptr(), value) == 1 }
+}
+
+/// Wraps: EVP_PKEY_set_type
+///
+/// `None` performs OpenSSL's documented availability query without modifying
+/// a key. `Some` clears any previous key material before selecting the type.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_type(pkey: Option<&mut EvpPkeyMut<'_>>, key_type: i32) -> bool {
+    let pkey = pkey.map_or(null_mut(), EvpPkeyMut::as_mut_ptr);
+    // SAFETY: null is the documented query form; otherwise the exclusive
+    // handle permits OpenSSL to replace the key's selected implementation.
+    unsafe { ffi::EVP_PKEY_set_type(pkey, key_type) == 1 }
+}
+
+/// Wraps: EVP_PKEY_set_type_by_keymgmt
+///
+/// OpenSSL raises its own reference to `keymgmt`; the caller retains its share.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_type_by_keymgmt(
+    pkey: Option<&mut EvpPkeyMut<'_>>,
+    keymgmt: EvpKeymgmtRef<'_>,
+) -> bool {
+    let pkey = pkey.map_or(null_mut(), EvpPkeyMut::as_mut_ptr);
+    // SAFETY: null is the documented query form for `pkey`. The method handle
+    // is live and OpenSSL raises a reference before storing it in a real key.
+    unsafe { ffi::EVP_PKEY_set_type_by_keymgmt(pkey, keymgmt.as_ptr().cast_mut()) == 1 }
+}
+
+/// Wraps: EVP_PKEY_set_type_str
+///
+/// The type name is length-delimited and need not carry a trailing NUL.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_type_str(pkey: Option<&mut EvpPkeyMut<'_>>, type_name: &[u8]) -> bool {
+    let Ok(len) = i32::try_from(type_name.len()) else {
+        return false;
+    };
+    let pkey = pkey.map_or(null_mut(), EvpPkeyMut::as_mut_ptr);
+    // SAFETY: the byte run is live for the explicit length and OpenSSL does
+    // not retain it; null `pkey` is the documented availability-query form.
+    unsafe { ffi::EVP_PKEY_set_type_str(pkey, type_name.as_ptr().cast::<c_char>(), len) == 1 }
+}
+
+/// Wraps: EVP_PKEY_set_utf8_string_param
+///
+/// `None` passes a null parameter value. OpenSSL's API does not itself validate
+/// that the non-null C string contains well-formed UTF-8.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_set_utf8_string_param(
+    pkey: &mut EvpPkeyMut<'_>,
+    key_name: &CStr,
+    value: Option<&CStr>,
+) -> bool {
+    let value = value.map_or(core::ptr::null(), CStr::as_ptr);
+    // SAFETY: the exclusive key and strings remain live for this synchronous
+    // setter; the transient descriptor is not retained by the provider call.
+    unsafe { ffi::EVP_PKEY_set_utf8_string_param(pkey.as_mut_ptr(), key_name.as_ptr(), value) == 1 }
+}
+
+/// Wraps: EVP_PKEY_settable_params
+///
+/// Returns the provider-owned descriptor run before its terminator. The key's
+/// borrow keeps the key-management method and provider behind the run alive.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_settable_params<'key>(
+    pkey: EvpPkeyRef<'key>,
+) -> Option<CSlice<'key, OsslParam<'key>>> {
+    // SAFETY: the key handle is live. A provider-backed key returns a
+    // provider-owned, initialized, null-key-terminated descriptor array.
+    let params = unsafe { ffi::EVP_PKEY_settable_params(pkey.as_ptr()) };
+    // SAFETY: a non-null result follows the terminated-array contract above.
+    let len = unsafe { terminated_param_len(params) }?;
+    let params = NonNull::new(params.cast_mut().cast::<OsslParam<'key>>())?;
+    // SAFETY: the scan established `len` initialized entries before the
+    // terminator, and `pkey` retains their provider for `'key`.
+    Some(unsafe { CSlice::from_raw_parts(params, len) })
+}
+
+/// Wraps: EVP_PKEY_type_names_do_all
+///
+/// Calls `callback` synchronously for every name and returns whether OpenSSL
+/// considered the key typed and completed enumeration successfully.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_type_names_do_all<F: FnMut(&CStr)>(pkey: EvpPkeyRef<'_>, callback: F) -> bool {
+    struct State<F> {
+        callback: F,
+        valid: bool,
+    }
+
+    unsafe extern "C" fn trampoline<F: FnMut(&CStr)>(name: *const c_char, data: *mut c_void) {
+        // SAFETY: this function is passed a unique pointer to `State<F>` for
+        // the synchronous enumeration and OpenSSL does not retain it.
+        let state = unsafe { &mut *data.cast::<State<F>>() };
+        if name.is_null() {
+            state.valid = false;
+            return;
+        }
+        // SAFETY: OpenSSL's name callback contract supplies a live
+        // NUL-terminated algorithm name for the duration of this call.
+        (state.callback)(unsafe { CStr::from_ptr(name) });
+    }
+
+    let mut state = State {
+        callback,
+        valid: true,
+    };
+    // SAFETY: the key handle is live, and the callback/data pair stays live
+    // and uniquely borrowed until synchronous enumeration returns.
+    let ok = unsafe {
+        ffi::EVP_PKEY_type_names_do_all(
+            pkey.as_ptr(),
+            Some(trampoline::<F>),
+            core::ptr::from_mut(&mut state).cast(),
+        ) == 1
+    };
+    ok && state.valid
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -688,5 +887,45 @@ mod tests {
         );
         assert!(EVP_PKEY_get_raw_public_key(key.as_ref()).is_some());
         assert!(EVP_PKEY_gettable_params(key.as_ref()).is_some());
+    }
+}
+
+#[cfg(test)]
+mod setter_tests {
+    use ffibox::CBox;
+
+    use super::*;
+    use crate::evp::evp::EvpPkey;
+
+    #[test]
+    fn type_selection_and_name_callback_use_safe_borrows() {
+        // SAFETY: a non-null result is a fresh fully initialized PKEY carrying
+        // one `EVP_PKEY_free` obligation.
+        let mut key =
+            unsafe { CBox::<EvpPkey>::from_raw(ffi::EVP_PKEY_new()) }.expect("EVP_PKEY_new");
+
+        assert!(EVP_PKEY_set_type(
+            Some(&mut key.as_mut()),
+            ffi::EVP_PKEY_RSA as i32,
+        ));
+        let mut names = Vec::new();
+        assert!(EVP_PKEY_type_names_do_all(key.as_ref(), |name| {
+            names.push(name.to_bytes().to_vec());
+        }));
+        assert!(!names.is_empty());
+    }
+
+    #[test]
+    fn scalar_setters_report_failure_for_an_unassigned_key() {
+        // SAFETY: a non-null result transfers one fresh PKEY reference.
+        let mut key =
+            unsafe { CBox::<EvpPkey>::from_raw(ffi::EVP_PKEY_new()) }.expect("EVP_PKEY_new");
+        assert!(!EVP_PKEY_set_int_param(&mut key.as_mut(), c"bits", 2048));
+        assert!(!EVP_PKEY_set_size_t_param(&mut key.as_mut(), c"bits", 2048,));
+        assert!(!EVP_PKEY_set_octet_string_param(
+            &mut key.as_mut(),
+            c"encoded-pub-key",
+            &[1, 2, 3],
+        ));
     }
 }

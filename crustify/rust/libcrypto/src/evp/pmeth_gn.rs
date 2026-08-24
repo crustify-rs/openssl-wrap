@@ -2,10 +2,11 @@
 
 use core::ptr;
 
-use ffibox::CBox;
+use ffibox::{CBox, CLenDropped, CVec};
 use libcrypto_sys as ffi;
 
-use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut};
+use crate::core::openssl_core::{OsslParam, terminated_param_len};
+use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyRef};
 
 fn generate(
     context: &mut EvpPkeyCtxMut<'_>,
@@ -71,6 +72,48 @@ pub fn EVP_PKEY_paramgen(context: &mut EvpPkeyCtxMut<'_>) -> Result<CBox<EvpPkey
 pub fn EVP_PKEY_paramgen_init(context: &mut EvpPkeyCtxMut<'_>) -> i32 {
     // SAFETY: the exclusive context permits replacing its active operation state.
     unsafe { ffi::EVP_PKEY_paramgen_init(context.as_mut_ptr()) }
+}
+
+/// Release policy for the duplicated array returned by `EVP_PKEY_todata`.
+pub struct OsslParamArrayFree;
+
+// SAFETY: this strategy is used only with the base pointer returned through
+// `EVP_PKEY_todata`; `OSSL_PARAM_free` releases that complete duplicated,
+// terminated array and does not require the recovered byte length.
+unsafe impl CLenDropped for OsslParamArrayFree {
+    unsafe fn c_drop_len(ptr: *mut u8, _byte_len: usize) {
+        // SAFETY: guaranteed by the strategy's construction contract above.
+        unsafe { ffi::OSSL_PARAM_free(ptr.cast()) }
+    }
+}
+
+/// Owned duplicated parameter descriptors returned by `EVP_PKEY_todata`.
+pub type OwnedOsslParams = CVec<OsslParam<'static>, OsslParamArrayFree>;
+
+/// Wraps: EVP_PKEY_todata
+///
+/// Duplicates the selected key material into an owned parameter array. The
+/// returned owner releases descriptor keys, data, and array storage together
+/// with `OSSL_PARAM_free`.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_todata(pkey: EvpPkeyRef<'_>, selection: i32) -> Result<OwnedOsslParams, i32> {
+    let mut params = ptr::null_mut();
+    // SAFETY: the key handle is live and `params` is a writable out-slot.
+    // Success transfers the newly duplicated array to this function.
+    let status = unsafe { ffi::EVP_PKEY_todata(pkey.as_ptr(), selection, &mut params) };
+    if status != 1 {
+        return Err(status);
+    }
+
+    // SAFETY: success promises a live null-key-terminated duplicated array.
+    let Some(len) = (unsafe { terminated_param_len(params) }) else {
+        // Defensive only: a successful null result violates the C contract.
+        return Err(0);
+    };
+    // SAFETY: the successful call transfers the base pointer exactly once;
+    // the scan established `len` initialized descriptors before its terminator,
+    // and this policy releases the whole allocation without needing the length.
+    unsafe { CVec::from_raw_parts(params.cast::<OsslParam<'static>>(), len) }.ok_or(0)
 }
 
 #[cfg(test)]

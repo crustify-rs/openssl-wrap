@@ -34,6 +34,7 @@ EC_KEY *EC_KEY_new(void);
 void EC_KEY_free(EC_KEY *key);
 EC_KEY *EC_KEY_dup(const EC_KEY *key);
 int EC_KEY_up_ref(EC_KEY *key);
+int EVP_PKEY_set1_EC_KEY(EVP_PKEY *pkey, EC_KEY *key);
 typedef struct dh_st DH;
 DH *DH_new(void);
 void DH_free(DH *dh);

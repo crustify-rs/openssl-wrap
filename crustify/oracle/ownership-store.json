@@ -17638,6 +17638,882 @@
    ]
   },
   {
+   "name": "EVP_PKEY_set1_EC_KEY",
+   "defined_in": "crypto/evp/p_legacy.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set1_encoded_public_key",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_ex_data",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "stored opaque application pointer; registry callbacks determine type and teardown"
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_int_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_octet_string_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_params",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_size_t_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_type",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_type_by_keymgmt",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_type_str",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "length-delimited name; len -1 selects NUL termination"
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_set_utf8_string_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_settable_params",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "provider-owned terminated descriptor array retained by the keymgmt/provider"
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_sign",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "sig",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sig"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "siglen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:siglen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "tbs",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:tbs"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_sign_init",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_sign_init_ex",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_sign_init_ex2",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "algo",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algo"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_sign_message_final",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "sig",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sig"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "siglen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:siglen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_sign_message_init",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "algo",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algo"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_sign_message_update",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_todata",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "params",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:params"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "outer out-slot is borrowed; successful call stores an owned OSSL_PARAM_dup array"
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_type_names_do_all",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_up_ref",
    "defined_in": "crypto/evp/p_lib.c",
    "lifetime": {
@@ -17665,6 +18541,412 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live EVP_PKEY and atomically increments its reference count; callers receive another ownership debt for the same pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "sig",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sig"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "tbs",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:tbs"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_init",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_init_ex",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_init_ex2",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "algo",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algo"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_message_final",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_message_init",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "algo",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algo"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_message_update",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_recover",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "rout",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:rout"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "routlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:routlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "sig",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sig"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_recover_init",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_recover_init_ex",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_verify_recover_init_ex2",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "algo",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algo"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
      }
     }
    ]
@@ -20847,6 +22129,46 @@
       "nullable": true,
       "mutable": true,
       "note": "Optional stack borrow; when non-null, the routine may mutate stack metadata or storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_CALLBACK",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "arg1",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg1"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
      }
     }
    ]
