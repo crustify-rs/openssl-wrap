@@ -3,6 +3,7 @@
 #include <openssl/asn1t.h>
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
+#include <openssl/core.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/lhash.h>

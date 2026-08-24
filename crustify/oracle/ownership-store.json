@@ -5314,6 +5314,47 @@
    ]
   },
   {
+   "name": "ossl_param_st",
+   "defined_in": "include/openssl/core.h",
+   "_comment_agent": "OSSL_PARAM is a by-value descriptor with no independent destructor. Both pointer fields are borrowed; data_type and data_size determine the runtime interpretation and return_size is mutable result metadata.",
+   "fields": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Runtime-discriminated caller-managed storage. INTEGER/UNSIGNED/REAL can name scalar native values, UTF8/OCTET_STRING name data_size bytes, and UTF8/OCTET_PTR name a pointer slot. Setters write through it; NULL is valid for size queries. The descriptor itself never releases the referent; even OSSL_PARAM_dup places copied bytes in array-owned backing storage rather than making each field an independent owner."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NUL-terminated parameter name. NULL terminates an OSSL_PARAM array; names are commonly static constants but the API also accepts caller-managed strings. The descriptor never frees or mutates the name."
+     }
+    }
+   ]
+  },
+  {
    "name": "otherName_st",
    "defined_in": "include/openssl/x509v3.h",
    "_comment_agent": "OTHERNAME is an ASN.1 SEQUENCE owning its object identifier and tagged value. OTHERNAME_free releases both fields and the record; public set0 paths transfer replacement pointers, and the public layout permits nullable slots.",
