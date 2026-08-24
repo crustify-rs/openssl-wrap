@@ -5778,6 +5778,286 @@
    ]
   },
   {
+   "name": "rsa_st",
+   "defined_in": "crypto/rsa/rsa_local.h",
+   "_comment_agent": "rsa_st is published only as opaque RSA. It owns its key components, cached Montgomery contexts, PSS parameters, multiprime stack, blinding sparse array and lock; it borrows its library context and method table. RSA_free is its final down-reference and RSA_up_ref creates another shared count.",
+   "fields": [
+    {
+     "name": "_method_mod_n",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Lazily allocated owned Montgomery cache, initialized under rsa_st.lock and released by the method finish hook."
+     }
+    },
+    {
+     "name": "_method_mod_p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Lazily allocated owned Montgomery cache, initialized under rsa_st.lock and released by the method finish hook."
+     }
+    },
+    {
+     "name": "_method_mod_q",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Lazily allocated owned Montgomery cache, initialized under rsa_st.lock and released by the method finish hook."
+     }
+    },
+    {
+     "name": "blindings_sa",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Owned type-erased SPARSE_ARRAY_OF(BN_BLINDING), created during construction, mutated under rsa_st.lock and element-freed with its container by RSA_free."
+     },
+     "locked_by": {
+      "lock": "lock",
+      "lock_op": [
+       "CRYPTO_THREAD_read_lock",
+       "CRYPTO_THREAD_write_lock"
+      ],
+      "unlock_op": [
+       "CRYPTO_THREAD_unlock"
+      ]
+     }
+    },
+    {
+     "name": "d",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned private exponent; set0 transfers ownership and final RSA_free clear-frees it."
+     }
+    },
+    {
+     "name": "dmp1",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned CRT exponent; set0 transfers ownership and final RSA_free clear-frees it."
+     }
+    },
+    {
+     "name": "dmq1",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned CRT exponent; set0 transfers ownership and final RSA_free clear-frees it."
+     }
+    },
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned public exponent; set0 transfers ownership and final RSA_free releases it."
+     }
+    },
+    {
+     "name": "iqmp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned CRT coefficient; set0 transfers ownership and final RSA_free clear-frees it."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed library context, null for RSA_new's default context; RSA_free never releases it."
+     }
+    },
+    {
+     "name": "lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Owned per-key read/write lock created before successful construction and released on the final RSA_free."
+     }
+    },
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed const method table. Construction installs the static default; RSA_set_method replaces it without acquiring or releasing ownership."
+     }
+    },
+    {
+     "name": "n",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned modulus; set0 transfers ownership and final RSA_free releases it."
+     }
+    },
+    {
+     "name": "p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned secret prime factor; set0 transfers ownership and final RSA_free clear-frees it."
+     }
+    },
+    {
+     "name": "prime_infos",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned OPENSSL_STACK container whose RSA_PRIME_INFO elements and secret BIGNUM fields are released on replacement or final RSA_free."
+     }
+    },
+    {
+     "name": "pss",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned legacy PSS restrictions; replacement and final RSA_free use RSA_PSS_PARAMS_free."
+     }
+    },
+    {
+     "name": "q",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned secret prime factor; set0 transfers ownership and final RSA_free clear-frees it."
+     }
+    },
+    {
+     "name": "references",
+     "refcount": true
+    }
+   ]
+  },
+  {
    "name": "stack_st",
    "defined_in": "crypto/stack/stack.c",
    "_comment_agent": "The public OPENSSL_STACK is opaque. Its private data field owns the resizable pointer array, while each type-erased element is either caller-borrowed or transferred for later OPENSSL_sk_pop_free according to the API path. Plain OPENSSL_sk_free never frees elements. Comparator and thunk fields are optional borrowed executable-code pointers with static lifetime.",
@@ -18309,6 +18589,65 @@
      "note": "Returns null on allocation failure or a fresh fully initialized POLICYQUALINFO carrying one POLICYQUALINFO_free obligation."
     }
    }
+  },
+  {
+   "name": "RSA_free",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one RSA reference when non-null; the final count disposes all owned fields and releases the allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RSA_up_ref",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:r"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live RSA and mutates only its atomic/reference-count state to produce another shared ownership count."
+     }
+    }
+   ]
   },
   {
    "name": "TLS_FEATURE_free",

@@ -9,6 +9,7 @@
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
 #include <openssl/provider.h>
+#include <openssl/rsa.h>
 #include <openssl/stack.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
@@ -26,6 +27,10 @@ EC_KEY *EC_KEY_new(void);
 void EC_KEY_free(EC_KEY *key);
 EC_KEY *EC_KEY_dup(const EC_KEY *key);
 int EC_KEY_up_ref(EC_KEY *key);
+typedef struct rsa_st RSA;
+RSA *RSA_new(void);
+void RSA_free(RSA *rsa);
+int RSA_up_ref(RSA *rsa);
 #endif
 /* crustify:macros:end */
 
