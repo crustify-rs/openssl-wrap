@@ -56,6 +56,7 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "bio_poll_descriptor_st",
     "bio_st",
     "evp_pkey_st",
+    "engine_st",
     "ossl_lib_ctx_st",
     "OPENSSL_sk_compfunc",
     "OPENSSL_sk_copyfunc",
@@ -73,7 +74,7 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "_IO_FILE",
     "hostent",
 ];
-const AGENT_OPAQUE_TYPES: &[&str] = &["lhash_st", "ossl_init_settings_st", "stack_st"];
+const AGENT_OPAQUE_TYPES: &[&str] = &["engine_st", "lhash_st", "ossl_init_settings_st", "stack_st"];
 const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "ASN1_OBJECT_create",
     "ASN1_OBJECT_it",

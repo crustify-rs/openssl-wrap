@@ -2408,6 +2408,12 @@
    ]
   },
   {
+   "name": "engine_st",
+   "defined_in": null,
+   "_comment_agent": "Reviewed the public API view: engine_st is an incomplete forward declaration with no fields. Deprecated APIs are disabled for this campaign, so no active lifecycle operation acts on it and there are no pointer-field findings to submit.",
+   "fields": []
+  },
+  {
    "name": "evp_pkey_st",
    "defined_in": "include/crypto/evp.h",
    "_comment_agent": "EVP_PKEY is opaque on the published API. Its complete value owns the attribute stack and elements, an acquired EVP_KEYMGMT reference with provider-owned keydata, its thread lock, and the operation-cache stack. The ASN.1 method pointer refers to static method-table storage. references is the object's atomic reference count.",
