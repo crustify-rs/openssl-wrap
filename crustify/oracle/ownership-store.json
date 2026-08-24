@@ -2517,6 +2517,402 @@
    "fields": []
   },
   {
+   "name": "evp_cipher_st",
+   "defined_in": "include/crypto/evp.h",
+   "_comment_agent": "The public EVP_CIPHER surface is opaque, so no field accessor is emitted. Internal inspection shows dynamic records retain prov, own type_name, borrow description and dispatch callbacks from provider-backed algorithm metadata, and use refcnt for dynamic reference counting; legacy static records leave these pointers null.",
+   "fields": [
+    {
+     "name": "ccipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "cfinal",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "cupdate",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "description",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed algorithm-description string from the provider algorithm definition; the retained provider keeps its dispatch metadata alive. Legacy ciphers may leave it null."
+     }
+    },
+    {
+     "name": "dinit",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "dinit_skey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "dupctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "einit",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "einit_skey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "freectx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "get_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "get_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "gettable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "gettable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "newctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "p_cfinal",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "p_cupdate",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "p_dinit",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "p_einit",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider-backed ciphers retain one provider reference via ossl_provider_up_ref and release it in evp_cipher_free_int; legacy ciphers store null."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "set_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "settable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy cipher records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "type_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned NUL-terminated copy made by ossl_algorithm_get1_first_name and released with OPENSSL_free; legacy ciphers leave it null."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_pkey_st",
    "defined_in": "include/crypto/evp.h",
    "_comment_agent": "EVP_PKEY is opaque on the published API. Its complete value owns the attribute stack and elements, an acquired EVP_KEYMGMT reference with provider-owned keydata, its thread lock, and the operation-cache stack. The ASN.1 method pointer refers to static method-table storage. references is the object's atomic reference count.",
@@ -11691,6 +12087,134 @@
      "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
     }
    }
+  },
+  {
+   "name": "EVP_CIPHER_fetch",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "algorithm",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algorithm"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required transient NUL-terminated algorithm name; not retained."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional library-context selector; fetch may update its method cache, and returned provider-backed objects must not outlive their context."
+     }
+    },
+    {
+     "name": "properties",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:properties"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional transient NUL-terminated property query; not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or one fetched reference released by EVP_CIPHER_free. The fetched record retains a provider reached from the selected library context and must not outlive that context."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_free",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "lifetime": {
+    "for": "cipher",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one public EVP_CIPHER reference. Null and legacy/cached records are accepted as no-ops; a NO_STORE dynamic record is down-referenced and its final count releases fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_up_ref",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "lifetime": {
+    "for": "cipher",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live cipher and creates another public reference. NO_STORE dynamic records increment refcnt; cached and legacy records need no physical increment because EVP_CIPHER_free is correspondingly a no-op."
+     }
+    }
+   ]
   },
   {
    "name": "EVP_PKEY_dup",
