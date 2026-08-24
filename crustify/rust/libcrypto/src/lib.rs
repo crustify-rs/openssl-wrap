@@ -11,3 +11,6 @@ pub mod stack;
 pub mod zeroization;
 pub mod evp;
 pub mod x509;
+pub mod core;
+pub mod keys;
+pub mod provider;

@@ -1,1874 +1,2294 @@
 {
-   "crates" : {
-      "libc" : {
-         "crate_path" : "crustify/rust/libc",
-         "depends_on" : [],
-         "in_tree" : false,
-         "kind" : "library",
-         "modules" : {
-            "netdb" : {
-               "rs" : {
-                  "src/netdb.rs" : {
-                     "headers" : [
-                        "netdb.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "addrinfo",
-                           "hostent"
-                        ]
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src"
-            },
-            "netinet_in" : {
-               "rs" : {
-                  "src/netinet_in.rs" : {
-                     "headers" : [
-                        "netinet/in.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "in6_addr",
-                           "in_addr"
-                        ]
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src"
-            },
-            "stdlib" : {
-               "rs" : {
-                  "src/stdlib.rs" : {
-                     "headers" : [
-                        "stdlib.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "free",
-                           "strdup"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src"
-            },
-            "x86_64_linux_gnu_bits_types_struct_file" : {
-               "rs" : {
-                  "src/x86_64_linux_gnu_bits_types_struct_file.rs" : {
-                     "headers" : [
-                        "stdio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "_IO_FILE"
-                        ]
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src"
+  "crates": {
+    "libc": {
+      "crate_path": "crustify/rust/libc",
+      "depends_on": [],
+      "in_tree": false,
+      "kind": "library",
+      "modules": {
+        "netdb": {
+          "rs": {
+            "src/netdb.rs": {
+              "headers": [
+                "netdb.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "addrinfo",
+                  "hostent"
+                ]
+              },
+              "tu": null
             }
-         },
-         "sys_crate" : "crustify/rust/libc-sys"
+          },
+          "rust_path": "src"
+        },
+        "netinet_in": {
+          "rs": {
+            "src/netinet_in.rs": {
+              "headers": [
+                "netinet/in.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "in6_addr",
+                  "in_addr"
+                ]
+              },
+              "tu": null
+            }
+          },
+          "rust_path": "src"
+        },
+        "stdlib": {
+          "rs": {
+            "src/stdlib.rs": {
+              "headers": [
+                "stdlib.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "free",
+                  "strdup"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": null
+            }
+          },
+          "rust_path": "src"
+        },
+        "x86_64_linux_gnu_bits_types_struct_file": {
+          "rs": {
+            "src/x86_64_linux_gnu_bits_types_struct_file.rs": {
+              "headers": [
+                "stdio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "_IO_FILE"
+                ]
+              },
+              "tu": null
+            }
+          },
+          "rust_path": "src"
+        }
       },
-      "libcrypto" : {
-         "crate_path" : "crustify/rust/libcrypto",
-         "depends_on" : [
-            "libc"
-         ],
-         "in_tree" : true,
-         "kind" : "library",
-         "modules" : {
-            "asn1" : {
-               "rs" : {
-                  "src/asn1/a_object.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ASN1_OBJECT_create",
-                           "ASN1_OBJECT_free"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/a_object.c"
-                  },
-                  "src/asn1/a_print.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ASN1_STRING_print"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/a_print.c"
-                  },
-                  "src/asn1/a_strex.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h",
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ASN1_STRING_print_ex",
-                           "ASN1_STRING_print_ex_fp",
-                           "ASN1_STRING_to_UTF8",
-                           "X509_NAME_print_ex"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/a_strex.c"
-                  },
-                  "src/asn1/a_strnid.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ASN1_STRING_TABLE_add",
-                           "ASN1_STRING_TABLE_cleanup",
-                           "ASN1_STRING_TABLE_get",
-                           "ASN1_STRING_get_default_mask",
-                           "ASN1_STRING_set_by_NID",
-                           "ASN1_STRING_set_default_mask",
-                           "ASN1_STRING_set_default_mask_asc"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/a_strnid.c"
-                  },
-                  "src/asn1/asn1.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h",
-                        "include/crypto/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "asn1_object_st",
-                           "asn1_string_st",
-                           "stack_st_ASN1_INTEGER",
-                           "stack_st_ASN1_OBJECT"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/asn1/asn1_lib.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ASN1_STRING_clear_free",
-                           "ASN1_STRING_cmp",
-                           "ASN1_STRING_copy",
-                           "ASN1_STRING_dup",
-                           "ASN1_STRING_free",
-                           "ASN1_STRING_get0_data",
-                           "ASN1_STRING_get_length",
-                           "ASN1_STRING_new",
-                           "ASN1_STRING_new_not_owned",
-                           "ASN1_STRING_set0",
-                           "ASN1_STRING_set1_data",
-                           "ASN1_STRING_set1_string",
-                           "ASN1_STRING_type",
-                           "ASN1_STRING_type_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/asn1_lib.c"
-                  },
-                  "src/asn1/bio_asn1.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_asn1_get_prefix",
-                           "BIO_asn1_get_suffix",
-                           "BIO_asn1_set_prefix",
-                           "BIO_asn1_set_suffix"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/bio_asn1.c"
-                  },
-                  "src/asn1/openssl_asn1.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ASN1_OBJECT_new",
-                           "ASN1_STRING_length",
-                           "ASN1_STRING_length_set",
-                           "ASN1_STRING_set"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "ASN1_VALUE_st",
-                           "asn1_string_table_st",
-                           "asn1_type_st",
-                           "stack_st_ASN1_STRING_TABLE"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/asn1/openssl_asn1t.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h",
-                        "include/openssl/asn1t.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "ASN1_ITEM_st",
-                           "ASN1_TEMPLATE_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/asn1/tasn_typ.rs" : {
-                     "headers" : [
-                        "include/openssl/asn1.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ASN1_OBJECT_it"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/tasn_typ.c"
-                  },
-                  "src/asn1/x_algor.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_ALGOR_cmp",
-                           "X509_ALGOR_dup",
-                           "X509_ALGOR_free",
-                           "X509_ALGOR_get0",
-                           "X509_ALGOR_new",
-                           "d2i_X509_ALGOR",
-                           "i2d_X509_ALGOR"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/asn1/x_algor.c"
-                  }
-               },
-               "rust_path" : "src/asn1"
+      "sys_crate": "crustify/rust/libc-sys"
+    },
+    "libcrypto": {
+      "crate_path": "crustify/rust/libcrypto",
+      "depends_on": [
+        "libc"
+      ],
+      "in_tree": true,
+      "kind": "library",
+      "modules": {
+        "asn1": {
+          "rs": {
+            "src/asn1/a_object.rs": {
+              "headers": [
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ASN1_OBJECT_create",
+                  "ASN1_OBJECT_free"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/a_object.c"
             },
-            "bio" : {
-               "rs" : {
-                  "src/bio/bf_buff.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_f_buffer"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bf_buff.c"
-                  },
-                  "src/bio/bf_lbuf.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_f_linebuffer"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bf_lbuf.c"
-                  },
-                  "src/bio/bf_nbio.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_f_nbio_test"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bf_nbio.c"
-                  },
-                  "src/bio/bf_null.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_f_null"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bf_null.c"
-                  },
-                  "src/bio/bf_prefix.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_f_prefix"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bf_prefix.c"
-                  },
-                  "src/bio/bf_readbuff.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_f_readbuffer"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bf_readbuff.c"
-                  },
-                  "src/bio/bio_addr.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_ADDRINFO_address",
-                           "BIO_ADDRINFO_family",
-                           "BIO_ADDRINFO_free",
-                           "BIO_ADDRINFO_next",
-                           "BIO_ADDRINFO_protocol",
-                           "BIO_ADDRINFO_socktype",
-                           "BIO_ADDR_clear",
-                           "BIO_ADDR_copy",
-                           "BIO_ADDR_dup",
-                           "BIO_ADDR_family",
-                           "BIO_ADDR_free",
-                           "BIO_ADDR_hostname_string",
-                           "BIO_ADDR_new",
-                           "BIO_ADDR_path_string",
-                           "BIO_ADDR_rawaddress",
-                           "BIO_ADDR_rawmake",
-                           "BIO_ADDR_rawport",
-                           "BIO_ADDR_service_string",
-                           "BIO_lookup",
-                           "BIO_lookup_ex",
-                           "BIO_parse_hostserv"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_addr.c"
-                  },
-                  "src/bio/bio_bio_local.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "crypto/bio/bio_local.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "bio_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/bio_cb.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_debug_callback_ex"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_cb.c"
-                  },
-                  "src/bio/bio_dump.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_dump",
-                           "BIO_dump_cb",
-                           "BIO_dump_fp",
-                           "BIO_dump_indent",
-                           "BIO_dump_indent_cb",
-                           "BIO_dump_indent_fp",
-                           "BIO_hex_string"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_dump.c"
-                  },
-                  "src/bio/bio_lib.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_callback_ctrl",
-                           "BIO_clear_flags",
-                           "BIO_copy_next_retry",
-                           "BIO_ctrl",
-                           "BIO_ctrl_pending",
-                           "BIO_ctrl_wpending",
-                           "BIO_do_connect_retry",
-                           "BIO_dup_chain",
-                           "BIO_eof",
-                           "BIO_err_is_non_fatal",
-                           "BIO_find_type",
-                           "BIO_free",
-                           "BIO_free_all",
-                           "BIO_get_callback_arg",
-                           "BIO_get_callback_ex",
-                           "BIO_get_data",
-                           "BIO_get_ex_data",
-                           "BIO_get_init",
-                           "BIO_get_line",
-                           "BIO_get_retry_BIO",
-                           "BIO_get_retry_reason",
-                           "BIO_get_rpoll_descriptor",
-                           "BIO_get_shutdown",
-                           "BIO_get_wpoll_descriptor",
-                           "BIO_gets",
-                           "BIO_indent",
-                           "BIO_int_ctrl",
-                           "BIO_method_name",
-                           "BIO_method_type",
-                           "BIO_new",
-                           "BIO_new_ex",
-                           "BIO_next",
-                           "BIO_number_read",
-                           "BIO_number_written",
-                           "BIO_pop",
-                           "BIO_ptr_ctrl",
-                           "BIO_push",
-                           "BIO_puts",
-                           "BIO_read",
-                           "BIO_read_ex",
-                           "BIO_recvmmsg",
-                           "BIO_sendmmsg",
-                           "BIO_set_callback_arg",
-                           "BIO_set_callback_ex",
-                           "BIO_set_data",
-                           "BIO_set_ex_data",
-                           "BIO_set_flags",
-                           "BIO_set_init",
-                           "BIO_set_next",
-                           "BIO_set_retry_reason",
-                           "BIO_set_send_flags",
-                           "BIO_set_shutdown",
-                           "BIO_test_flags",
-                           "BIO_up_ref",
-                           "BIO_vfree",
-                           "BIO_wait",
-                           "BIO_write",
-                           "BIO_write_ex"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_lib.c"
-                  },
-                  "src/bio/bio_meth.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_get_new_index",
-                           "BIO_meth_free",
-                           "BIO_meth_new",
-                           "BIO_meth_set_callback_ctrl",
-                           "BIO_meth_set_create",
-                           "BIO_meth_set_ctrl",
-                           "BIO_meth_set_destroy",
-                           "BIO_meth_set_gets",
-                           "BIO_meth_set_puts",
-                           "BIO_meth_set_read",
-                           "BIO_meth_set_read_ex",
-                           "BIO_meth_set_recvmmsg",
-                           "BIO_meth_set_sendmmsg",
-                           "BIO_meth_set_write",
-                           "BIO_meth_set_write_ex"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_meth.c"
-                  },
-                  "src/bio/bio_print.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_printf",
-                           "BIO_snprintf",
-                           "BIO_vprintf",
-                           "BIO_vsnprintf"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_print.c"
-                  },
-                  "src/bio/bio_sock.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_set_tcp_ndelay",
-                           "BIO_sock_error",
-                           "BIO_sock_info",
-                           "BIO_sock_init",
-                           "BIO_socket_ioctl",
-                           "BIO_socket_nbio",
-                           "BIO_socket_wait"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_sock.c"
-                  },
-                  "src/bio/bio_sock2.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_accept_ex",
-                           "BIO_bind",
-                           "BIO_closesocket",
-                           "BIO_connect",
-                           "BIO_listen",
-                           "BIO_socket"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bio_sock2.c"
-                  },
-                  "src/bio/bn_bn_local.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "crypto/bn/bn_local.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "bignum_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/bss_acpt.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_new_accept",
-                           "BIO_s_accept"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_acpt.c"
-                  },
-                  "src/bio/bss_bio.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_ctrl_get_read_request",
-                           "BIO_ctrl_get_write_guarantee",
-                           "BIO_ctrl_reset_read_request",
-                           "BIO_new_bio_pair",
-                           "BIO_nread",
-                           "BIO_nread0",
-                           "BIO_nwrite",
-                           "BIO_nwrite0",
-                           "BIO_s_bio"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_bio.c"
-                  },
-                  "src/bio/bss_conn.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_new_connect",
-                           "BIO_s_connect"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_conn.c"
-                  },
-                  "src/bio/bss_core.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_new_from_core_bio",
-                           "BIO_s_core"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_core.c"
-                  },
-                  "src/bio/bss_dgram.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_dgram_non_fatal_error",
-                           "BIO_new_dgram",
-                           "BIO_s_datagram"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_dgram.c"
-                  },
-                  "src/bio/bss_dgram_pair.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_new_bio_dgram_pair",
-                           "BIO_s_dgram_mem",
-                           "BIO_s_dgram_pair"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_dgram_pair.c"
-                  },
-                  "src/bio/bss_fd.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_fd_non_fatal_error",
-                           "BIO_fd_should_retry",
-                           "BIO_new_fd",
-                           "BIO_s_fd"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_fd.c"
-                  },
-                  "src/bio/bss_file.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_new_file",
-                           "BIO_new_fp",
-                           "BIO_s_file"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_file.c"
-                  },
-                  "src/bio/bss_log.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_s_log"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_log.c"
-                  },
-                  "src/bio/bss_mem.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_new_mem_buf",
-                           "BIO_s_mem",
-                           "BIO_s_secmem"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_mem.c"
-                  },
-                  "src/bio/bss_null.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_s_null"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_null.c"
-                  },
-                  "src/bio/bss_sock.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BIO_new_socket",
-                           "BIO_s_socket",
-                           "BIO_sock_non_fatal_error",
-                           "BIO_sock_should_retry"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/bio/bss_sock.c"
-                  },
-                  "src/bio/context.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "ossl_lib_ctx_st"
-                        ]
-                     },
-                     "tu" : "crypto/context.c"
-                  },
-                  "src/bio/internal_bio.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "include/internal/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "bio_method_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/internal_bio_addr.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "include/internal/bio_addr.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "bio_addr_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/internal_conf.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "include/internal/conf.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "ossl_init_settings_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/lhash_lhash_local.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "crypto/lhash/lhash_local.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "lhash_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/openssl_bio.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [
-                           "BIO_callback_fn_ex",
-                           "BIO_info_cb",
-                           "asn1_ps_func"
-                        ],
-                        "functions" : [
-                           "BIO_accept",
-                           "BIO_debug_callback",
-                           "BIO_get_accept_socket",
-                           "BIO_get_callback",
-                           "BIO_get_host_ip",
-                           "BIO_get_port",
-                           "BIO_gethostbyname",
-                           "BIO_meth_get_callback_ctrl",
-                           "BIO_meth_get_create",
-                           "BIO_meth_get_ctrl",
-                           "BIO_meth_get_destroy",
-                           "BIO_meth_get_gets",
-                           "BIO_meth_get_puts",
-                           "BIO_meth_get_read",
-                           "BIO_meth_get_read_ex",
-                           "BIO_meth_get_recvmmsg",
-                           "BIO_meth_get_sendmmsg",
-                           "BIO_meth_get_write",
-                           "BIO_meth_get_write_ex",
-                           "BIO_set_callback"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "BIO_hostserv_priorities",
-                           "BIO_lookup_type",
-                           "BIO_sock_info_type",
-                           "BIO_sock_info_u",
-                           "bio_msg_st",
-                           "bio_poll_descriptor_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/openssl_crypto.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "include/openssl/crypto.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "crypto_ex_data_st",
-                           "stack_st_void"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/bio/openssl_lhash.rs" : {
-                     "headers" : [
-                        "include/openssl/bio.h",
-                        "include/openssl/lhash.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "DEFINE_LHASH_OF_EX"
-                        ]
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src/bio"
+            "src/asn1/a_print.rs": {
+              "headers": [
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ASN1_STRING_print"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/a_print.c"
             },
-            "evp" : {
-               "rs" : {
-                  "src/evp/evp.rs" : {
-                     "headers" : [
-                        "include/openssl/evp.h",
-                        "include/crypto/evp.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "evp_pkey_st"
-                        ]
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src/evp"
+            "src/asn1/a_strex.rs": {
+              "headers": [
+                "include/openssl/asn1.h",
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ASN1_STRING_print_ex",
+                  "ASN1_STRING_print_ex_fp",
+                  "ASN1_STRING_to_UTF8",
+                  "X509_NAME_print_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/a_strex.c"
             },
-            "mem" : {
-               "rs" : {
-                  "src/mem.rs" : {
-                     "headers" : [
-                        "include/openssl/crypto.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "CRYPTO_free",
-                           "CRYPTO_clear_free"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/mem.c"
-                  },
-                  "src/mem_sec.rs" : {
-                     "headers" : [
-                        "include/openssl/crypto.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "CRYPTO_secure_free",
-                           "CRYPTO_secure_clear_free"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/mem_sec.c"
-                  },
-                  "src/o_str.rs" : {
-                     "headers" : [
-                        "include/openssl/crypto.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "CRYPTO_memdup",
-                           "CRYPTO_strdup"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/o_str.c"
-                  }
-               },
-               "rust_path" : "src"
+            "src/asn1/a_strnid.rs": {
+              "headers": [
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ASN1_STRING_TABLE_add",
+                  "ASN1_STRING_TABLE_cleanup",
+                  "ASN1_STRING_TABLE_get",
+                  "ASN1_STRING_get_default_mask",
+                  "ASN1_STRING_set_by_NID",
+                  "ASN1_STRING_set_default_mask",
+                  "ASN1_STRING_set_default_mask_asc"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/a_strnid.c"
             },
-            "objects" : {
-               "rs" : {
-                  "src/objects/o_names.rs" : {
-                     "headers" : [
-                        "include/openssl/objects.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "OBJ_NAME_add",
-                           "OBJ_NAME_cleanup",
-                           "OBJ_NAME_do_all",
-                           "OBJ_NAME_do_all_sorted",
-                           "OBJ_NAME_get",
-                           "OBJ_NAME_init",
-                           "OBJ_NAME_new_index",
-                           "OBJ_NAME_remove"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/objects/o_names.c"
-                  },
-                  "src/objects/obj_dat.rs" : {
-                     "headers" : [
-                        "include/openssl/objects.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "OBJ_add_object",
-                           "OBJ_bsearch_",
-                           "OBJ_bsearch_ex_",
-                           "OBJ_create",
-                           "OBJ_create_objects",
-                           "OBJ_get0_data",
-                           "OBJ_length",
-                           "OBJ_ln2nid",
-                           "OBJ_new_nid",
-                           "OBJ_nid2ln",
-                           "OBJ_nid2obj",
-                           "OBJ_nid2sn",
-                           "OBJ_obj2nid",
-                           "OBJ_obj2txt",
-                           "OBJ_sn2nid",
-                           "OBJ_txt2nid",
-                           "OBJ_txt2obj"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/objects/obj_dat.c"
-                  },
-                  "src/objects/obj_lib.rs" : {
-                     "headers" : [
-                        "include/openssl/objects.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "OBJ_cmp",
-                           "OBJ_dup"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/objects/obj_lib.c"
-                  },
-                  "src/objects/obj_xref.rs" : {
-                     "headers" : [
-                        "include/openssl/objects.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "OBJ_add_sigid",
-                           "OBJ_find_sigid_algs",
-                           "OBJ_find_sigid_by_algs",
-                           "OBJ_sigid_free"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/objects/obj_xref.c"
-                  },
-                  "src/objects/objects_obj_local.rs" : {
-                     "headers" : [
-                        "include/openssl/objects.h",
-                        "crypto/objects/obj_local.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "lhash_st_OBJ_NAME",
-                           "stack_st_NAME_FUNCS"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/objects/objects_obj_xref.rs" : {
-                     "headers" : [
-                        "include/openssl/objects.h",
-                        "crypto/objects/obj_xref.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "stack_st_nid_triple"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/objects/openssl_objects.rs" : {
-                     "headers" : [
-                        "include/openssl/objects.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "obj_name_st"
-                        ]
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src/objects"
+            "src/asn1/asn1.rs": {
+              "headers": [
+                "include/crypto/asn1.h",
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "asn1_object_st",
+                  "asn1_pctx_st",
+                  "asn1_string_st",
+                  "stack_st_ASN1_INTEGER",
+                  "stack_st_ASN1_OBJECT"
+                ]
+              },
+              "tu": null
             },
-            "stack" : {
-               "rs" : {
-                  "src/stack/openssl_safestack.rs" : {
-                     "headers" : [
-                        "include/openssl/safestack.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "stack_st_OPENSSL_STRING"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/stack/openssl_stack.rs" : {
-                     "headers" : [
-                        "include/openssl/stack.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [
-                           "OPENSSL_sk_compfunc",
-                           "OPENSSL_sk_copyfunc",
-                           "OPENSSL_sk_copyfunc_thunk",
-                           "OPENSSL_sk_freefunc",
-                           "OPENSSL_sk_freefunc_thunk"
-                        ],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : null
-                  },
-                  "src/stack/stack.rs" : {
-                     "headers" : [
-                        "include/openssl/stack.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "OPENSSL_sk_deep_copy",
-                           "OPENSSL_sk_delete",
-                           "OPENSSL_sk_delete_ptr",
-                           "OPENSSL_sk_dup",
-                           "OPENSSL_sk_find",
-                           "OPENSSL_sk_find_all",
-                           "OPENSSL_sk_find_ex",
-                           "OPENSSL_sk_free",
-                           "OPENSSL_sk_insert",
-                           "OPENSSL_sk_is_sorted",
-                           "OPENSSL_sk_new",
-                           "OPENSSL_sk_new_null",
-                           "OPENSSL_sk_new_reserve",
-                           "OPENSSL_sk_num",
-                           "OPENSSL_sk_pop",
-                           "OPENSSL_sk_pop_free",
-                           "OPENSSL_sk_push",
-                           "OPENSSL_sk_reserve",
-                           "OPENSSL_sk_set",
-                           "OPENSSL_sk_set_cmp_func",
-                           "OPENSSL_sk_set_cmp_thunks",
-                           "OPENSSL_sk_set_copy_thunks",
-                           "OPENSSL_sk_set_thunks",
-                           "OPENSSL_sk_shift",
-                           "OPENSSL_sk_sort",
-                           "OPENSSL_sk_unshift",
-                           "OPENSSL_sk_value",
-                           "OPENSSL_sk_zero"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "stack_st"
-                        ]
-                     },
-                     "tu" : "crypto/stack/stack.c"
-                  }
-               },
-               "rust_path" : "src/stack"
+            "src/asn1/asn1_lib.rs": {
+              "headers": [
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ASN1_STRING_clear_free",
+                  "ASN1_STRING_cmp",
+                  "ASN1_STRING_copy",
+                  "ASN1_STRING_dup",
+                  "ASN1_STRING_free",
+                  "ASN1_STRING_get0_data",
+                  "ASN1_STRING_get_length",
+                  "ASN1_STRING_new",
+                  "ASN1_STRING_new_not_owned",
+                  "ASN1_STRING_set0",
+                  "ASN1_STRING_set1_data",
+                  "ASN1_STRING_set1_string",
+                  "ASN1_STRING_type",
+                  "ASN1_STRING_type_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/asn1_lib.c"
             },
-            "x509" : {
-               "rs" : {
-                  "src/x509/v3_akeya.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "AUTHORITY_KEYID_free",
-                           "AUTHORITY_KEYID_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_akeya.c"
-                  },
-                  "src/x509/v3_bcons.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "BASIC_CONSTRAINTS_free",
-                           "BASIC_CONSTRAINTS_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_bcons.c"
-                  },
-                  "src/x509/v3_cpols.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "CERTIFICATEPOLICIES_free",
-                           "CERTIFICATEPOLICIES_new",
-                           "POLICYINFO_free",
-                           "POLICYINFO_new",
-                           "POLICYQUALINFO_free",
-                           "POLICYQUALINFO_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_cpols.c"
-                  },
-                  "src/x509/v3_crld.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "CRL_DIST_POINTS_free",
-                           "CRL_DIST_POINTS_new",
-                           "DIST_POINT_NAME_free",
-                           "DIST_POINT_NAME_new",
-                           "DIST_POINT_free",
-                           "DIST_POINT_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_crld.c"
-                  },
-                  "src/x509/v3_extku.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "EXTENDED_KEY_USAGE_free",
-                           "EXTENDED_KEY_USAGE_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_extku.c"
-                  },
-                  "src/x509/v3_genn.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "GENERAL_NAMES_free",
-                           "GENERAL_NAMES_new",
-                           "GENERAL_NAME_cmp",
-                           "GENERAL_NAME_dup",
-                           "GENERAL_NAME_free",
-                           "GENERAL_NAME_get0_otherName",
-                           "GENERAL_NAME_get0_value",
-                           "GENERAL_NAME_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_genn.c"
-                  },
-                  "src/x509/v3_info.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ACCESS_DESCRIPTION_free",
-                           "ACCESS_DESCRIPTION_new",
-                           "AUTHORITY_INFO_ACCESS_free",
-                           "AUTHORITY_INFO_ACCESS_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_info.c"
-                  },
-                  "src/x509/v3_lib.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509V3_get_d2i"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_lib.c"
-                  },
-                  "src/x509/v3_ncons.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "GENERAL_SUBTREE_free",
-                           "GENERAL_SUBTREE_new",
-                           "NAME_CONSTRAINTS_free",
-                           "NAME_CONSTRAINTS_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_ncons.c"
-                  },
-                  "src/x509/v3_tlsf.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "TLS_FEATURE_free",
-                           "TLS_FEATURE_new"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_tlsf.c"
-                  },
-                  "src/x509/v3_utl.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_get1_email",
-                           "X509_get1_ocsp"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/v3_utl.c"
-                  },
-                  "src/x509/x509.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "X509_algor_st",
-                           "stack_st_X509_EXTENSION",
-                           "stack_st_X509_NAME_ENTRY"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/x509/x509_cmp.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_NAME_cmp",
-                           "X509_cmp",
-                           "X509_get0_pubkey",
-                           "X509_get0_serialNumber",
-                           "X509_get_issuer_name",
-                           "X509_get_pubkey",
-                           "X509_get_serialNumber",
-                           "X509_get_subject_name",
-                           "X509_issuer_and_serial_cmp",
-                           "X509_issuer_name_cmp",
-                           "X509_subject_name_cmp"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x509_cmp.c"
-                  },
-                  "src/x509/x509_ext.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_get_ext",
-                           "X509_get_ext_by_NID",
-                           "X509_get_ext_by_OBJ",
-                           "X509_get_ext_by_critical",
-                           "X509_get_ext_count",
-                           "X509_get_ext_d2i"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x509_ext.c"
-                  },
-                  "src/x509/x509_internal.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/crypto/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "X509_name_entry_st",
-                           "X509_name_st",
-                           "stack_st_DIST_POINT",
-                           "stack_st_GENERAL_NAME",
-                           "x509_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/x509/x509_local.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "X509_extension_st"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/x509/x509_set.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_get0_extensions",
-                           "X509_get0_notAfter",
-                           "X509_get0_notBefore",
-                           "X509_get0_tbs_sigalg",
-                           "X509_get_X509_PUBKEY",
-                           "X509_get_signature_info",
-                           "X509_get_signature_type",
-                           "X509_get_version",
-                           "X509_up_ref"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x509_set.c"
-                  },
-                  "src/x509/x509_v3.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h",
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_EXTENSION_get_critical",
-                           "X509_EXTENSION_get_data",
-                           "X509_EXTENSION_get_object"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x509_v3.c"
-                  },
-                  "src/x509/x509_vfy.rs" : {
-                     "headers" : [
-                        "include/openssl/x509_vfy.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "stack_st_POLICYQUALINFO"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/x509/x509name.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_NAME_ENTRY_get_data",
-                           "X509_NAME_ENTRY_get_object",
-                           "X509_NAME_entry_count",
-                           "X509_NAME_get_entry",
-                           "X509_NAME_get_index_by_NID",
-                           "X509_NAME_get_index_by_OBJ",
-                           "X509_NAME_get_text_by_NID",
-                           "X509_NAME_get_text_by_OBJ"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x509name.c"
-                  },
-                  "src/x509/x509v3.rs" : {
-                     "headers" : [
-                        "include/openssl/x509v3.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_check_email",
-                           "X509_check_host",
-                           "X509_check_ip",
-                           "X509_check_ip_asc"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "ACCESS_DESCRIPTION_st",
-                           "AUTHORITY_KEYID_st",
-                           "BASIC_CONSTRAINTS_st",
-                           "DIST_POINT_NAME_st",
-                           "DIST_POINT_st",
-                           "EDIPartyName_st",
-                           "GENERAL_NAME_st",
-                           "GENERAL_SUBTREE_st",
-                           "NAME_CONSTRAINTS_st",
-                           "NOTICEREF_st",
-                           "POLICYINFO_st",
-                           "POLICYQUALINFO_st",
-                           "USERNOTICE_st",
-                           "otherName_st",
-                           "stack_st_ACCESS_DESCRIPTION",
-                           "stack_st_GENERAL_SUBTREE",
-                           "stack_st_POLICYINFO"
-                        ]
-                     },
-                     "tu" : null
-                  },
-                  "src/x509/x_exten.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_EXTENSION_dup",
-                           "X509_EXTENSION_free",
-                           "X509_EXTENSION_new",
-                           "d2i_X509_EXTENSION",
-                           "i2d_X509_EXTENSION"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x_exten.c"
-                  },
-                  "src/x509/x_name.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_NAME_ENTRY_dup",
-                           "X509_NAME_ENTRY_free",
-                           "X509_NAME_ENTRY_new",
-                           "X509_NAME_dup",
-                           "X509_NAME_free",
-                           "X509_NAME_get0_der",
-                           "X509_NAME_new",
-                           "d2i_X509_NAME",
-                           "d2i_X509_NAME_ENTRY",
-                           "i2d_X509_NAME",
-                           "i2d_X509_NAME_ENTRY"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x_name.c"
-                  },
-                  "src/x509/x_pubkey.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_PUBKEY_dup",
-                           "X509_PUBKEY_eq",
-                           "X509_PUBKEY_free",
-                           "X509_PUBKEY_get",
-                           "X509_PUBKEY_get0",
-                           "X509_PUBKEY_get0_param",
-                           "X509_PUBKEY_new_ex",
-                           "X509_get0_pubkey_bitstr",
-                           "d2i_X509_PUBKEY",
-                           "i2d_X509_PUBKEY"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : [
-                           "X509_pubkey_st"
-                        ]
-                     },
-                     "tu" : "crypto/x509/x_pubkey.c"
-                  },
-                  "src/x509/x_x509.rs" : {
-                     "headers" : [
-                        "include/openssl/x509.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "X509_dup",
-                           "X509_free",
-                           "X509_get0_signature",
-                           "X509_get_signature_nid",
-                           "X509_new",
-                           "X509_new_ex",
-                           "d2i_X509",
-                           "i2d_X509",
-                           "i2d_re_X509_tbs"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : "crypto/x509/x_x509.c"
-                  }
-               },
-               "rust_path" : "src/x509"
+            "src/asn1/bio_asn1.rs": {
+              "headers": [
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_asn1_get_prefix",
+                  "BIO_asn1_get_suffix",
+                  "BIO_asn1_set_prefix",
+                  "BIO_asn1_set_suffix"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/bio_asn1.c"
             },
-            "zeroization" : {
-               "rs" : {
-                  "src/zeroization.rs" : {
-                     "headers" : [
-                        "include/internal/zeroization.h"
-                     ],
-                     "members" : {
-                        "callbacks" : [],
-                        "functions" : [
-                           "ossl_public_param_free"
-                        ],
-                        "globals" : [],
-                        "macros" : [],
-                        "types" : []
-                     },
-                     "tu" : null
-                  }
-               },
-               "rust_path" : "src"
+            "src/asn1/openssl_asn1.rs": {
+              "headers": [
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ASN1_OBJECT_new",
+                  "ASN1_STRING_length",
+                  "ASN1_STRING_length_set",
+                  "ASN1_STRING_set"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ASN1_VALUE_st",
+                  "asn1_string_table_st",
+                  "asn1_type_st",
+                  "stack_st_ASN1_STRING_TABLE"
+                ]
+              },
+              "tu": null
+            },
+            "src/asn1/openssl_asn1t.rs": {
+              "headers": [
+                "include/openssl/asn1.h",
+                "include/openssl/asn1t.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ASN1_ITEM_st",
+                  "ASN1_TEMPLATE_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/asn1/tasn_typ.rs": {
+              "headers": [
+                "include/openssl/asn1.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ASN1_OBJECT_it"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/tasn_typ.c"
+            },
+            "src/asn1/x_algor.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_ALGOR_cmp",
+                  "X509_ALGOR_dup",
+                  "X509_ALGOR_free",
+                  "X509_ALGOR_get0",
+                  "X509_ALGOR_new",
+                  "d2i_X509_ALGOR",
+                  "i2d_X509_ALGOR"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/asn1/x_algor.c"
             }
-         },
-         "sys_crate" : "crustify/rust/libcrypto-sys"
-      }
-   }
+          },
+          "rust_path": "src/asn1"
+        },
+        "bio": {
+          "rs": {
+            "src/bio/bf_buff.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_f_buffer"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bf_buff.c"
+            },
+            "src/bio/bf_lbuf.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_f_linebuffer"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bf_lbuf.c"
+            },
+            "src/bio/bf_nbio.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_f_nbio_test"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bf_nbio.c"
+            },
+            "src/bio/bf_null.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_f_null"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bf_null.c"
+            },
+            "src/bio/bf_prefix.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_f_prefix"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bf_prefix.c"
+            },
+            "src/bio/bf_readbuff.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_f_readbuffer"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bf_readbuff.c"
+            },
+            "src/bio/bio_addr.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_ADDRINFO_address",
+                  "BIO_ADDRINFO_family",
+                  "BIO_ADDRINFO_free",
+                  "BIO_ADDRINFO_next",
+                  "BIO_ADDRINFO_protocol",
+                  "BIO_ADDRINFO_socktype",
+                  "BIO_ADDR_clear",
+                  "BIO_ADDR_copy",
+                  "BIO_ADDR_dup",
+                  "BIO_ADDR_family",
+                  "BIO_ADDR_free",
+                  "BIO_ADDR_hostname_string",
+                  "BIO_ADDR_new",
+                  "BIO_ADDR_path_string",
+                  "BIO_ADDR_rawaddress",
+                  "BIO_ADDR_rawmake",
+                  "BIO_ADDR_rawport",
+                  "BIO_ADDR_service_string",
+                  "BIO_lookup",
+                  "BIO_lookup_ex",
+                  "BIO_parse_hostserv"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_addr.c"
+            },
+            "src/bio/bio_bio_local.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "crypto/bio/bio_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "bio_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/bio_cb.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_debug_callback_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_cb.c"
+            },
+            "src/bio/bio_dump.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_dump",
+                  "BIO_dump_cb",
+                  "BIO_dump_fp",
+                  "BIO_dump_indent",
+                  "BIO_dump_indent_cb",
+                  "BIO_dump_indent_fp",
+                  "BIO_hex_string"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_dump.c"
+            },
+            "src/bio/bio_lib.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_callback_ctrl",
+                  "BIO_clear_flags",
+                  "BIO_copy_next_retry",
+                  "BIO_ctrl",
+                  "BIO_ctrl_pending",
+                  "BIO_ctrl_wpending",
+                  "BIO_do_connect_retry",
+                  "BIO_dup_chain",
+                  "BIO_eof",
+                  "BIO_err_is_non_fatal",
+                  "BIO_find_type",
+                  "BIO_free",
+                  "BIO_free_all",
+                  "BIO_get_callback_arg",
+                  "BIO_get_callback_ex",
+                  "BIO_get_data",
+                  "BIO_get_ex_data",
+                  "BIO_get_init",
+                  "BIO_get_line",
+                  "BIO_get_retry_BIO",
+                  "BIO_get_retry_reason",
+                  "BIO_get_rpoll_descriptor",
+                  "BIO_get_shutdown",
+                  "BIO_get_wpoll_descriptor",
+                  "BIO_gets",
+                  "BIO_indent",
+                  "BIO_int_ctrl",
+                  "BIO_method_name",
+                  "BIO_method_type",
+                  "BIO_new",
+                  "BIO_new_ex",
+                  "BIO_next",
+                  "BIO_number_read",
+                  "BIO_number_written",
+                  "BIO_pop",
+                  "BIO_ptr_ctrl",
+                  "BIO_push",
+                  "BIO_puts",
+                  "BIO_read",
+                  "BIO_read_ex",
+                  "BIO_recvmmsg",
+                  "BIO_sendmmsg",
+                  "BIO_set_callback_arg",
+                  "BIO_set_callback_ex",
+                  "BIO_set_data",
+                  "BIO_set_ex_data",
+                  "BIO_set_flags",
+                  "BIO_set_init",
+                  "BIO_set_next",
+                  "BIO_set_retry_reason",
+                  "BIO_set_send_flags",
+                  "BIO_set_shutdown",
+                  "BIO_test_flags",
+                  "BIO_up_ref",
+                  "BIO_vfree",
+                  "BIO_wait",
+                  "BIO_write",
+                  "BIO_write_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_lib.c"
+            },
+            "src/bio/bio_meth.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_get_new_index",
+                  "BIO_meth_free",
+                  "BIO_meth_new",
+                  "BIO_meth_set_callback_ctrl",
+                  "BIO_meth_set_create",
+                  "BIO_meth_set_ctrl",
+                  "BIO_meth_set_destroy",
+                  "BIO_meth_set_gets",
+                  "BIO_meth_set_puts",
+                  "BIO_meth_set_read",
+                  "BIO_meth_set_read_ex",
+                  "BIO_meth_set_recvmmsg",
+                  "BIO_meth_set_sendmmsg",
+                  "BIO_meth_set_write",
+                  "BIO_meth_set_write_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_meth.c"
+            },
+            "src/bio/bio_print.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_printf",
+                  "BIO_snprintf",
+                  "BIO_vprintf",
+                  "BIO_vsnprintf"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_print.c"
+            },
+            "src/bio/bio_sock.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_set_tcp_ndelay",
+                  "BIO_sock_error",
+                  "BIO_sock_info",
+                  "BIO_sock_init",
+                  "BIO_socket_ioctl",
+                  "BIO_socket_nbio",
+                  "BIO_socket_wait"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_sock.c"
+            },
+            "src/bio/bio_sock2.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_accept_ex",
+                  "BIO_bind",
+                  "BIO_closesocket",
+                  "BIO_connect",
+                  "BIO_listen",
+                  "BIO_socket"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bio_sock2.c"
+            },
+            "src/bio/bn_bn_local.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "crypto/bn/bn_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "bignum_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/bss_acpt.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_new_accept",
+                  "BIO_s_accept"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_acpt.c"
+            },
+            "src/bio/bss_bio.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_ctrl_get_read_request",
+                  "BIO_ctrl_get_write_guarantee",
+                  "BIO_ctrl_reset_read_request",
+                  "BIO_new_bio_pair",
+                  "BIO_nread",
+                  "BIO_nread0",
+                  "BIO_nwrite",
+                  "BIO_nwrite0",
+                  "BIO_s_bio"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_bio.c"
+            },
+            "src/bio/bss_conn.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_new_connect",
+                  "BIO_s_connect"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_conn.c"
+            },
+            "src/bio/bss_core.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_new_from_core_bio",
+                  "BIO_s_core"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_core.c"
+            },
+            "src/bio/bss_dgram.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_dgram_non_fatal_error",
+                  "BIO_new_dgram",
+                  "BIO_s_datagram"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_dgram.c"
+            },
+            "src/bio/bss_dgram_pair.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_new_bio_dgram_pair",
+                  "BIO_s_dgram_mem",
+                  "BIO_s_dgram_pair"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_dgram_pair.c"
+            },
+            "src/bio/bss_fd.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_fd_non_fatal_error",
+                  "BIO_fd_should_retry",
+                  "BIO_new_fd",
+                  "BIO_s_fd"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_fd.c"
+            },
+            "src/bio/bss_file.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_new_file",
+                  "BIO_new_fp",
+                  "BIO_s_file"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_file.c"
+            },
+            "src/bio/bss_log.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_s_log"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_log.c"
+            },
+            "src/bio/bss_mem.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_new_mem_buf",
+                  "BIO_s_mem",
+                  "BIO_s_secmem"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_mem.c"
+            },
+            "src/bio/bss_null.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_s_null"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_null.c"
+            },
+            "src/bio/bss_sock.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BIO_new_socket",
+                  "BIO_s_socket",
+                  "BIO_sock_non_fatal_error",
+                  "BIO_sock_should_retry"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/bio/bss_sock.c"
+            },
+            "src/bio/context.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ossl_lib_ctx_st"
+                ]
+              },
+              "tu": "crypto/context.c"
+            },
+            "src/bio/internal_bio.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "include/internal/bio.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "bio_method_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/internal_bio_addr.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "include/internal/bio_addr.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "bio_addr_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/internal_conf.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "include/internal/conf.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ossl_init_settings_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/lhash_lhash_local.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "crypto/lhash/lhash_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "lhash_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/openssl_bio.rs": {
+              "headers": [
+                "include/openssl/bio.h"
+              ],
+              "members": {
+                "callbacks": [
+                  "BIO_callback_fn_ex",
+                  "BIO_info_cb",
+                  "asn1_ps_func"
+                ],
+                "functions": [
+                  "BIO_accept",
+                  "BIO_debug_callback",
+                  "BIO_get_accept_socket",
+                  "BIO_get_callback",
+                  "BIO_get_host_ip",
+                  "BIO_get_port",
+                  "BIO_gethostbyname",
+                  "BIO_meth_get_callback_ctrl",
+                  "BIO_meth_get_create",
+                  "BIO_meth_get_ctrl",
+                  "BIO_meth_get_destroy",
+                  "BIO_meth_get_gets",
+                  "BIO_meth_get_puts",
+                  "BIO_meth_get_read",
+                  "BIO_meth_get_read_ex",
+                  "BIO_meth_get_recvmmsg",
+                  "BIO_meth_get_sendmmsg",
+                  "BIO_meth_get_write",
+                  "BIO_meth_get_write_ex",
+                  "BIO_set_callback"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "BIO_hostserv_priorities",
+                  "BIO_lookup_type",
+                  "BIO_sock_info_type",
+                  "BIO_sock_info_u",
+                  "bio_msg_st",
+                  "bio_poll_descriptor_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/openssl_crypto.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "include/openssl/crypto.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "crypto_ex_data_st",
+                  "stack_st_void"
+                ]
+              },
+              "tu": null
+            },
+            "src/bio/openssl_lhash.rs": {
+              "headers": [
+                "include/openssl/bio.h",
+                "include/openssl/lhash.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "DEFINE_LHASH_OF_EX"
+                ]
+              },
+              "tu": null
+            }
+          },
+          "rust_path": "src/bio"
+        },
+        "evp": {
+          "rs": {
+            "src/evp/evp.rs": {
+              "headers": [
+                "include/crypto/evp.h",
+                "include/openssl/evp.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_decrypt_old",
+                  "EVP_PKEY_encrypt_old"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "evp_cipher_st",
+                  "evp_pkey_ctx_st",
+                  "evp_pkey_st",
+                  "evp_skey_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/evp/evp_lib.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_Q_keygen"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/evp_lib.c"
+            },
+            "src/evp/evp_pkey.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_add1_attr",
+                  "EVP_PKEY_add1_attr_by_NID",
+                  "EVP_PKEY_add1_attr_by_OBJ",
+                  "EVP_PKEY_add1_attr_by_txt",
+                  "EVP_PKEY_delete_attr",
+                  "EVP_PKEY_get0_provider",
+                  "EVP_PKEY_get0_type_name",
+                  "EVP_PKEY_get_attr",
+                  "EVP_PKEY_get_attr_by_NID",
+                  "EVP_PKEY_get_attr_by_OBJ",
+                  "EVP_PKEY_get_attr_count"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/evp_pkey.c"
+            },
+            "src/evp/p_lib.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_assign",
+                  "EVP_PKEY_can_sign",
+                  "EVP_PKEY_cmp",
+                  "EVP_PKEY_cmp_parameters",
+                  "EVP_PKEY_copy_parameters",
+                  "EVP_PKEY_digestsign_supports_digest",
+                  "EVP_PKEY_eq",
+                  "EVP_PKEY_get0",
+                  "EVP_PKEY_get0_DH",
+                  "EVP_PKEY_get0_DSA",
+                  "EVP_PKEY_get0_description",
+                  "EVP_PKEY_get0_hmac",
+                  "EVP_PKEY_get0_poly1305",
+                  "EVP_PKEY_get0_siphash",
+                  "EVP_PKEY_get1_DH",
+                  "EVP_PKEY_get1_DSA",
+                  "EVP_PKEY_get1_encoded_public_key",
+                  "EVP_PKEY_get_base_id",
+                  "EVP_PKEY_get_bits",
+                  "EVP_PKEY_get_bn_param",
+                  "EVP_PKEY_get_default_digest_name",
+                  "EVP_PKEY_get_default_digest_nid",
+                  "EVP_PKEY_get_ec_point_conv_form",
+                  "EVP_PKEY_get_ex_data",
+                  "EVP_PKEY_get_field_type",
+                  "EVP_PKEY_get_group_name",
+                  "EVP_PKEY_get_id",
+                  "EVP_PKEY_get_int_param",
+                  "EVP_PKEY_get_octet_string_param",
+                  "EVP_PKEY_get_params",
+                  "EVP_PKEY_get_raw_private_key",
+                  "EVP_PKEY_get_raw_public_key",
+                  "EVP_PKEY_get_security_bits",
+                  "EVP_PKEY_get_security_category",
+                  "EVP_PKEY_get_size",
+                  "EVP_PKEY_get_size_t_param",
+                  "EVP_PKEY_get_utf8_string_param",
+                  "EVP_PKEY_gettable_params",
+                  "EVP_PKEY_is_a",
+                  "EVP_PKEY_missing_parameters",
+                  "EVP_PKEY_new",
+                  "EVP_PKEY_new_CMAC_key",
+                  "EVP_PKEY_new_raw_private_key",
+                  "EVP_PKEY_new_raw_private_key_ex",
+                  "EVP_PKEY_new_raw_public_key",
+                  "EVP_PKEY_new_raw_public_key_ex",
+                  "EVP_PKEY_parameters_eq",
+                  "EVP_PKEY_print_params",
+                  "EVP_PKEY_print_params_fp",
+                  "EVP_PKEY_print_private",
+                  "EVP_PKEY_print_private_fp",
+                  "EVP_PKEY_print_public",
+                  "EVP_PKEY_print_public_fp",
+                  "EVP_PKEY_save_parameters",
+                  "EVP_PKEY_set1_DH",
+                  "EVP_PKEY_set1_DSA",
+                  "EVP_PKEY_set1_encoded_public_key",
+                  "EVP_PKEY_set_bn_param",
+                  "EVP_PKEY_set_ex_data",
+                  "EVP_PKEY_set_int_param",
+                  "EVP_PKEY_set_octet_string_param",
+                  "EVP_PKEY_set_params",
+                  "EVP_PKEY_set_size_t_param",
+                  "EVP_PKEY_set_type",
+                  "EVP_PKEY_set_type_by_keymgmt",
+                  "EVP_PKEY_set_type_str",
+                  "EVP_PKEY_set_utf8_string_param",
+                  "EVP_PKEY_settable_params",
+                  "EVP_PKEY_type_names_do_all"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/p_lib.c"
+            },
+            "src/evp/kem.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_auth_decapsulate_init",
+                  "EVP_PKEY_auth_encapsulate_init",
+                  "EVP_PKEY_decapsulate",
+                  "EVP_PKEY_decapsulate_init",
+                  "EVP_PKEY_encapsulate",
+                  "EVP_PKEY_encapsulate_init"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/kem.c"
+            },
+            "src/evp/pmeth_check.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_check",
+                  "EVP_PKEY_pairwise_check",
+                  "EVP_PKEY_param_check",
+                  "EVP_PKEY_param_check_quick",
+                  "EVP_PKEY_private_check",
+                  "EVP_PKEY_public_check",
+                  "EVP_PKEY_public_check_quick"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/pmeth_check.c"
+            },
+            "src/evp/asymcipher.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_decrypt",
+                  "EVP_PKEY_decrypt_init",
+                  "EVP_PKEY_decrypt_init_ex",
+                  "EVP_PKEY_encrypt",
+                  "EVP_PKEY_encrypt_init",
+                  "EVP_PKEY_encrypt_init_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/asymcipher.c"
+            },
+            "src/evp/exchange.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_derive",
+                  "EVP_PKEY_derive_SKEY",
+                  "EVP_PKEY_derive_init",
+                  "EVP_PKEY_derive_init_ex",
+                  "EVP_PKEY_derive_set_peer",
+                  "EVP_PKEY_derive_set_peer_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/exchange.c"
+            },
+            "src/evp/pmeth_gn.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_export",
+                  "EVP_PKEY_fromdata",
+                  "EVP_PKEY_fromdata_init",
+                  "EVP_PKEY_fromdata_settable",
+                  "EVP_PKEY_generate",
+                  "EVP_PKEY_keygen",
+                  "EVP_PKEY_keygen_init",
+                  "EVP_PKEY_new_mac_key",
+                  "EVP_PKEY_paramgen",
+                  "EVP_PKEY_paramgen_init",
+                  "EVP_PKEY_todata"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/pmeth_gn.c"
+            },
+            "src/evp/p_legacy.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_get0_EC_KEY",
+                  "EVP_PKEY_get0_RSA",
+                  "EVP_PKEY_get1_EC_KEY",
+                  "EVP_PKEY_get1_RSA",
+                  "EVP_PKEY_set1_EC_KEY",
+                  "EVP_PKEY_set1_RSA"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/p_legacy.c"
+            },
+            "src/evp/signature.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_sign",
+                  "EVP_PKEY_sign_init",
+                  "EVP_PKEY_sign_init_ex",
+                  "EVP_PKEY_sign_init_ex2",
+                  "EVP_PKEY_sign_message_final",
+                  "EVP_PKEY_sign_message_init",
+                  "EVP_PKEY_sign_message_update",
+                  "EVP_PKEY_verify",
+                  "EVP_PKEY_verify_init",
+                  "EVP_PKEY_verify_init_ex",
+                  "EVP_PKEY_verify_init_ex2",
+                  "EVP_PKEY_verify_message_final",
+                  "EVP_PKEY_verify_message_init",
+                  "EVP_PKEY_verify_message_update",
+                  "EVP_PKEY_verify_recover",
+                  "EVP_PKEY_verify_recover_init",
+                  "EVP_PKEY_verify_recover_init_ex",
+                  "EVP_PKEY_verify_recover_init_ex2"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/signature.c"
+            },
+            "src/evp/evp_pkey_type.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_type"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/evp_pkey_type.c"
+            },
+            "src/evp/evp_local.rs": {
+              "headers": [
+                "crypto/evp/evp_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "evp_keymgmt_st",
+                  "evp_signature_st",
+                  "evp_skeymgmt_st"
+                ]
+              },
+              "tu": null
+            }
+          },
+          "rust_path": "src/evp"
+        },
+        "mem": {
+          "rs": {
+            "src/mem.rs": {
+              "headers": [
+                "include/openssl/crypto.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "CRYPTO_free",
+                  "CRYPTO_clear_free"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/mem.c"
+            },
+            "src/mem_sec.rs": {
+              "headers": [
+                "include/openssl/crypto.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "CRYPTO_secure_free",
+                  "CRYPTO_secure_clear_free"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/mem_sec.c"
+            },
+            "src/o_str.rs": {
+              "headers": [
+                "include/openssl/crypto.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "CRYPTO_memdup",
+                  "CRYPTO_strdup"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/o_str.c"
+            }
+          },
+          "rust_path": "src"
+        },
+        "objects": {
+          "rs": {
+            "src/objects/o_names.rs": {
+              "headers": [
+                "include/openssl/objects.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "OBJ_NAME_add",
+                  "OBJ_NAME_cleanup",
+                  "OBJ_NAME_do_all",
+                  "OBJ_NAME_do_all_sorted",
+                  "OBJ_NAME_get",
+                  "OBJ_NAME_init",
+                  "OBJ_NAME_new_index",
+                  "OBJ_NAME_remove"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/objects/o_names.c"
+            },
+            "src/objects/obj_dat.rs": {
+              "headers": [
+                "include/openssl/objects.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "OBJ_add_object",
+                  "OBJ_bsearch_",
+                  "OBJ_bsearch_ex_",
+                  "OBJ_create",
+                  "OBJ_create_objects",
+                  "OBJ_get0_data",
+                  "OBJ_length",
+                  "OBJ_ln2nid",
+                  "OBJ_new_nid",
+                  "OBJ_nid2ln",
+                  "OBJ_nid2obj",
+                  "OBJ_nid2sn",
+                  "OBJ_obj2nid",
+                  "OBJ_obj2txt",
+                  "OBJ_sn2nid",
+                  "OBJ_txt2nid",
+                  "OBJ_txt2obj"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/objects/obj_dat.c"
+            },
+            "src/objects/obj_lib.rs": {
+              "headers": [
+                "include/openssl/objects.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "OBJ_cmp",
+                  "OBJ_dup"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/objects/obj_lib.c"
+            },
+            "src/objects/obj_xref.rs": {
+              "headers": [
+                "include/openssl/objects.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "OBJ_add_sigid",
+                  "OBJ_find_sigid_algs",
+                  "OBJ_find_sigid_by_algs",
+                  "OBJ_sigid_free"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/objects/obj_xref.c"
+            },
+            "src/objects/objects_obj_local.rs": {
+              "headers": [
+                "include/openssl/objects.h",
+                "crypto/objects/obj_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "lhash_st_OBJ_NAME",
+                  "stack_st_NAME_FUNCS"
+                ]
+              },
+              "tu": null
+            },
+            "src/objects/objects_obj_xref.rs": {
+              "headers": [
+                "include/openssl/objects.h",
+                "crypto/objects/obj_xref.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "stack_st_nid_triple"
+                ]
+              },
+              "tu": null
+            },
+            "src/objects/openssl_objects.rs": {
+              "headers": [
+                "include/openssl/objects.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "obj_name_st"
+                ]
+              },
+              "tu": null
+            }
+          },
+          "rust_path": "src/objects"
+        },
+        "stack": {
+          "rs": {
+            "src/stack/openssl_safestack.rs": {
+              "headers": [
+                "include/openssl/safestack.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "stack_st_OPENSSL_STRING"
+                ]
+              },
+              "tu": null
+            },
+            "src/stack/openssl_stack.rs": {
+              "headers": [
+                "include/openssl/stack.h"
+              ],
+              "members": {
+                "callbacks": [
+                  "OPENSSL_sk_compfunc",
+                  "OPENSSL_sk_copyfunc",
+                  "OPENSSL_sk_copyfunc_thunk",
+                  "OPENSSL_sk_freefunc",
+                  "OPENSSL_sk_freefunc_thunk"
+                ],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": null
+            },
+            "src/stack/stack.rs": {
+              "headers": [
+                "include/openssl/stack.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "OPENSSL_sk_deep_copy",
+                  "OPENSSL_sk_delete",
+                  "OPENSSL_sk_delete_ptr",
+                  "OPENSSL_sk_dup",
+                  "OPENSSL_sk_find",
+                  "OPENSSL_sk_find_all",
+                  "OPENSSL_sk_find_ex",
+                  "OPENSSL_sk_free",
+                  "OPENSSL_sk_insert",
+                  "OPENSSL_sk_is_sorted",
+                  "OPENSSL_sk_new",
+                  "OPENSSL_sk_new_null",
+                  "OPENSSL_sk_new_reserve",
+                  "OPENSSL_sk_num",
+                  "OPENSSL_sk_pop",
+                  "OPENSSL_sk_pop_free",
+                  "OPENSSL_sk_push",
+                  "OPENSSL_sk_reserve",
+                  "OPENSSL_sk_set",
+                  "OPENSSL_sk_set_cmp_func",
+                  "OPENSSL_sk_set_cmp_thunks",
+                  "OPENSSL_sk_set_copy_thunks",
+                  "OPENSSL_sk_set_thunks",
+                  "OPENSSL_sk_shift",
+                  "OPENSSL_sk_sort",
+                  "OPENSSL_sk_unshift",
+                  "OPENSSL_sk_value",
+                  "OPENSSL_sk_zero"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "stack_st"
+                ]
+              },
+              "tu": "crypto/stack/stack.c"
+            }
+          },
+          "rust_path": "src/stack"
+        },
+        "x509": {
+          "rs": {
+            "src/x509/v3_akeya.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "AUTHORITY_KEYID_free",
+                  "AUTHORITY_KEYID_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_akeya.c"
+            },
+            "src/x509/v3_bcons.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "BASIC_CONSTRAINTS_free",
+                  "BASIC_CONSTRAINTS_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_bcons.c"
+            },
+            "src/x509/v3_cpols.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "CERTIFICATEPOLICIES_free",
+                  "CERTIFICATEPOLICIES_new",
+                  "POLICYINFO_free",
+                  "POLICYINFO_new",
+                  "POLICYQUALINFO_free",
+                  "POLICYQUALINFO_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_cpols.c"
+            },
+            "src/x509/v3_crld.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "CRL_DIST_POINTS_free",
+                  "CRL_DIST_POINTS_new",
+                  "DIST_POINT_NAME_free",
+                  "DIST_POINT_NAME_new",
+                  "DIST_POINT_free",
+                  "DIST_POINT_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_crld.c"
+            },
+            "src/x509/v3_extku.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EXTENDED_KEY_USAGE_free",
+                  "EXTENDED_KEY_USAGE_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_extku.c"
+            },
+            "src/x509/v3_genn.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "GENERAL_NAMES_free",
+                  "GENERAL_NAMES_new",
+                  "GENERAL_NAME_cmp",
+                  "GENERAL_NAME_dup",
+                  "GENERAL_NAME_free",
+                  "GENERAL_NAME_get0_otherName",
+                  "GENERAL_NAME_get0_value",
+                  "GENERAL_NAME_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_genn.c"
+            },
+            "src/x509/v3_info.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ACCESS_DESCRIPTION_free",
+                  "ACCESS_DESCRIPTION_new",
+                  "AUTHORITY_INFO_ACCESS_free",
+                  "AUTHORITY_INFO_ACCESS_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_info.c"
+            },
+            "src/x509/v3_lib.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509V3_get_d2i"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_lib.c"
+            },
+            "src/x509/v3_ncons.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "GENERAL_SUBTREE_free",
+                  "GENERAL_SUBTREE_new",
+                  "NAME_CONSTRAINTS_free",
+                  "NAME_CONSTRAINTS_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_ncons.c"
+            },
+            "src/x509/v3_tlsf.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "TLS_FEATURE_free",
+                  "TLS_FEATURE_new"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_tlsf.c"
+            },
+            "src/x509/v3_utl.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_get1_email",
+                  "X509_get1_ocsp"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/v3_utl.c"
+            },
+            "src/x509/x509.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "X509_algor_st",
+                  "stack_st_X509_EXTENSION",
+                  "stack_st_X509_NAME_ENTRY"
+                ]
+              },
+              "tu": null
+            },
+            "src/x509/x509_cmp.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_NAME_cmp",
+                  "X509_cmp",
+                  "X509_get0_pubkey",
+                  "X509_get0_serialNumber",
+                  "X509_get_issuer_name",
+                  "X509_get_pubkey",
+                  "X509_get_serialNumber",
+                  "X509_get_subject_name",
+                  "X509_issuer_and_serial_cmp",
+                  "X509_issuer_name_cmp",
+                  "X509_subject_name_cmp"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x509_cmp.c"
+            },
+            "src/x509/x509_ext.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_get_ext",
+                  "X509_get_ext_by_NID",
+                  "X509_get_ext_by_OBJ",
+                  "X509_get_ext_by_critical",
+                  "X509_get_ext_count",
+                  "X509_get_ext_d2i"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x509_ext.c"
+            },
+            "src/x509/x509_internal.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/crypto/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "X509_name_entry_st",
+                  "X509_name_st",
+                  "stack_st_DIST_POINT",
+                  "stack_st_GENERAL_NAME",
+                  "x509_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/x509/x509_local.rs": {
+              "headers": [
+                "crypto/x509/x509_local.h",
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "X509_extension_st",
+                  "x509_attributes_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/x509/x509_set.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_get0_extensions",
+                  "X509_get0_notAfter",
+                  "X509_get0_notBefore",
+                  "X509_get0_tbs_sigalg",
+                  "X509_get_X509_PUBKEY",
+                  "X509_get_signature_info",
+                  "X509_get_signature_type",
+                  "X509_get_version",
+                  "X509_up_ref"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x509_set.c"
+            },
+            "src/x509/x509_v3.rs": {
+              "headers": [
+                "include/openssl/x509.h",
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_EXTENSION_get_critical",
+                  "X509_EXTENSION_get_data",
+                  "X509_EXTENSION_get_object"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x509_v3.c"
+            },
+            "src/x509/x509_vfy.rs": {
+              "headers": [
+                "include/openssl/x509_vfy.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "stack_st_POLICYQUALINFO"
+                ]
+              },
+              "tu": null
+            },
+            "src/x509/x509name.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_NAME_ENTRY_get_data",
+                  "X509_NAME_ENTRY_get_object",
+                  "X509_NAME_entry_count",
+                  "X509_NAME_get_entry",
+                  "X509_NAME_get_index_by_NID",
+                  "X509_NAME_get_index_by_OBJ",
+                  "X509_NAME_get_text_by_NID",
+                  "X509_NAME_get_text_by_OBJ"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x509name.c"
+            },
+            "src/x509/x509v3.rs": {
+              "headers": [
+                "include/openssl/x509v3.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_check_email",
+                  "X509_check_host",
+                  "X509_check_ip",
+                  "X509_check_ip_asc"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ACCESS_DESCRIPTION_st",
+                  "AUTHORITY_KEYID_st",
+                  "BASIC_CONSTRAINTS_st",
+                  "DIST_POINT_NAME_st",
+                  "DIST_POINT_st",
+                  "EDIPartyName_st",
+                  "GENERAL_NAME_st",
+                  "GENERAL_SUBTREE_st",
+                  "NAME_CONSTRAINTS_st",
+                  "NOTICEREF_st",
+                  "POLICYINFO_st",
+                  "POLICYQUALINFO_st",
+                  "USERNOTICE_st",
+                  "otherName_st",
+                  "stack_st_ACCESS_DESCRIPTION",
+                  "stack_st_GENERAL_SUBTREE",
+                  "stack_st_POLICYINFO"
+                ]
+              },
+              "tu": null
+            },
+            "src/x509/x_exten.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_EXTENSION_dup",
+                  "X509_EXTENSION_free",
+                  "X509_EXTENSION_new",
+                  "d2i_X509_EXTENSION",
+                  "i2d_X509_EXTENSION"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x_exten.c"
+            },
+            "src/x509/x_name.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_NAME_ENTRY_dup",
+                  "X509_NAME_ENTRY_free",
+                  "X509_NAME_ENTRY_new",
+                  "X509_NAME_dup",
+                  "X509_NAME_free",
+                  "X509_NAME_get0_der",
+                  "X509_NAME_new",
+                  "d2i_X509_NAME",
+                  "d2i_X509_NAME_ENTRY",
+                  "i2d_X509_NAME",
+                  "i2d_X509_NAME_ENTRY"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x_name.c"
+            },
+            "src/x509/x_pubkey.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_PUBKEY_dup",
+                  "X509_PUBKEY_eq",
+                  "X509_PUBKEY_free",
+                  "X509_PUBKEY_get",
+                  "X509_PUBKEY_get0",
+                  "X509_PUBKEY_get0_param",
+                  "X509_PUBKEY_new_ex",
+                  "X509_get0_pubkey_bitstr",
+                  "d2i_X509_PUBKEY",
+                  "i2d_X509_PUBKEY"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "X509_pubkey_st"
+                ]
+              },
+              "tu": "crypto/x509/x_pubkey.c"
+            },
+            "src/x509/x_x509.rs": {
+              "headers": [
+                "include/openssl/x509.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "X509_dup",
+                  "X509_free",
+                  "X509_get0_signature",
+                  "X509_get_signature_nid",
+                  "X509_new",
+                  "X509_new_ex",
+                  "d2i_X509",
+                  "i2d_X509",
+                  "i2d_re_X509_tbs"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/x509/x_x509.c"
+            }
+          },
+          "rust_path": "src/x509"
+        },
+        "zeroization": {
+          "rs": {
+            "src/zeroization.rs": {
+              "headers": [
+                "include/internal/zeroization.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "ossl_public_param_free"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": null
+            }
+          },
+          "rust_path": "src"
+        },
+        "core": {
+          "rust_path": "src/core",
+          "rs": {
+            "src/core/openssl_core.rs": {
+              "headers": [
+                "include/openssl/core.h"
+              ],
+              "members": {
+                "callbacks": [
+                  "OSSL_CALLBACK"
+                ],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ossl_param_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/core/openssl_types.rs": {
+              "headers": [
+                "include/openssl/types.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "engine_st"
+                ]
+              },
+              "tu": null
+            }
+          }
+        },
+        "keys": {
+          "rust_path": "src/keys",
+          "rs": {
+            "src/keys/dh_local.rs": {
+              "headers": [
+                "crypto/dh/dh_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "dh_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/keys/dsa_local.rs": {
+              "headers": [
+                "crypto/dsa/dsa_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "dsa_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/keys/ec_local.rs": {
+              "headers": [
+                "crypto/ec/ec_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ec_key_st"
+                ]
+              },
+              "tu": null
+            },
+            "src/keys/rsa_local.rs": {
+              "headers": [
+                "crypto/rsa/rsa_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "rsa_st"
+                ]
+              },
+              "tu": null
+            }
+          }
+        },
+        "provider": {
+          "rust_path": "src/provider",
+          "rs": {
+            "src/provider/provider_core.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ossl_provider_st"
+                ]
+              },
+              "tu": "crypto/provider_core.c"
+            }
+          }
+        }
+      },
+      "sys_crate": "crustify/rust/libcrypto-sys"
+    }
+  }
 }
