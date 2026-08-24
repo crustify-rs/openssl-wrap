@@ -139,6 +139,28 @@ impl<'data> OsslParam<'data> {
             unsafe { CSliceMut::from_raw_parts(NonNull::new_unchecked(data.as_mut_ptr()), len) };
         Self::for_buffer(key, data_type, data)
     }
+
+    /// Reports whether the descriptor at `index` of a C-contract array is the
+    /// published null-key terminator.
+    ///
+    /// The `key` projection lives here, in the descriptor's own accessor,
+    /// rather than in each scanning caller, and the predicate keeps the
+    /// borrowed key pointer from escaping the wrapper.
+    ///
+    /// # Safety
+    ///
+    /// `params` must address a live C-contract `OSSL_PARAM` array holding an
+    /// initialized descriptor at `index`.
+    #[must_use]
+    pub(crate) unsafe fn is_terminator_at(
+        params: NonNull<ffi::ossl_param_st>,
+        index: usize,
+    ) -> bool {
+        // SAFETY: the caller guarantees an initialized descriptor at `index`;
+        // projecting through `addr_of!` never materializes a reference to it.
+        let key = unsafe { addr_of!((*params.as_ptr().add(index)).key).read() };
+        key.is_null()
+    }
 }
 
 /// An owned, automatically terminated array of borrowed `OSSL_PARAM` descriptors.
@@ -438,8 +460,7 @@ pub(crate) unsafe fn terminated_param_len(params: *const ffi::ossl_param_st) -> 
     loop {
         // SAFETY: the caller guarantees an initialized descriptor at every
         // position through the reachable terminator.
-        let key = unsafe { addr_of!((*params.as_ptr().add(len)).key).read() };
-        if key.is_null() {
+        if unsafe { OsslParam::is_terminator_at(params, len) } {
             return Some(len);
         }
         len = len.checked_add(1)?;

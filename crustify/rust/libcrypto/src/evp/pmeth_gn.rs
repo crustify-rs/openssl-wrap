@@ -160,15 +160,12 @@ pub fn EVP_PKEY_fromdata_settable<'a>(
     // provider method table for the duration of this borrow.
     let raw = unsafe { ffi::EVP_PKEY_fromdata_settable(ctx.as_mut_ptr(), selection) };
     let start = NonNull::new(raw.cast_mut().cast::<OsslParam<'a>>())?;
-    let mut len = 0usize;
     // SAFETY: OpenSSL's return contract is a valid null-key-terminated
-    // OSSL_PARAM table. Read only the key scalar while finding the terminator.
-    unsafe {
-        while !(*raw.add(len)).key.is_null() {
-            len += 1;
-        }
-        Some(CSlice::from_raw_parts(start, len))
-    }
+    // OSSL_PARAM table, so its terminator is reachable from `raw`.
+    let len = unsafe { terminated_param_len(raw) }?;
+    // SAFETY: `terminated_param_len` counted exactly the descriptors before
+    // the terminator, and the provider keeps them live for the `ctx` borrow.
+    unsafe { Some(CSlice::from_raw_parts(start, len)) }
 }
 
 /// Wraps: EVP_PKEY_generate
