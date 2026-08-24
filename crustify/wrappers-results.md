@@ -3,7 +3,7 @@
 ## Campaign
 
 - **target repo** — `openssl` @ `2924476b5591e691e904c4baf57894c526c4b8de`
-- **target** — first public `libcrypto` subset: ASN.1 string/object, generic `STACK_OF`, and BIO; `libssl` excluded; X.509 and EVP deferred
+- **target** — public `libcrypto` subset in two tranches: (1) ASN.1 string/object, generic `STACK_OF`, and BIO; (2) X.509 certificate, name and extension handling. `libssl` excluded; EVP deferred beyond `evp_pkey_st`
 - **campaign objective** — `wrap`
 - **`impl_files`** — `crypto/`, `include/crypto/`, `include/internal/`
 - **`api_headers`** — `include/openssl/`
@@ -15,7 +15,7 @@
 - **`--max-loc`** — `1000`
 - **`--min-fields`** — `10`
 - **`--parallel-max`** — `8`
-- **branch** — `crustify/libcrypto-gpt-5.6-sol`, code tip `589b6078ec`
+- **branch** — `crustify/libcrypto-gpt-5.6-sol`, code tip `3bb143b635`
 - **deps** — crustify-cli `ae596e5` (`fix/review-unplaced-context`), ffibox `c2178c4` (`main`)
 
 ## Review pass
@@ -32,8 +32,9 @@ self-review, and any disagreement is what makes the pass informative.
 - **`--max-loc`** — `1000`
 - **`--min-fields`** — `10`
 - **`--parallel-max`** — `8`
-- **branch** — `crustify/session/review-2026-08-23_00-42-36_ea63`, tip `00a3a7870e`
-- **agents** — `29`: `4` lifetime + `25` target-set review agents, over `2` sessions
+- **branch** — `crustify/session/review-2026-08-24_00-32-55_40aa`, tip `10edf02776`
+- **agents** — `32`: `4` lifetime + `25` foundation + `3` X.509 review agents, over `4` sessions
+- **X.509 review caps** — `--max-syms 150`, `--max-types 30`, raised `--min-fields` so all `32` types fit one agent
 
 `rv`-prefixed columns below carry the review pass; the unprefixed ones remain
 the campaign's.
@@ -94,8 +95,10 @@ review, audit, and orchestration coverage is not counted again.
 | `00–01-lifetimes` | raw lifetime | `0` | `10` | `39m26s` | `$13.63` (gpt56sol) | — | `$1.36` | `$29.61` (gpt55, opus5) | — | `$2.96` |
 | `10–11-foundation` | wrap + corrective wrap | `34` | `277` | `2h50m51s` | `$244.34` (gpt56sol) | `$4.48` | `$0.33` | `$217.23` (opus5) | `$3.84` | `$0.31` |
 | `ub-20260823-025523` | UB audit | `34` | `277` | `56m04s` | `$43.48` (opus5) | — | — | — | — | — |
-| orchestrator | orchestration | `34` | `277` | live | `$77.52` (gpt56sol) | — | — | — | — | — |
-| **Σ recorded agents** | | **`34`** | **`287`** | | **`$301.45`** | **`$4.48`** | **`$0.85`** | **`$246.84`** | **`$3.84`** | **`$1.64`** |
+| `40–43-x509` | wrap | `32` | `123` | `4h07m54s` | `$150.39` (gpt56sol) | `$3.13` | `$0.41` | `$23.77` (opus5) | `$0.35` | `$0.10` |
+| `ub-20260824-004145` | UB audit | `66` | `400` | `31m15s` | `$23.33` (opus5) | — | — | — | — | — |
+| orchestrator | orchestration | `66` | `400` | — | `$77.52`+ (gpt56sol) | — | — | — | — | — |
+| **Σ recorded agents** | | **`66`** | **`410`** | | **`$475.17`** | **`$3.81`** | **`$0.41`** | **`$270.61`** | **`$2.10`** | **`$0.31`** |
 
 ## Raw lifetime discovery
 
@@ -505,25 +508,246 @@ bottom-up by DAG layer, then the symbols over them.
 | `3` | `1` | `108` | `$3.50` | `6m15s` (`1.0`x) | `$3.50` | `$0.032` |
 | `4` | `22` | `590` | `$7.77` | `26m17s` (`1.0`x) | `$0.35` | `$0.013` |
 | **Σ** | **`287` submissions (`285` unique)** | **`6,418`** | **`$91.82`** | **`2h39m45s`** (`1.3`x, session wall) | **`$0.32`** | **`$0.014`** |
+## Target set — X.509 tranche
+
+Campaigns `40`–`43`, wrapped bottom-up by DAG layer, then reviewed by
+campaigns `50`–`51` under Opus 5. Layer numbering is this tranche's own.
+
+### Types and callbacks — X.509
+
+| DAG layer | unit | kind | fields | target fields | target ptr | wrapped fields | newtypes | $ | wall | loc | rv $ | rv wall | rv loc | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `0` | `evp_pkey_st` | struct | `21` | `17` | `6` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `X509_extension_st` | struct | `3` | `3` | `1` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `X509_name_entry_st` | struct | `4` | `3` | `2` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `X509_name_st` | struct | `5` | `5` | `3` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `X509_pubkey_st` | struct | `6` | `6` | `5` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_ACCESS_DESCRIPTION` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_ASN1_INTEGER` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_ASN1_OBJECT` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_DIST_POINT` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_GENERAL_NAME` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_GENERAL_SUBTREE` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_OPENSSL_STRING` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_POLICYINFO` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_POLICYQUALINFO` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_X509_EXTENSION` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `stack_st_X509_NAME_ENTRY` | struct | — | — | — | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `1` | `x509_st` | struct | `27` | `27` | `13` | — | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `2` | `DIST_POINT_NAME_st` | struct | `5` | `3` | `1` | `5` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `2` | `NAME_CONSTRAINTS_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `2` | `POLICYINFO_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `3` | `X509_algor_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `3` | `otherName_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `4` | `AUTHORITY_KEYID_st` | struct | `3` | `3` | `3` | `3` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `4` | `BASIC_CONSTRAINTS_st` | struct | `2` | `2` | `1` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `4` | `DIST_POINT_st` | struct | `4` | `4` | `3` | `4` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `4` | `EDIPartyName_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `4` | `NOTICEREF_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `5` | `GENERAL_NAME_st` | struct | `17` | `2` | — | `17` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `5` | `USERNOTICE_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `6` | `ACCESS_DESCRIPTION_st` | struct | `2` | `2` | `2` | `2` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `6` | `GENERAL_SUBTREE_st` | struct | `3` | `3` | `3` | `3` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+| `6` | `POLICYQUALINFO_st` | struct | `5` | `2` | `1` | `5` | `1` | ↖ batch table | ↖ batch table | ↖ batch table | ↖ review table | ↖ review table | ↖ review table | held · fixed (batch) |
+
+### Batches — type review (X.509)
+
+| session | batch | units | rv loc | rv $ | rv wall | $/type |
+|---|---|---|---|---|---|---|
+| `2026-08-23_23-54-10_7d25` | `review-type_X509_pubkey_st` | `32` types | `+89/-13` | `$11.28` | `19m08s` | `$0.35` |
+| **Σ** | **`1` agent** | **`32` types** | **`+89/-13`** | **`$11.28`** | **`19m08s`** | **`$0.35`** |
+
+### Batches — types (X.509)
+
+| DAG layer | units | loc | $ | wall | $/unit | $/loc |
+|---|---|---|---|---|---|---|
+| `0` | `1` | `21` | `$4.09` | `16m50s` | `$4.09` | `$0.195` |
+| `1` | `16` | `45` | `$37.96` | `15m57s` | `$2.37` | `$0.844` |
+| `2` | `3` | `9` | `$13.48` | `22m32s` | `$4.49` | `$1.498` |
+| `3` | `2` | `4` | `$10.87` | `15m43s` | `$5.44` | `$2.719` |
+| `4` | `5` | `13` | `$14.23` | `20m51s` | `$2.85` | `$1.095` |
+| `5` | `2` | `19` | `$8.12` | `15m01s` | `$4.06` | `$0.427` |
+| `6` | `3` | `10` | `$11.55` | `20m29s` | `$3.85` | `$1.155` |
+| **Σ** | **`32`** | **`121`** | **`$100.30`** | **`2h07m26s`** | **`$3.13`** | **`$0.829`** |
+
+### Symbols — X.509
+
+| DAG layer | symbol | kind | target fns | deps | wrappers | batch | rv batch | verdict |
+|---|---|---|---|---|---|---|---|---|
+| `2` | `AUTHORITY_INFO_ACCESS_free` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `AUTHORITY_INFO_ACCESS_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `CERTIFICATEPOLICIES_free` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `CERTIFICATEPOLICIES_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `CRL_DIST_POINTS_free` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `CRL_DIST_POINTS_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `EXTENDED_KEY_USAGE_free` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `EXTENDED_KEY_USAGE_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `GENERAL_NAMES_free` | function | `10` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `GENERAL_NAMES_new` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `TLS_FEATURE_free` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `TLS_FEATURE_new` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509V3_get_d2i` | function | `12` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_EXTENSION_dup` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_EXTENSION_free` | function | `9` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_EXTENSION_get_critical` | function | `11` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_EXTENSION_get_object` | function | `12` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_EXTENSION_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_ENTRY_dup` | function | `1` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_ENTRY_free` | function | `7` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_ENTRY_get_object` | function | `2` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_ENTRY_new` | function | `2` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_cmp` | function | `25` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_dup` | function | `14` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_entry_count` | function | `4` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_free` | function | `17` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_get0_der` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_get_entry` | function | `11` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_get_index_by_NID` | function | `5` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_get_index_by_OBJ` | function | `2` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_get_text_by_NID` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_get_text_by_OBJ` | function | `1` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_new` | function | `4` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_NAME_print_ex` | function | `10` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_NAME_print_ex` | held · fixed (batch) |
+| `2` | `X509_PUBKEY_free` | function | `6` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_PUBKEY_get` | function | `6` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_PUBKEY_get0` | function | `8` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_PUBKEY_new_ex` | function | `0` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_check_email` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_check_host` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_check_ip` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_check_ip_asc` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_cmp` | function | `8` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_dup` | function | `6` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_free` | function | `48` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get0_extensions` | function | `6` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get0_pubkey` | function | `20` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get1_email` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_X509_PUBKEY` | function | `4` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_ext` | function | `6` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_ext_by_NID` | function | `7` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_ext_by_OBJ` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_ext_by_critical` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_ext_count` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_ext_d2i` | function | `10` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_issuer_name` | function | `27` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_pubkey` | function | `2` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_signature_info` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_signature_nid` | function | `2` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_signature_type` | function | `0` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_get_subject_name` | function | `29` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_issuer_and_serial_cmp` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_issuer_name_cmp` | function | `0` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_new` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_new_ex` | function | `4` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_subject_name_cmp` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `X509_up_ref` | function | `25` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `d2i_X509` | function | `6` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `d2i_X509_EXTENSION` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `d2i_X509_NAME` | function | `1` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `d2i_X509_NAME_ENTRY` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `d2i_X509_PUBKEY` | function | `3` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `i2d_X509` | function | `3` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `i2d_X509_EXTENSION` | function | `0` | — | `1` | `wrap-symbol_AUTHORITY_INFO_ACCESS_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `i2d_X509_NAME` | function | `10` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `i2d_X509_NAME_ENTRY` | function | `0` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_dup` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `i2d_X509_PUBKEY` | function | `3` | `1` | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `2` | `i2d_re_X509_tbs` | function | `1` | — | `1` | `wrap-symbol_X509_PUBKEY_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `3` | `DIST_POINT_NAME_free` | function | `0` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `3` | `DIST_POINT_NAME_new` | function | `3` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `3` | `NAME_CONSTRAINTS_free` | function | `3` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `3` | `NAME_CONSTRAINTS_new` | function | `1` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `3` | `POLICYINFO_free` | function | `2` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `3` | `POLICYINFO_new` | function | `2` | — | `1` | `wrap-symbol_DIST_POINT_NAME_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_ALGOR_cmp` | function | `5` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_ALGOR_dup` | function | `5` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_ALGOR_free` | function | `35` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_ALGOR_get0` | function | `27` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_ALGOR_new` | function | `19` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_EXTENSION_get_data` | function | `9` | — | `1` | `wrap-symbol_X509_EXTENSION_get_data` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_NAME_ENTRY_get_data` | function | `7` | — | `1` | `wrap-symbol_X509_NAME_ENTRY_get_data` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_PUBKEY_dup` | function | `1` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_PUBKEY_eq` | function | `1` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_PUBKEY_get0_param` | function | `12` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get0_notAfter` | function | `4` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get0_notBefore` | function | `3` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get0_pubkey_bitstr` | function | `3` | `1` | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get0_serialNumber` | function | `16` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get0_signature` | function | `1` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get0_tbs_sigalg` | function | `1` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get1_ocsp` | function | `0` | — | `1` | `wrap-symbol_X509_EXTENSION_get_data` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get_serialNumber` | function | `0` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `X509_get_version` | function | `5` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `d2i_X509_ALGOR` | function | `8` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `4` | `i2d_X509_ALGOR` | function | `2` | — | `1` | `wrap-symbol_X509_ALGOR_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `5` | `AUTHORITY_KEYID_free` | function | `5` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `5` | `AUTHORITY_KEYID_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `5` | `BASIC_CONSTRAINTS_free` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `5` | `BASIC_CONSTRAINTS_new` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `5` | `DIST_POINT_free` | function | `1` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `5` | `DIST_POINT_new` | function | `2` | — | `1` | `wrap-symbol_AUTHORITY_KEYID_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `6` | `GENERAL_NAME_cmp` | function | `2` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `6` | `GENERAL_NAME_dup` | function | `2` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `6` | `GENERAL_NAME_free` | function | `16` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `6` | `GENERAL_NAME_get0_otherName` | function | `0` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `6` | `GENERAL_NAME_get0_value` | function | `0` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `6` | `GENERAL_NAME_new` | function | `8` | — | `1` | `wrap-symbol_GENERAL_NAME_cmp` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `7` | `ACCESS_DESCRIPTION_free` | function | `1` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `7` | `ACCESS_DESCRIPTION_new` | function | `2` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `7` | `GENERAL_SUBTREE_free` | function | `1` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `7` | `GENERAL_SUBTREE_new` | function | `1` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `7` | `POLICYQUALINFO_free` | function | `2` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+| `7` | `POLICYQUALINFO_new` | function | `2` | — | `1` | `wrap-symbol_ACCESS_DESCRIPTION_free` | `review-symbol_X509_ALGOR_cmp` | held · fixed (batch) |
+
+### Batches — symbol review (X.509)
+
+| session | batch | units | rv loc | rv $ | rv wall | $/symbol |
+|---|---|---|---|---|---|---|
+| `2026-08-23_23-54-10_7d25` | `review-symbol_X509_ALGOR_cmp` | `123` symbols | `+78/-26` | `$9.36` | `16m21s` | `$0.08` |
+| `2026-08-24_00-32-55_40aa` | `review-symbol_X509_NAME_print_ex` | `1` symbol | `+121/-21` | `$3.13` | `8m01s` | `$3.13` |
+| **Σ** | **`2` agents** | **`124` submissions (`123` unique)** | **`+199/-47`** | **`$12.48`** | **`16m21s`** (longest) | **`$0.10`** |
+
+### Batches — symbols (X.509)
+
+| DAG layer | units | loc | $ | wall | $/unit | $/loc |
+|---|---|---|---|---|---|---|
+| `2` | `78` | `377` | `$24.02` | `25m21s` | `$0.31` | `$0.064` |
+| `3` | `6` | `6` | `$2.73` | `5m20s` | `$0.45` | `$0.455` |
+| `4` | `21` | `152` | `$13.36` | `16m09s` | `$0.64` | `$0.088` |
+| `5` | `6` | `6` | `$2.03` | `5m11s` | `$0.34` | `$0.338` |
+| `6` | `6` | `81` | `$5.52` | `12m34s` | `$0.92` | `$0.068` |
+| `7` | `6` | `6` | `$2.44` | `4m31s` | `$0.41` | `$0.406` |
+| **Σ** | **`123`** | **`628`** | **`$50.09`** | **`1h09m08s`** | **`$0.41`** | **`$0.080`** |
+
 ## Safety audit
 
 `crustify-audit <crate> unsafe`, unseeded — tree-wide, not
-per seed. Two snapshots: the tree the review pass judged, and the tree it
-produced.
+per seed. Three snapshots: the tree the foundation review judged, the tree it
+produced, and the campaign record after the X.509 tranche and both UB passes.
 
-| | before review (`894f727207`) | after review (`32ada326d7`) |
-|---|---|---|
-| unsafe loc | `1,108` | `1,126` |
-| % of loc | `27.87`% | `26.29`% |
-| blocks | `624` | `641` |
-| % in `impl T` | `42.31`% | `42.59`% |
-| `unsafe fn` | `232` | `240` |
-| ...of which not sanctioned | `82` | `90` |
-| raw-ptr smell | `19` | `19` |
-| void-ptr smell | `4` | `4` |
-| FFI calls | `299` | `299` |
-| `&`/`&mut` on a wrapper | `0` | `0` |
-| field proj outside an accessor | `0` | `0` |
+| | before review (`894f727207`) | after review (`32ada326d7`) | campaign record (`3bb143b635`) |
+|---|---|---|---|
+| unsafe loc | `1,108` | `1,126` | `1,990` |
+| % of loc | `27.87`% | `26.29`% | `27.72`% |
+| blocks | `624` | `641` | `1,230` |
+| % in `impl T` | `42.31`% | `42.59`% | `57.97`% |
+| `unsafe fn` | `232` | `240` | `395` |
+| ...of which not sanctioned | `82` | `90` | `131` |
+| raw-ptr smell | `19` | `19` | `21` |
+| void-ptr smell | `4` | `4` | `6` |
+| FFI calls | `299` | `299` | `450` |
+| `&`/`&mut` on a wrapper | `0` | `0` | `0` |
+| field proj outside an accessor | `0` | `0` | `0` |
+
+The campaign-record column is the run required at the end of a campaign:
+`crustify-audit <repo_root> unsafe --json` with no seeds, taken after the
+second UB pass's repairs landed, so it postdates every change it describes.
+The tree roughly doubled while unsafe density held within half a point of the
+foundation figure, and the share of unsafe blocks sitting inside a wrapper
+`impl` rose from `42.59`% to `57.97`% — the X.509 tranche added proportionally
+more wrapper-internal unsafety than raw seam. Every hard structural target
+stayed at zero: `wrapper_declared_nonconformant`, `wrapper_newtypes_undeclared`,
+`raw_ptr_in_wrapper`, `ref_to_type_wrapper`, `field_ref_wrapped` and
+`field_proj_outside_impl`, across `46` declared wrapper newtypes.
 
 ### All metrics
 
@@ -576,10 +800,17 @@ payload seams in `bio_lib.rs`, `obj_dat.rs`, and `stack.rs`.
 
 ### Campaign result
 
-The first approved subset is complete: 319 reviewed DAG units comprising 34
-types, eight callbacks, and 277 public symbols. X.509 and EVP are intentionally
-deferred rather than silently included. The canonical target-set review landed
-25 of 25 Opus agents with no failures in `2h03m21s`.
+Two approved subsets are complete. The foundation subset is 319 reviewed DAG
+units — 34 types, eight callbacks, and 277 public symbols; its canonical review
+landed 25 of 25 Opus agents with no failures in `2h03m21s`. The X.509 subset
+adds 155 units — 32 types and 123 public symbols — over campaigns `40`–`43`,
+landing 31 of 31 translator batches with no failures, and reviewed by three
+Opus agents across campaigns `50`–`51`, again with no failures.
+
+Together the campaign has wrapped 66 types, eight callbacks and 400 public
+symbols. No scheduler TODO anchor survives anywhere in the Rust tree, so every
+scheduled item is filled. EVP remains deferred beyond `evp_pkey_st`, which the
+X.509 tranche needed as a layer-0 dependency.
 
 ### Lifetime review
 
@@ -639,9 +870,10 @@ the default reviewed surface compiles and links.
 ### Regression gates
 
 The promoted campaign passes `cargo fmt --check`, workspace-wide tests, strict
-Clippy across all targets, and 252 UBSan-backed Rust tests (22 `libc`, 230
-`libcrypto`). The pre-review foundation also passed all 4,463 native OpenSSL
-tests. No C source changed during review or UB remediation.
+Clippy across all targets, and 354 Rust tests (22 `libc`, 329 `libcrypto`, 3
+doctests) at the campaign record `3bb143b635`. The pre-review foundation also
+passed all 4,463 native OpenSSL tests. No C source changed during any review or
+UB remediation, so the native baseline in `build.json` still stands.
 
 ### Accounting
 
@@ -654,6 +886,30 @@ tool reports `$504.81` API-equivalent and `18h48m` serial agent wall:
 `wrap-type $152.28`, and raw/other `$13.64`. The Opus runs used subscription
 billing, so their `$236.05` is a comparison price, not incremental API billing;
 recorded API-billed work remains `$268.76`.
+
+After the X.509 tranche and its review the same tool reports `$623.24` across
+113 recorded agents and `26h37m` of serial agent wall: `wrap-type $219.74`
+(55 runs), `wrap-symbol $122.21` (20), `review-type $141.86` (18),
+`review-symbol $128.74` (18), and raw/other `$10.70` (2). That total covers
+translator and review agents only — the two `crustify-audit ub` runs
+(`$43.48` and `$23.33`) and the orchestrator sessions are priced separately
+from their own usage records, which is why the Overview's Σ row and this figure
+differ.
+
+### X.509 tranche
+
+Scheduled as four dependency-ordered wrap campaigns rather than one: the
+`X509_pubkey_st` / `evp_pkey_st` root (`40`), the certificate core (`41`),
+name handling (`42`), and extensions (`43`). Batch budgets stayed at the
+campaign's translation caps (`--max-types 2`, `--max-syms 50`,
+`--max-loc 1000`); the review pass instead ran raised caps so all 32 types fit
+a single agent and the 123 symbols fit one more, which is why the review shows
+three agents against 31 translator batches.
+
+Cost separated cleanly by route: `$100.30` over 32 types (`$3.13`/type) against
+`$50.09` over 123 symbols (`$0.41`/symbol). Symbols pool into batches, so their
+cost is per batch rather than per symbol — the `$/loc` column is the comparable
+figure across the two routes.
 
 ### Post-campaign UB pass
 
@@ -673,3 +929,24 @@ All six reproduction routes now exit 0 without their original diagnostic or
 double close. The ASan table workload survived 10/10 runs at 16 threads over
 3,000 fresh NIDs, versus 0/10 before remediation. Each advisory under
 `crustify/audit/advisories/` records its focused test and instrument result.
+
+### Second UB pass
+
+A second approved Opus 5 run over the X.509 surface
+(`ub-20260824-004145`, `31m15s`, `$23.33` API-equivalent) confirmed two further
+routes from safe code, each with a `#![forbid(unsafe_code)]` reproduction:
+
+- `GENERAL_NAME_cmp`'s `OTHERNAME` guard missed an unset `ASN1_TYPE`, giving a
+  null dereference under both UBSan and ASan; and
+- `X509_up_ref` turned a shared borrow into an exclusive one, so a `CSlice`
+  handed out from a shared handle could be invalidated through the alias —
+  ASan `heap-use-after-free`.
+
+The agent branched, repaired and gated its own patch per the playbook's UB
+promotion rule. The repair introduces `libcrypto::refcount::SharedRef`, which
+makes a reference-count share grant yield shared access only, and applies it to
+the `X509`, `BIO` and `EVP_PKEY` grants. The orchestrator independently
+re-ran the gates before promoting — `cargo build` clean, 354 tests passing,
+`cargo clippy --all-targets` clean under `undocumented_unsafe_blocks = "deny"` —
+and confirmed the diff was confined to the two findings and their evidence.
+Landed as `d5e86577a2`, `bd209c96b8` and `3bb143b635`.
