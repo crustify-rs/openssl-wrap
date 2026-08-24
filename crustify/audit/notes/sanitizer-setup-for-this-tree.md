@@ -94,3 +94,29 @@ the findings came from.
 
 Not usable here, as expected: it stops at every `extern "C"` call and this crate
 is nothing but `extern "C"` calls. I did not attempt it.
+
+## Doctests do not survive the ASan setup (added by a later run)
+
+`cargo test -p libcrypto` now has doctests, and the ASan recipe above breaks
+them:
+
+```
+rust-lld: error: undefined symbol: __asan_memset
+  >>> referenced by a_bitstr.c:152 ... in liblibcrypto_sys-....rlib
+```
+
+`rustdoc` does not forward `-Zsanitizer=address` to the binary it builds for a
+doctest, so that binary has no ASan runtime while the `libcrypto.a` it links
+does. `compile_fail` doctests still "pass" (they only have to fail to compile);
+an ordinary one fails to link.
+
+Use `--lib` when running the suite under ASan:
+
+```sh
+RUSTFLAGS="-L native=/tmp/osrc-clang -Zsanitizer=address" \
+CARGO_TARGET_DIR=/tmp/asan-target ASAN_OPTIONS=detect_leaks=1 \
+rustup run nightly cargo test --target x86_64-unknown-linux-gnu -p libcrypto --lib
+```
+
+and run the doctests separately against the tree's own UBSan build with plain
+`cargo test`.
