@@ -7,7 +7,7 @@ use ffibox::{CBox, CBoxWith, CDropper};
 use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::{Asn1ObjectRef, Asn1StringRef};
-use crate::asn1::openssl_asn1::Asn1TypeRef;
+use crate::asn1::openssl_asn1::{Asn1TypeRef, Asn1TypeValue};
 use crate::x509::x509_internal::{GeneralNameStack, X509NameRef};
 use crate::x509::x509v3::{
     EdiPartyNameRef, GeneralName, GeneralNameRef, GeneralNameType, GeneralNameValueRef,
@@ -60,6 +60,12 @@ mod tests {
 
 /// Wraps: GENERAL_NAME_cmp
 /// Compares two optional, complete general-name choices.
+///
+/// Several of the C comparator's arms dereference a choice member without a
+/// null check, so an incomplete choice is screened out here and reported as
+/// [`Ordering::Less`] — the same answer C gives for every mismatch it does
+/// detect. "Complete" reaches one level deeper than non-null for the
+/// `GEN_OTHERNAME` arm: see [`is_comparable_value`].
 #[must_use]
 #[allow(non_snake_case)]
 pub fn GENERAL_NAME_cmp(a: Option<GeneralNameRef<'_>>, b: Option<GeneralNameRef<'_>>) -> Ordering {
@@ -80,7 +86,7 @@ fn is_comparable(value: GeneralNameRef<'_>) -> bool {
     match value.value() {
         GeneralNameValueRef::Empty | GeneralNameValueRef::Unknown(_) => false,
         GeneralNameValueRef::OtherName(Some(value)) => {
-            value.type_id().is_some() && value.value().is_some()
+            value.type_id().is_some() && value.value().is_some_and(is_comparable_value)
         }
         GeneralNameValueRef::EdiPartyName(Some(value)) => value.party_name().is_some(),
         GeneralNameValueRef::OtherName(None)
@@ -99,6 +105,47 @@ fn is_comparable(value: GeneralNameRef<'_>) -> bool {
         | GeneralNameValueRef::Uri(Some(_))
         | GeneralNameValueRef::IpAddress(Some(_))
         | GeneralNameValueRef::RegisteredId(Some(_)) => true,
+    }
+}
+
+/// Reports whether `ASN1_TYPE_cmp` can read this tagged value.
+///
+/// The `GEN_OTHERNAME` arm of `GENERAL_NAME_cmp` reaches `ASN1_TYPE_cmp`,
+/// which dispatches on the tag. Only three of its arms avoid dereferencing the
+/// union: `V_ASN1_BOOLEAN` reads a scalar, `V_ASN1_NULL` reads nothing, and
+/// `V_ASN1_OBJECT` hands both pointers to `OBJ_cmp`. Every other tag falls
+/// into the `default:` arm, which casts the union to `ASN1_STRING *` and
+/// dereferences it without a null check — so a non-null `value` is not on its
+/// own enough, and the tag decides.
+///
+/// Two tags are rejected outright rather than by their payload. `V_ASN1_UNDEF`
+/// is what a freshly allocated `ASN1_TYPE` carries beside a null union, which
+/// is exactly the state `OTHERNAME_new` leaves behind. `V_ASN1_ANY`'s payload
+/// is a nested `ASN1_TYPE` header, which that same `default:` arm would read
+/// as an `ASN1_STRING`.
+fn is_comparable_value(value: Asn1TypeRef<'_>) -> bool {
+    match value.value() {
+        Asn1TypeValue::Boolean(_) | Asn1TypeValue::Null => true,
+        Asn1TypeValue::Object(object) => object.is_some(),
+        Asn1TypeValue::Undefined | Asn1TypeValue::Any(_) => false,
+        Asn1TypeValue::Integer(value)
+        | Asn1TypeValue::Enumerated(value)
+        | Asn1TypeValue::BitString(value)
+        | Asn1TypeValue::OctetString(value)
+        | Asn1TypeValue::PrintableString(value)
+        | Asn1TypeValue::T61String(value)
+        | Asn1TypeValue::Ia5String(value)
+        | Asn1TypeValue::GeneralString(value)
+        | Asn1TypeValue::BmpString(value)
+        | Asn1TypeValue::UniversalString(value)
+        | Asn1TypeValue::UtcTime(value)
+        | Asn1TypeValue::GeneralizedTime(value)
+        | Asn1TypeValue::VisibleString(value)
+        | Asn1TypeValue::Utf8String(value)
+        | Asn1TypeValue::Set(value)
+        | Asn1TypeValue::Sequence(value)
+        | Asn1TypeValue::Other(value)
+        | Asn1TypeValue::Unknown { value, .. } => value.is_some(),
     }
 }
 
@@ -209,7 +256,7 @@ pub fn GENERAL_NAME_new() -> Option<CBox<GeneralName>> {
 mod general_name_tests {
     use super::*;
     use crate::asn1::asn1_lib::{ASN1_STRING_set1_data, ASN1_STRING_type_new};
-    use crate::x509::x509v3::{GeneralNameValue, OtherName};
+    use crate::x509::x509v3::{GeneralNameValue, GeneralNameValueMut, OtherName};
 
     #[test]
     fn constructor_duplicate_comparison_and_free_preserve_ownership() {
@@ -254,6 +301,53 @@ mod general_name_tests {
         assert_eq!(GENERAL_NAME_cmp(None, Some(name.as_ref())), Ordering::Less);
         GENERAL_NAME_free(Some(name));
         GENERAL_NAME_free(Some(duplicate));
+    }
+
+    #[test]
+    fn an_other_name_holding_an_unset_value_is_not_compared() {
+        // `OTHERNAME_new` leaves `type_id` and `value` both non-null, but the
+        // value is a fresh `ASN1_TYPE` whose tag is `V_ASN1_UNDEF` and whose
+        // union is null. `ASN1_TYPE_cmp` would route that tag to its
+        // `default:` arm and hand the null to `ASN1_STRING_cmp`, which
+        // dereferences it. The guard has to reject it before the call.
+        let build = || {
+            let other = OtherName::new().expect("OTHERNAME_new");
+            assert!(other.as_ref().type_id().is_some());
+            assert!(other.as_ref().value().is_some());
+            match GeneralName::from_value(GeneralNameValue::OtherName(Some(other))) {
+                Ok(name) => name,
+                Err(_) => panic!("GENERAL_NAME_new failed"),
+            }
+        };
+        let first = build();
+        let second = build();
+        assert_eq!(
+            GENERAL_NAME_cmp(Some(first.as_ref()), Some(second.as_ref())),
+            Ordering::Less
+        );
+        // The same choice against itself takes the same path: the C function
+        // has no pointer-identity shortcut.
+        assert_eq!(
+            GENERAL_NAME_cmp(Some(first.as_ref()), Some(first.as_ref())),
+            Ordering::Less
+        );
+
+        // Giving the value a tag the comparator can read makes the pair
+        // comparable again, so the guard is not simply refusing every
+        // `OTHERNAME`.
+        let mut third = build();
+        let mut fourth = build();
+        for name in [&mut third, &mut fourth] {
+            let mut choice = name.as_mut();
+            let GeneralNameValueMut::OtherName(Some(mut other)) = choice.value_mut() else {
+                panic!("OTHERNAME arm");
+            };
+            other.value_mut().expect("tagged value").set_null();
+        }
+        assert_eq!(
+            GENERAL_NAME_cmp(Some(third.as_ref()), Some(fourth.as_ref())),
+            Ordering::Equal
+        );
     }
 
     #[test]
