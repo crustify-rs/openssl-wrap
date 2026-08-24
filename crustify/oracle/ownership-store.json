@@ -2919,6 +2919,519 @@
    ]
   },
   {
+   "name": "evp_keymgmt_st",
+   "defined_in": "crypto/evp/evp_local.h",
+   "_comment_agent": "The public EVP_KEYMGMT surface is opaque. Private pointer fields were nevertheless classified from keymgmt_from_algorithm and evp_keymgmt_free: provider and type_name are owned, description and dispatch functions are provider-lifetime borrows, and refcnt is the object reference count.",
+   "fields": [
+    {
+     "name": "description",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed algorithm-description string from provider algorithm metadata; the owned provider reference keeps its module metadata alive."
+     }
+    },
+    {
+     "name": "dup",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "export",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "export_types",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "export_types_ex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "free",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen_cleanup",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen_get_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen_gettable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen_set_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen_set_template",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gen_settable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "get_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "gettable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "has",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "import",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "import_types",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "import_types_ex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "load",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "match",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "new",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "new_ex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "The completed method owns one provider reference, released by evp_keymgmt_free; NULL is accepted during construction."
+     }
+    },
+    {
+     "name": "query_operation_name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "set_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "settable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    },
+    {
+     "name": "type_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": false,
+      "note": "Owned duplicate of the algorithm first name; construction fails if allocation returns NULL and final teardown frees it."
+     }
+    },
+    {
+     "name": "validate",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function retained for the provider lifetime."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_pkey_st",
    "defined_in": "include/crypto/evp.h",
    "_comment_agent": "EVP_PKEY is opaque on the published API. Its complete value owns the attribute stack and elements, an acquired EVP_KEYMGMT reference with provider-owned keydata, its thread lock, and the operation-cache stack. The ASN.1 method pointer refers to static method-table storage. references is the object's atomic reference count.",
@@ -12493,6 +13006,65 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live cipher and creates another public reference. NO_STORE dynamic records increment refcnt; cached and legacy records need no physical increment because EVP_CIPHER_free is correspondingly a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KEYMGMT_free",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "lifetime": {
+    "for": "keymgmt",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one public EVP_KEYMGMT ownership obligation; NULL and cache-owned methods are accepted, while no-store methods are down-referenced and destroyed at zero."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KEYMGMT_up_ref",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "lifetime": {
+    "for": "keymgmt",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live key-management method and conditionally increments its internal reference count when it is not cache-owned."
      }
     }
    ]
