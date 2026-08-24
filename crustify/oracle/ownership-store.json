@@ -11321,7 +11321,7 @@
      "borrowed": null,
      "nullable": true,
      "mutable": true,
-     "note": "Returns null on encode/allocation failure or a fresh deep copy."
+     "note": "Returns null on encode/allocation failure or a fresh deep copy of the ASN.1 CHOICE. ASN1_item_dup re-encodes through the DIST_POINT_NAME template, which covers only name.fullname and name.relativename: the copy's dpname cache is left NULL by dpn_cb, and a source with type == -1 has no encodable arm, so duplication of an unset record always fails."
     }
    }
   },
@@ -16009,7 +16009,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Reads a required source synchronously and leaves it unchanged."
+      "note": "Reads a required source synchronously and leaves it unchanged. Dereferences a->public_key and a->algor without a null check, so the source must be a fully populated container; it also copies a->libctx (a borrowed OSSL_LIB_CTX pointer, not up-refed) and deep-copies a->propq into the result."
      }
     }
    ],
@@ -16024,7 +16024,7 @@
      "borrowed": null,
      "nullable": true,
      "mutable": true,
-     "note": "Returns NULL on failure or a fresh deep copy with an independent X509_PUBKEY_free obligation."
+     "note": "Returns NULL on failure or a fresh deep copy with an independent X509_PUBKEY_free obligation. The copy inherits the source's borrowed OSSL_LIB_CTX pointer through x509_pubkey_set0_libctx and hands it to the decoder on every later X509_PUBKEY_get/get0, so it must not outlive that context even though it owns its own allocation."
     }
    }
   },

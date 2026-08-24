@@ -167,7 +167,9 @@ impl_dropped!(
 );
 
 // Entries are not reference counted. The ASN.1 duplication routine creates an
-// independent record and deep-copies both children.
+// independent record and deep-copies both children. It re-encodes to do so, so
+// an entry whose mandatory children are still empty cannot be duplicated:
+// `try_clone` returns `None` there, while the infallible `Clone` aborts.
 impl_cloned!(
     X509NameEntry,
     ffi::X509_name_entry_st,

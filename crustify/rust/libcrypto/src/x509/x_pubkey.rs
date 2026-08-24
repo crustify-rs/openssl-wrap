@@ -24,6 +24,17 @@ define_ctype!(
     /// returned by an `X509_PUBKEY` constructor or decoder. The borrowed
     /// handles retain the lifetime and mutability of their source without
     /// forming a Rust reference over storage that OpenSSL may mutate.
+    ///
+    /// A container stores the `OSSL_LIB_CTX` it was built with as a plain
+    /// borrowed pointer and hands it to the decoder on every
+    /// [`X509_PUBKEY_get`] and [`X509_PUBKEY_get0`]. A plain
+    /// [`ffibox::CBox<X509Pubkey>`] therefore holds only a container whose
+    /// context outlives it — the default context, or none at all. Every
+    /// operation that produces or preserves a borrowed context yields
+    /// [`BorrowedX509Pubkey`] instead, which carries that borrow in its type;
+    /// adopting a raw pointer with `CBox::from_raw` takes on the same
+    /// obligation. `Clone` on the plain owner relies on it, since
+    /// `X509_PUBKEY_dup` copies the source's context pointer into the copy.
     X509Pubkey,
     X509PubkeyRef,
     X509PubkeyMut,
@@ -131,7 +142,7 @@ mod tests {
         let duplicate = pubkey.try_clone().expect("X509_PUBKEY_dup");
         assert_ne!(duplicate.as_ptr(), raw);
         let duplicate = X509_PUBKEY_dup(pubkey.as_ref()).expect("safe X509_PUBKEY_dup");
-        assert_ne!(duplicate.as_ptr(), raw);
+        assert_ne!(duplicate.as_ref().as_ptr(), raw.cast_const());
     }
 
     #[test]
@@ -289,19 +300,31 @@ mod wrapper_tests {
         let public_key = X509_PUBKEY_new_ex(Some(context.as_ref()), Some(c"provider=default"))
             .expect("contextual public key");
         assert!(X509_PUBKEY_get0(public_key.as_ref()).is_none());
+
+        // A duplicate inherits the source's borrowed context pointer, so its
+        // result type carries the same borrow. The blank container has no
+        // encodable algorithm identifier, so OpenSSL declines this copy.
+        let duplicate: Option<BorrowedX509Pubkey<'_>> = X509_PUBKEY_dup(public_key.as_ref());
+        assert!(duplicate.is_none());
+
         drop(public_key);
         drop(context);
     }
 }
 
 /// Wraps: X509_PUBKEY_dup
-/// Deep-copies a complete public-key container.
+/// Deep-copies a complete public-key container, retaining its context borrow.
+///
+/// The C routine copies the source's `libctx` pointer into the duplicate and
+/// the decoder later dereferences it, so the copy is bounded by the same
+/// borrow as its source rather than becoming an unconstrained owner.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_PUBKEY_dup(public_key: X509PubkeyRef<'_>) -> Option<CBox<X509Pubkey>> {
+pub fn X509_PUBKEY_dup<'a>(public_key: X509PubkeyRef<'a>) -> Option<BorrowedX509Pubkey<'a>> {
     // SAFETY: the required source is live and shared. A non-null result is an
-    // independent allocation with one `X509_PUBKEY_free` obligation.
-    unsafe { CBox::from_raw(ffi::X509_PUBKEY_dup(public_key.as_ptr())) }
+    // independent allocation with one `X509_PUBKEY_free` obligation, and the
+    // library context it borrows outlives the source handle's `'a`.
+    unsafe { BorrowedX509Pubkey::from_raw(ffi::X509_PUBKEY_dup(public_key.as_ptr())) }
 }
 
 /// Wraps: X509_PUBKEY_eq

@@ -15,6 +15,13 @@ define_ctype!(
     /// owner calls `EVP_PKEY_up_ref`, so both owners identify the same key and
     /// each eventually pays one `EVP_PKEY_free`. Use [`EvpPkeyRef::try_dup`]
     /// when an independent deep copy is required instead.
+    ///
+    /// The record itself stores no `OSSL_LIB_CTX`, but a provider-backed key
+    /// reaches its library context through the `EVP_KEYMGMT` it holds. This
+    /// owner does not track that dependency, so a key built in a non-default
+    /// context relies on OpenSSL's own rule that the context outlives every
+    /// object created from it. Containers that store the context pointer in a
+    /// field instead express it in the type, as `BorrowedX509Pubkey` does.
     EvpPkey,
     EvpPkeyRef,
     EvpPkeyMut,

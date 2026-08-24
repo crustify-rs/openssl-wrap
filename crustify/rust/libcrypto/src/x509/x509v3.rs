@@ -867,7 +867,10 @@ define_ctype!(
     ///
     /// Layout-compatible storage for the ASN.1 distribution-point-name
     /// choice. `type` selects which owned stack pointer is active in `name`,
-    /// while `dpname` is a separately owned, optional full-name cache.
+    /// while `dpname` is a separately owned, optional full-name cache that
+    /// OpenSSL derives from an active relative name and its CRL issuer.
+    /// Nothing recomputes that cache when the active arm changes, exactly as
+    /// in C, so a caller that replaces the arm owns keeping it consistent.
     DistPointName,
     DistPointNameRef,
     DistPointNameMut,
@@ -882,8 +885,13 @@ impl_dropped!(
     ffi::DIST_POINT_NAME_free
 );
 
-// The value has no reference count. ASN.1 duplication creates an independent
-// record and recursively duplicates the active stack and cached name.
+// The value has no reference count. `DIST_POINT_NAME_dup` re-encodes and
+// decodes the ASN.1 choice, so the copy owns an independent record and an
+// independent active arm. `dpname` is outside that template — the callback
+// only clears it on new and frees it on free — so a duplicate starts with an
+// empty cache. Duplication also fails, rather than aborting an unrelated
+// operation, whenever the choice has no encodable arm: an unset record makes
+// `try_clone` return `None` and `Clone` abort.
 impl_cloned!(
     DistPointName,
     ffi::DIST_POINT_NAME_st,
@@ -1661,6 +1669,34 @@ mod wrapped_x509v3_tests {
                 .take_relative_name()
                 .expect("owned relative name"),
         );
+    }
+
+    #[test]
+    fn duplicating_a_choice_leaves_the_cached_name_behind() {
+        let mut name = DistPointName::new().expect("DIST_POINT_NAME_new");
+
+        // An unset choice has no encodable arm, so the ASN.1 duplication that
+        // backs `Clone` reports failure instead of copying the record.
+        assert!(name.try_clone().is_none());
+
+        assert!(
+            name.as_mut()
+                .try_set_full_name(Some(empty_general_names()))
+                .is_ok()
+        );
+        // SAFETY: OpenSSL returns null or a fresh complete name owning one
+        // `X509_NAME_free` obligation.
+        let cached = unsafe { CBox::<X509Name>::from_raw(ffi::X509_NAME_new()) };
+        name.as_mut()
+            .set_dp_name(Some(cached.expect("X509_NAME_new")));
+        assert!(name.as_ref().dp_name().is_some());
+
+        // `dpname` is outside the ASN.1 choice template, so the encode/decode
+        // duplication cannot carry it into the copy.
+        let duplicate = name.try_clone().expect("DIST_POINT_NAME_dup");
+        assert_eq!(duplicate.as_ref().kind(), DistPointNameKind::FullName);
+        assert!(duplicate.as_ref().dp_name().is_none());
+        assert!(name.as_ref().dp_name().is_some());
     }
 
     #[test]
@@ -2984,7 +3020,9 @@ define_ctype!(
 );
 
 // The generated ASN.1 destructor releases the active choice member and the
-// containing allocation. Duplication performs a deep ASN.1 copy.
+// containing allocation. `GENERAL_NAME_dup` performs a deep ASN.1 copy by
+// re-encoding, so it fails on a choice with no encodable arm: `try_clone`
+// reports that as `None`, while the infallible `Clone` aborts.
 impl_dropped!(GeneralName, ffi::GENERAL_NAME_st, ffi::GENERAL_NAME_free);
 impl_cloned!(
     GeneralName,
@@ -3046,6 +3084,12 @@ pub enum GeneralNameValueRef<'a> {
     Dns(Option<Asn1StringRef<'a>>),
     /// Wraps: GENERAL_NAME_st.d.x400Address
     /// Wraps: GENERAL_NAME_st.d.other
+    ///
+    /// `GEN_X400` decodes as an `ASN1_STRING` holding the raw sequence; the
+    /// union's `d.other` spelling is a stale `ASN1_TYPE *` alias that the
+    /// template, the comparator and every other C path stopped using when the
+    /// X.400 arm was retyped, so reading it as a tagged value would be the
+    /// type confusion this arm exists to prevent.
     X400Address(Option<Asn1StringRef<'a>>),
     /// Wraps: GENERAL_NAME_st.d.directoryName
     /// Wraps: GENERAL_NAME_st.d.dirn
