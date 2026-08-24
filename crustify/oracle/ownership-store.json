@@ -3432,6 +3432,349 @@
    ]
   },
   {
+   "name": "evp_pkey_ctx_st",
+   "defined_in": "include/crypto/evp.h",
+   "_comment_agent": "EVP_PKEY_CTX is public-opaque. Findings describe the private record's complete pointer ownership; no private field accessor is emitted by this wrap campaign.",
+   "fields": [
+    {
+     "name": "app_data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": null,
+      "note": "Application callback cookie retained verbatim by set_app_data; never dereferenced or freed by the context."
+     }
+    },
+    {
+     "name": "cached_parameters.dist_id",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional owned dist_id_len-byte copy of cached distinguishing-ID data, released when cache/context is cleared."
+     }
+    },
+    {
+     "name": "cached_parameters.dist_id_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional duplicated immutable parameter name, released when the cached value or context is cleared."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": null,
+      "note": "Legacy algorithm/application data stored verbatim by EVP_PKEY_CTX_set_data; the generic context neither dereferences nor frees it."
+     }
+    },
+    {
+     "name": "keygen_info",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed key-generation status array of keygen_info_count ints; may temporarily point to callback-scope stack storage and is never freed by the context."
+     }
+    },
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned EVP_KEYMGMT reference fetched or up-refed at construction, copied by up-ref, and released on context free."
+     }
+    },
+    {
+     "name": "keytype",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:keymgmt"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional immutable algorithm name from the static object table or retained keymgmt; never separately freed."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional retained library-context borrow; it is used by later fetches and never up-refed or freed, so it must outlive the context."
+     }
+    },
+    {
+     "name": "op.ciph.algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider asymmetric-cipher state owned by the active operation and released by its retained method's freectx callback."
+     }
+    },
+    {
+     "name": "op.ciph.cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active asymmetric-cipher operation's retained method reference, duplicated by up-ref and freed with operation state."
+     }
+    },
+    {
+     "name": "op.encap.algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider KEM state owned by the active operation and released by its retained KEM freectx callback."
+     }
+    },
+    {
+     "name": "op.encap.kem",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active KEM operation's retained EVP_KEM reference, selected by operation; duplicated by up-ref and freed with operation state."
+     }
+    },
+    {
+     "name": "op.kex.algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider key-exchange state owned by the active operation and released by its retained method's freectx callback."
+     }
+    },
+    {
+     "name": "op.kex.exchange",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active key-exchange operation's retained method reference, duplicated by up-ref and freed with operation state."
+     }
+    },
+    {
+     "name": "op.keymgmt.genctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider generation state owned by a generation operation and released through the retained keymgmt cleanup callback."
+     }
+    },
+    {
+     "name": "op.sig.algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider signature state owned by the active operation and released by its retained method's freectx callback."
+     }
+    },
+    {
+     "name": "op.sig.signature",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Active signature operation's retained method reference, duplicated by up-ref and freed with operation state."
+     }
+    },
+    {
+     "name": "peerkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional retained peer EVP_PKEY reference; set-peer takes a reference and replacement/free releases it."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional retained EVP_PKEY reference; construction and duplication up-ref it, replacement/free releases it."
+     }
+    },
+    {
+     "name": "pkey_gencb",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional application function pointer retained for key-generation callbacks; executable storage is never owned."
+     }
+    },
+    {
+     "name": "propquery",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional immutable NUL-terminated property query duplicated at construction/clone and freed with the context."
+     }
+    },
+    {
+     "name": "rsa_pubexp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional BIGNUM whose custody is transferred by the deprecated RSA keygen setter and released with BN_free."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_pkey_st",
    "defined_in": "include/crypto/evp.h",
    "_comment_agent": "EVP_PKEY is opaque on the published API. Its complete value owns the attribute stack and elements, an acquired EVP_KEYMGMT reference with provider-owned keydata, its thread lock, and the operation-cache stack. The ASN.1 method pointer refers to static method-table storage. references is the object's atomic reference count.",
@@ -13065,6 +13408,79 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live key-management method and conditionally increments its internal reference count when it is not cache-owned."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_dup",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "lifetime": {
+    "for": "pctx",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrows a live source while duplicating its retained references and active provider state."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns NULL or a distinct fully initialized context with one independent free obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_free",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a uniquely owned EVP_PKEY_CTX and all retained operation state; NULL is accepted."
      }
     }
    ]

@@ -1,6 +1,6 @@
 //! Wrappers assigned from `include/crypto/evp.h`.
 
-use ffibox::{CBox, define_ctype, impl_dropped};
+use ffibox::{CBox, define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -164,5 +164,69 @@ mod cipher_tests {
         let shared = cipher.as_ref().try_share().expect("EVP_CIPHER_up_ref");
         assert_eq!(shared.as_ptr(), cipher.as_ptr());
         assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+}
+
+define_ctype!(
+    /// Wraps: evp_pkey_ctx_st
+    ///
+    /// OpenSSL publishes `EVP_PKEY_CTX` as an opaque, uniquely owned operation
+    /// context. Its fields, provider operation state, and allocation remain
+    /// C-owned; this wrapper supplies pointer-compatible owning and borrowed
+    /// handles without exposing the private layout.
+    ///
+    /// A context retains references to any keys and fetched operation methods
+    /// it stores, but only borrows its `OSSL_LIB_CTX`. Therefore a context made
+    /// with a non-default library context must not outlive that context; the
+    /// public constructors that establish that relationship will encode it in
+    /// their owning return types when they are wrapped.
+    EvpPkeyCtx,
+    EvpPkeyCtxRef,
+    EvpPkeyCtxMut,
+    ffi::evp_pkey_ctx_st
+);
+
+// `EVP_PKEY_CTX_free` accepts null and completely tears down a uniquely owned
+// context, including provider operation state, cached parameters, retained
+// key and method references, legacy state, and the allocation itself.
+impl_dropped!(EvpPkeyCtx, ffi::evp_pkey_ctx_st, ffi::EVP_PKEY_CTX_free);
+
+// `EVP_PKEY_CTX_dup` allocates a distinct context, raises or duplicates every
+// retained dependency, and duplicates active provider state when that
+// operation supports duplication. The result therefore has one independent
+// `EVP_PKEY_CTX_free` obligation and may be mutably borrowed independently.
+impl_cloned!(
+    EvpPkeyCtx,
+    ffi::evp_pkey_ctx_st,
+    dup = ffi::EVP_PKEY_CTX_dup
+);
+
+#[cfg(test)]
+mod pkey_ctx_tests {
+    use super::*;
+
+    #[test]
+    fn owner_borrows_and_clones_independently() {
+        // SAFETY: null selects OpenSSL's default library context, `RSA` is a
+        // live NUL-terminated name, and null selects the default properties.
+        // A non-null result is a fully initialized uniquely owned context.
+        let raw = unsafe {
+            ffi::EVP_PKEY_CTX_new_from_name(
+                core::ptr::null_mut(),
+                c"RSA".as_ptr(),
+                core::ptr::null(),
+            )
+        };
+        // SAFETY: ownership of the fresh result transfers once to this owner,
+        // whose registered destructor is `EVP_PKEY_CTX_free`.
+        let mut context =
+            unsafe { CBox::<EvpPkeyCtx>::from_raw(raw) }.expect("EVP_PKEY_CTX_new_from_name");
+
+        assert_eq!(context.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(context.as_mut().as_mut_ptr(), raw);
+
+        let duplicate = context.clone();
+        assert_ne!(duplicate.as_ptr(), raw);
+        assert_eq!(duplicate.as_ref().as_ptr(), duplicate.as_ptr().cast_const());
     }
 }
