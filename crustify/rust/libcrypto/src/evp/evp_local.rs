@@ -60,6 +60,7 @@ mod tests {
         );
     }
 }
+
 define_ctype!(
     /// Wraps: evp_signature_st
     ///
@@ -138,5 +139,67 @@ mod signature_tests {
             .expect("EVP_SIGNATURE_up_ref");
         assert_eq!(shared.as_ptr(), signature.as_ptr());
         assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+}
+
+define_ctype!(
+    /// Wraps: evp_skeymgmt_st
+    ///
+    /// Pointer-compatible target for OpenSSL's provider symmetric-key
+    /// management method. The public API exposes `EVP_SKEYMGMT` as an opaque
+    /// handle, so its provider reference, names, reference count, and provider
+    /// dispatch table remain behind OpenSSL's call surface.
+    ///
+    /// The method is reference counted. A sole owner may use
+    /// [`ffibox::CBox<EvpSkeymgmt>`], while a raised or fetched shared reference
+    /// must use [`SharedEvpSkeymgmt`] so safe code cannot obtain exclusive
+    /// access to an allocation that another owner can reach.
+    EvpSkeymgmt,
+    EvpSkeymgmtRef,
+    EvpSkeymgmtMut,
+    ffi::evp_skeymgmt_st
+);
+
+// `EVP_SKEYMGMT_free` is the public release operation. For an uncached method
+// it decrements the reference count and, at zero, releases the owned name and
+// provider reference before freeing the allocation. Cached methods deliberately
+// retain their cache-owned lifetime and accept this operation as a no-op.
+impl_dropped!(EvpSkeymgmt, ffi::evp_skeymgmt_st, ffi::EVP_SKEYMGMT_free);
+
+// Do not register `EVP_SKEYMGMT_up_ref` as `CCloned`: cloning a CBox would give
+// two owners exclusive `as_mut` access to the same reference-counted method.
+/// One owned, shared-only reference to an `EVP_SKEYMGMT` method.
+pub type SharedEvpSkeymgmt = crate::refcount::SharedRef<'static, EvpSkeymgmt>;
+
+#[cfg(test)]
+mod skeymgmt_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CBox, CCell, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn opaque_skeymgmt_has_typed_borrow_handles() {
+        assert_owned_cell::<EvpSkeymgmt>();
+
+        assert_eq!(
+            size_of::<EvpSkeymgmtRef<'static>>(),
+            size_of::<*const ffi::evp_skeymgmt_st>()
+        );
+        assert_eq!(
+            size_of::<EvpSkeymgmtMut<'static>>(),
+            size_of::<*mut ffi::evp_skeymgmt_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<EvpSkeymgmt>>(),
+            size_of::<*mut ffi::evp_skeymgmt_st>()
+        );
+        assert_eq!(
+            size_of::<SharedEvpSkeymgmt>(),
+            size_of::<*mut ffi::evp_skeymgmt_st>()
+        );
     }
 }
