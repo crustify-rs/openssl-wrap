@@ -15586,6 +15586,1022 @@
    ]
   },
   {
+   "name": "EVP_PKEY_get1_encoded_public_key",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "ppub",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppub"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required output slot receives a fresh OpenSSL-owned encoded public-key buffer on success; early failure may leave the slot unchanged."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_attr_by_NID",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_attr_count",
+   "defined_in": "crypto/evp/evp_pkey.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_base_id",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_bits",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_default_digest_name",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "mdname",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdname"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Optional caller output buffer, bounded by the adjacent capacity and written only during the call."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_default_digest_nid",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pnid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pnid"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_ec_point_conv_form",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_ex_data",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns the nullable application-owned ex-data pointer stored at the index; OpenSSL neither transfers nor establishes the pointee lifetime."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_get_field_type",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_group_name",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "gname",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:gname"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Optional caller output buffer, bounded by the adjacent capacity and written only during the call."
+     }
+    },
+    {
+     "name": "gname_len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:gname_len"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_id",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_int_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_octet_string_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller output buffer, bounded by the adjacent capacity and written only during the call."
+     }
+    },
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "out_len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out_len"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_params",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_raw_private_key",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:len"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "priv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:priv"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller output buffer, bounded by the adjacent capacity and written only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_raw_public_key",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:len"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller output buffer, bounded by the adjacent capacity and written only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_security_bits",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_security_category",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_size",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_size_t_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_get_utf8_string_param",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "key_name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "out_len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out_len"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller-owned scalar output written synchronously on the operation's documented success path."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller output buffer, bounded by the adjacent capacity and written only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_gettable_params",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:pkey"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Returns null or a const key-terminated parameter descriptor table owned by the key management implementation and borrowed through pkey."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_is_a",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_keygen",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "ppkey",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required in/out owner slot; a null pointee requests a fresh EVP_PKEY and success leaves one caller-owned reference in the slot."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_keygen_init",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_missing_parameters",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_new",
    "defined_in": "crypto/evp/p_lib.c",
    "ptr_ret": {
@@ -15602,6 +16618,1024 @@
      "note": "Returns NULL or a fresh fully initialized refcount-one EVP_PKEY owned by the caller."
     }
    }
+  },
+  {
+   "name": "EVP_PKEY_new_CMAC_key",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional cipher method is read synchronously to select the CMAC cipher and is not retained; null makes construction fail."
+     }
+    },
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Legacy ENGINE argument must be null in this implementation; it is never retained."
+     }
+    },
+    {
+     "name": "priv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:priv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller key bytes are read synchronously and copied; null is valid only when the adjacent length is zero."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or one fully initialized caller-owned EVP_PKEY reference released by EVP_PKEY_free."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_new_mac_key",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Legacy ENGINE argument must be null in this implementation; it is never retained."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Caller key bytes are read synchronously and copied; null is valid only when the adjacent length is zero."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or one fully initialized caller-owned EVP_PKEY reference released by EVP_PKEY_free."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_new_raw_private_key",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Legacy ENGINE argument must be null in this implementation; it is never retained."
+     }
+    },
+    {
+     "name": "priv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:priv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller key bytes are read synchronously and copied; null is valid only when the adjacent length is zero."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or one fully initialized caller-owned EVP_PKEY reference released by EVP_PKEY_free."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_new_raw_private_key_ex",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "keytype",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keytype"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional library context is borrowed during construction; objects made from it may retain provider-side dependencies on that context."
+     }
+    },
+    {
+     "name": "priv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:priv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller key bytes are read synchronously and copied; null is valid only when the adjacent length is zero."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query read synchronously and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or one fully initialized caller-owned EVP_PKEY reference released by EVP_PKEY_free."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_new_raw_public_key",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Legacy ENGINE argument must be null in this implementation; it is never retained."
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller key bytes are read synchronously and copied; null is valid only when the adjacent length is zero."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or one fully initialized caller-owned EVP_PKEY reference released by EVP_PKEY_free."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_new_raw_public_key_ex",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "keytype",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keytype"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional library context is borrowed during construction; objects made from it may retain provider-side dependencies on that context."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query read synchronously and not retained."
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller key bytes are read synchronously and copied; null is valid only when the adjacent length is zero."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or one fully initialized caller-owned EVP_PKEY reference released by EVP_PKEY_free."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_pairwise_check",
+   "defined_in": "crypto/evp/pmeth_check.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_param_check",
+   "defined_in": "crypto/evp/pmeth_check.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_param_check_quick",
+   "defined_in": "crypto/evp/pmeth_check.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_parameters_eq",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "a",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:a"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "b",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:b"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_paramgen",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "ppkey",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ppkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required in/out owner slot; a null pointee requests a fresh EVP_PKEY and success leaves one caller-owned reference in the slot."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_paramgen_init",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_print_params",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 print context is borrowed for the synchronous formatting call."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_print_params_fp",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "fp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 print context is borrowed for the synchronous formatting call."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_print_private",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 print context is borrowed for the synchronous formatting call."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_print_private_fp",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "fp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 print context is borrowed for the synchronous formatting call."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_print_public",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 print context is borrowed for the synchronous formatting call."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_print_public_fp",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "fp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fp"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional ASN.1 print context is borrowed for the synchronous formatting call."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_private_check",
+   "defined_in": "crypto/evp/pmeth_check.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_public_check",
+   "defined_in": "crypto/evp/pmeth_check.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_public_check_quick",
+   "defined_in": "crypto/evp/pmeth_check.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_save_parameters",
+   "defined_in": "crypto/evp/p_lib.c",
+   "ptr_args": [
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live object borrowed for the duration of the call and never retained."
+     }
+    }
+   ]
   },
   {
    "name": "EVP_PKEY_up_ref",

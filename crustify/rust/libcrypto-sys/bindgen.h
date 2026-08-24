@@ -43,6 +43,8 @@ typedef struct rsa_st RSA;
 RSA *RSA_new(void);
 void RSA_free(RSA *rsa);
 int RSA_up_ref(RSA *rsa);
+EVP_PKEY *EVP_PKEY_new_CMAC_key(ENGINE *e, const unsigned char *priv,
+    size_t len, const EVP_CIPHER *cipher);
 #endif
 /* crustify:macros:end */
 
