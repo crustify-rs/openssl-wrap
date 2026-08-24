@@ -7,7 +7,7 @@ use libcrypto_sys as ffi;
 use crate::asn1::asn1::Asn1StringRef;
 use crate::stack::stack::StackRef;
 use crate::x509::x_pubkey::X509PubkeyRef;
-use crate::x509::x_x509::BorrowedX509;
+use crate::x509::x_x509::SharedX509;
 use crate::x509::x509::{X509AlgorRef, X509Extension, X509ExtensionStackRef};
 use crate::x509::x509_internal::X509Ref;
 
@@ -88,9 +88,16 @@ pub fn X509_get_signature_type(certificate: X509Ref<'_>) -> i32 {
 
 /// Wraps: X509_up_ref
 /// Acquires a new owned reference to the same certificate.
+///
+/// The result is a [`SharedX509`], not a `CBox<X509>` or a
+/// [`BorrowedX509`](crate::x509::x_x509::BorrowedX509):
+/// the extra count names the certificate the caller already holds, so the two
+/// owners are not exclusive of one another and neither may hand out an
+/// exclusive handle. [`X509_dup`](crate::x509::x_x509::X509_dup) is the route
+/// to a mutable owner.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_up_ref<'a>(certificate: X509Ref<'a>) -> Option<BorrowedX509<'a>> {
+pub fn X509_up_ref<'a>(certificate: X509Ref<'a>) -> Option<SharedX509<'a>> {
     let raw = certificate.as_ptr().cast_mut();
     // SAFETY: the certificate is live. A successful call creates exactly one
     // additional reference-count debt on this same pointer.
@@ -98,8 +105,9 @@ pub fn X509_up_ref<'a>(certificate: X509Ref<'a>) -> Option<BorrowedX509<'a>> {
         return None;
     }
     // SAFETY: the successful increment above transfers the new reference to
-    // this owner without consuming the source borrow.
-    unsafe { BorrowedX509::from_raw(raw) }
+    // this owner without consuming the source borrow, and `'a` outlives
+    // everything the certificate itself borrows.
+    unsafe { SharedX509::from_raw(raw) }
 }
 
 #[cfg(test)]
@@ -108,7 +116,7 @@ mod tests {
     use crate::x509::x_x509::{X509_free, X509_new};
 
     #[test]
-    fn certificate_children_and_reference_clone_remain_typed() {
+    fn certificate_children_and_reference_share_remain_typed() {
         let certificate = X509_new().expect("certificate");
         assert!(X509_get_X509_PUBKEY(certificate.as_ref()).is_some());
         assert!(X509_get0_extensions(certificate.as_ref()).is_none());
@@ -116,6 +124,8 @@ mod tests {
 
         let shared = X509_up_ref(certificate.as_ref()).expect("up-ref");
         assert_eq!(shared.as_ref().as_ptr(), certificate.as_ptr().cast_const());
+        // The share is read-only: it exposes `as_ref` and no exclusive handle,
+        // so it cannot be used to mutate what `certificate` is lending out.
         drop(shared);
         X509_free(certificate);
     }

@@ -2,7 +2,7 @@
 
 use core::ptr::NonNull;
 
-use ffibox::{CCloned, CDropped};
+use ffibox::CDropped;
 use libcrypto_sys as ffi;
 
 ffibox::define_ctype!(
@@ -50,19 +50,12 @@ unsafe impl CDropped for Bio {
     }
 }
 
-// SAFETY: `BIO_up_ref` raises `references` and returns `i > 1`, so a non-zero
-// result means the count was raised and the holder now owes one additional
-// `BIO_free`, settled by `CDropped`. A zero result means `CRYPTO_UP_REF`
-// failed and no reference was taken, which is propagated as `None`. The
-// reference count is the whole of the duplication: the original stays live and
-// the clone is the same pointer, so identity comparisons keep holding.
-unsafe impl CCloned for Bio {
-    unsafe fn c_clone(obj: NonNull<Self>) -> Option<NonNull<Self>> {
-        // SAFETY: the trait contract supplies a live BIO and the transparent
-        // wrapper preserves the pointer representation expected by OpenSSL.
-        (unsafe { ffi::BIO_up_ref(obj.as_ptr().cast()) } != 0).then_some(obj)
-    }
-}
+// `Bio` is reference counted, so it deliberately has **no** `CCloned` impl.
+// Registering `BIO_up_ref` there would give `CBox<Bio>` a `Clone` that takes
+// only `&self` and yields a second owner of the *same* BIO, whose
+// `CBox::as_mut` would then assert an exclusivity the count cannot provide.
+// An extra count is acquired through [`BIO_up_ref`](super::bio_lib::BIO_up_ref),
+// which hands back a [`crate::refcount::SharedRef`] with no exclusive handle.
 
 #[cfg(test)]
 mod tests {
@@ -97,26 +90,26 @@ mod tests {
     }
 
     #[test]
-    fn clone_owns_an_independent_reference_count() {
+    fn an_extra_count_shares_the_same_object() {
         let bio = new_null_bio();
-        let clone = bio.try_clone().expect("BIO_up_ref");
+        let share = crate::bio::bio_lib::BIO_up_ref(&bio.as_ref()).expect("BIO_up_ref");
 
-        assert_eq!(bio.as_ptr(), clone.as_ptr());
-        drop(bio);
-
-        let second_clone = clone.try_clone().expect("BIO remains live");
-        assert_eq!(clone.as_ptr(), second_clone.as_ptr());
+        assert_eq!(share.as_ptr(), bio.as_ptr());
+        // The share grants `as_ref` only, so it cannot become a second
+        // exclusive handle to the object `bio` also owns.
+        assert_eq!(BIO_get_init(share.as_ref()), 1);
     }
 
     #[test]
-    fn dropping_one_owner_only_releases_its_reference() {
+    fn dropping_one_share_leaves_the_original_owner_intact() {
         let bio = new_null_bio();
-        let clone = bio.try_clone().expect("BIO_up_ref");
-        drop(bio);
-
-        // The surviving owner still addresses a fully constructed BIO: the
-        // null method has no `create`, so `BIO_new_ex` set `init` to 1.
-        assert_eq!(BIO_get_init(clone.as_ref()), 1);
+        {
+            let share = crate::bio::bio_lib::BIO_up_ref(&bio.as_ref()).expect("BIO_up_ref");
+            assert_eq!(share.as_ptr(), bio.as_ptr());
+        }
+        // The share released its own count and nothing else: the null method
+        // has no `create`, so `BIO_new_ex` set `init` to 1 and it is still 1.
+        assert_eq!(BIO_get_init(bio.as_ref()), 1);
     }
 
     #[test]

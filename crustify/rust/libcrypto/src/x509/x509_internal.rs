@@ -77,10 +77,12 @@ define_ctype!(
     /// Its allocation and fields remain C-owned; this layout wrapper supplies
     /// the pointer-compatible target used by owning and borrowed handles.
     ///
-    /// An owning [`ffibox::CBox<X509>`] carries one reference count. Cloning
-    /// the owner calls `X509_up_ref`, so both owners identify the same
-    /// certificate and each eventually pays one `X509_free`. Use
-    /// [`X509Ref::try_dup`] for an independent deep copy.
+    /// An owning [`ffibox::CBox<X509>`] carries one reference count and is
+    /// deliberately not `Clone`: a second count names the same certificate,
+    /// so it is handed out by
+    /// [`X509_up_ref`](crate::x509::x509_set::X509_up_ref) as a shared-only
+    /// [`crate::refcount::SharedRef`], never as an owner with an exclusive
+    /// handle. Use [`X509Ref::try_dup`] for an independent deep copy.
     X509,
     X509Ref,
     X509Mut,
@@ -92,10 +94,14 @@ define_ctype!(
 // query, and allocation.
 impl_dropped!(X509, ffi::x509_st, ffi::X509_free);
 
-// An owner clone represents another reference to the same certificate.
-// `X509_up_ref` atomically increments the count and reports failure without
-// creating an additional ownership debt.
-impl_cloned!(X509, ffi::x509_st, up_ref = ffi::X509_up_ref);
+// `X509` is reference counted, so it deliberately has **no** `CCloned` impl.
+// Registering `X509_up_ref` there would give `CBox<X509>` a `Clone` that takes
+// only `&self` and yields a second owner of the *same* certificate — and that
+// owner's `CBox::as_mut` asserts exclusive access it cannot have. An extra
+// count is acquired through [`crate::x509::x509_set::X509_up_ref`], which
+// hands back a [`crate::refcount::SharedRef`] with no exclusive handle. For an
+// independent, mutable copy use [`X509Ref::try_dup`], whose result really is a
+// sole allocation.
 
 impl<'a> X509Ref<'a> {
     /// Create an independently owned deep copy of this certificate.
@@ -112,7 +118,7 @@ mod x509_tests {
     use super::*;
 
     #[test]
-    fn opaque_owner_borrows_and_clones_by_reference() {
+    fn opaque_owner_borrows_and_shares_by_reference() {
         // SAFETY: OpenSSL returns null or a fresh fully initialized,
         // reference-count-one X509 allocation.
         let raw = unsafe { ffi::X509_new() };
@@ -123,9 +129,16 @@ mod x509_tests {
         assert_eq!(certificate.as_ref().as_ptr(), raw.cast_const());
         assert_eq!(certificate.as_mut().as_mut_ptr(), raw);
 
-        let shared = certificate.try_clone().expect("X509_up_ref");
-        assert_eq!(shared.as_ptr(), raw);
+        // An extra reference is a share, not a clone: it grants `as_ref`
+        // only, so no second exclusive handle to `raw` can exist.
+        let shared = crate::x509::x509_set::X509_up_ref(certificate.as_ref()).expect("X509_up_ref");
+        assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
         drop(shared);
+
+        // The mutable route is the deep copy, which is an independent
+        // allocation. A blank certificate has no encodable content, so
+        // `X509_dup` declines it rather than aliasing this one.
+        assert!(certificate.as_ref().try_dup().is_none());
     }
 
     #[test]

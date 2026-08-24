@@ -9,7 +9,7 @@ use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::{Asn1ObjectRef, Asn1StringRef};
 use crate::bio::context::OsslLibCtxRef;
-use crate::evp::evp::{EvpPkey, EvpPkeyRef};
+use crate::evp::evp::{EvpPkeyRef, SharedEvpPkey};
 use crate::x509::x509::X509AlgorRef;
 use crate::x509::x509_internal::X509Ref;
 
@@ -200,12 +200,17 @@ pub fn X509_PUBKEY_free(public_key: CBox<X509Pubkey>) {
 
 /// Wraps: X509_PUBKEY_get
 /// Returns a newly owned reference to the decoded key cached by the container.
+///
+/// The container keeps its own reference to that key and [`X509_PUBKEY_get0`]
+/// hands out a borrow of it, so the extra count is a share: it yields a
+/// [`SharedEvpPkey`], which grants no exclusive handle.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_PUBKEY_get(public_key: X509PubkeyRef<'_>) -> Option<CBox<EvpPkey>> {
+pub fn X509_PUBKEY_get(public_key: X509PubkeyRef<'_>) -> Option<SharedEvpPkey> {
     // SAFETY: the shared container is live. On success OpenSSL increments the
-    // cached key's reference count before returning it.
-    unsafe { CBox::from_raw(ffi::X509_PUBKEY_get(public_key.as_ptr())) }
+    // cached key's reference count before returning it, and the key record
+    // borrows nothing of its own.
+    unsafe { SharedEvpPkey::from_raw(ffi::X509_PUBKEY_get(public_key.as_ptr())) }
 }
 
 /// Wraps: X509_PUBKEY_get0

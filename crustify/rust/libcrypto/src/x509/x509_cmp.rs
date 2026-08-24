@@ -3,11 +3,10 @@
 use core::cmp::Ordering;
 use core::ptr;
 
-use ffibox::CBox;
 use libcrypto_sys as ffi;
 
 use crate::asn1::asn1::{Asn1StringMut, Asn1StringRef};
-use crate::evp::evp::{EvpPkey, EvpPkeyRef};
+use crate::evp::evp::{EvpPkeyRef, SharedEvpPkey};
 use crate::x509::x509_internal::{X509Mut, X509NameRef, X509Ref};
 
 /// Wraps: X509_cmp
@@ -44,12 +43,18 @@ pub fn X509_get_issuer_name<'a>(certificate: X509Ref<'a>) -> X509NameRef<'a> {
 
 /// Wraps: X509_get_pubkey
 /// Returns a newly owned reference to the certificate's decoded public key.
+///
+/// The certificate keeps its own reference to that cached key and
+/// [`X509_get0_pubkey`] hands out a borrow of it, so the extra count is a
+/// share: it yields a [`SharedEvpPkey`], which grants no exclusive handle.
+/// [`EvpPkeyRef::try_dup`] is the route to an independent owner.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_get_pubkey(certificate: X509Ref<'_>) -> Option<CBox<EvpPkey>> {
+pub fn X509_get_pubkey(certificate: X509Ref<'_>) -> Option<SharedEvpPkey> {
     // SAFETY: the certificate is live and a non-null result carries one new
-    // EVP_PKEY reference obtained by `X509_PUBKEY_get`.
-    unsafe { CBox::from_raw(ffi::X509_get_pubkey(certificate.as_ptr())) }
+    // EVP_PKEY reference obtained by `X509_PUBKEY_get`; the key record itself
+    // borrows nothing, so the share needs no lifetime bound.
+    unsafe { SharedEvpPkey::from_raw(ffi::X509_get_pubkey(certificate.as_ptr())) }
 }
 
 /// Wraps: X509_get_subject_name

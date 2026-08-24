@@ -214,6 +214,13 @@ impl BorrowedBio<'_> {
     }
 }
 
+/// One owned reference to a BIO that other owners may also hold.
+///
+/// Produced by [`BIO_up_ref`]. It carries the same borrow as [`BorrowedBio`] —
+/// a BIO keeps pointers to its method table and, for `BIO_new_mem_buf`, to a
+/// Rust buffer — and, unlike [`BorrowedBio`], grants shared access only.
+pub type SharedBio<'a> = crate::refcount::SharedRef<'a, Bio>;
+
 /// An opaque application-data pointer stored in a BIO.
 ///
 /// The borrow marker names an erased pointee rather than [`Bio`]: no reference
@@ -706,15 +713,17 @@ pub fn BIO_test_flags(bio: &BioRef<'_>, flags: i32) -> i32 {
 /// safe code drop the method table or the buffer while the BIO still addresses
 /// it. The result is therefore bound to the borrow it was raised from.
 ///
-/// A [`CBox<Bio>`] is by construction a BIO with no borrowed dependency, so an
-/// owner that needs no lifetime bound is reached with
-/// [`CBox::try_clone`](ffibox::CBox::try_clone), which is the same `BIO_up_ref`
-/// through [`CCloned`](ffibox::CCloned).
+/// The extra count is also *shared*, not exclusive. It names the BIO the
+/// caller already holds, so several owners are live at once and none of them
+/// can honestly hand out an exclusive handle: mutating through a second owner
+/// while a borrow taken through the first is alive is what makes a refcount
+/// share unsound. The result is therefore a [`SharedBio`], which exposes
+/// `as_ref` and no `as_mut`, and `CBox<Bio>` is deliberately not `Clone`.
 ///
 /// [`BIO_new_mem_buf`]: super::bss_mem::BIO_new_mem_buf
 #[must_use]
 #[allow(non_snake_case)]
-pub fn BIO_up_ref<'a>(bio: &BioRef<'a>) -> Option<BorrowedBio<'a>> {
+pub fn BIO_up_ref<'a>(bio: &BioRef<'a>) -> Option<SharedBio<'a>> {
     // SAFETY: `bio` is a live reference; success creates one independently
     // owned count settled by the returned owner's destructor.
     if unsafe { ffi::BIO_up_ref(bio.as_ptr().cast_mut()) } == 0 {
@@ -722,7 +731,7 @@ pub fn BIO_up_ref<'a>(bio: &BioRef<'a>) -> Option<BorrowedBio<'a>> {
     } else {
         // SAFETY: the successful increment transferred one BIO reference, and
         // `'a` outlives everything this BIO borrows.
-        unsafe { BorrowedBio::from_raw(bio.as_ptr().cast_mut()) }
+        unsafe { SharedBio::from_raw(bio.as_ptr().cast_mut()) }
     }
 }
 
@@ -792,25 +801,20 @@ mod scheduled_tests {
     }
 
     #[test]
-    fn up_ref_returns_an_independently_owned_count() {
+    fn up_ref_returns_an_independently_owned_shared_count() {
         let mut bio = null_bio();
+        assert_eq!(BIO_write(&mut bio.as_mut(), b"x"), 1);
         {
-            let mut extra = BIO_up_ref(&bio.as_ref()).expect("reference increment");
-            assert_eq!(BIO_write(&mut extra.as_mut(), b"x"), 1);
+            let extra = BIO_up_ref(&bio.as_ref()).expect("reference increment");
+            // The extra count is shared: it can read the same object, and it
+            // has no exclusive handle with which to write to it while `bio`
+            // is lending something out.
+            assert_eq!(BIO_number_written(&extra.as_ref()), 1);
             // `extra` releases its own count here and the BIO survives it.
         }
         assert_eq!(BIO_write(&mut bio.as_mut(), b"x"), 1);
         assert_eq!(BIO_number_written(&bio.as_ref()), 2);
         BIO_vfree(Some(bio));
-    }
-
-    #[test]
-    fn up_ref_of_an_owner_still_yields_a_detached_owner_through_clone() {
-        // The bound on `BIO_up_ref` is about borrowed dependencies, not about
-        // reference counting: a `CBox<Bio>` has none, so its `Clone` hands out
-        // an owner that outlives the original.
-        let extra = null_bio().try_clone().expect("reference increment");
-        assert_eq!(BIO_get_init(extra.as_ref()), 1);
     }
 
     #[test]

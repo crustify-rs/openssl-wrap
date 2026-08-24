@@ -42,6 +42,14 @@ impl BorrowedX509<'_> {
     }
 }
 
+/// One owned reference to a certificate that other owners may also hold.
+///
+/// Produced by [`X509_up_ref`](crate::x509::x509_set::X509_up_ref). It carries
+/// the same borrow as [`BorrowedX509`] — a certificate built by
+/// [`X509_new_ex`] keeps a pointer to its `OSSL_LIB_CTX` — and, unlike
+/// [`BorrowedX509`], grants shared access only.
+pub type SharedX509<'a> = crate::refcount::SharedRef<'a, X509>;
+
 /// Wraps: X509_dup
 /// Deep-copies an optional certificate into an independent allocation.
 #[must_use]

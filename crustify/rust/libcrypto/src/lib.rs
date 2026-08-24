@@ -6,6 +6,7 @@ pub mod mem;
 pub mod mem_sec;
 pub mod o_str;
 pub mod objects;
+pub mod refcount;
 pub mod stack;
 pub mod zeroization;
 pub mod evp;
