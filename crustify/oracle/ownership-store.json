@@ -2414,6 +2414,111 @@
    ]
   },
   {
+   "name": "dh_st",
+   "defined_in": "crypto/dh/dh_local.h",
+   "_comment_agent": "dh_st is public only as opaque DH. Its library-context and method-table links are borrowed; public/private BIGNUMs, the Montgomery cache, and the lock are owned and released when DH_free settles the final reference count.",
+   "fields": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed library context, null for the default context; DH_free does not release it and DH operations only pass it as their context dependency."
+     }
+    },
+    {
+     "name": "lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Every successfully constructed DH owns a live lock used to synchronize lazy Montgomery-context initialization; final DH_free releases it."
+     }
+    },
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "A fully initialized DH borrows its method table; constructors install a static default and DH_set_method replaces it without taking ownership. DH_free invokes its finish hook but does not free the table."
+     }
+    },
+    {
+     "name": "method_mont_p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional lazily allocated Montgomery cache owned as method state. The active method finish hook releases it; the built-in hook calls BN_MONT_CTX_free."
+     }
+    },
+    {
+     "name": "priv_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional independently owned private-key BIGNUM. DH_set0_key consumes replacements and the final DH_free calls BN_clear_free."
+     }
+    },
+    {
+     "name": "pub_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional independently owned public-key BIGNUM. DH_set0_key consumes replacements and the final DH_free calls BN_clear_free."
+     }
+    },
+    {
+     "name": "references",
+     "refcount": true
+    }
+   ]
+  },
+  {
    "name": "ec_key_st",
    "defined_in": "crypto/ec/ec_local.h",
    "_comment_agent": "ec_key_st is public only as opaque EC_KEY. Its method and library-context links are borrowed; group, public point, private scalar and property query are owned and released on the final EC_KEY_free down-reference.",
@@ -14489,6 +14594,129 @@
      "nullable": true,
      "mutable": true,
      "note": "Fresh NUL-terminated copy of at most s source bytes, allocated by OpenSSL and releasable with CRYPTO_free; NULL on NULL input or allocation failure."
+    }
+   }
+  },
+  {
+   "name": "DH_free",
+   "defined_in": "crypto/dh/dh_lib.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one DH reference; null is accepted. The final down-reference runs method and field cleanup and frees the allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "DH_new",
+   "defined_in": "crypto/dh/dh_lib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on allocation or initialization failure, or a fresh fully initialized reference-count-one DH using the default context and method."
+    }
+   }
+  },
+  {
+   "name": "DH_up_ref",
+   "defined_in": "crypto/dh/dh_lib.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:r"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows the live DH and mutates only its atomic reference count; success creates one additional DH_free obligation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "DHparams_dup",
+   "defined_in": "crypto/dh/dh_ameth.c",
+   "lifetime": {
+    "for": "dh",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "dh",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dh"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads a live source DH without retaining it; only the domain parameters and associated parameter metadata are copied."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on failure or a fresh independent default-context DH containing a deep copy of the source parameters and owing one DH_free."
     }
    }
   },

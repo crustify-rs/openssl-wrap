@@ -4,6 +4,7 @@
 #include <openssl/bio.h>
 #include <openssl/crypto.h>
 #include <openssl/core.h>
+#include <openssl/dh.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/lhash.h>
@@ -27,6 +28,11 @@ EC_KEY *EC_KEY_new(void);
 void EC_KEY_free(EC_KEY *key);
 EC_KEY *EC_KEY_dup(const EC_KEY *key);
 int EC_KEY_up_ref(EC_KEY *key);
+typedef struct dh_st DH;
+DH *DH_new(void);
+void DH_free(DH *dh);
+int DH_up_ref(DH *dh);
+DH *DHparams_dup(const DH *dh);
 typedef struct rsa_st RSA;
 RSA *RSA_new(void);
 void RSA_free(RSA *rsa);
