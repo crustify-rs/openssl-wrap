@@ -3878,6 +3878,604 @@
    ]
   },
   {
+   "name": "evp_signature_st",
+   "defined_in": "crypto/evp/evp_local.h",
+   "_comment_agent": "EVP_SIGNATURE is a refcounted method record. It owns one provider reference and its copied type name; its description and dispatch callbacks borrow from the retained provider module.",
+   "fields": [
+    {
+     "name": "description",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed algorithm-description string from the provider algorithm table; prov keeps that table and module alive."
+     }
+    },
+    {
+     "name": "digest_sign",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "digest_sign_final",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "digest_sign_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "digest_sign_update",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "digest_verify",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "digest_verify_final",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "digest_verify_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "digest_verify_update",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "dupctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "freectx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "get_ctx_md_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "get_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "gettable_ctx_md_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "gettable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "newctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "evp_signature_new raises one provider reference and evp_signature_free releases it; provider APIs may mutate its internal reference/state."
+     }
+    },
+    {
+     "name": "query_key_types",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "set_ctx_md_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "set_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "settable_ctx_md_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "settable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "sign",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "sign_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "sign_message_final",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "sign_message_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "sign_message_update",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "type_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Fresh NUL-terminated copy from ossl_algorithm_get1_first_name, released by evp_signature_free; NULL during failed construction."
+     }
+    },
+    {
+     "name": "verify",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "verify_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "verify_message_final",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "verify_message_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "verify_message_update",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "verify_recover",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    },
+    {
+     "name": "verify_recover_init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider dispatch callback; the retained prov reference keeps the provider module loaded. The zero-initialized construction path and optional operation groups permit NULL."
+     }
+    }
+   ]
+  },
+  {
    "name": "hostent",
    "defined_in": "/usr/include/netdb.h",
    "_comment_agent": "hostent has no independent lifecycle primitive: nothing in the tree allocates, frees or duplicates an entry or any buffer it points at, so it gets borrowed handles and no owning pointer form. The pointer fields are recorded borrowed with lifetime `self` rather than `static` deliberately. gethostbyname's storage is statically allocated but NOT valid for the life of the program -- the next lookup on the same thread overwrites it in place -- so the name, alias and address buffers are exactly as valid as the entry handle that reached them, and binding them to 'static would be wrong. The other producer, crypto/bio/bio_addr.c's `static const struct hostent he_fallback`, points h_addr_list at file-scope statics and is itself const, i.e. read-only storage; between the two, no producer in this tree yields a writable entry, so an exclusive handle is only ever legitimate over caller-owned storage. BIO_lookup_ex is the only in-tree field reader: it takes h_addrtype, h_length and h_addr_list, and walks the address vector without a NULL check on the vector itself. h_name and h_aliases are never read in-tree; their records describe the public struct hostent surface rather than observed OpenSSL behaviour.",
@@ -13604,6 +14202,65 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live EVP_PKEY and atomically increments its reference count; callers receive another ownership debt for the same pointer."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_SIGNATURE_free",
+   "defined_in": "crypto/evp/signature.c",
+   "lifetime": {
+    "for": "signature",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "signature",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Public down-reference. NULL is accepted; cached records may deliberately make release a no-op, while no_store records decrement and free on the final count."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_SIGNATURE_up_ref",
+   "defined_in": "crypto/evp/signature.c",
+   "lifetime": {
+    "for": "signature",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "signature",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:signature"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Public up-reference. The argument must be live and non-NULL; cached records may return success without changing the count."
      }
     }
    ]
