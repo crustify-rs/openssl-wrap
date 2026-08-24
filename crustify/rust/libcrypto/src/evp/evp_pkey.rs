@@ -98,44 +98,6 @@ pub fn EVP_PKEY_get_attr_count(pkey: EvpPkeyRef<'_>) -> i32 {
     unsafe { ffi::EVP_PKEY_get_attr_count(pkey.as_ptr()) }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::evp::p_lib::EVP_PKEY_new;
-    use crate::objects::obj_dat::OBJ_txt2obj;
-
-    #[test]
-    fn fresh_key_has_no_attributes() {
-        let key = EVP_PKEY_new().expect("EVP_PKEY_new");
-        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), -1);
-        assert_eq!(EVP_PKEY_get_attr_by_NID(key.as_ref(), 1, -1), -1);
-    }
-
-    #[test]
-    fn object_attribute_can_be_added_borrowed_detached_and_readded() {
-        let mut key = EVP_PKEY_new().expect("EVP_PKEY_new");
-        let object = OBJ_txt2obj(c"1.2.840.113549.1.9.7", true).expect("object identifier");
-
-        assert!(EVP_PKEY_add1_attr_by_OBJ(
-            &mut key.as_mut(),
-            object.as_ref(),
-            ffi::V_ASN1_OCTET_STRING as i32,
-            b"secret",
-        ));
-        assert_eq!(
-            EVP_PKEY_get_attr_by_OBJ(key.as_ref(), object.as_ref(), -1),
-            0
-        );
-        assert!(EVP_PKEY_get_attr(key.as_ref(), 0).is_some());
-
-        let detached = EVP_PKEY_delete_attr(&mut key.as_mut(), 0).expect("detached attribute");
-        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), 0);
-        assert!(EVP_PKEY_add1_attr(&mut key.as_mut(), detached.as_ref()));
-        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), 1);
-        assert!(EVP_PKEY_delete_attr(&mut key.as_mut(), 9).is_none());
-    }
-}
-
 /// Wraps: EVP_PKEY_add1_attr
 /// Deep-copies `attribute` into the key's owned attribute stack.
 pub fn EVP_PKEY_add1_attr(key: &mut EvpPkeyMut<'_>, attribute: X509AttributeRef<'_>) -> bool {
@@ -205,4 +167,42 @@ pub fn EVP_PKEY_get_attr_by_OBJ(
 ) -> i32 {
     // SAFETY: both shared handles are live for the synchronous lookup.
     unsafe { ffi::EVP_PKEY_get_attr_by_OBJ(key.as_ptr(), object.as_ptr(), last_position) }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::evp::p_lib::EVP_PKEY_new;
+    use crate::objects::obj_dat::OBJ_txt2obj;
+
+    #[test]
+    fn fresh_key_has_no_attributes() {
+        let key = EVP_PKEY_new().expect("EVP_PKEY_new");
+        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), -1);
+        assert_eq!(EVP_PKEY_get_attr_by_NID(key.as_ref(), 1, -1), -1);
+    }
+
+    #[test]
+    fn object_attribute_can_be_added_borrowed_detached_and_readded() {
+        let mut key = EVP_PKEY_new().expect("EVP_PKEY_new");
+        let object = OBJ_txt2obj(c"1.2.840.113549.1.9.7", true).expect("object identifier");
+
+        assert!(EVP_PKEY_add1_attr_by_OBJ(
+            &mut key.as_mut(),
+            object.as_ref(),
+            ffi::V_ASN1_OCTET_STRING as i32,
+            b"secret",
+        ));
+        assert_eq!(
+            EVP_PKEY_get_attr_by_OBJ(key.as_ref(), object.as_ref(), -1),
+            0
+        );
+        assert!(EVP_PKEY_get_attr(key.as_ref(), 0).is_some());
+
+        let detached = EVP_PKEY_delete_attr(&mut key.as_mut(), 0).expect("detached attribute");
+        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), 0);
+        assert!(EVP_PKEY_add1_attr(&mut key.as_mut(), detached.as_ref()));
+        assert_eq!(EVP_PKEY_get_attr_count(key.as_ref()), 1);
+        assert!(EVP_PKEY_delete_attr(&mut key.as_mut(), 9).is_none());
+    }
 }

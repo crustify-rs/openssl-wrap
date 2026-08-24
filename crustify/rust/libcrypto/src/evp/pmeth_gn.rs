@@ -187,6 +187,24 @@ pub fn EVP_PKEY_generate<'a>(ctx: &'a mut EvpPkeyCtxMut<'_>) -> Result<BorrowedE
     }
 }
 
+/// Wraps: EVP_PKEY_export
+/// Invokes `callback` synchronously with the selected key parameters.
+pub fn EVP_PKEY_export<F>(
+    pkey: EvpPkeyRef<'_>,
+    selection: i32,
+    callback: &mut OsslCallback<'_, F>,
+) -> i32
+where
+    F: for<'params> FnMut(CSlice<'params, OsslParam<'params>>) -> i32,
+{
+    // SAFETY: `raw_parts` is consumed only by this synchronous FFI call while
+    // the callback remains exclusively borrowed; OpenSSL does not retain it.
+    let (function, argument) = unsafe { callback.raw_parts() };
+    // SAFETY: the key is live, and the callback/function state pair is valid
+    // and uniquely borrowed for the complete synchronous export operation.
+    unsafe { ffi::EVP_PKEY_export(pkey.as_ptr(), selection, function, argument) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -232,22 +250,4 @@ mod tests {
         assert_eq!(EVP_PKEY_export(key.as_ref(), 0x03, &mut callback), 1);
         assert!(parameter_count > 0);
     }
-}
-
-/// Wraps: EVP_PKEY_export
-/// Invokes `callback` synchronously with the selected key parameters.
-pub fn EVP_PKEY_export<F>(
-    pkey: EvpPkeyRef<'_>,
-    selection: i32,
-    callback: &mut OsslCallback<'_, F>,
-) -> i32
-where
-    F: for<'params> FnMut(CSlice<'params, OsslParam<'params>>) -> i32,
-{
-    // SAFETY: `raw_parts` is consumed only by this synchronous FFI call while
-    // the callback remains exclusively borrowed; OpenSSL does not retain it.
-    let (function, argument) = unsafe { callback.raw_parts() };
-    // SAFETY: the key is live, and the callback/function state pair is valid
-    // and uniquely borrowed for the complete synchronous export operation.
-    unsafe { ffi::EVP_PKEY_export(pkey.as_ptr(), selection, function, argument) }
 }
