@@ -2519,6 +2519,111 @@
    ]
   },
   {
+   "name": "dsa_st",
+   "defined_in": "crypto/dsa/dsa_local.h",
+   "_comment_agent": "The public API treats DSA as opaque. Its formed-object lifecycle is reference-counted; internal key/cache/lock pointers are owned, while the method and optional library context are borrowed.",
+   "fields": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed library context, null for the default context; DSA_free does not release it and DSA code does not write through this pointer."
+     }
+    },
+    {
+     "name": "lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "A formed DSA owns the lock created by dsa_new_intern; DSA_free releases it with CRYPTO_THREAD_lock_free."
+     }
+    },
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "A formed DSA borrows its non-null method table; DSA_set_method replaces it without taking ownership."
+     }
+    },
+    {
+     "name": "method_mont_p",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional mutable Montgomery cache owned by the DSA and released by the method finish hook."
+     }
+    },
+    {
+     "name": "priv_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned private BIGNUM; DSA_set0_key transfers it and DSA_free releases it with BN_clear_free."
+     }
+    },
+    {
+     "name": "pub_key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional owned public BIGNUM; DSA_set0_key transfers it and DSA_free releases it with BN_clear_free."
+     }
+    },
+    {
+     "name": "references",
+     "refcount": true
+    }
+   ]
+  },
+  {
    "name": "ec_key_st",
    "defined_in": "crypto/ec/ec_local.h",
    "_comment_agent": "ec_key_st is public only as opaque EC_KEY. Its method and library-context links are borrowed; group, public point, private scalar and property query are owned and released on the final EC_KEY_free down-reference.",
@@ -14853,6 +14958,129 @@
      "nullable": true,
      "mutable": true,
      "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
+    }
+   }
+  },
+  {
+   "name": "DSA_free",
+   "defined_in": "crypto/dsa/dsa_lib.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one DSA reference when non-null; the final down-reference tears down fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "DSA_new",
+   "defined_in": "crypto/dsa/dsa_lib.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null or a fresh fully initialized reference-count-one DSA using the default context."
+    }
+   }
+  },
+  {
+   "name": "DSA_up_ref",
+   "defined_in": "crypto/dsa/dsa_lib.c",
+   "lifetime": {
+    "for": "r",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "r",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:r"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live DSA and mutates only its reference count; success creates one additional owned reference."
+     }
+    }
+   ]
+  },
+  {
+   "name": "DSAparams_dup",
+   "defined_in": "crypto/dsa/dsa_asn1.c",
+   "lifetime": {
+    "for": "dsa",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "dsa",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dsa"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads a live DSA's domain parameters without retaining the source."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null or a new initialized DSA containing an independent parameter copy."
     }
    }
   },

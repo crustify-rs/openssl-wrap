@@ -5,6 +5,7 @@
 #include <openssl/crypto.h>
 #include <openssl/core.h>
 #include <openssl/dh.h>
+#include <openssl/dsa.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/lhash.h>
@@ -23,6 +24,11 @@
 typedef long (*crustify_BIO_callback_fn)(BIO *b, int oper,
     const char *argp, int argi, long argl, long ret);
 void BIO_set_callback(BIO *b, crustify_BIO_callback_fn callback);
+typedef struct dsa_st DSA;
+DSA *DSA_new(void);
+void DSA_free(DSA *dsa);
+int DSA_up_ref(DSA *dsa);
+DSA *DSAparams_dup(const DSA *dsa);
 typedef struct ec_key_st EC_KEY;
 EC_KEY *EC_KEY_new(void);
 void EC_KEY_free(EC_KEY *key);
