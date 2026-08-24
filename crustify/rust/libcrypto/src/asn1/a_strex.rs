@@ -94,6 +94,54 @@ pub fn ASN1_STRING_to_UTF8(string: Asn1StringRef<'_>) -> Result<Asn1Utf8, i32> {
     Ok(Asn1Utf8::Bytes(bytes))
 }
 
+/// A successful distinguished-name formatting call.
+///
+/// `X509_NAME_print_ex` reports its result under two different conventions,
+/// selected by `flags`. `XN_FLAG_COMPAT` — numerically zero — delegates to
+/// `X509_NAME_print`, which only distinguishes success from failure. Every
+/// other flag combination runs the extended formatter, which reports the
+/// number of characters the name occupied. A single integer cannot say which
+/// convention produced it, so the two are separate variants here.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum X509NamePrinted {
+    /// The `XN_FLAG_COMPAT` path succeeded and reported no length.
+    Compat,
+    /// The extended formatter accounted for this many characters.
+    Written(usize),
+}
+
+/// Wraps: X509_NAME_print_ex
+/// Formats a distinguished name, optionally into a BIO.
+///
+/// A `None` sink runs the formatter for its character count without writing
+/// anything: the C sink callback reports success for a null argument, so the
+/// extended path still accumulates and returns the length. That does not hold
+/// under `XN_FLAG_COMPAT`, whose delegate writes through `BIO_write` directly
+/// and reports failure for a null BIO; it also ignores `indent`.
+///
+/// A negative `indent` is clamped to zero before formatting. `None` reports
+/// OpenSSL's failure code under whichever convention `flags` selected, which
+/// covers an unsupported separator selection as well as a write or overflow
+/// failure.
+#[must_use]
+#[allow(non_snake_case)]
+pub fn X509_NAME_print_ex(
+    output: Option<&mut BioMut<'_>>,
+    name: X509NameRef<'_>,
+    indent: i32,
+    flags: c_ulong,
+) -> Option<X509NamePrinted> {
+    let output = output.map_or(ptr::null_mut(), |bio| bio.as_mut_ptr());
+    // SAFETY: the sink is null or an exclusively borrowed live BIO written
+    // synchronously, and the name remains live and shared throughout
+    // formatting. Both paths tolerate the null sink without dereferencing it.
+    let result = unsafe { ffi::X509_NAME_print_ex(output, name.as_ptr(), indent, flags) };
+    if flags == c_ulong::from(ffi::XN_FLAG_COMPAT) {
+        return (result == 1).then_some(X509NamePrinted::Compat);
+    }
+    usize::try_from(result).ok().map(X509NamePrinted::Written)
+}
+
 #[cfg(test)]
 mod tests {
     use ffibox::CBox;
@@ -213,18 +261,19 @@ mod tests {
         assert_eq!(&buffer[..read], b"a\\0Ab");
     }
 
+    /// The DER of the one-entry distinguished name `CN=x`.
+    const NAME_DER: &[u8] = b"\x30\x0c\x31\x0a\x30\x08\x06\x03\x55\x04\x03\x0c\x01x";
+    /// Chooses the extended formatter over the compatibility path.
+    const SEP_COMMA_PLUS: c_ulong = ffi::XN_FLAG_SEP_COMMA_PLUS as c_ulong;
+
     #[test]
     fn distinguished_name_printing_writes_through_the_typed_bio() {
-        const NAME_DER: &[u8] = b"\x30\x0c\x31\x0a\x30\x08\x06\x03\x55\x04\x03\x0c\x01x";
-        // XN_FLAG_SEP_COMMA_PLUS chooses the normal non-compatibility path.
-        const SEP_COMMA_PLUS: c_ulong = 1 << 16;
-
         let mut input = NAME_DER;
         let name = d2i_X509_NAME(&mut input).expect("name DER");
         let mut bio = memory_bio();
         assert_eq!(
-            X509_NAME_print_ex(&mut bio.as_mut(), name.as_ref(), 0, SEP_COMMA_PLUS),
-            4
+            X509_NAME_print_ex(Some(&mut bio.as_mut()), name.as_ref(), 0, SEP_COMMA_PLUS),
+            Some(X509NamePrinted::Written(4))
         );
         let mut buffer = [0_u8; 16];
         let read = crate::bio::bio_lib::BIO_read_ex(&mut bio.as_mut(), &mut buffer)
@@ -232,19 +281,68 @@ mod tests {
         assert_eq!(&buffer[..read], b"CN=x");
         X509_NAME_free(name);
     }
-}
 
-/// Wraps: X509_NAME_print_ex
-/// Formats a distinguished name into a BIO.
-#[must_use]
-#[allow(non_snake_case)]
-pub fn X509_NAME_print_ex(
-    output: &mut BioMut<'_>,
-    name: X509NameRef<'_>,
-    indent: i32,
-    flags: c_ulong,
-) -> i32 {
-    // SAFETY: the BIO is exclusively borrowed for synchronous writes and the
-    // name remains live and shared throughout formatting.
-    unsafe { ffi::X509_NAME_print_ex(output.as_mut_ptr(), name.as_ptr(), indent, flags) }
+    #[test]
+    fn a_null_sink_counts_the_characters_without_writing() {
+        let mut input = NAME_DER;
+        let name = d2i_X509_NAME(&mut input).expect("name DER");
+
+        assert_eq!(
+            X509_NAME_print_ex(None, name.as_ref(), 0, SEP_COMMA_PLUS),
+            Some(X509NamePrinted::Written(4))
+        );
+        // The leading indent is counted even though the separator selection
+        // then drops it from the per-entry indentation.
+        assert_eq!(
+            X509_NAME_print_ex(None, name.as_ref(), 3, SEP_COMMA_PLUS),
+            Some(X509NamePrinted::Written(7))
+        );
+        // A negative indent is clamped rather than shortening the count.
+        assert_eq!(
+            X509_NAME_print_ex(None, name.as_ref(), -3, SEP_COMMA_PLUS),
+            Some(X509NamePrinted::Written(4))
+        );
+
+        X509_NAME_free(name);
+    }
+
+    #[test]
+    fn the_compatibility_path_reports_success_rather_than_a_length() {
+        let mut input = NAME_DER;
+        let name = d2i_X509_NAME(&mut input).expect("name DER");
+        let compat = c_ulong::from(ffi::XN_FLAG_COMPAT);
+
+        let mut bio = memory_bio();
+        assert_eq!(
+            X509_NAME_print_ex(Some(&mut bio.as_mut()), name.as_ref(), 0, compat),
+            Some(X509NamePrinted::Compat)
+        );
+        let mut buffer = [0_u8; 16];
+        let read = crate::bio::bio_lib::BIO_read_ex(&mut bio.as_mut(), &mut buffer)
+            .expect("formatted name");
+        assert_eq!(&buffer[..read], b"CN=x");
+
+        // `X509_NAME_print` writes through the BIO unconditionally, so the
+        // counting sink is a plain failure here and not a zero-length success.
+        assert_eq!(X509_NAME_print_ex(None, name.as_ref(), 0, compat), None);
+
+        X509_NAME_free(name);
+    }
+
+    #[test]
+    fn an_unsupported_separator_selection_fails() {
+        let mut input = NAME_DER;
+        let name = d2i_X509_NAME(&mut input).expect("name DER");
+        // Non-zero flags that leave `XN_FLAG_SEP_MASK` empty reach the
+        // formatter's rejected default rather than the compatibility path.
+        const DN_REV: c_ulong = 1 << 20;
+
+        let mut bio = memory_bio();
+        assert_eq!(
+            X509_NAME_print_ex(Some(&mut bio.as_mut()), name.as_ref(), 0, DN_REV),
+            None
+        );
+
+        X509_NAME_free(name);
+    }
 }

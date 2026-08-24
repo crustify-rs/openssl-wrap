@@ -587,6 +587,8 @@ const AGENT_ALLOWED_VARS: &[&str] = &[
     "GEN_URI",
     "GEN_IPADD",
     "GEN_RID",
+    "XN_FLAG_COMPAT",
+    "XN_FLAG_SEP_COMMA_PLUS",
 ];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end

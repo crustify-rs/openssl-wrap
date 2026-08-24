@@ -15975,9 +15975,9 @@
       "borrowed": {
        "lifetime": "arg:out"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": true,
-      "note": "Required live BIO mutated synchronously by formatted writes."
+      "note": "Optional live BIO mutated synchronously by formatted writes. The module's send_bio_chars sink returns success for a null arg, so a null out makes the extended do_name_ex path count the characters it would have written instead of writing them. Under XN_FLAG_COMPAT the call delegates to X509_NAME_print, which writes through BIO_write directly; a null out is then a plain failure (0) there, not a length."
      }
     }
    ]
