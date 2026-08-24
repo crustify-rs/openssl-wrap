@@ -5355,6 +5355,392 @@
    ]
   },
   {
+   "name": "ossl_provider_st",
+   "defined_in": "crypto/provider_core.c",
+   "_comment_agent": "Reviewed the complete private layout and all field uses in crypto/provider_core.c. The public API exposes only an opaque forward declaration, so these facts document its C lifecycle rather than authorizing field projection in Rust.",
+   "fields": [
+    {
+     "name": "activatecnt_lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Owned CRYPTO_RWLOCK allocated during construction and freed at final release."
+     }
+    },
+    {
+     "name": "dispatch",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Provider-returned zero-terminated const dispatch table valid for the initialized provider lifetime."
+     }
+    },
+    {
+     "name": "error_strings",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned terminated ERR_STRING_DATA array allocated during initialization, unloaded and freed at final release."
+     }
+    },
+    {
+     "name": "flag_lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Owned CRYPTO_RWLOCK allocated during construction and freed at final release."
+     }
+    },
+    {
+     "name": "get_capabilities",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table and valid until provider teardown."
+     }
+    },
+    {
+     "name": "get_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table and valid until provider teardown."
+     }
+    },
+    {
+     "name": "gettable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table and valid until provider teardown."
+     }
+    },
+    {
+     "name": "handle",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Child-provider parent handle. Each child provider reference mirrors an owned parent reference through ossl_provider_up_ref_parent/ossl_provider_free_parent."
+     }
+    },
+    {
+     "name": "init_function",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Builtin callback must outlive the provider; a loadable provider resolves it from the owned module and it is NULL before resolution."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed library context; NULL denotes the default context. The context/store lifecycle retains providers while stored."
+     }
+    },
+    {
+     "name": "module",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional DSO_new handle released by DSO_free."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": false,
+      "note": "OPENSSL_strdup allocation freed by ossl_provider_free."
+     }
+    },
+    {
+     "name": "opbits_lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Owned CRYPTO_RWLOCK allocated during construction and freed at final release."
+     }
+    },
+    {
+     "name": "operation_bits",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned dynamically resized byte array guarded by opbits_lock and freed on cache flush/final release."
+     },
+     "locked_by": {
+      "lock": "opbits_lock",
+      "lock_op": [
+       "CRYPTO_THREAD_read_lock",
+       "CRYPTO_THREAD_write_lock"
+      ],
+      "unlock_op": [
+       "CRYPTO_THREAD_unlock"
+      ]
+     }
+    },
+    {
+     "name": "parameters",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Deep-copied INFOPAIR stack, mutated by configuration APIs and deep-freed by ossl_provider_free."
+     }
+    },
+    {
+     "name": "path",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional OPENSSL_strdup allocation replaced and freed by the provider."
+     }
+    },
+    {
+     "name": "provctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider-created opaque context whose teardown callback disposes it; NULL is permitted."
+     }
+    },
+    {
+     "name": "query_operation",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table and valid until provider teardown."
+     }
+    },
+    {
+     "name": "random_bytes",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table and valid until provider teardown."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "self_test",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table and valid until provider teardown."
+     }
+    },
+    {
+     "name": "store",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Back-pointer set only after insertion; the provider store is owned by the provider's library context."
+     }
+    },
+    {
+     "name": "teardown",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table; called at final provider release."
+     }
+    },
+    {
+     "name": "unquery_operation",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional callback copied from the provider dispatch table and valid until provider teardown."
+     }
+    }
+   ]
+  },
+  {
    "name": "otherName_st",
    "defined_in": "include/openssl/x509v3.h",
    "_comment_agent": "OTHERNAME is an ASN.1 SEQUENCE owning its object identifier and tagged value. OTHERNAME_free releases both fields and the record; public set0 paths transfer replacement pointers, and the public layout permits nullable slots.",
@@ -17726,6 +18112,33 @@
    }
   },
   {
+   "name": "OSSL_PROVIDER_unload",
+   "defined_in": "crypto/provider.c",
+   "lifetime": {
+    "for": "prov",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one active public provider handle on successful deactivation; NULL/failure is retained."
+     }
+    }
+   ]
+  },
+  {
    "name": "OTHERNAME_free",
    "defined_in": "crypto/x509/v3_genn.c",
    "lifetime": {
@@ -21788,6 +22201,65 @@
       "nullable": false,
       "mutable": true,
       "note": "Live object borrowed for encoding; i2d_re also marks and refreshes its encoding cache."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ossl_provider_free",
+   "defined_in": "crypto/provider_core.c",
+   "lifetime": {
+    "for": "prov",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one internal provider reference; NULL is a no-op and final down-ref frees storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "ossl_provider_up_ref",
+   "defined_in": "crypto/provider_core.c",
+   "lifetime": {
+    "for": "prov",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:prov"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live provider and adds one independent provider reference, including the mirrored parent reference for children."
      }
     }
    ]

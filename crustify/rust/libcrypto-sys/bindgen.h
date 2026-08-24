@@ -8,6 +8,7 @@
 #include <openssl/evp.h>
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
+#include <openssl/provider.h>
 #include <openssl/stack.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
