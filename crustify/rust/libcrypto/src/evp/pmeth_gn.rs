@@ -226,6 +226,25 @@ pub fn EVP_PKEY_CTX_get_keygen_info(ctx: EvpPkeyCtxRef<'_>, index: Option<usize>
     unsafe { ffi::EVP_PKEY_CTX_get_keygen_info(ctx.as_ptr().cast_mut(), index) }
 }
 
+/// Wraps: EVP_PKEY_CTX_get_cb
+#[must_use]
+pub fn EVP_PKEY_CTX_get_cb(ctx: EvpPkeyCtxRef<'_>) -> Option<EvpPkeyGenCallback> {
+    // SAFETY: the shared handle supplies a live context and the C getter only
+    // reads its callback field despite the legacy non-const signature.
+    let raw = unsafe { ffi::EVP_PKEY_CTX_get_cb(ctx.as_ptr().cast_mut()) };
+    // SAFETY: a callback stored by a live OpenSSL context satisfies the same
+    // C ABI invocation contract required by the callable handle.
+    unsafe { EvpPkeyGenCallback::from_raw(raw) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_cb
+pub fn EVP_PKEY_CTX_set_cb(ctx: &mut EvpPkeyCtxMut<'_>, callback: Option<EvpPkeyGenCallback>) {
+    let raw = callback.and_then(EvpPkeyGenCallback::as_raw);
+    // SAFETY: the context is exclusively borrowed and `raw` is null or a
+    // callback whose construction established the stored invocation contract.
+    unsafe { ffi::EVP_PKEY_CTX_set_cb(ctx.as_mut_ptr(), raw) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -298,23 +317,4 @@ mod tests {
         EVP_PKEY_CTX_set_cb(&mut ctx.as_mut(), None);
         assert!(EVP_PKEY_CTX_get_cb(ctx.as_ref()).is_none());
     }
-}
-
-/// Wraps: EVP_PKEY_CTX_get_cb
-#[must_use]
-pub fn EVP_PKEY_CTX_get_cb(ctx: EvpPkeyCtxRef<'_>) -> Option<EvpPkeyGenCallback> {
-    // SAFETY: the shared handle supplies a live context and the C getter only
-    // reads its callback field despite the legacy non-const signature.
-    let raw = unsafe { ffi::EVP_PKEY_CTX_get_cb(ctx.as_ptr().cast_mut()) };
-    // SAFETY: a callback stored by a live OpenSSL context satisfies the same
-    // C ABI invocation contract required by the callable handle.
-    unsafe { EvpPkeyGenCallback::from_raw(raw) }
-}
-
-/// Wraps: EVP_PKEY_CTX_set_cb
-pub fn EVP_PKEY_CTX_set_cb(ctx: &mut EvpPkeyCtxMut<'_>, callback: Option<EvpPkeyGenCallback>) {
-    let raw = callback.and_then(EvpPkeyGenCallback::as_raw);
-    // SAFETY: the context is exclusively borrowed and `raw` is null or a
-    // callback whose construction established the stored invocation contract.
-    unsafe { ffi::EVP_PKEY_CTX_set_cb(ctx.as_mut_ptr(), raw) }
 }

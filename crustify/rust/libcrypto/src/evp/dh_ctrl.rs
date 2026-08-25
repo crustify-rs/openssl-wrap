@@ -157,57 +157,6 @@ pub fn EVP_PKEY_CTX_set_dhx_rfc5114(ctx: &mut EvpPkeyCtxMut<'_>, group: i32) -> 
     unsafe { ffi::EVP_PKEY_CTX_set_dhx_rfc5114(ctx.as_mut_ptr(), group) }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
-    use crate::objects::obj_dat::OBJ_txt2obj;
-
-    #[test]
-    fn getters_preserve_unsupported_statuses() {
-        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
-        let mut handle = ctx.as_mut();
-        let status = EVP_PKEY_CTX_get_dh_kdf_type(&mut handle);
-        assert!(status <= 1);
-        let (status, len) = EVP_PKEY_CTX_get_dh_kdf_outlen(&mut handle);
-        assert_eq!(len.is_some(), status == 1);
-    }
-    #[test]
-    fn parameter_setters_accept_typed_context_and_slice() {
-        use crate::evp::pmeth_gn::EVP_PKEY_paramgen_init;
-
-        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
-        assert_eq!(EVP_PKEY_paramgen_init(&mut ctx.as_mut()), 1);
-        assert_eq!(
-            EVP_PKEY_CTX_set_dh_paramgen_prime_len(&mut ctx.as_mut(), 512),
-            1
-        );
-        assert_eq!(
-            EVP_PKEY_CTX_set_dh_paramgen_seed(&mut ctx.as_mut(), b"seed"),
-            -2
-        );
-    }
-
-    #[test]
-    fn oid_control_returns_failed_set0_ownership() {
-        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
-        let oid = OBJ_txt2obj(c"1.2.840.113549.1.1.1", true).expect("RSA OID");
-        let raw = oid.as_ptr();
-
-        let Err(error) = EVP_PKEY_CTX_set0_dh_kdf_oid(&mut ctx.as_mut(), oid) else {
-            panic!("a DHX control must not succeed on an RSA context");
-        };
-        assert!(error.status() <= 0);
-        let oid = error.into_oid();
-        assert_eq!(oid.as_ptr(), raw);
-
-        let mut handle = ctx.as_mut();
-        let (status, borrowed) = EVP_PKEY_CTX_get0_dh_kdf_oid(&mut handle);
-        assert!(status <= 0);
-        assert!(borrowed.is_none());
-    }
-}
-
 /// Wraps: EVP_PKEY_CTX_get0_dh_kdf_oid
 ///
 /// Returns the original OpenSSL status and, on success, an object identifier
@@ -265,5 +214,56 @@ pub fn EVP_PKEY_CTX_set0_dh_kdf_oid(
         // surrendered owner can be reconstructed with its registered releaser.
         let oid = unsafe { CBox::from_raw(raw) }.expect("CBox always has a non-null pointer");
         Err(Set0DhKdfOidError { status, oid })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
+    use crate::objects::obj_dat::OBJ_txt2obj;
+
+    #[test]
+    fn getters_preserve_unsupported_statuses() {
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
+        let mut handle = ctx.as_mut();
+        let status = EVP_PKEY_CTX_get_dh_kdf_type(&mut handle);
+        assert!(status <= 1);
+        let (status, len) = EVP_PKEY_CTX_get_dh_kdf_outlen(&mut handle);
+        assert_eq!(len.is_some(), status == 1);
+    }
+    #[test]
+    fn parameter_setters_accept_typed_context_and_slice() {
+        use crate::evp::pmeth_gn::EVP_PKEY_paramgen_init;
+
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
+        assert_eq!(EVP_PKEY_paramgen_init(&mut ctx.as_mut()), 1);
+        assert_eq!(
+            EVP_PKEY_CTX_set_dh_paramgen_prime_len(&mut ctx.as_mut(), 512),
+            1
+        );
+        assert_eq!(
+            EVP_PKEY_CTX_set_dh_paramgen_seed(&mut ctx.as_mut(), b"seed"),
+            -2
+        );
+    }
+
+    #[test]
+    fn oid_control_returns_failed_set0_ownership() {
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
+        let oid = OBJ_txt2obj(c"1.2.840.113549.1.1.1", true).expect("RSA OID");
+        let raw = oid.as_ptr();
+
+        let Err(error) = EVP_PKEY_CTX_set0_dh_kdf_oid(&mut ctx.as_mut(), oid) else {
+            panic!("a DHX control must not succeed on an RSA context");
+        };
+        assert!(error.status() <= 0);
+        let oid = error.into_oid();
+        assert_eq!(oid.as_ptr(), raw);
+
+        let mut handle = ctx.as_mut();
+        let (status, borrowed) = EVP_PKEY_CTX_get0_dh_kdf_oid(&mut handle);
+        assert!(status <= 0);
+        assert!(borrowed.is_none());
     }
 }

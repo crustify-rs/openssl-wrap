@@ -243,82 +243,6 @@ pub fn EVP_PKEY_CTX_set_rsa_pss_saltlen(ctx: &mut EvpPkeyCtxMut<'_>, salt_len: i
     unsafe { ffi::EVP_PKEY_CTX_set_rsa_pss_saltlen(ctx.as_mut_ptr(), salt_len) }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::bio::bn_bn_local::Bignum;
-    use crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
-    use ffibox::CBox;
-
-    fn public_exponent() -> CBox<Bignum> {
-        // SAFETY: OpenSSL returns null or one fresh initialized BIGNUM.
-        let raw = unsafe { ffi::BN_new() };
-        // SAFETY: ownership of the fresh result transfers to the registered
-        // BIGNUM owner and its matching BN_free destructor.
-        let mut exponent = unsafe { CBox::<Bignum>::from_raw(raw) }.expect("BIGNUM");
-        // SAFETY: the exclusive handle supplies a live writable BIGNUM.
-        assert_eq!(
-            unsafe { ffi::BN_set_word(exponent.as_mut().as_mut_ptr(), 65_537) },
-            1
-        );
-        exponent
-    }
-
-    #[test]
-    fn rsa_outputs_are_initialized_only_on_success() {
-        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
-        let mut handle = ctx.as_mut();
-        let (status, padding) = EVP_PKEY_CTX_get_rsa_padding(&mut handle);
-        assert_eq!(padding.is_some(), status == 1);
-        let (status, salt_len) = EVP_PKEY_CTX_get_rsa_pss_saltlen(&mut handle);
-        assert_eq!(salt_len.is_some(), status == 1);
-        let mut name = [0_u8; 80];
-        assert!(EVP_PKEY_CTX_get_rsa_oaep_md_name(&mut handle, &mut name) <= 1);
-    }
-    #[test]
-    fn keygen_setters_use_typed_values_and_names() {
-        use crate::evp::pmeth_gn::EVP_PKEY_keygen_init;
-
-        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA-PSS", None).expect("RSA-PSS context");
-        assert_eq!(EVP_PKEY_keygen_init(&mut ctx.as_mut()), 1);
-        assert_eq!(EVP_PKEY_CTX_set_rsa_keygen_bits(&mut ctx.as_mut(), 1024), 1);
-        assert_eq!(
-            EVP_PKEY_CTX_set_rsa_pss_keygen_md_name(&mut ctx.as_mut(), c"SHA256", None),
-            1
-        );
-    }
-
-    #[test]
-    fn set1_public_exponent_copies_a_borrowed_bignum() {
-        use crate::evp::pmeth_gn::EVP_PKEY_keygen_init;
-
-        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
-        assert_eq!(EVP_PKEY_keygen_init(&mut ctx.as_mut()), 1);
-        let exponent = public_exponent();
-        let raw = exponent.as_ptr();
-
-        assert_eq!(
-            EVP_PKEY_CTX_set1_rsa_keygen_pubexp(&mut ctx.as_mut(), exponent.as_ref()),
-            1
-        );
-        assert_eq!(exponent.as_ptr(), raw);
-    }
-
-    #[cfg(feature = "deprecated-3-0")]
-    #[test]
-    fn deprecated_set0_returns_owner_on_failure() {
-        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
-        let exponent = public_exponent();
-        let raw = exponent.as_ptr();
-
-        let Err(error) = EVP_PKEY_CTX_set_rsa_keygen_pubexp(&mut ctx.as_mut(), exponent) else {
-            panic!("an RSA control must not succeed on a DH context");
-        };
-        assert!(error.status() <= 0);
-        assert_eq!(error.into_public_exponent().as_ptr(), raw);
-    }
-}
-
 /// Wraps: EVP_PKEY_CTX_set1_rsa_keygen_pubexp
 ///
 /// OpenSSL copies the public exponent before this function returns.
@@ -382,5 +306,79 @@ pub fn EVP_PKEY_CTX_set_rsa_keygen_pubexp(
             status,
             public_exponent,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::bio::bn_bn_local::Bignum;
+    use crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
+    use ffibox::CBox;
+
+    fn public_exponent() -> CBox<Bignum> {
+        // SAFETY: OpenSSL returns null or one fresh initialized BIGNUM.
+        let raw = unsafe { ffi::BN_new() };
+        // SAFETY: ownership of the fresh result transfers to the registered
+        // BIGNUM owner and its matching BN_free destructor.
+        let mut exponent = unsafe { CBox::<Bignum>::from_raw(raw) }.expect("BIGNUM");
+        // SAFETY: the exclusive handle supplies a live writable BIGNUM.
+        let assigned = unsafe { ffi::BN_set_word(exponent.as_mut().as_mut_ptr(), 65_537) };
+        assert_eq!(assigned, 1);
+        exponent
+    }
+
+    #[test]
+    fn rsa_outputs_are_initialized_only_on_success() {
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
+        let mut handle = ctx.as_mut();
+        let (status, padding) = EVP_PKEY_CTX_get_rsa_padding(&mut handle);
+        assert_eq!(padding.is_some(), status == 1);
+        let (status, salt_len) = EVP_PKEY_CTX_get_rsa_pss_saltlen(&mut handle);
+        assert_eq!(salt_len.is_some(), status == 1);
+        let mut name = [0_u8; 80];
+        assert!(EVP_PKEY_CTX_get_rsa_oaep_md_name(&mut handle, &mut name) <= 1);
+    }
+    #[test]
+    fn keygen_setters_use_typed_values_and_names() {
+        use crate::evp::pmeth_gn::EVP_PKEY_keygen_init;
+
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA-PSS", None).expect("RSA-PSS context");
+        assert_eq!(EVP_PKEY_keygen_init(&mut ctx.as_mut()), 1);
+        assert_eq!(EVP_PKEY_CTX_set_rsa_keygen_bits(&mut ctx.as_mut(), 1024), 1);
+        assert_eq!(
+            EVP_PKEY_CTX_set_rsa_pss_keygen_md_name(&mut ctx.as_mut(), c"SHA256", None),
+            1
+        );
+    }
+
+    #[test]
+    fn set1_public_exponent_copies_a_borrowed_bignum() {
+        use crate::evp::pmeth_gn::EVP_PKEY_keygen_init;
+
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
+        assert_eq!(EVP_PKEY_keygen_init(&mut ctx.as_mut()), 1);
+        let exponent = public_exponent();
+        let raw = exponent.as_ptr();
+
+        assert_eq!(
+            EVP_PKEY_CTX_set1_rsa_keygen_pubexp(&mut ctx.as_mut(), exponent.as_ref()),
+            1
+        );
+        assert_eq!(exponent.as_ptr(), raw);
+    }
+
+    #[cfg(feature = "deprecated-3-0")]
+    #[test]
+    fn deprecated_set0_returns_owner_on_failure() {
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
+        let exponent = public_exponent();
+        let raw = exponent.as_ptr();
+
+        let Err(error) = EVP_PKEY_CTX_set_rsa_keygen_pubexp(&mut ctx.as_mut(), exponent) else {
+            panic!("an RSA control must not succeed on a DH context");
+        };
+        assert!(error.status() <= 0);
+        assert_eq!(error.into_public_exponent().as_ptr(), raw);
     }
 }
