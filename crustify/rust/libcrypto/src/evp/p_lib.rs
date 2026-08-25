@@ -282,17 +282,16 @@ pub fn EVP_PKEY_get_params<'data>(
     pkey: EvpPkeyRef<'_>,
     params: &mut [CVal<OsslParam<'data>>],
 ) -> bool {
-    if !params
-        .last()
-        .is_some_and(|terminator| terminator.as_ref().key().is_none())
-    {
+    // The validated list derives its array pointer from the borrow covering
+    // the whole run, so C may walk every descriptor through it; a pointer
+    // taken from `params[0]` would only be valid for that one descriptor.
+    let Some(mut params) = OsslParamListMut::from_values(params) else {
         return false;
-    }
-    let raw = params[0].as_mut().as_mut_ptr();
-    // SAFETY: the slice is nonempty, contiguous and ends in the required null
+    };
+    // SAFETY: the list is nonempty, contiguous and ends in the required null
     // key descriptor. Its exclusive borrow covers every descriptor and data
     // buffer while C fills them synchronously.
-    unsafe { ffi::EVP_PKEY_get_params(pkey.as_ptr(), raw) == 1 }
+    unsafe { ffi::EVP_PKEY_get_params(pkey.as_ptr(), params.as_mut_ptr()) == 1 }
 }
 
 fn get_raw_key(
@@ -1041,6 +1040,9 @@ pub fn EVP_PKEY_get0_siphash<'a>(pkey: EvpPkeyRef<'a>) -> Option<CSlice<'a, u8>>
 
 #[cfg(test)]
 mod tests {
+    use core::ffi::c_int;
+    use core::mem::{MaybeUninit, size_of};
+
     use super::*;
 
     #[test]
@@ -1063,6 +1065,62 @@ mod tests {
         );
         assert!(EVP_PKEY_get_raw_public_key(key.as_ref()).is_some());
         assert!(EVP_PKEY_gettable_params(key.as_ref()).is_some());
+    }
+
+    /// Reclaims a filled `OSSL_PARAM_INTEGER` descriptor's buffer and reads
+    /// back the native integer OpenSSL wrote into it.
+    fn filled_int(param: &mut CVal<OsslParam<'_>>) -> c_int {
+        let written = param.as_mut().take_data().expect("stored integer buffer");
+        let mut source = [MaybeUninit::uninit(); size_of::<c_int>()];
+        assert!(written.as_ref().copy_to_slice(&mut source));
+        let mut native = [0_u8; size_of::<c_int>()];
+        for (byte, filled) in native.iter_mut().zip(source) {
+            // SAFETY: OpenSSL reported writing exactly `size_of::<c_int>()`
+            // bytes of an `OSSL_PARAM_INTEGER` into this buffer, so every byte
+            // of the native integer it holds is initialized.
+            *byte = unsafe { filled.assume_init() };
+        }
+        c_int::from_ne_bytes(native)
+    }
+
+    #[test]
+    fn get_params_fills_every_descriptor_of_the_run() {
+        const OSSL_PARAM_INTEGER: u32 = 1;
+
+        let bytes = [7_u8; 32];
+        let key = EVP_PKEY_new_raw_private_key_ex(None, c"ED25519", None, &bytes)
+            .expect("raw ED25519 private key");
+
+        let mut bits = [MaybeUninit::<u8>::uninit(); size_of::<c_int>()];
+        let mut security_bits = [MaybeUninit::<u8>::uninit(); size_of::<c_int>()];
+        let mut params = [
+            OsslParam::for_slice(c"bits", OSSL_PARAM_INTEGER, &mut bits),
+            OsslParam::for_slice(c"security-bits", OSSL_PARAM_INTEGER, &mut security_bits),
+            OsslParam::end(),
+        ];
+        assert!(EVP_PKEY_get_params(key.as_ref(), &mut params));
+
+        // The second descriptor is only reached by walking past the first, so
+        // its filled `return_size` is what proves the array pointer handed to
+        // C covers the whole run rather than one element.
+        assert_eq!(params[0].as_ref().return_size(), size_of::<c_int>());
+        assert_eq!(params[1].as_ref().return_size(), size_of::<c_int>());
+        // Reclaim each descriptor's buffer borrow to read what C wrote.
+        assert_eq!(filled_int(&mut params[0]), 256);
+        assert_eq!(filled_int(&mut params[1]), 128);
+    }
+
+    #[test]
+    fn get_params_rejects_a_run_without_the_published_terminator() {
+        const OSSL_PARAM_INTEGER: u32 = 1;
+
+        let key = EVP_PKEY_new().expect("EVP_PKEY_new");
+        let mut bits = [MaybeUninit::<u8>::uninit(); size_of::<c_int>()];
+        let mut unterminated = [OsslParam::for_slice(c"bits", OSSL_PARAM_INTEGER, &mut bits)];
+        assert!(!EVP_PKEY_get_params(key.as_ref(), &mut unterminated));
+
+        let mut empty: [CVal<OsslParam<'static>>; 0] = [];
+        assert!(!EVP_PKEY_get_params(key.as_ref(), &mut empty));
     }
 }
 

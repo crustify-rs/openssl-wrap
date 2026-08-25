@@ -24,6 +24,19 @@ ffibox::define_ctype!(
     /// into this `CBox`, because unloading one would unbalance activation.
     /// Likewise, the internal `ossl_provider_up_ref` is deliberately not bound
     /// to `Clone`: it adds only a provider reference, not another activation.
+    ///
+    /// The provider's `libctx` field is a **borrowed** back-pointer: the
+    /// library context's provider store retains providers while they are
+    /// stored, but a provider reference does not retain the context. An owner
+    /// adopted from a load against an explicit `OSSL_LIB_CTX` therefore must
+    /// not outlive that context, and a plain [`ffibox::CBox<OsslProvider>`]
+    /// cannot state that. Until a safe loader exists — no wrapper in this
+    /// crate hands out an owner today, only the unsafe adoption seam — the
+    /// obligation rests on the caller of `CBox::from_raw`; a loader that binds
+    /// a context borrow must return a lifetime-carrying owner instead, as
+    /// `X509_PUBKEY_new_ex` does. Borrowed handles already express it:
+    /// `EVP_PKEY_get0_provider` returns an [`OsslProviderRef`] bounded by the
+    /// key it came from.
     OsslProvider,
     OsslProviderRef,
     OsslProviderMut,

@@ -706,6 +706,7 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "CRYPTO_set_ex_data",
     "CRYPTO_strdup",
     "OPENSSL_INIT_free",
+    "OSSL_PARAM_construct_end",
     "OSSL_PARAM_free",
     "OPENSSL_INIT_new",
     "OPENSSL_LH_free",

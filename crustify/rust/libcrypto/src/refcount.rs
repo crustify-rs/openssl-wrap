@@ -29,8 +29,10 @@ use ffibox::{CBox, CCell, CDropped, CType};
 ///
 /// For an owner that *can* be mutated, take an independent copy instead: the
 /// deep-duplication wrappers (`X509_dup`, `X509Ref::try_dup`,
-/// `EvpPkeyRef::try_dup`) return a normal [`ffibox::CBox`], because the copy
-/// really is a sole allocation.
+/// `EvpPkeyRef::try_dup`) return an exclusively borrowable owner, because the
+/// copy really is a sole allocation. That owner is a plain [`ffibox::CBox`]
+/// only when the copy inherits no borrow; a duplicate that keeps its source's
+/// provider-side dependencies keeps the source's lifetime instead.
 ///
 /// # Why there is no `as_mut`
 ///

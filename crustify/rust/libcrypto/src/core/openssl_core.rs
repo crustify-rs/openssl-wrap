@@ -80,18 +80,28 @@ unsafe impl CValued for OsslParam<'_> {
     unsafe fn c_dispose(_this: NonNull<Self>) {}
 }
 
+/// The exact descriptor published as `OSSL_PARAM_END`.
+///
+/// `include/openssl/params.h` spells the terminator `{ NULL, 0, NULL, 0, 0 }`
+/// and `OSSL_PARAM_construct_end` returns that value, so its `return_size` is
+/// zero rather than the `OSSL_PARAM_UNMODIFIED` sentinel that
+/// `OSSL_PARAM_DEFN` gives a real descriptor.
+const fn end_descriptor() -> ffi::ossl_param_st {
+    ffi::ossl_param_st {
+        key: core::ptr::null(),
+        data_type: 0,
+        data: core::ptr::null_mut(),
+        data_size: 0,
+        return_size: 0,
+    }
+}
+
 impl OsslParam<'static> {
     /// Creates the null-key descriptor that terminates an `OSSL_PARAM` array.
     #[must_use]
     pub fn end() -> CVal<Self> {
         CVal::new(Self {
-            inner: CType::new(ffi::ossl_param_st {
-                key: core::ptr::null(),
-                data_type: 0,
-                data: core::ptr::null_mut(),
-                data_size: 0,
-                return_size: usize::MAX,
-            }),
+            inner: CType::new(end_descriptor()),
             borrows: PhantomData,
         })
     }
@@ -185,13 +195,7 @@ impl<'data> OsslParamArray<'data> {
             // referents carried by the array's `'data` marker.
             descriptors.push(unsafe { param.as_ptr().read() });
         }
-        descriptors.push(ffi::ossl_param_st {
-            key: core::ptr::null(),
-            data_type: 0,
-            data: core::ptr::null_mut(),
-            data_size: 0,
-            return_size: usize::MAX,
-        });
+        descriptors.push(end_descriptor());
         Self {
             descriptors,
             borrows: PhantomData,
@@ -434,6 +438,25 @@ impl<'view, 'data> OsslParamListMut<'view, 'data> {
         params.get(last)?.key().is_none().then_some(Self { params })
     }
 
+    /// Validates a Rust-owned run of inline descriptors as a C-contract array.
+    ///
+    /// A caller that builds descriptors with [`OsslParam::for_slice`] holds
+    /// them as `[CVal<OsslParam>]`. The array pointer a C parameter call needs
+    /// must be derived from the borrow that covers the *whole* run: taking it
+    /// from the first element instead yields a pointer valid for one
+    /// descriptor, which C then walks past.
+    #[must_use]
+    pub fn from_values(params: &'view mut [CVal<OsslParam<'data>>]) -> Option<Self> {
+        let len = params.len();
+        let start = NonNull::new(params.as_mut_ptr())?.cast::<OsslParam<'data>>();
+        // SAFETY: `CVal` is `repr(transparent)` over its value, so the slice is
+        // `len` contiguous initialized `OsslParam` descriptors. `start` is
+        // derived from the exclusive borrow of the entire slice, so it carries
+        // provenance over every one of them for `'view`.
+        let params = unsafe { CSliceMut::from_raw_parts(start, len) };
+        Self::new(params)
+    }
+
     /// Reborrows the validated run without write access.
     #[must_use]
     pub fn as_ref(&self) -> OsslParamListRef<'_, 'data> {
@@ -586,6 +609,64 @@ mod tests {
         let end = OsslParam::end();
         assert!(end.as_ref().key().is_none());
         assert!(end.as_ref().data().is_none());
+    }
+
+    #[test]
+    fn the_terminator_matches_the_published_constant() {
+        // `OSSL_PARAM_END` is `{ NULL, 0, NULL, 0, 0 }`; in particular its
+        // `return_size` is zero, not the `OSSL_PARAM_UNMODIFIED` sentinel a
+        // real descriptor carries.
+        // SAFETY: the constructor takes no arguments and returns the published
+        // end descriptor by value, retaining nothing.
+        let published = unsafe { ffi::OSSL_PARAM_construct_end() };
+        let ours = end_descriptor();
+        assert!(published.key.is_null() && ours.key.is_null());
+        assert!(published.data.is_null() && ours.data.is_null());
+        assert_eq!(ours.data_type, published.data_type);
+        assert_eq!(ours.data_size, published.data_size);
+        assert_eq!(ours.return_size, published.return_size);
+        assert_eq!(ours.return_size, 0);
+
+        let end = OsslParam::end();
+        // SAFETY: `end` owns one initialized descriptor at this address.
+        assert_eq!(unsafe { (*end.as_ref().as_ptr()).return_size }, 0);
+        let array = OsslParamArray::new(&[]);
+        // SAFETY: the array always owns at least its initialized terminator.
+        assert_eq!(unsafe { (*array.as_ptr()).return_size }, 0);
+    }
+
+    #[test]
+    fn a_validated_run_of_inline_descriptors_spans_the_whole_array() {
+        let mut bytes = [MaybeUninit::new(0_u8); 4];
+        let mut values = [
+            OsslParam::for_slice(c"answer", 1, &mut bytes),
+            OsslParam::end(),
+        ];
+        let first = values[0].as_ref().as_ptr();
+
+        let mut list = OsslParamListMut::from_values(&mut values).expect("terminated run");
+        // The array pointer addresses the first descriptor and is derived from
+        // the borrow of the whole run, so the terminator is reachable from it.
+        assert_eq!(list.as_mut_ptr().cast_const(), first);
+        // SAFETY: `list` validated a two-descriptor run at this address.
+        assert!(unsafe {
+            OsslParam::is_terminator_at(NonNull::new(list.as_mut_ptr()).unwrap(), 1)
+        });
+        assert_eq!(list.as_ref().values().len(), 1);
+        assert_eq!(
+            list.as_ref().values().get(0).unwrap().key(),
+            Some(c"answer")
+        );
+    }
+
+    #[test]
+    fn an_unterminated_or_empty_run_is_rejected() {
+        let mut bytes = [MaybeUninit::new(0_u8); 4];
+        let mut unterminated = [OsslParam::for_slice(c"answer", 1, &mut bytes)];
+        assert!(OsslParamListMut::from_values(&mut unterminated).is_none());
+
+        let mut empty: [CVal<OsslParam<'static>>; 0] = [];
+        assert!(OsslParamListMut::from_values(&mut empty).is_none());
     }
 
     #[test]

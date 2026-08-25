@@ -50,10 +50,11 @@ pub fn X509_get_issuer_name<'a>(certificate: X509Ref<'a>) -> X509NameRef<'a> {
 /// [`EvpPkeyRef::try_dup`] is the route to an independent owner.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_get_pubkey(certificate: X509Ref<'_>) -> Option<SharedEvpPkey> {
+pub fn X509_get_pubkey<'a>(certificate: X509Ref<'a>) -> Option<SharedEvpPkey<'a>> {
     // SAFETY: the certificate is live and a non-null result carries one new
-    // EVP_PKEY reference obtained by `X509_PUBKEY_get`; the key record itself
-    // borrows nothing, so the share needs no lifetime bound.
+    // EVP_PKEY reference obtained by `X509_PUBKEY_get`. The key retains the
+    // `EVP_KEYMGMT` that decoded it, whose library context is the one the
+    // certificate borrows, so the share keeps the certificate's lifetime.
     unsafe { SharedEvpPkey::from_raw(ffi::X509_get_pubkey(certificate.as_ptr())) }
 }
 

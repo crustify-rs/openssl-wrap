@@ -1,7 +1,9 @@
 //! Wrappers assigned from `include/crypto/evp.h`.
 
-use ffibox::{CBox, define_ctype, impl_dropped};
+use ffibox::{define_ctype, impl_dropped};
 use libcrypto_sys as ffi;
+
+use crate::evp::p_lib::BorrowedEvpPkey;
 
 define_ctype!(
     /// Wraps: evp_pkey_st
@@ -11,18 +13,19 @@ define_ctype!(
     /// wrapper only supplies the pointer-compatible target used by owning and
     /// lifetime-bound borrowed handles.
     ///
-    /// An owning [`CBox<EvpPkey>`] carries one reference count and is
-    /// deliberately not `Clone`: a second count names the same key, so every
-    /// wrapper that raises one hands back a shared-only [`SharedEvpPkey`]
-    /// rather than an owner with an exclusive handle. Use
+    /// An owning [`CBox<EvpPkey>`](ffibox::CBox) carries one reference count
+    /// and is deliberately not `Clone`: a second count names the same key, so
+    /// every wrapper that raises one hands back a shared-only
+    /// [`SharedEvpPkey`] rather than an owner with an exclusive handle. Use
     /// [`EvpPkeyRef::try_dup`] when an independent deep copy is required.
     ///
     /// The record itself stores no `OSSL_LIB_CTX`, but a provider-backed key
-    /// reaches its library context through the `EVP_KEYMGMT` it holds. This
-    /// owner does not track that dependency, so a key built in a non-default
-    /// context relies on OpenSSL's own rule that the context outlives every
-    /// object created from it. Containers that store the context pointer in a
-    /// field instead express it in the type, as `BorrowedX509Pubkey` does.
+    /// holds an acquired `EVP_KEYMGMT` reference, and that method reaches the
+    /// library context it was fetched from. Nothing in the chain keeps the
+    /// context alive — a provider reference does not — so every owner of a key
+    /// carries that dependency in its type: `BorrowedEvpPkey<'a>` for a key
+    /// built from a context borrow, and [`SharedEvpPkey<'a>`] for an extra
+    /// reference reached through a container that already carries one.
     EvpPkey,
     EvpPkeyRef,
     EvpPkeyMut,
@@ -45,30 +48,57 @@ impl_dropped!(EvpPkey, ffi::evp_pkey_st, ffi::EVP_PKEY_free);
 
 /// One owned reference to a key that other owners may also hold.
 ///
-/// A key reached by raising the reference count has no borrowed dependency of
-/// its own — the record stores no `OSSL_LIB_CTX` — so the share is unbounded.
-pub type SharedEvpPkey = crate::refcount::SharedRef<'static, EvpPkey>;
+/// The lifetime carries the library-context dependency the key inherits from
+/// the `EVP_KEYMGMT` it retains, exactly as [`SharedEvpSkey`] does. A key
+/// selected from the process-wide default context may use `'static`; a share
+/// raised from a container built in an explicit context keeps that container's
+/// borrow, which is what bounds the context.
+///
+/// Raising a reference count is therefore not a way to escape the container:
+///
+/// ```compile_fail
+/// use libcrypto::x509::x_pubkey::{X509_PUBKEY_get, X509_PUBKEY_new_ex};
+///
+/// let shared = {
+///     let container = X509_PUBKEY_new_ex(None, None).expect("container");
+///     // The share borrows `container`, which the block then drops.
+///     X509_PUBKEY_get(container.as_ref())
+/// };
+/// drop(shared);
+/// ```
+pub type SharedEvpPkey<'a> = crate::refcount::SharedRef<'a, EvpPkey>;
 
-impl EvpPkeyRef<'_> {
+impl<'a> EvpPkeyRef<'a> {
     /// Create an independently owned deep copy of this key container.
     ///
     /// This differs from cloning an owning handle: `try_dup` copies the key
     /// material, attributes, and auxiliary data into a fresh `EVP_PKEY`, while
     /// an owner clone only increments this object's reference count.
+    ///
+    /// The copy is a sole allocation and may therefore be exclusively
+    /// borrowed, but it is not context-independent: `EVP_PKEY_dup` gives a
+    /// provider-backed duplicate its source's `EVP_KEYMGMT`, so the result
+    /// keeps this handle's borrow.
     #[must_use]
-    pub fn try_dup(&self) -> Option<CBox<EvpPkey>> {
+    pub fn try_dup(self) -> Option<BorrowedEvpPkey<'a>> {
         // SAFETY: the handle carries a live shared borrow. Although the C
         // declaration predates const-correctness, `EVP_PKEY_dup` only reads
-        // its source and returns null or a fresh fully initialized allocation.
+        // its source — the provided path exports through
+        // `evp_keymgmt_util_export`, which takes a `const EVP_PKEY *`, and
+        // every legacy `ameth->copy` duplicates the source key object — and
+        // returns null or a fresh fully initialized allocation.
         let duplicate = unsafe { ffi::EVP_PKEY_dup(self.as_ptr().cast_mut()) };
         // SAFETY: a non-null duplicate transfers one independent
-        // `EVP_PKEY_free` obligation to the caller.
-        unsafe { CBox::from_raw(duplicate) }
+        // `EVP_PKEY_free` obligation, and the duplicate's provider-side
+        // dependencies are the ones this handle's borrow already covers.
+        unsafe { BorrowedEvpPkey::from_raw(duplicate) }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use ffibox::CBox;
+
     use super::*;
 
     #[test]
@@ -83,9 +113,14 @@ mod tests {
         assert_eq!(key.as_ref().as_ptr(), raw.cast_const());
         assert_eq!(key.as_mut().as_mut_ptr(), raw);
 
-        let duplicate = key.as_ref().try_dup().expect("EVP_PKEY_dup");
-        assert_ne!(duplicate.as_ptr(), raw);
-        assert_eq!(duplicate.as_ref().as_ptr(), duplicate.as_ptr().cast_const());
+        let mut duplicate = key.as_ref().try_dup().expect("EVP_PKEY_dup");
+        assert_ne!(duplicate.as_ref().as_ptr(), raw.cast_const());
+        // The copy really is a sole allocation, so it grants the exclusive
+        // handle a share of the original never could.
+        assert_eq!(
+            duplicate.as_mut().as_mut_ptr().cast_const(),
+            duplicate.as_ref().as_ptr()
+        );
     }
 }
 
@@ -492,6 +527,8 @@ impl EvpPkeyGenCallback {
 
 #[cfg(test)]
 mod pkey_gen_callback_tests {
+    use ffibox::CBox;
+
     use super::*;
 
     unsafe extern "C" fn accepts_context(ctx: *mut ffi::evp_pkey_ctx_st) -> i32 {

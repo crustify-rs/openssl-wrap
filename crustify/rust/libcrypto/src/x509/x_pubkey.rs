@@ -206,10 +206,11 @@ pub fn X509_PUBKEY_free(public_key: CBox<X509Pubkey>) {
 /// [`SharedEvpPkey`], which grants no exclusive handle.
 #[must_use]
 #[allow(non_snake_case)]
-pub fn X509_PUBKEY_get(public_key: X509PubkeyRef<'_>) -> Option<SharedEvpPkey> {
+pub fn X509_PUBKEY_get<'a>(public_key: X509PubkeyRef<'a>) -> Option<SharedEvpPkey<'a>> {
     // SAFETY: the shared container is live. On success OpenSSL increments the
-    // cached key's reference count before returning it, and the key record
-    // borrows nothing of its own.
+    // cached key's reference count before returning it. That key retains the
+    // `EVP_KEYMGMT` decoded through the container's library context, so the
+    // share keeps the container's lifetime rather than claiming `'static`.
     unsafe { SharedEvpPkey::from_raw(ffi::X509_PUBKEY_get(public_key.as_ptr())) }
 }
 

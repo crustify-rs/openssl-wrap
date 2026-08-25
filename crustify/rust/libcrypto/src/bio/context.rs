@@ -31,13 +31,22 @@ ffibox::define_ctype!(
     ///
     /// The one contract this wrapper cannot express is C's *retained* free
     /// path: `OSSL_LIB_CTX_free` returns early for a null context and for
-    /// `ossl_lib_ctx_is_default_nocreate`, which covers the static global
-    /// default *and* any context the calling thread installed as its default
-    /// with `OSSL_LIB_CTX_set0_default`. Releasing such a context leaks it
-    /// rather than corrupting the heap, so the omission is not a soundness
-    /// gap; a future wrapper for `OSSL_LIB_CTX_set0_default` must keep the
-    /// owner alive past the point where it stops being the default, or the
-    /// `CBox` teardown silently becomes a no-op.
+    /// `ossl_lib_ctx_is_default_nocreate`, which compares against the
+    /// **calling thread's current** default — the context that thread
+    /// installed with `OSSL_LIB_CTX_set0_default`, or the static global
+    /// `default_context_int` when it installed none. Releasing a context that
+    /// is that thread's default leaks it rather than corrupting the heap, so
+    /// the omission is not a soundness gap; a future wrapper for
+    /// `OSSL_LIB_CTX_set0_default` must keep the owner alive past the point
+    /// where it stops being the default, or the `CBox` teardown silently
+    /// becomes a no-op.
+    ///
+    /// Because the comparison is per thread, releasing a context that a
+    /// *different* thread installed as its default would really free it and
+    /// leave that thread's thread-local pointing at released storage. Safe
+    /// code cannot reach that: [`ffibox::CBox`] holds a raw pointer and is
+    /// therefore neither `Send` nor `Sync`, so an owner never crosses threads,
+    /// and this wrapper adds no `Send`/`Sync` impl of its own.
     OsslLibCtx,
     OsslLibCtxRef,
     OsslLibCtxMut,
