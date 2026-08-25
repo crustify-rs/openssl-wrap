@@ -16577,6 +16577,335 @@
    ]
   },
   {
+   "name": "EVP_MD_get_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required live digest borrowed read-only for the synchronous query."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_get_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "digest",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:digest"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable digest borrowed for a synchronous provider parameter query; NULL is accepted and returns failure."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_get_pkey_type",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required live digest borrowed read-only for the synchronous query."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_get_size",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable digest read synchronously; NULL raises the documented EVP error and returns -1."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_get_type",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required live digest borrowed read-only for the synchronous query."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_gettable_ctx_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable digest borrowed for a synchronous query; NULL is accepted and returns no table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:md"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated OSSL_PARAM descriptor array retained by the digest/provider; NULL when unsupported."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_gettable_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "digest",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:digest"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable digest borrowed for a synchronous query; NULL is accepted and returns no table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:digest"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated OSSL_PARAM descriptor array retained by the digest/provider; NULL when unsupported."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_is_a",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable digest read synchronously; NULL is accepted and reports no match."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required borrowed NUL-terminated algorithm name read only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_names_do_all",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque nullable caller state forwarded to the callback and never retained."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked only during synchronous enumeration and never retained."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required live digest borrowed read-only for synchronous name traversal."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_settable_ctx_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable digest borrowed for a synchronous query; NULL is accepted and returns no table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:md"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated OSSL_PARAM descriptor array retained by the digest/provider; NULL when unsupported."
+    }
+   }
+  },
+  {
    "name": "EVP_MD_up_ref",
    "defined_in": "crypto/evp/digest.c",
    "lifetime": {
@@ -16604,6 +16933,29 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live digest and creates another public reference. NO_STORE dynamic records increment refcnt; cached and legacy records need no physical increment because EVP_MD_free is correspondingly a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_xof",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Nullable digest read synchronously; NULL is accepted and reports not-XOF."
      }
     }
    ]

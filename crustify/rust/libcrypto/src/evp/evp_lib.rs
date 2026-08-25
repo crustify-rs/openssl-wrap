@@ -2,14 +2,15 @@
 
 #![allow(non_snake_case)]
 
-use core::ffi::CStr;
+use core::ffi::{CStr, c_char, c_int, c_ulong, c_void};
 use core::ptr;
+use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 
 use ffibox::CBox;
 use libcrypto_sys as ffi;
 
 use crate::bio::context::OsslLibCtxRef;
-use crate::evp::evp::EvpPkeyCtxMut;
+use crate::evp::evp::{EvpMdRef, EvpPkeyCtxMut};
 use crate::evp::p_lib::BorrowedEvpPkey;
 use crate::x509::x509::{X509Algor, X509AlgorMut, X509AlgorRef};
 
@@ -230,5 +231,161 @@ mod algorithm_identifier_tests {
 
         let (status, retrieved) = EVP_PKEY_CTX_get_algor(&mut ctx.as_mut());
         assert!(status != 1 || retrieved.is_some());
+    }
+}
+
+/// Wraps: EVP_MD_get_flags
+/// Returns the implementation flags of a live digest.
+#[must_use]
+pub fn EVP_MD_get_flags(md: EvpMdRef<'_>) -> c_ulong {
+    // SAFETY: the shared digest handle is live and the getter retains nothing.
+    unsafe { ffi::EVP_MD_get_flags(md.as_ptr()) }
+}
+
+/// Wraps: EVP_MD_get_pkey_type
+/// Returns the legacy public-key signing algorithm NID associated with `md`.
+#[must_use]
+pub fn EVP_MD_get_pkey_type(md: EvpMdRef<'_>) -> c_int {
+    // SAFETY: the shared digest handle is live and the getter retains nothing.
+    unsafe { ffi::EVP_MD_get_pkey_type(md.as_ptr()) }
+}
+
+/// Wraps: EVP_MD_get_size
+/// Returns the digest size, or `-1` for a missing digest or other failure.
+#[must_use]
+pub fn EVP_MD_get_size(md: Option<EvpMdRef<'_>>) -> c_int {
+    let md = md.map_or(ptr::null(), |md| md.as_ptr());
+    // SAFETY: null is explicitly accepted; otherwise the shared digest is live.
+    unsafe { ffi::EVP_MD_get_size(md) }
+}
+
+/// Wraps: EVP_MD_get_type
+/// Returns the object-identifier NID associated with a live digest.
+#[must_use]
+pub fn EVP_MD_get_type(md: EvpMdRef<'_>) -> c_int {
+    // SAFETY: the shared digest handle is live and the getter retains nothing.
+    unsafe { ffi::EVP_MD_get_type(md.as_ptr()) }
+}
+
+/// Wraps: EVP_MD_is_a
+/// Reports whether `md` is identified by the requested NUL-terminated name.
+#[must_use]
+pub fn EVP_MD_is_a(md: Option<EvpMdRef<'_>>, name: &CStr) -> bool {
+    let md = md.map_or(ptr::null(), |md| md.as_ptr());
+    // SAFETY: null is accepted for the digest; every non-null digest and the
+    // NUL-terminated name are live for the synchronous lookup.
+    unsafe { ffi::EVP_MD_is_a(md, name.as_ptr()) == 1 }
+}
+
+/// Wraps: EVP_MD_names_do_all
+/// Synchronously visits every name associated with a fetched digest.
+pub fn EVP_MD_names_do_all<F>(md: EvpMdRef<'_>, callback: &mut F) -> bool
+where
+    F: for<'name> FnMut(&'name CStr),
+{
+    struct CallbackContext<'callback, F> {
+        callback: &'callback mut F,
+        panic: Option<Box<dyn core::any::Any + Send>>,
+        valid: bool,
+    }
+
+    unsafe extern "C" fn trampoline<F>(name: *const c_char, data: *mut c_void)
+    where
+        F: for<'name> FnMut(&'name CStr),
+    {
+        // SAFETY: the wrapper passes this exact context and keeps it uniquely
+        // borrowed throughout OpenSSL's synchronous traversal.
+        let context = unsafe { &mut *data.cast::<CallbackContext<'_, F>>() };
+        if context.panic.is_some() {
+            return;
+        }
+        if name.is_null() {
+            context.valid = false;
+            return;
+        }
+        // SAFETY: OpenSSL supplies a live NUL-terminated algorithm name for
+        // the duration of this callback invocation.
+        let name = unsafe { CStr::from_ptr(name) };
+        if let Err(panic) = catch_unwind(AssertUnwindSafe(|| (context.callback)(name))) {
+            context.panic = Some(panic);
+        }
+    }
+
+    let mut context = CallbackContext {
+        callback,
+        panic: None,
+        valid: true,
+    };
+    // SAFETY: the digest is live, and the callback/state pair remains valid
+    // and uniquely borrowed until synchronous enumeration returns.
+    let complete = unsafe {
+        ffi::EVP_MD_names_do_all(
+            md.as_ptr(),
+            Some(trampoline::<F>),
+            ptr::from_mut(&mut context).cast(),
+        ) == 1
+    };
+    if let Some(panic) = context.panic {
+        resume_unwind(panic);
+    }
+    complete && context.valid
+}
+
+/// Wraps: EVP_MD_xof
+/// Reports whether the optional digest is an extendable-output function.
+#[must_use]
+pub fn EVP_MD_xof(md: Option<EvpMdRef<'_>>) -> bool {
+    let md = md.map_or(ptr::null(), |md| md.as_ptr());
+    // SAFETY: null is explicitly accepted; otherwise the shared digest is live.
+    unsafe { ffi::EVP_MD_xof(md) == 1 }
+}
+
+#[cfg(test)]
+mod digest_metadata_tests {
+    use super::*;
+    use crate::evp::evp::SharedEvpMd;
+
+    fn sha256() -> SharedEvpMd<'static> {
+        // SAFETY: null selects the process-wide default context and properties;
+        // the name is NUL-terminated and a non-null result transfers one ref.
+        let raw = unsafe { ffi::EVP_MD_fetch(ptr::null_mut(), c"SHA2-256".as_ptr(), ptr::null()) };
+        // SAFETY: the default context is process-wide and the fresh result
+        // transfers one `EVP_MD_free` obligation.
+        unsafe { SharedEvpMd::from_raw(raw) }.expect("SHA2-256 digest")
+    }
+
+    #[test]
+    fn metadata_queries_use_shared_digest_handles() {
+        let digest = sha256();
+        let md = digest.as_ref();
+
+        assert_eq!(EVP_MD_get_size(Some(md)), 32);
+        assert_ne!(EVP_MD_get_type(md), 0);
+        let _ = EVP_MD_get_pkey_type(md);
+        let _ = EVP_MD_get_flags(md);
+        assert!(EVP_MD_is_a(Some(md), c"SHA2-256"));
+        assert!(!EVP_MD_xof(Some(md)));
+
+        let mut names = Vec::new();
+        assert!(EVP_MD_names_do_all(md, &mut |name| {
+            names.push(name.to_bytes().to_vec());
+        }));
+        assert!(!names.is_empty());
+    }
+
+    #[test]
+    fn nullable_queries_preserve_the_c_null_contract() {
+        assert_eq!(EVP_MD_get_size(None), -1);
+        assert!(!EVP_MD_is_a(None, c"SHA2-256"));
+        assert!(!EVP_MD_xof(None));
+    }
+
+    #[test]
+    fn callback_panics_resume_only_after_c_returns() {
+        let digest = sha256();
+        let panic = catch_unwind(AssertUnwindSafe(|| {
+            EVP_MD_names_do_all(digest.as_ref(), &mut |_| panic!("callback panic"));
+        }));
+        assert!(panic.is_err());
     }
 }
