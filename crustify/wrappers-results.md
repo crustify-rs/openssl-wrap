@@ -88,9 +88,9 @@ in Notes.
 - **C LoC** — `336,418` across the `1,044` targeted files
 - **ported types** — `0`
 - **ported symbols** — `1`
-- **wrapped types** — `81` (`16.1`% of the API), plus `10` callbacks (`1.5`%)
-- **remaining types** — `385`, plus `638` callbacks
-- **wrapped symbols** — `672` (`9.9`% of the API)
+- **wrapped types** — `91` (`7.6`% of API), callbacks included
+- **wrapped symbols** — `672` (`9.9`% of API)
+- **remaining types** — `1,023`
 - **remaining symbols** — `6,093`
 
 Implementation `openai/gpt-5.6-sol` via `codex`; review `anthropic/claude-opus-5`
@@ -458,15 +458,18 @@ wrapping — folding them into a symbol denominator would report `5.3`% instead
 of `9.9`% and would measure the bindgen surface, not the wrapper campaign. The
 one macro carrying an anchor is a callable shim.
 
-Callbacks are counted separately from types for the same reason they are
-scheduled separately: they are function-pointer typedefs, and `648` of them is
-mostly the `OSSL_FUNC_*` provider dispatch surface, which a consumer of the
-library never implements by hand.
+Callbacks are folded into the type counts: `81` wrapped types plus `10` wrapped
+callbacks, against `459` published types plus `648` published callbacks. That
+denominator is what holds the combined share to `7.6`%; types measured alone
+are at `16.1`%. The `648` published callbacks are largely the `OSSL_FUNC_*`
+provider dispatch surface, which a consumer of the library never implements by
+hand, so the combined figure understates coverage of the types a caller
+actually holds. Both readings are recorded here so either can be quoted.
 
-The wrapped counts here are tree-wide, so they slightly exceed the API-scoped
-intersection the percentages use: `81` wrapped types against `74` that are
-API-published, and `672` wrapped symbols against `668`. The difference is
-private types the closure required — `evp_pkey_ctx_st` and the legacy key
+The wrapped counts are tree-wide, so they slightly exceed the API-scoped
+intersection the percentages use: `91` wrapped types and callbacks against `84`
+that are API-published, and `672` wrapped symbols against `668`. The difference
+is private types the closure required — `evp_pkey_ctx_st` and the legacy key
 handles are declared in `include/crypto/`, not `include/openssl/`, so they are
 wrapped but are not themselves API surface.
 
