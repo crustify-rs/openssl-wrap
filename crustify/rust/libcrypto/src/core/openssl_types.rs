@@ -11,12 +11,18 @@ define_ctype!(
     /// for pointer-compatible borrowed handles rather than embeddable storage.
     /// In particular, [`Engine::zeroed`] does not construct an engine.
     ///
-    /// This campaign is configured with deprecated APIs disabled, which
-    /// removes the `ENGINE` constructor, reference-counting and release
-    /// routines from the wrapped surface. Consequently there is no safe owner
-    /// or lifecycle implementation here: an engine pointer obtained at a
-    /// separately enabled legacy seam must remain borrowed from the C object
-    /// that keeps it alive.
+    /// Engine support is gone from this OpenSSL tree. `include/openssl/engine.h`
+    /// keeps `ENGINE_new`, `ENGINE_free` and `ENGINE_up_ref` only as
+    /// source-compatibility declarations — either deprecated `ossl_inline`
+    /// no-op stubs under `OPENSSL_ENGINE_STUBS`, or bare prototypes whose
+    /// symbols libcrypto does not export at all. There is therefore no
+    /// constructor, reference count or releaser to register: this type has no
+    /// owner, and an engine pointer surfacing at a legacy seam stays borrowed
+    /// from whatever C object keeps it alive.
+    ///
+    /// Every remaining `ENGINE *` parameter in the wrapped API is a slot that
+    /// only ever receives null, so the borrowed handles exist to type that slot
+    /// rather than to reach an engine.
     Engine,
     EngineRef,
     EngineMut,

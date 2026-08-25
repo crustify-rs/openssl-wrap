@@ -1,6 +1,6 @@
 //! Wrappers assigned from `crypto/evp/evp_local.h`.
 
-use ffibox::{define_ctype, impl_cloned, impl_dropped};
+use ffibox::{define_ctype, impl_dropped};
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -216,9 +216,23 @@ define_ctype!(
     /// call surface rather than becoming Rust field accessors.
     ///
     /// An owning [`ffibox::CBox<EvpMdCtx>`] uniquely owns the context header
-    /// and settles its retained state through `EVP_MD_CTX_free`. Cloning calls
-    /// `EVP_MD_CTX_dup`, which creates an independent context and duplicates
-    /// or raises the references needed by that copy.
+    /// and settles its retained state through `EVP_MD_CTX_free`. It is
+    /// deliberately not `Clone`: duplication is fallible, so it is offered as
+    /// [`crate::evp::digest::EVP_MD_CTX_dup`], which creates an independent
+    /// context and duplicates or raises the references that copy needs.
+    ///
+    /// The one contract this owner does not express is a non-default library
+    /// context. `EVP_DigestInit_ex2` stores the supplied `EVP_MD` in
+    /// `fetched_digest`, and under OpenSSL's default cached fetch
+    /// `EVP_MD_up_ref` is a no-op for a stored record — the digest belongs to
+    /// the `OSSL_LIB_CTX` it was fetched from. `CBox<EvpMdCtx>` carries no
+    /// borrow parameter, so it cannot state that it must not outlive that
+    /// context, the way [`crate::evp::pmeth_lib::BorrowedEvpPkeyCtx`] does for
+    /// `EVP_PKEY_CTX`. This is latent rather than reachable: no safe
+    /// constructor hands out an owned `CBox<OsslLibCtx>` today, so safe code
+    /// cannot release a library context under a live digest context. A wrapper
+    /// for `OSSL_LIB_CTX_new` must be landed together with a lifetime-bound
+    /// owner for this type.
     EvpMdCtx,
     EvpMdCtxRef,
     EvpMdCtxMut,
@@ -231,25 +245,30 @@ define_ctype!(
 // the documented exception: that public-key context remains caller-owned.
 impl_dropped!(EvpMdCtx, ffi::evp_md_ctx_st, ffi::EVP_MD_CTX_free);
 
-// Digest contexts are not reference counted. `EVP_MD_CTX_dup` allocates a
-// distinct header and duplicates provider and public-key operation state while
-// balancing retained digest references, so the copy may be mutably borrowed
-// and freed independently.
-impl_cloned!(EvpMdCtx, ffi::evp_md_ctx_st, dup = ffi::EVP_MD_CTX_dup);
+// Digest contexts are not reference counted, but `EVP_MD_CTX_dup` is **not**
+// registered as `CCloned`. `Clone` is infallible by trait contract, so
+// `CBox::clone` aborts the process when the C routine returns null — and
+// `EVP_MD_CTX_dup` reports ordinary "cannot copy this context" outcomes that
+// way, not just allocation failure: `EVP_MD_CTX_copy_ex` refuses a legacy
+// digest whose method has no `dupctx`, and its `EVP_PKEY_CTX_dup` of an
+// attached public-key context fails outright for a generation operation.
+// Duplication is therefore exposed only through the fallible
+// `crate::evp::digest::EVP_MD_CTX_dup`, which yields an independent
+// `CBox<EvpMdCtx>` that may be mutably borrowed and freed on its own.
 
 #[cfg(test)]
 mod md_ctx_tests {
     use core::mem::size_of;
 
-    use ffibox::{CBox, CCell, CCloned, CDropped};
+    use ffibox::{CBox, CCell, CDropped};
 
     use super::*;
 
-    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+    fn assert_owned_cell<T: CCell + CDropped>() {}
 
     #[test]
-    fn opaque_digest_context_borrows_and_deep_clones() {
-        assert_owned_cloneable_cell::<EvpMdCtx>();
+    fn opaque_digest_context_borrows_and_deep_copies() {
+        assert_owned_cell::<EvpMdCtx>();
 
         // SAFETY: a non-null result is a fresh, fully initialized empty digest
         // context with one matching `EVP_MD_CTX_free` obligation.
@@ -261,7 +280,8 @@ mod md_ctx_tests {
         assert_eq!(context.as_ref().as_ptr(), raw.cast_const());
         assert_eq!(context.as_mut().as_mut_ptr(), raw);
 
-        let duplicate = context.try_clone().expect("EVP_MD_CTX_dup");
+        let duplicate = crate::evp::digest::EVP_MD_CTX_dup(context.as_ref())
+            .expect("EVP_MD_CTX_dup of an empty context");
         assert_ne!(duplicate.as_ptr(), raw);
     }
 

@@ -24,16 +24,7 @@ pub struct BorrowedEvpPkeyCtx<'a> {
     borrow: PhantomData<&'a CType<c_void>>,
 }
 
-impl Clone for BorrowedEvpPkeyCtx<'_> {
-    fn clone(&self) -> Self {
-        Self {
-            inner: self.inner.clone(),
-            borrow: PhantomData,
-        }
-    }
-}
-
-impl BorrowedEvpPkeyCtx<'_> {
+impl<'a> BorrowedEvpPkeyCtx<'a> {
     unsafe fn from_raw(raw: *mut ffi::evp_pkey_ctx_st) -> Option<Self> {
         // SAFETY: the caller transfers one fully initialized context and has
         // chosen a lifetime covering every non-owning dependency it stores.
@@ -53,6 +44,57 @@ impl BorrowedEvpPkeyCtx<'_> {
     #[must_use]
     pub fn as_mut(&mut self) -> EvpPkeyCtxMut<'_> {
         self.inner.as_mut()
+    }
+
+    /// Create an independently owned copy of this operation context.
+    ///
+    /// This is the owner-level form of [`EvpPkeyCtxRef::try_dup`]: the copy
+    /// keeps this owner's `'a`, because `EVP_PKEY_CTX_dup` copies the source's
+    /// non-owning library-context pointer verbatim.
+    ///
+    /// Duplication is genuinely fallible. `EVP_PKEY_CTX_dup` returns null for
+    /// any key- or parameter-generation operation, which it does not support,
+    /// as well as on allocation failure — hence `Option` rather than `Clone`.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<Self> {
+        // SAFETY: this owner keeps the source context live and read-only for
+        // the call; `EVP_PKEY_CTX_dup` returns null or a fresh, fully
+        // initialized context owning every reference it raised.
+        let raw = unsafe { ffi::EVP_PKEY_CTX_dup(self.inner.as_ptr().cast_const()) };
+        // SAFETY: a non-null duplicate transfers one independent
+        // `EVP_PKEY_CTX_free` obligation, and it copied its non-owning library
+        // context from a source `'a` already bounds.
+        unsafe { Self::from_raw(raw) }
+    }
+}
+
+impl<'a> EvpPkeyCtxRef<'a> {
+    /// Create an independently owned copy of this operation context.
+    ///
+    /// The copy allocates a distinct `EVP_PKEY_CTX`, raises the source's key,
+    /// peer-key and method references, duplicates its property query and any
+    /// active provider operation state, and therefore carries one independent
+    /// `EVP_PKEY_CTX_free` obligation.
+    ///
+    /// The result is bounded by this handle's `'a` rather than being an
+    /// unbounded owner: `EVP_PKEY_CTX_dup` copies `libctx` without taking a
+    /// reference, so the duplicate borrows whatever library context the source
+    /// borrows. Every owner of the source is already bounded by that context,
+    /// so `'a` is a sound — and conservative — bound for the copy.
+    ///
+    /// Returns `None` when OpenSSL declines the copy. That is not only
+    /// allocation failure: a context in a key- or parameter-generation
+    /// operation has no `gen_dupctx`, so duplicating it always fails.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<BorrowedEvpPkeyCtx<'a>> {
+        // SAFETY: the handle carries a live shared borrow, and
+        // `EVP_PKEY_CTX_dup` only reads its source. It returns null or a fresh,
+        // fully initialized context that owns every reference it raised.
+        let raw = unsafe { ffi::EVP_PKEY_CTX_dup(self.as_ptr()) };
+        // SAFETY: a non-null duplicate transfers one independent
+        // `EVP_PKEY_CTX_free` obligation, and `'a` bounds the library context
+        // it copied from a source that is itself bounded by that context.
+        unsafe { BorrowedEvpPkeyCtx::from_raw(raw) }
     }
 }
 

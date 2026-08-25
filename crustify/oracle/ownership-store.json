@@ -2729,7 +2729,7 @@
   {
    "name": "engine_st",
    "defined_in": null,
-   "_comment_agent": "Reviewed the public API view: engine_st is an incomplete forward declaration with no fields. Deprecated APIs are disabled for this campaign, so no active lifecycle operation acts on it and there are no pointer-field findings to submit.",
+   "_comment_agent": "Reviewed: engine_st is an incomplete forward declaration with no fields, so there are no pointer-field findings. Correcting the earlier reason for the absent lifecycle: it is not that this campaign disables deprecated APIs. Engine support has been REMOVED from this tree. include/openssl/engine.h states 'Engine support is gone' and unconditionally redefines ENGINE_new/ENGINE_free/ENGINE_up_ref through the ENGINE_FUNC macros as either deprecated ossl_inline no-op stubs (OPENSSL_ENGINE_STUBS) or bare prototypes whose symbols do not exist; libcrypto.so exports zero ENGINE_* symbols (verified with nm -D --defined-only). No routine therefore constructs, up-refs or releases an engine_st, and every surviving ENGINE * parameter is a slot that only ever receives null.",
    "fields": []
   },
   {
@@ -17756,9 +17756,9 @@
       "borrowed": {
        "lifetime": "arg:in"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": false,
-      "note": ""
+      "note": "Borrows a live source for the copy. Null is tolerated, not undefined: EVP_MD_CTX_copy_ex raises ERR_R_PASSED_NULL_PARAMETER and returns 0 for a null `in`, so EVP_MD_CTX_dup(NULL) frees its fresh header and returns NULL."
      }
     }
    ],
@@ -17770,10 +17770,12 @@
      "array": null,
      "string": false,
      "owned": true,
-     "borrowed": null,
+     "borrowed": {
+      "lifetime": "arg:in->fetched_digest"
+     },
      "nullable": true,
      "mutable": true,
-     "note": "Returns a distinct deep duplicate with its own EVP_MD_CTX_free obligation, or null."
+     "note": "Returns NULL or a distinct deep duplicate with its own EVP_MD_CTX_free obligation; EVP_MD_CTX_copy_ex clears EVP_MD_CTX_FLAG_KEEP_PKEY_CTX on the copy, so it also owns its duplicated EVP_PKEY_CTX. Two corrections from review. (1) The copy also BORROWS the source's digest record: `*out = *in` carries digest/reqdigest over and balances fetched_digest with EVP_MD_up_ref, which under OpenSSL's default cached fetch is a no-op for a stored record \u2014 the EVP_MD belongs to the OSSL_LIB_CTX it was fetched from, so the duplicate inherits that library-context dependency rather than being lifetime-free. (2) NULL is a structural outcome, not only allocation failure: copy_ex refuses a context whose active digest has no provider or no dupctx (EVP_R_NOT_ABLE_TO_COPY_CTX), and its EVP_PKEY_CTX_dup of an attached public-key context fails outright for a generation operation \u2014 verified by attaching a keygen EVP_PKEY_CTX with EVP_MD_CTX_set_pkey_ctx and observing NULL. An infallible Clone over this routine is therefore wrong."
     }
    }
   },
@@ -19342,10 +19344,12 @@
      "array": null,
      "string": false,
      "owned": true,
-     "borrowed": null,
+     "borrowed": {
+      "lifetime": "arg:pctx->libctx"
+     },
      "nullable": true,
      "mutable": true,
-     "note": "Returns NULL or a distinct fully initialized context with one independent free obligation."
+     "note": "Returns NULL or a distinct fully initialized context carrying one independent EVP_PKEY_CTX_free obligation. Two corrections from review. (1) The result also BORROWS: `rctx->libctx = pctx->libctx` copies the non-owning library-context pointer without a reference, and EVP_PKEY_CTX_free never releases it, so the duplicate must not outlive the source's OSSL_LIB_CTX. An owner for it therefore has to keep the source's borrow, not be lifetime-free. (2) NULL is an ordinary, structural outcome, not just allocation failure: EVP_PKEY_CTX_IS_GEN_OP(pctx) jumps straight to the error path ('Not supported - This would need a gen_dupctx()'), so duplicating any context after EVP_PKEY_keygen_init / EVP_PKEY_paramgen_init / EVP_PKEY_fromdata_init always fails. Verified against crypto/evp/pmeth_lib.c and by running it. An infallible Clone over this routine is therefore wrong."
     }
    }
   },

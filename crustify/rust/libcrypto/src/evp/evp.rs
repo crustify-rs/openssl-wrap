@@ -1,6 +1,6 @@
 //! Wrappers assigned from `include/crypto/evp.h`.
 
-use ffibox::{CBox, define_ctype, impl_cloned, impl_dropped};
+use ffibox::{CBox, define_ctype, impl_dropped};
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -176,10 +176,13 @@ define_ctype!(
     /// handles without exposing the private layout.
     ///
     /// A context retains references to any keys and fetched operation methods
-    /// it stores, but only borrows its `OSSL_LIB_CTX`. Therefore a context made
-    /// with a non-default library context must not outlive that context; the
-    /// public constructors that establish that relationship will encode it in
-    /// their owning return types when they are wrapped.
+    /// it stores, but only borrows its `OSSL_LIB_CTX`: `EVP_PKEY_CTX_free`
+    /// never releases it. A context made with a non-default library context
+    /// must therefore not outlive that context, which is why the public
+    /// constructors that take one return
+    /// [`crate::evp::pmeth_lib::BorrowedEvpPkeyCtx`] rather than a bare
+    /// `CBox<EvpPkeyCtx>`. A plain `CBox<EvpPkeyCtx>` is only produced for the
+    /// process-wide default context, which outlives every owner.
     EvpPkeyCtx,
     EvpPkeyCtxRef,
     EvpPkeyCtxMut,
@@ -192,19 +195,26 @@ define_ctype!(
 impl_dropped!(EvpPkeyCtx, ffi::evp_pkey_ctx_st, ffi::EVP_PKEY_CTX_free);
 
 // `EVP_PKEY_CTX_dup` allocates a distinct context, raises or duplicates every
-// retained dependency, and duplicates active provider state when that
-// operation supports duplication. The result therefore has one independent
-// `EVP_PKEY_CTX_free` obligation and may be mutably borrowed independently.
-impl_cloned!(
-    EvpPkeyCtx,
-    ffi::evp_pkey_ctx_st,
-    dup = ffi::EVP_PKEY_CTX_dup
-);
+// retained dependency, and duplicates active provider state, so its result
+// does carry one independent `EVP_PKEY_CTX_free` obligation and may be mutably
+// borrowed on its own. It is still **not** registered as `CCloned`, for two
+// reasons.
+//
+// Failure is ordinary, not exceptional: the routine returns null for any
+// generation operation ("Not supported - This would need a gen_dupctx()"), so
+// `EVP_PKEY_keygen_init` followed by an infallible `Clone` would abort the
+// process from correct safe code. And the duplicate copies the source's
+// non-owning `libctx` pointer, so it inherits that borrow — a `Clone` handing
+// back an unbounded `CBox<EvpPkeyCtx>` would drop it.
+//
+// Duplication is exposed instead as the fallible, borrow-preserving
+// `EvpPkeyCtxRef::try_dup` / `BorrowedEvpPkeyCtx::try_dup`, implemented in
+// `crate::evp::pmeth_lib` beside the other `EVP_PKEY_CTX` lifecycle wrappers.
 
 #[cfg(test)]
 mod pkey_ctx_tests {
     #[test]
-    fn owner_borrows_and_clones_independently() {
+    fn owner_borrows_and_duplicates_independently() {
         let mut context = crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name(None, c"RSA", None)
             .expect("EVP_PKEY_CTX_new_from_name");
         let raw = context.as_ref().as_ptr();
@@ -212,8 +222,23 @@ mod pkey_ctx_tests {
         assert_eq!(context.as_ref().as_ptr(), raw);
         assert_eq!(context.as_mut().as_mut_ptr(), raw.cast_mut());
 
-        let duplicate = context.clone();
+        let duplicate = context.try_dup().expect("EVP_PKEY_CTX_dup");
         assert_ne!(duplicate.as_ref().as_ptr(), raw);
+    }
+
+    /// A generation operation is the documented "cannot duplicate" case. It
+    /// must surface as `None`, never as an aborting infallible `Clone`.
+    #[test]
+    fn duplicating_a_generation_context_reports_failure() {
+        let mut context = crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name(None, c"RSA", None)
+            .expect("EVP_PKEY_CTX_new_from_name");
+
+        assert!(context.try_dup().is_some());
+        assert_eq!(
+            crate::evp::pmeth_gn::EVP_PKEY_keygen_init(&mut context.as_mut()),
+            1
+        );
+        assert!(context.try_dup().is_none());
     }
 }
 
