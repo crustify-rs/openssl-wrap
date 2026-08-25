@@ -1,6 +1,8 @@
 //! Wrappers assigned from `crypto/evp/evp_local.h`.
 
-use ffibox::{define_ctype, impl_dropped};
+use core::marker::PhantomData;
+
+use ffibox::{CBox, define_ctype, impl_dropped};
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -298,6 +300,147 @@ mod md_ctx_tests {
         assert_eq!(
             size_of::<CBox<EvpMdCtx>>(),
             size_of::<*mut ffi::evp_md_ctx_st>()
+        );
+    }
+}
+
+define_ctype!(
+    /// Wraps: evp_cipher_ctx_st
+    ///
+    /// Pointer-compatible target for OpenSSL's opaque cipher context. Its
+    /// fetched cipher reference and provider-specific state are owned by the
+    /// context; application data and legacy cipher data remain externally
+    /// managed and are copied only as borrowed pointers.
+    ///
+    /// An owning [`CBox<EvpCipherCtx>`] uniquely owns the context header and
+    /// settles its retained state through `EVP_CIPHER_CTX_free`. It is not
+    /// `Clone`: `EVP_CIPHER_CTX_dup` can fail for an uninitialized context or
+    /// a provider without `dupctx`, and its result inherits the source's
+    /// external-pointer and library-context dependencies. Use
+    /// [`EvpCipherCtxRef::try_dup`] to preserve those dependencies explicitly.
+    EvpCipherCtx,
+    EvpCipherCtxRef,
+    EvpCipherCtxMut,
+    ffi::evp_cipher_ctx_st
+);
+
+// `EVP_CIPHER_CTX_free` resets the context first, releasing its provider
+// algorithm state through the active cipher's runtime `freectx` callback and
+// dropping its fetched cipher reference, then frees the unique header.
+impl_dropped!(
+    EvpCipherCtx,
+    ffi::evp_cipher_ctx_st,
+    ffi::EVP_CIPHER_CTX_free
+);
+
+/// An owned cipher context whose copied opaque pointers retain a source borrow.
+///
+/// `EVP_CIPHER_CTX_dup` duplicates provider state and raises the fetched cipher
+/// reference, but copies `app_data` and `cipher_data` verbatim. This owner keeps
+/// the source lifetime so safe duplication cannot outlive those external
+/// dependencies (including the fetched cipher's library context).
+#[must_use = "dropping the owner releases the EVP_CIPHER_CTX"]
+pub struct BorrowedEvpCipherCtx<'a> {
+    inner: CBox<EvpCipherCtx>,
+    borrow: PhantomData<EvpCipherCtxRef<'a>>,
+}
+
+impl<'a> BorrowedEvpCipherCtx<'a> {
+    unsafe fn from_raw(raw: *mut ffi::evp_cipher_ctx_st) -> Option<Self> {
+        // SAFETY: the caller transfers a fully initialized duplicate and has
+        // selected a lifetime covering every non-owning pointer it copied.
+        unsafe { CBox::from_raw(raw) }.map(|inner| Self {
+            inner,
+            borrow: PhantomData,
+        })
+    }
+
+    /// Borrow the context without write access.
+    #[must_use]
+    pub fn as_ref(&self) -> EvpCipherCtxRef<'_> {
+        self.inner.as_ref()
+    }
+
+    /// Exclusively borrow the context.
+    #[must_use]
+    pub fn as_mut(&mut self) -> EvpCipherCtxMut<'_> {
+        self.inner.as_mut()
+    }
+
+    /// Create another independently owned context with the same dependencies.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<Self> {
+        // SAFETY: the owner keeps the source live and shared for the call.
+        // OpenSSL returns null or a distinct context with one free obligation.
+        let raw = unsafe { ffi::EVP_CIPHER_CTX_dup(self.inner.as_ptr().cast_const()) };
+        // SAFETY: a successful duplicate copies only dependencies already
+        // bounded by this owner's `'a` and transfers its fresh free obligation.
+        unsafe { Self::from_raw(raw) }
+    }
+}
+
+impl<'a> EvpCipherCtxRef<'a> {
+    /// Create an independently owned copy of this cipher context.
+    ///
+    /// Returns `None` when the source is uninitialized, its provider does not
+    /// support context duplication, or allocation fails. The result retains
+    /// this handle's lifetime because OpenSSL copies the externally managed
+    /// application and legacy cipher pointers verbatim.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<BorrowedEvpCipherCtx<'a>> {
+        // SAFETY: the handle carries a live shared borrow for the synchronous
+        // read. A non-null result is a distinct, fully initialized context.
+        let raw = unsafe { ffi::EVP_CIPHER_CTX_dup(self.as_ptr()) };
+        // SAFETY: successful duplication transfers one matching free
+        // obligation, while `'a` covers every copied non-owning dependency.
+        unsafe { BorrowedEvpCipherCtx::from_raw(raw) }
+    }
+}
+
+#[cfg(test)]
+mod cipher_ctx_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn opaque_cipher_context_has_typed_borrow_handles() {
+        assert_owned_cell::<EvpCipherCtx>();
+
+        // SAFETY: a non-null result is a fresh, fully initialized empty cipher
+        // context carrying one `EVP_CIPHER_CTX_free` obligation.
+        let raw = unsafe { ffi::EVP_CIPHER_CTX_new() };
+        // SAFETY: ownership of the fresh result transfers exactly once to the
+        // owner whose registered destructor is `EVP_CIPHER_CTX_free`.
+        let mut context =
+            unsafe { CBox::<EvpCipherCtx>::from_raw(raw) }.expect("EVP_CIPHER_CTX_new");
+
+        assert_eq!(context.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(context.as_mut().as_mut_ptr(), raw);
+        assert!(context.as_ref().try_dup().is_none());
+    }
+
+    #[test]
+    fn opaque_cipher_context_handles_are_pointer_sized() {
+        assert_eq!(
+            size_of::<EvpCipherCtxRef<'static>>(),
+            size_of::<*const ffi::evp_cipher_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<EvpCipherCtxMut<'static>>(),
+            size_of::<*mut ffi::evp_cipher_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<EvpCipherCtx>>(),
+            size_of::<*mut ffi::evp_cipher_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<BorrowedEvpCipherCtx<'static>>(),
+            size_of::<*mut ffi::evp_cipher_ctx_st>()
         );
     }
 }

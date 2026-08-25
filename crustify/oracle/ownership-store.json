@@ -2733,6 +2733,94 @@
    "fields": []
   },
   {
+   "name": "evp_cipher_ctx_st",
+   "defined_in": "crypto/evp/evp_local.h",
+   "_comment_agent": "EVP_CIPHER_CTX is publicly opaque. Findings follow evp_enc.c initialization, copy, reset, application-data, legacy cipher-data, and provider-state paths; this wrap wave exposes no field accessors.",
+   "fields": [
+    {
+     "name": "algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider-specific cipher state returned by cipher->newctx, mutated by provider operations, duplicated by cipher->dupctx, and released through cipher->freectx."
+     }
+    },
+    {
+     "name": "app_data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Application-managed opaque data is stored and returned without dereference, cloning, or release; duplication copies the pointer verbatim."
+     }
+    },
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:fetched_cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The active const cipher aliases the context-owned fetched_cipher reference after initialization; it is null before initialization and after reset."
+     }
+    },
+    {
+     "name": "cipher_data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller- or legacy-cipher-managed opaque data; set_cipher_data returns the old pointer and neither reset nor free disposes it. Duplication copies it verbatim."
+     }
+    },
+    {
+     "name": "fetched_cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "One owned EVP_CIPHER reference established by fetch or up_ref, balanced by EVP_CIPHER_free on replacement and reset; duplication raises its reference."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_cipher_st",
    "defined_in": "include/crypto/evp.h",
    "_comment_agent": "The public EVP_CIPHER surface is opaque, so no field accessor is emitted. Internal inspection shows dynamic records retain prov, own type_name, borrow description and dispatch callbacks from provider-backed algorithm metadata, and use refcnt for dynamic reference counting; legacy static records leave these pointers null.",
@@ -15684,6 +15772,128 @@
      "note": "Returns null on allocation failure or a fresh complete ASN.1 object with one matching free obligation."
     }
    }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_dup",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "lifetime": {
+    "for": "in",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads a live source synchronously; null or an uninitialized source is rejected by EVP_CIPHER_CTX_copy and produces null."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:in"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null or a distinct context with its own free obligation and duplicated provider state. It retains the source lifetime because app_data and cipher_data are copied verbatim and the fetched cipher retains its source library-context dependency. Failure is structural when the source is uninitialized or its provider has no dupctx, so this cannot back infallible Clone."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_free",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a uniquely owned context after resetting its provider state and owned cipher reference; null is explicitly accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_new",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh zero-initialized cipher context with iv_len -1, or null; the caller owns one EVP_CIPHER_CTX_free obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_reset",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": false,
+    "is_disposer": true,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Disposes provider state and the owned fetched cipher and zeroes an initialized context in place; null and never-initialized contexts are accepted."
+     }
+    }
+   ]
   },
   {
    "name": "EVP_CIPHER_fetch",
