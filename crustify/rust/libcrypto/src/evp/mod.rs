@@ -6,6 +6,7 @@ pub mod digest;
 pub mod dsa_ctrl;
 pub mod ec_ctrl;
 pub mod evp;
+pub mod evp_enc;
 pub mod evp_lib;
 pub mod evp_local;
 pub mod evp_pkey;

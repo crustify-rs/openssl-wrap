@@ -1,0 +1,4289 @@
+{
+  "schema_version": 2,
+  "oracle_target": "crypto",
+  "api_headers_only": true,
+  "budgets": {
+    "max_syms": 50,
+    "max_loc": 1000,
+    "max_types": 4,
+    "min_fields": 20
+  },
+  "summary": {
+    "unit_count": 91,
+    "layer_count": 4,
+    "batch_count": 5,
+    "file_count": 2
+  },
+  "plan_items": [
+    {
+      "name": "EVP_CIPHER_CTX_buf_noconst",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_cipher",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_clear_flags",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_copy",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 34,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_ctrl",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 209,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_dup",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_free",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get0_cipher",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get1_cipher",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_algor",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 36,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_algor_params",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 65,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_app_data",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_block_size",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_cipher_data",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_iv_length",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 38,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_key_length",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 27,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_nid",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_num",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_original_iv",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_tag_length",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_get_updated_iv",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_gettable_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_is_encrypting",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_iv",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 11,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_iv_noconst",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 11,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_new",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_original_iv",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 11,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_rand_key",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 18,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_reset",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 19,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_algor_params",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 22,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_app_data",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_cipher_data",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_flags",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_key_length",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 30,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_num",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_padding",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 17,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_set_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 23,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_settable_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_CTX_test_flags",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_asn1_to_param",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 3,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_can_pipeline",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_do_all",
+      "defined_in": "crypto/evp/names.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_do_all_provided",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_do_all_sorted",
+      "defined_in": "crypto/evp/names.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_fetch",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get0_description",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get0_name",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get0_provider",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_provider_st",
+            "defined_in": "crypto/provider_core.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_asn1_iv",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 3,
+      "loc": 19,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_block_size",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_flags",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_iv_length",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_key_length",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_mode",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_nid",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_get_type",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 63,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_gettable_ctx_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_gettable_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_impl_ctx_size",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_is_a",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_names_do_all",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_param_to_asn1",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 3,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_set_asn1_iv",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 3,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CIPHER_settable_ctx_params",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_Cipher",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 34,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherFinal",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherFinal_ex",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherInit",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherInit_SKEY",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_skey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherInit_ex",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "engine_st",
+            "defined_in": "include/openssl/types.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherInit_ex2",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherPipelineDecryptInit",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 25,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherPipelineEncryptInit",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 25,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherPipelineFinal",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 29,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherPipelineUpdate",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 30,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_CipherUpdate",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_DecryptFinal",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_DecryptFinal_ex",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 48,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_DecryptInit",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_DecryptInit_ex",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "engine_st",
+            "defined_in": "include/openssl/types.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_DecryptInit_ex2",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_DecryptUpdate",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 52,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_EncryptFinal",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_EncryptFinal_ex",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 47,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_EncryptInit",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_EncryptInit_ex",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "engine_st",
+            "defined_in": "include/openssl/types.h"
+          },
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_EncryptInit_ex2",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_cipher_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_EncryptUpdate",
+      "defined_in": "crypto/evp/evp_enc.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 52,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_cipher_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_cipher_ctx_st",
+      "defined_in": "crypto/evp/evp_local.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 18,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    }
+  ],
+  "dependency_nodes": [
+    {
+      "name": "X509_algor_st",
+      "defined_in": "include/openssl/x509.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 3,
+      "loc": 2,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "asn1_type_st",
+      "defined_in": "include/openssl/asn1.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 2,
+      "loc": 23,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [
+        {
+          "name": "asn1_string_st",
+          "defined_in": "include/crypto/asn1.h"
+        }
+      ],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "engine_st",
+      "defined_in": "include/openssl/types.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 0,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_cipher_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 31,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_skey_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 4,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_lib_ctx_st",
+      "defined_in": "crypto/context.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 24,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_param_st",
+      "defined_in": "include/openssl/core.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 5,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_provider_st",
+      "defined_in": "crypto/provider_core.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 30,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    }
+  ],
+  "steps": [
+    {
+      "layers": [
+        0
+      ],
+      "unit_count": 1,
+      "batches": [
+        {
+          "kind": "type",
+          "source_file": "crypto/evp/evp_local.h",
+          "items": [
+            {
+              "name": "evp_cipher_ctx_st",
+              "defined_in": "crypto/evp/evp_local.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 18,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        1
+      ],
+      "unit_count": 83,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_CIPHER_CTX_buf_noconst",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_cipher",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_clear_flags",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_copy",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 34,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_ctrl",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 209,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_dup",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_free",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get0_cipher",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get1_cipher",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_app_data",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_block_size",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_cipher_data",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_iv_length",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 38,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_key_length",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 27,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_nid",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_num",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_original_iv",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_tag_length",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_updated_iv",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_gettable_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_is_encrypting",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_iv",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 11,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_iv_noconst",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 11,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_new",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_original_iv",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 11,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_rand_key",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 18,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_reset",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 19,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_app_data",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_cipher_data",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_flags",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_key_length",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 30,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_num",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_padding",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 17,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 23,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_settable_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_test_flags",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_can_pipeline",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_do_all",
+              "defined_in": "crypto/evp/names.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_do_all_provided",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_do_all_sorted",
+              "defined_in": "crypto/evp/names.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_fetch",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get0_description",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get0_name",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get0_provider",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_provider_st",
+                    "defined_in": "crypto/provider_core.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_block_size",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_flags",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_iv_length",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_key_length",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_mode",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_CIPHER_get_nid",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_type",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 63,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_gettable_ctx_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_gettable_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_impl_ctx_size",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_is_a",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_names_do_all",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_settable_ctx_params",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_Cipher",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 34,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherFinal",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherFinal_ex",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherInit",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherInit_SKEY",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_skey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherInit_ex",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "engine_st",
+                    "defined_in": "include/openssl/types.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherInit_ex2",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherPipelineDecryptInit",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 25,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherPipelineEncryptInit",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 25,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherPipelineFinal",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 29,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherPipelineUpdate",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 30,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CipherUpdate",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_DecryptFinal",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_DecryptFinal_ex",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 48,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_DecryptInit",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_DecryptInit_ex",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "engine_st",
+                    "defined_in": "include/openssl/types.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_DecryptInit_ex2",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_DecryptUpdate",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 52,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_EncryptFinal",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_EncryptFinal_ex",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 47,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_EncryptInit",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_EncryptInit_ex",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "engine_st",
+                    "defined_in": "include/openssl/types.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_EncryptInit_ex2",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_cipher_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_EncryptUpdate",
+              "defined_in": "crypto/evp/evp_enc.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 52,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        3
+      ],
+      "unit_count": 4,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_CIPHER_asn1_to_param",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 3,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_type_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_get_asn1_iv",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 3,
+              "loc": 19,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_type_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_param_to_asn1",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 3,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_type_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_set_asn1_iv",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 3,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_type_st",
+                    "defined_in": "include/openssl/asn1.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        4
+      ],
+      "unit_count": 3,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_CIPHER_CTX_get_algor",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 36,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_get_algor_params",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 65,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_CIPHER_CTX_set_algor_params",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 22,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "evp_cipher_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
