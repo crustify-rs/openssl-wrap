@@ -1046,7 +1046,9 @@
                 "include/openssl/evp.h"
               ],
               "members": {
-                "callbacks": [],
+                "callbacks": [
+                  "EVP_PKEY_gen_cb"
+                ],
                 "functions": [
                   "EVP_PKEY_decrypt_old",
                   "EVP_PKEY_encrypt_old"
@@ -1055,6 +1057,7 @@
                 "macros": [],
                 "types": [
                   "evp_cipher_st",
+                  "evp_md_st",
                   "evp_pkey_ctx_st",
                   "evp_pkey_st",
                   "evp_skey_st"
@@ -1067,6 +1070,11 @@
               "members": {
                 "callbacks": [],
                 "functions": [
+                  "EVP_PKEY_CTX_get_algor",
+                  "EVP_PKEY_CTX_get_algor_params",
+                  "EVP_PKEY_CTX_get_group_name",
+                  "EVP_PKEY_CTX_set_algor_params",
+                  "EVP_PKEY_CTX_set_group_name",
                   "EVP_PKEY_Q_keygen"
                 ],
                 "globals": [],
@@ -1257,6 +1265,9 @@
               "members": {
                 "callbacks": [],
                 "functions": [
+                  "EVP_PKEY_CTX_get_cb",
+                  "EVP_PKEY_CTX_get_keygen_info",
+                  "EVP_PKEY_CTX_set_cb",
                   "EVP_PKEY_export",
                   "EVP_PKEY_fromdata",
                   "EVP_PKEY_fromdata_init",
@@ -1298,6 +1309,7 @@
               "members": {
                 "callbacks": [],
                 "functions": [
+                  "EVP_PKEY_CTX_set_signature",
                   "EVP_PKEY_sign",
                   "EVP_PKEY_sign_init",
                   "EVP_PKEY_sign_init_ex",
@@ -1352,6 +1364,140 @@
                 ]
               },
               "tu": null
+            },
+            "src/evp/pmeth_lib.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_CTX_add1_hkdf_info",
+                  "EVP_PKEY_CTX_add1_tls1_prf_seed",
+                  "EVP_PKEY_CTX_ctrl",
+                  "EVP_PKEY_CTX_ctrl_str",
+                  "EVP_PKEY_CTX_ctrl_uint64",
+                  "EVP_PKEY_CTX_get0_libctx",
+                  "EVP_PKEY_CTX_get0_peerkey",
+                  "EVP_PKEY_CTX_get0_pkey",
+                  "EVP_PKEY_CTX_get0_propq",
+                  "EVP_PKEY_CTX_get0_provider",
+                  "EVP_PKEY_CTX_get1_id",
+                  "EVP_PKEY_CTX_get1_id_len",
+                  "EVP_PKEY_CTX_get_app_data",
+                  "EVP_PKEY_CTX_get_data",
+                  "EVP_PKEY_CTX_get_operation",
+                  "EVP_PKEY_CTX_get_params",
+                  "EVP_PKEY_CTX_get_signature_md",
+                  "EVP_PKEY_CTX_gettable_params",
+                  "EVP_PKEY_CTX_hex2ctrl",
+                  "EVP_PKEY_CTX_is_a",
+                  "EVP_PKEY_CTX_md",
+                  "EVP_PKEY_CTX_new",
+                  "EVP_PKEY_CTX_new_from_name",
+                  "EVP_PKEY_CTX_new_from_pkey",
+                  "EVP_PKEY_CTX_new_id",
+                  "EVP_PKEY_CTX_set0_keygen_info",
+                  "EVP_PKEY_CTX_set1_hkdf_key",
+                  "EVP_PKEY_CTX_set1_hkdf_salt",
+                  "EVP_PKEY_CTX_set1_id",
+                  "EVP_PKEY_CTX_set1_pbe_pass",
+                  "EVP_PKEY_CTX_set1_scrypt_salt",
+                  "EVP_PKEY_CTX_set1_tls1_prf_secret",
+                  "EVP_PKEY_CTX_set_app_data",
+                  "EVP_PKEY_CTX_set_data",
+                  "EVP_PKEY_CTX_set_hkdf_md",
+                  "EVP_PKEY_CTX_set_hkdf_mode",
+                  "EVP_PKEY_CTX_set_kem_op",
+                  "EVP_PKEY_CTX_set_mac_key",
+                  "EVP_PKEY_CTX_set_params",
+                  "EVP_PKEY_CTX_set_scrypt_N",
+                  "EVP_PKEY_CTX_set_scrypt_maxmem_bytes",
+                  "EVP_PKEY_CTX_set_scrypt_p",
+                  "EVP_PKEY_CTX_set_scrypt_r",
+                  "EVP_PKEY_CTX_set_signature_md",
+                  "EVP_PKEY_CTX_set_tls1_prf_md",
+                  "EVP_PKEY_CTX_settable_params",
+                  "EVP_PKEY_CTX_str2ctrl"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/pmeth_lib.c"
+            },
+            "src/evp/dh_ctrl.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_CTX_get0_dh_kdf_oid",
+                  "EVP_PKEY_CTX_get0_dh_kdf_ukm",
+                  "EVP_PKEY_CTX_get_dh_kdf_md",
+                  "EVP_PKEY_CTX_get_dh_kdf_outlen",
+                  "EVP_PKEY_CTX_get_dh_kdf_type",
+                  "EVP_PKEY_CTX_set0_dh_kdf_oid",
+                  "EVP_PKEY_CTX_set0_dh_kdf_ukm",
+                  "EVP_PKEY_CTX_set_dh_kdf_md",
+                  "EVP_PKEY_CTX_set_dh_kdf_outlen",
+                  "EVP_PKEY_CTX_set_dh_kdf_type",
+                  "EVP_PKEY_CTX_set_dh_nid",
+                  "EVP_PKEY_CTX_set_dh_pad",
+                  "EVP_PKEY_CTX_set_dh_paramgen_generator",
+                  "EVP_PKEY_CTX_set_dh_paramgen_gindex",
+                  "EVP_PKEY_CTX_set_dh_paramgen_prime_len",
+                  "EVP_PKEY_CTX_set_dh_paramgen_seed",
+                  "EVP_PKEY_CTX_set_dh_paramgen_subprime_len",
+                  "EVP_PKEY_CTX_set_dh_paramgen_type",
+                  "EVP_PKEY_CTX_set_dh_rfc5114",
+                  "EVP_PKEY_CTX_set_dhx_rfc5114"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/dh_ctrl.c"
+            },
+            "src/evp/ec_ctrl.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_CTX_get0_ecdh_kdf_ukm",
+                  "EVP_PKEY_CTX_get_ecdh_cofactor_mode",
+                  "EVP_PKEY_CTX_get_ecdh_kdf_md",
+                  "EVP_PKEY_CTX_get_ecdh_kdf_outlen",
+                  "EVP_PKEY_CTX_get_ecdh_kdf_type",
+                  "EVP_PKEY_CTX_set0_ecdh_kdf_ukm",
+                  "EVP_PKEY_CTX_set_ec_param_enc",
+                  "EVP_PKEY_CTX_set_ec_paramgen_curve_nid",
+                  "EVP_PKEY_CTX_set_ecdh_cofactor_mode",
+                  "EVP_PKEY_CTX_set_ecdh_kdf_md",
+                  "EVP_PKEY_CTX_set_ecdh_kdf_outlen",
+                  "EVP_PKEY_CTX_set_ecdh_kdf_type"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/ec_ctrl.c"
+            },
+            "src/evp/dsa_ctrl.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_CTX_set_dsa_paramgen_bits",
+                  "EVP_PKEY_CTX_set_dsa_paramgen_gindex",
+                  "EVP_PKEY_CTX_set_dsa_paramgen_md",
+                  "EVP_PKEY_CTX_set_dsa_paramgen_md_props",
+                  "EVP_PKEY_CTX_set_dsa_paramgen_q_bits",
+                  "EVP_PKEY_CTX_set_dsa_paramgen_seed",
+                  "EVP_PKEY_CTX_set_dsa_paramgen_type"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/dsa_ctrl.c"
             }
           },
           "rust_path": "src/evp"
@@ -2266,6 +2412,41 @@
                 ]
               },
               "tu": null
+            },
+            "src/keys/rsa_lib.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_PKEY_CTX_get0_rsa_oaep_label",
+                  "EVP_PKEY_CTX_get_rsa_mgf1_md",
+                  "EVP_PKEY_CTX_get_rsa_mgf1_md_name",
+                  "EVP_PKEY_CTX_get_rsa_oaep_md",
+                  "EVP_PKEY_CTX_get_rsa_oaep_md_name",
+                  "EVP_PKEY_CTX_get_rsa_padding",
+                  "EVP_PKEY_CTX_get_rsa_pss_saltlen",
+                  "EVP_PKEY_CTX_set0_rsa_oaep_label",
+                  "EVP_PKEY_CTX_set1_rsa_keygen_pubexp",
+                  "EVP_PKEY_CTX_set_rsa_keygen_bits",
+                  "EVP_PKEY_CTX_set_rsa_keygen_primes",
+                  "EVP_PKEY_CTX_set_rsa_keygen_pubexp",
+                  "EVP_PKEY_CTX_set_rsa_mgf1_md",
+                  "EVP_PKEY_CTX_set_rsa_mgf1_md_name",
+                  "EVP_PKEY_CTX_set_rsa_oaep_md",
+                  "EVP_PKEY_CTX_set_rsa_oaep_md_name",
+                  "EVP_PKEY_CTX_set_rsa_padding",
+                  "EVP_PKEY_CTX_set_rsa_pss_keygen_md",
+                  "EVP_PKEY_CTX_set_rsa_pss_keygen_md_name",
+                  "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md",
+                  "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name",
+                  "EVP_PKEY_CTX_set_rsa_pss_keygen_saltlen",
+                  "EVP_PKEY_CTX_set_rsa_pss_saltlen"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/rsa/rsa_lib.c"
             }
           }
         },

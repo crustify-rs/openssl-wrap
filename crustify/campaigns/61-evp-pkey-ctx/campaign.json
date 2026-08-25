@@ -1,0 +1,5476 @@
+{
+  "schema_version": 2,
+  "oracle_target": "crypto",
+  "api_headers_only": true,
+  "budgets": {
+    "max_syms": 50,
+    "max_loc": 1000,
+    "max_types": 2,
+    "min_fields": 10
+  },
+  "summary": {
+    "unit_count": 120,
+    "layer_count": 4,
+    "batch_count": 6,
+    "file_count": 2
+  },
+  "plan_items": [
+    {
+      "name": "EVP_PKEY_CTX_add1_hkdf_info",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_add1_tls1_prf_seed",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_ctrl",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 25,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_ctrl_str",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 22,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_ctrl_uint64",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_dh_kdf_oid",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_dh_kdf_ukm",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 25,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_ecdh_kdf_ukm",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 32,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_libctx",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_peerkey",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_pkey",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_propq",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_provider",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_provider_st",
+            "defined_in": "crypto/provider_core.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get0_rsa_oaep_label",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 27,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get1_id",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get1_id_len",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_algor",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 36,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_algor_params",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 56,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_app_data",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_cb",
+      "defined_in": "crypto/evp/pmeth_gn.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": [
+          {
+            "name": "EVP_PKEY_gen_cb",
+            "defined_in": "include/openssl/evp.h"
+          }
+        ]
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_data",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_dh_kdf_md",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_dh_kdf_outlen",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 23,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_dh_kdf_type",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_ecdh_cofactor_mode",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 35,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_ecdh_kdf_md",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_ecdh_kdf_outlen",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 32,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_ecdh_kdf_type",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_group_name",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_keygen_info",
+      "defined_in": "crypto/evp/pmeth_gn.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_operation",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_params",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 40,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_rsa_mgf1_md",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_rsa_mgf1_md_name",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_rsa_oaep_md",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_rsa_oaep_md_name",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_rsa_padding",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_rsa_pss_saltlen",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_get_signature_md",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 32,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_gettable_params",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 42,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_hex2ctrl",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_is_a",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_md",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_new",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "engine_st",
+            "defined_in": "include/openssl/types.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_new_from_name",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_new_from_pkey",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_new_id",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "engine_st",
+            "defined_in": "include/openssl/types.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set0_dh_kdf_oid",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set0_dh_kdf_ukm",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 27,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set0_ecdh_kdf_ukm",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 30,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set0_keygen_info",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set0_rsa_oaep_label",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 37,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set1_hkdf_key",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set1_hkdf_salt",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set1_id",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set1_pbe_pass",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set1_rsa_keygen_pubexp",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 18,
+      "deps": {
+        "types": [
+          {
+            "name": "bignum_st",
+            "defined_in": "crypto/bn/bn_local.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set1_scrypt_salt",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set1_tls1_prf_secret",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_algor_params",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 4,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "X509_algor_st",
+            "defined_in": "include/openssl/x509.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_app_data",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_cb",
+      "defined_in": "crypto/evp/pmeth_gn.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": [
+          {
+            "name": "EVP_PKEY_gen_cb",
+            "defined_in": "include/openssl/evp.h"
+          }
+        ]
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_data",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_kdf_md",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_kdf_outlen",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 27,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_kdf_type",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_nid",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_pad",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 15,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_paramgen_generator",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_paramgen_gindex",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_paramgen_prime_len",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_paramgen_seed",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_paramgen_subprime_len",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_paramgen_type",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dh_rfc5114",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dhx_rfc5114",
+      "defined_in": "crypto/evp/dh_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dsa_paramgen_bits",
+      "defined_in": "crypto/evp/dsa_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dsa_paramgen_gindex",
+      "defined_in": "crypto/evp/dsa_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dsa_paramgen_md",
+      "defined_in": "crypto/evp/dsa_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dsa_paramgen_md_props",
+      "defined_in": "crypto/evp/dsa_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 16,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dsa_paramgen_q_bits",
+      "defined_in": "crypto/evp/dsa_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dsa_paramgen_seed",
+      "defined_in": "crypto/evp/dsa_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_dsa_paramgen_type",
+      "defined_in": "crypto/evp/dsa_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 13,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_ec_param_enc",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_ec_paramgen_curve_nid",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_ecdh_cofactor_mode",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 28,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_ecdh_kdf_md",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_ecdh_kdf_outlen",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 27,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_ecdh_kdf_type",
+      "defined_in": "crypto/evp/ec_ctrl.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_group_name",
+      "defined_in": "crypto/evp/evp_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 16,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_hkdf_md",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_hkdf_mode",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 25,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_kem_op",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 16,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_mac_key",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_params",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 38,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_keygen_bits",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_keygen_primes",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_keygen_pubexp",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 2,
+      "loc": 16,
+      "deps": {
+        "types": [
+          {
+            "name": "bignum_st",
+            "defined_in": "crypto/bn/bn_local.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_mgf1_md",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_mgf1_md_name",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_oaep_md",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_oaep_md_name",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_padding",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_md",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_md_name",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 4,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_saltlen",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 18,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_rsa_pss_saltlen",
+      "defined_in": "crypto/rsa/rsa_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 14,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_scrypt_N",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_scrypt_maxmem_bytes",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_scrypt_p",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_scrypt_r",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_signature",
+      "defined_in": "crypto/evp/signature.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 18,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_signature_md",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_set_tls1_prf_md",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_settable_params",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 42,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_CTX_str2ctrl",
+      "defined_in": "crypto/evp/pmeth_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_PKEY_gen_cb",
+      "defined_in": "include/openssl/evp.h",
+      "kind": "callback",
+      "source_kind": "callback",
+      "layer": 1,
+      "loc": 0,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_ctx_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_md_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 28,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    }
+  ],
+  "dependency_nodes": [
+    {
+      "name": "X509_algor_st",
+      "defined_in": "include/openssl/x509.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 3,
+      "loc": 2,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          },
+          {
+            "name": "asn1_object_st",
+            "defined_in": "include/crypto/asn1.h"
+          },
+          {
+            "name": "asn1_type_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "asn1_object_st",
+      "defined_in": "include/crypto/asn1.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "bignum_st",
+      "defined_in": "crypto/bn/bn_local.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "ASN1_VALUE_st",
+            "defined_in": "include/openssl/asn1.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "engine_st",
+      "defined_in": "include/openssl/types.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 0,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_pkey_ctx_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 34,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_pkey_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 21,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_lib_ctx_st",
+      "defined_in": "crypto/context.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 24,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_param_st",
+      "defined_in": "include/openssl/core.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 5,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_provider_st",
+      "defined_in": "crypto/provider_core.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 30,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    }
+  ],
+  "steps": [
+    {
+      "layers": [
+        0
+      ],
+      "unit_count": 1,
+      "batches": [
+        {
+          "kind": "type",
+          "source_file": "include/crypto/evp.h",
+          "items": [
+            {
+              "name": "evp_md_st",
+              "defined_in": "include/crypto/evp.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 28,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        1
+      ],
+      "unit_count": 110,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_PKEY_CTX_add1_hkdf_info",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_add1_tls1_prf_seed",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_ctrl",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 25,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_ctrl_str",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 22,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_ctrl_uint64",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_dh_kdf_ukm",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 25,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_ecdh_kdf_ukm",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 32,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_libctx",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_peerkey",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_pkey",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_propq",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_provider",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_provider_st",
+                    "defined_in": "crypto/provider_core.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get0_rsa_oaep_label",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 27,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get1_id",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get1_id_len",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_app_data",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_data",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_dh_kdf_md",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_dh_kdf_outlen",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 23,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_dh_kdf_type",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_ecdh_cofactor_mode",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 35,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_ecdh_kdf_md",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_ecdh_kdf_outlen",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 32,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_ecdh_kdf_type",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_group_name",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_keygen_info",
+              "defined_in": "crypto/evp/pmeth_gn.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_operation",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_params",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 40,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_rsa_mgf1_md",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_rsa_mgf1_md_name",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_rsa_oaep_md",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_rsa_oaep_md_name",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_rsa_padding",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_rsa_pss_saltlen",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_signature_md",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 32,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_gettable_params",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 42,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_hex2ctrl",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_is_a",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_md",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_new",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "engine_st",
+                    "defined_in": "include/openssl/types.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_new_from_name",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_new_from_pkey",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_new_id",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "engine_st",
+                    "defined_in": "include/openssl/types.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set0_dh_kdf_ukm",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 27,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set0_ecdh_kdf_ukm",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 30,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set0_keygen_info",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set0_rsa_oaep_label",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 37,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set1_hkdf_key",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set1_hkdf_salt",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set1_id",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_PKEY_CTX_set1_pbe_pass",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set1_scrypt_salt",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set1_tls1_prf_secret",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_app_data",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_data",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_kdf_md",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_kdf_outlen",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 27,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_kdf_type",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_nid",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_pad",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 15,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_paramgen_generator",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_paramgen_gindex",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_paramgen_prime_len",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_paramgen_seed",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_paramgen_subprime_len",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_paramgen_type",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dh_rfc5114",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dhx_rfc5114",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dsa_paramgen_bits",
+              "defined_in": "crypto/evp/dsa_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dsa_paramgen_gindex",
+              "defined_in": "crypto/evp/dsa_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dsa_paramgen_md",
+              "defined_in": "crypto/evp/dsa_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dsa_paramgen_md_props",
+              "defined_in": "crypto/evp/dsa_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 16,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dsa_paramgen_q_bits",
+              "defined_in": "crypto/evp/dsa_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dsa_paramgen_seed",
+              "defined_in": "crypto/evp/dsa_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_dsa_paramgen_type",
+              "defined_in": "crypto/evp/dsa_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 13,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_ec_param_enc",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_ec_paramgen_curve_nid",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_ecdh_cofactor_mode",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 28,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_ecdh_kdf_md",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_ecdh_kdf_outlen",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 27,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_ecdh_kdf_type",
+              "defined_in": "crypto/evp/ec_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_group_name",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 16,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_hkdf_md",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_hkdf_mode",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 25,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_kem_op",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 16,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_mac_key",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_params",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 38,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_keygen_bits",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_keygen_primes",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_mgf1_md",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_mgf1_md_name",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_oaep_md",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_oaep_md_name",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_padding",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_md",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_md_name",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_saltlen",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 18,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_pss_saltlen",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 14,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_PKEY_CTX_set_scrypt_N",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_scrypt_maxmem_bytes",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_scrypt_p",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_scrypt_r",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_signature",
+              "defined_in": "crypto/evp/signature.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 18,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_signature_md",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_tls1_prf_md",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_settable_params",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 42,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_str2ctrl",
+              "defined_in": "crypto/evp/pmeth_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_gen_cb",
+              "defined_in": "include/openssl/evp.h",
+              "kind": "callback",
+              "source_kind": "callback",
+              "layer": 1,
+              "loc": 0,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        2
+      ],
+      "unit_count": 6,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_PKEY_CTX_get0_dh_kdf_oid",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_cb",
+              "defined_in": "crypto/evp/pmeth_gn.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": [
+                  {
+                    "name": "EVP_PKEY_gen_cb",
+                    "defined_in": "include/openssl/evp.h"
+                  }
+                ]
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set0_dh_kdf_oid",
+              "defined_in": "crypto/evp/dh_ctrl.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 4,
+              "deps": {
+                "types": [
+                  {
+                    "name": "asn1_object_st",
+                    "defined_in": "include/crypto/asn1.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set1_rsa_keygen_pubexp",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 18,
+              "deps": {
+                "types": [
+                  {
+                    "name": "bignum_st",
+                    "defined_in": "crypto/bn/bn_local.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_cb",
+              "defined_in": "crypto/evp/pmeth_gn.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": [
+                  {
+                    "name": "EVP_PKEY_gen_cb",
+                    "defined_in": "include/openssl/evp.h"
+                  }
+                ]
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_rsa_keygen_pubexp",
+              "defined_in": "crypto/rsa/rsa_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 2,
+              "loc": 16,
+              "deps": {
+                "types": [
+                  {
+                    "name": "bignum_st",
+                    "defined_in": "crypto/bn/bn_local.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        4
+      ],
+      "unit_count": 3,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_PKEY_CTX_get_algor",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 36,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_get_algor_params",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 56,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_PKEY_CTX_set_algor_params",
+              "defined_in": "crypto/evp/evp_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 4,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "X509_algor_st",
+                    "defined_in": "include/openssl/x509.h"
+                  },
+                  {
+                    "name": "evp_pkey_ctx_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
