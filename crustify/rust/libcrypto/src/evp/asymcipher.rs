@@ -100,19 +100,12 @@ pub fn EVP_PKEY_encrypt_init_ex(
 
 #[cfg(test)]
 mod tests {
-    use ffibox::CBox;
-
     use super::*;
-    use crate::evp::evp::EvpPkeyCtx;
+    use crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
 
     #[test]
     fn rsa_context_accepts_safe_encrypt_initialization() {
-        // SAFETY: default-context construction returns a fresh unique context.
-        let raw = unsafe {
-            ffi::EVP_PKEY_CTX_new_from_name(ptr::null_mut(), c"RSA".as_ptr(), ptr::null())
-        };
-        // SAFETY: the fresh pointer transfers its sole free obligation.
-        let mut ctx = unsafe { CBox::<EvpPkeyCtx>::from_raw(raw) }.expect("RSA context");
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
         assert!(EVP_PKEY_encrypt_init(&mut ctx.as_mut()) <= 0);
     }
 }

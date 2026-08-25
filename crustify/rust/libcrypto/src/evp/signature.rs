@@ -347,21 +347,25 @@ pub fn EVP_PKEY_verify_recover_init_ex2(
     }
 }
 
+/// Wraps: EVP_PKEY_CTX_set_signature
+///
+/// Copies a signature value into the active provider operation parameters.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_CTX_set_signature(ctx: &mut EvpPkeyCtxMut<'_>, signature: &[u8]) -> i32 {
+    // SAFETY: the exclusive context is live and the readable signature run
+    // remains valid for the synchronous parameter-setting operation.
+    unsafe {
+        ffi::EVP_PKEY_CTX_set_signature(ctx.as_mut_ptr(), signature.as_ptr(), signature.len())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use ffibox::CBox;
-
     use super::*;
-    use crate::evp::evp::EvpPkeyCtx;
+    use crate::evp::pmeth_lib::{BorrowedEvpPkeyCtx, EVP_PKEY_CTX_new_from_name};
 
-    fn context() -> CBox<EvpPkeyCtx> {
-        // SAFETY: null selects the default library context, both strings obey
-        // their C contracts, and a non-null result is a fresh owned context.
-        let raw = unsafe {
-            ffi::EVP_PKEY_CTX_new_from_name(ptr::null_mut(), c"RSA".as_ptr(), ptr::null())
-        };
-        // SAFETY: the fresh non-null result transfers one context-free duty.
-        unsafe { CBox::from_raw(raw) }.expect("EVP_PKEY_CTX_new_from_name")
+    fn context() -> BorrowedEvpPkeyCtx<'static> {
+        EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("EVP_PKEY_CTX_new_from_name")
     }
 
     #[test]
@@ -392,17 +396,5 @@ mod tests {
             -1,
         );
         assert!(EVP_PKEY_verify_recover(&mut context.as_mut(), &mut output, b"signature").is_err());
-    }
-}
-
-/// Wraps: EVP_PKEY_CTX_set_signature
-///
-/// Copies a signature value into the active provider operation parameters.
-#[allow(non_snake_case)]
-pub fn EVP_PKEY_CTX_set_signature(ctx: &mut EvpPkeyCtxMut<'_>, signature: &[u8]) -> i32 {
-    // SAFETY: the exclusive context is live and the readable signature run
-    // remains valid for the synchronous parameter-setting operation.
-    unsafe {
-        ffi::EVP_PKEY_CTX_set_signature(ctx.as_mut_ptr(), signature.as_ptr(), signature.len())
     }
 }

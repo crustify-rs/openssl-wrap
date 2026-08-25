@@ -9,7 +9,7 @@ use ffibox::{CBox, CLenDropped, CSlice, CVec};
 use libcrypto_sys as ffi;
 
 use crate::core::openssl_core::{OsslCallback, OsslParam, OsslParamArray, terminated_param_len};
-use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyRef};
+use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyCtxRef, EvpPkeyRef};
 use crate::evp::p_lib::BorrowedEvpPkey;
 
 fn generate(
@@ -200,6 +200,30 @@ where
     // SAFETY: the key is live, and the callback/function state pair is valid
     // and uniquely borrowed for the complete synchronous export operation.
     unsafe { ffi::EVP_PKEY_export(pkey.as_ptr(), selection, function, argument) }
+}
+
+/// Wraps: EVP_PKEY_CTX_get_keygen_info
+///
+/// `None` returns the number of key-generation information entries. An index
+/// outside that run returns zero without invoking C; this also closes the C
+/// implementation's `index == count` out-of-bounds edge.
+#[must_use]
+pub fn EVP_PKEY_CTX_get_keygen_info(ctx: EvpPkeyCtxRef<'_>, index: Option<usize>) -> i32 {
+    // SAFETY: `-1` is the documented count query and the function only reads
+    // the live context's stored information run.
+    let count = unsafe { ffi::EVP_PKEY_CTX_get_keygen_info(ctx.as_ptr().cast_mut(), -1) };
+    let Some(index) = index else {
+        return count;
+    };
+    let Ok(index) = i32::try_from(index) else {
+        return 0;
+    };
+    if index < 0 || index >= count {
+        return 0;
+    }
+    // SAFETY: the preceding query proved `0 <= index < count`, avoiding the C
+    // implementation's otherwise unchecked `index == count` access.
+    unsafe { ffi::EVP_PKEY_CTX_get_keygen_info(ctx.as_ptr().cast_mut(), index) }
 }
 
 #[cfg(test)]

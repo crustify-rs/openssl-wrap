@@ -8,6 +8,7 @@ use core::ptr;
 use libcrypto_sys as ffi;
 
 use crate::bio::context::OsslLibCtxRef;
+use crate::evp::evp::EvpPkeyCtxMut;
 use crate::evp::p_lib::BorrowedEvpPkey;
 
 /// The documented, type-safe argument shapes accepted by `EVP_PKEY_Q_keygen`.
@@ -96,6 +97,16 @@ pub fn EVP_PKEY_Q_keygen<'a>(
     // SAFETY: a non-null result transfers one `EVP_PKEY_free` obligation and
     // remains conservatively tied to the selected library context.
     unsafe { BorrowedEvpPkey::from_raw(raw) }
+}
+
+/// Wraps: EVP_PKEY_CTX_get_group_name
+/// Writes the NUL-terminated group name into `output` when successful.
+pub fn EVP_PKEY_CTX_get_group_name(ctx: &mut EvpPkeyCtxMut<'_>, output: &mut [u8]) -> i32 {
+    // SAFETY: the context is exclusively borrowed and `output` supplies its
+    // exact initialized, writable capacity for the synchronous query.
+    unsafe {
+        ffi::EVP_PKEY_CTX_get_group_name(ctx.as_mut_ptr(), output.as_mut_ptr().cast(), output.len())
+    }
 }
 
 #[cfg(test)]

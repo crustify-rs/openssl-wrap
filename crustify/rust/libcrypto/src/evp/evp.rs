@@ -203,31 +203,17 @@ impl_cloned!(
 
 #[cfg(test)]
 mod pkey_ctx_tests {
-    use super::*;
-
     #[test]
     fn owner_borrows_and_clones_independently() {
-        // SAFETY: null selects OpenSSL's default library context, `RSA` is a
-        // live NUL-terminated name, and null selects the default properties.
-        // A non-null result is a fully initialized uniquely owned context.
-        let raw = unsafe {
-            ffi::EVP_PKEY_CTX_new_from_name(
-                core::ptr::null_mut(),
-                c"RSA".as_ptr(),
-                core::ptr::null(),
-            )
-        };
-        // SAFETY: ownership of the fresh result transfers once to this owner,
-        // whose registered destructor is `EVP_PKEY_CTX_free`.
-        let mut context =
-            unsafe { CBox::<EvpPkeyCtx>::from_raw(raw) }.expect("EVP_PKEY_CTX_new_from_name");
+        let mut context = crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name(None, c"RSA", None)
+            .expect("EVP_PKEY_CTX_new_from_name");
+        let raw = context.as_ref().as_ptr();
 
-        assert_eq!(context.as_ref().as_ptr(), raw.cast_const());
-        assert_eq!(context.as_mut().as_mut_ptr(), raw);
+        assert_eq!(context.as_ref().as_ptr(), raw);
+        assert_eq!(context.as_mut().as_mut_ptr(), raw.cast_mut());
 
         let duplicate = context.clone();
-        assert_ne!(duplicate.as_ptr(), raw);
-        assert_eq!(duplicate.as_ref().as_ptr(), duplicate.as_ptr().cast_const());
+        assert_ne!(duplicate.as_ref().as_ptr(), raw);
     }
 }
 
