@@ -15726,6 +15726,130 @@
    ]
   },
   {
+   "name": "EVP_KEYMGMT_do_all_provided",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque caller state forwarded to the callback and never retained."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback function, invoked only during the synchronous traversal."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed library context; NULL selects the process default. Fetch traversal may update its locked method stores."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KEYMGMT_fetch",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "algorithm",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algorithm"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated algorithm query, read only during the call."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed context; NULL selects the process default. Fetch may mutate locked caches through it."
+     }
+    },
+    {
+     "name": "properties",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:properties"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query, read only during the call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "NULL on failure; non-NULL transfers one EVP_KEYMGMT_free obligation. The reference may name a shared cached method."
+    }
+   }
+  },
+  {
    "name": "EVP_KEYMGMT_free",
    "defined_in": "crypto/evp/keymgmt_meth.c",
    "lifetime": {
@@ -15751,6 +15875,370 @@
      }
     }
    ]
+  },
+  {
+   "name": "EVP_KEYMGMT_gen_gettable_params",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed for the call; it retains the provider and dispatch table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:keymgmt"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated OSSL_PARAM descriptor array, retained through the method; NULL when unsupported."
+    }
+   }
+  },
+  {
+   "name": "EVP_KEYMGMT_gen_settable_params",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed for the call; it retains the provider and dispatch table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:keymgmt"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated OSSL_PARAM descriptor array, retained through the method; NULL when unsupported."
+    }
+   }
+  },
+  {
+   "name": "EVP_KEYMGMT_get0_description",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed without mutation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:keymgmt"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional provider-owned display description retained by the method. Documentation permits NULL."
+    }
+   }
+  },
+  {
+   "name": "EVP_KEYMGMT_get0_name",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed without mutation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:keymgmt"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Method-owned first algorithm name retained by the method. Documentation permits NULL."
+    }
+   }
+  },
+  {
+   "name": "EVP_KEYMGMT_get0_provider",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed without mutation."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:keymgmt"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed provider retained by the method; NULL for a legacy/no-provider method."
+    }
+   }
+  },
+  {
+   "name": "EVP_KEYMGMT_gettable_params",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed for the call; it retains the provider and dispatch table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:keymgmt"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated OSSL_PARAM descriptor array, retained through the method; NULL when unsupported."
+    }
+   }
+  },
+  {
+   "name": "EVP_KEYMGMT_is_a",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed method; the implementation explicitly accepts NULL and returns false."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required NUL-terminated candidate algorithm name, read only during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KEYMGMT_names_do_all",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque caller state forwarded to the callback and never retained."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback function invoked only during enumeration."
+     }
+    },
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed for synchronous name enumeration."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KEYMGMT_settable_params",
+   "defined_in": "crypto/evp/keymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "keymgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keymgmt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live method borrowed for the call; it retains the provider and dispatch table."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:keymgmt"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated OSSL_PARAM descriptor array, retained through the method; NULL when unsupported."
+    }
+   }
   },
   {
    "name": "EVP_KEYMGMT_up_ref",

@@ -30,7 +30,10 @@ impl_dropped!(EvpKeymgmt, ffi::evp_keymgmt_st, ffi::EVP_KEYMGMT_free);
 // Do not register `EVP_KEYMGMT_up_ref` as `CCloned`: cloning a CBox would give
 // two owners exclusive `as_mut` access to the same reference-counted method.
 /// One owned, shared-only reference to an `EVP_KEYMGMT` method.
-pub type SharedEvpKeymgmt = crate::refcount::SharedRef<'static, EvpKeymgmt>;
+///
+/// The lifetime retains the library context from which a method was fetched.
+/// A method fetched from the process-wide default context may use `'static`.
+pub type SharedEvpKeymgmt<'a> = crate::refcount::SharedRef<'a, EvpKeymgmt>;
 
 #[cfg(test)]
 mod tests {
