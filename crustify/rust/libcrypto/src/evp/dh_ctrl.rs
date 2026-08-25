@@ -8,9 +8,10 @@ use core::ptr::NonNull;
 
 #[cfg(feature = "deprecated-3-0")]
 use ffibox::CSlice;
-use ffibox::CVec;
+use ffibox::{CBox, CVec};
 use libcrypto_sys as ffi;
 
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef};
 use crate::evp::evp::{EvpMdRef, EvpPkeyCtxMut};
 use crate::evp::pmeth_lib::{Set0BufferError, set0_buffer};
 use crate::mem::CryptoFree;
@@ -160,6 +161,7 @@ pub fn EVP_PKEY_CTX_set_dhx_rfc5114(ctx: &mut EvpPkeyCtxMut<'_>, group: i32) -> 
 mod tests {
     use super::*;
     use crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
+    use crate::objects::obj_dat::OBJ_txt2obj;
 
     #[test]
     fn getters_preserve_unsupported_statuses() {
@@ -184,5 +186,84 @@ mod tests {
             EVP_PKEY_CTX_set_dh_paramgen_seed(&mut ctx.as_mut(), b"seed"),
             -2
         );
+    }
+
+    #[test]
+    fn oid_control_returns_failed_set0_ownership() {
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
+        let oid = OBJ_txt2obj(c"1.2.840.113549.1.1.1", true).expect("RSA OID");
+        let raw = oid.as_ptr();
+
+        let Err(error) = EVP_PKEY_CTX_set0_dh_kdf_oid(&mut ctx.as_mut(), oid) else {
+            panic!("a DHX control must not succeed on an RSA context");
+        };
+        assert!(error.status() <= 0);
+        let oid = error.into_oid();
+        assert_eq!(oid.as_ptr(), raw);
+
+        let mut handle = ctx.as_mut();
+        let (status, borrowed) = EVP_PKEY_CTX_get0_dh_kdf_oid(&mut handle);
+        assert!(status <= 0);
+        assert!(borrowed.is_none());
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_get0_dh_kdf_oid
+///
+/// Returns the original OpenSSL status and, on success, an object identifier
+/// borrowed from the operation context.
+#[must_use]
+pub fn EVP_PKEY_CTX_get0_dh_kdf_oid<'a>(
+    ctx: &'a mut EvpPkeyCtxMut<'_>,
+) -> (i32, Option<Asn1ObjectRef<'a>>) {
+    let mut oid = ptr::null_mut();
+    // SAFETY: the context is exclusively borrowed and `oid` is a writable
+    // pointer out-slot for the library-retained object identifier.
+    let status = unsafe { ffi::EVP_PKEY_CTX_get0_dh_kdf_oid(ctx.as_mut_ptr(), &mut oid) };
+    // SAFETY: a non-null successful output is retained by the exclusively
+    // borrowed context for at least the lifetime attached to this handle.
+    let oid = unsafe { Asn1ObjectRef::from_ptr(oid) };
+    (status, (status > 0).then_some(oid).flatten())
+}
+
+/// Failure from [`EVP_PKEY_CTX_set0_dh_kdf_oid`] before ownership transferred.
+#[must_use]
+pub struct Set0DhKdfOidError {
+    status: i32,
+    oid: CBox<Asn1Object>,
+}
+
+impl Set0DhKdfOidError {
+    /// Original OpenSSL status.
+    #[must_use]
+    pub fn status(&self) -> i32 {
+        self.status
+    }
+
+    /// Recover the object identifier that OpenSSL did not consume.
+    pub fn into_oid(self) -> CBox<Asn1Object> {
+        self.oid
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_set0_dh_kdf_oid
+///
+/// Transfers `oid` to OpenSSL on success and returns it to the caller on
+/// failure.
+pub fn EVP_PKEY_CTX_set0_dh_kdf_oid(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    oid: CBox<Asn1Object>,
+) -> Result<(), Set0DhKdfOidError> {
+    let raw = oid.into_raw();
+    // SAFETY: `raw` transfers one complete ASN1_OBJECT owner to the set0 call;
+    // the exclusive context permits replacement of its KDF object identifier.
+    let status = unsafe { ffi::EVP_PKEY_CTX_set0_dh_kdf_oid(ctx.as_mut_ptr(), raw) };
+    if status > 0 {
+        Ok(())
+    } else {
+        // SAFETY: set0 did not consume the object on failure, so the exact
+        // surrendered owner can be reconstructed with its registered releaser.
+        let oid = unsafe { CBox::from_raw(raw) }.expect("CBox always has a non-null pointer");
+        Err(Set0DhKdfOidError { status, oid })
     }
 }

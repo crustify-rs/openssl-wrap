@@ -5,9 +5,14 @@
 use core::ffi::CStr;
 use core::ptr::{self, NonNull};
 
+#[cfg(feature = "deprecated-3-0")]
+use ffibox::CBox;
 use ffibox::{CSlice, CVec};
 use libcrypto_sys as ffi;
 
+#[cfg(feature = "deprecated-3-0")]
+use crate::bio::bn_bn_local::Bignum;
+use crate::bio::bn_bn_local::BignumRef;
 use crate::evp::evp::{EvpMdRef, EvpPkeyCtxMut};
 use crate::evp::pmeth_lib::{Set0BufferError, set0_buffer};
 use crate::mem::CryptoFree;
@@ -241,7 +246,23 @@ pub fn EVP_PKEY_CTX_set_rsa_pss_saltlen(ctx: &mut EvpPkeyCtxMut<'_>, salt_len: i
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bio::bn_bn_local::Bignum;
     use crate::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
+    use ffibox::CBox;
+
+    fn public_exponent() -> CBox<Bignum> {
+        // SAFETY: OpenSSL returns null or one fresh initialized BIGNUM.
+        let raw = unsafe { ffi::BN_new() };
+        // SAFETY: ownership of the fresh result transfers to the registered
+        // BIGNUM owner and its matching BN_free destructor.
+        let mut exponent = unsafe { CBox::<Bignum>::from_raw(raw) }.expect("BIGNUM");
+        // SAFETY: the exclusive handle supplies a live writable BIGNUM.
+        assert_eq!(
+            unsafe { ffi::BN_set_word(exponent.as_mut().as_mut_ptr(), 65_537) },
+            1
+        );
+        exponent
+    }
 
     #[test]
     fn rsa_outputs_are_initialized_only_on_success() {
@@ -265,5 +286,101 @@ mod tests {
             EVP_PKEY_CTX_set_rsa_pss_keygen_md_name(&mut ctx.as_mut(), c"SHA256", None),
             1
         );
+    }
+
+    #[test]
+    fn set1_public_exponent_copies_a_borrowed_bignum() {
+        use crate::evp::pmeth_gn::EVP_PKEY_keygen_init;
+
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA", None).expect("RSA context");
+        assert_eq!(EVP_PKEY_keygen_init(&mut ctx.as_mut()), 1);
+        let exponent = public_exponent();
+        let raw = exponent.as_ptr();
+
+        assert_eq!(
+            EVP_PKEY_CTX_set1_rsa_keygen_pubexp(&mut ctx.as_mut(), exponent.as_ref()),
+            1
+        );
+        assert_eq!(exponent.as_ptr(), raw);
+    }
+
+    #[cfg(feature = "deprecated-3-0")]
+    #[test]
+    fn deprecated_set0_returns_owner_on_failure() {
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
+        let exponent = public_exponent();
+        let raw = exponent.as_ptr();
+
+        let Err(error) = EVP_PKEY_CTX_set_rsa_keygen_pubexp(&mut ctx.as_mut(), exponent) else {
+            panic!("an RSA control must not succeed on a DH context");
+        };
+        assert!(error.status() <= 0);
+        assert_eq!(error.into_public_exponent().as_ptr(), raw);
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_set1_rsa_keygen_pubexp
+///
+/// OpenSSL copies the public exponent before this function returns.
+pub fn EVP_PKEY_CTX_set1_rsa_keygen_pubexp(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    public_exponent: BignumRef<'_>,
+) -> i32 {
+    // SAFETY: the context is exclusive and the live exponent is only read
+    // while OpenSSL duplicates it or copies it into provider parameters.
+    unsafe {
+        ffi::EVP_PKEY_CTX_set1_rsa_keygen_pubexp(
+            ctx.as_mut_ptr(),
+            public_exponent.as_ptr().cast_mut(),
+        )
+    }
+}
+
+/// Failure from the deprecated set0 RSA exponent operation.
+#[cfg(feature = "deprecated-3-0")]
+#[must_use]
+pub struct SetRsaKeygenPubexpError {
+    status: i32,
+    public_exponent: CBox<Bignum>,
+}
+
+#[cfg(feature = "deprecated-3-0")]
+impl SetRsaKeygenPubexpError {
+    /// Original OpenSSL status.
+    #[must_use]
+    pub fn status(&self) -> i32 {
+        self.status
+    }
+
+    /// Recover the exponent that OpenSSL did not consume.
+    pub fn into_public_exponent(self) -> CBox<Bignum> {
+        self.public_exponent
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_rsa_keygen_pubexp
+///
+/// Transfers the public exponent to OpenSSL on success and returns it on
+/// failure. Prefer [`EVP_PKEY_CTX_set1_rsa_keygen_pubexp`].
+#[cfg(feature = "deprecated-3-0")]
+pub fn EVP_PKEY_CTX_set_rsa_keygen_pubexp(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    public_exponent: CBox<Bignum>,
+) -> Result<(), SetRsaKeygenPubexpError> {
+    let raw = public_exponent.into_raw();
+    // SAFETY: `raw` transfers one complete BIGNUM owner to this set0 call and
+    // the exclusive context permits replacing its key-generation exponent.
+    let status = unsafe { ffi::EVP_PKEY_CTX_set_rsa_keygen_pubexp(ctx.as_mut_ptr(), raw) };
+    if status > 0 {
+        Ok(())
+    } else {
+        // SAFETY: the C implementation takes custody only on positive status;
+        // this failure path therefore still owns the exact surrendered value.
+        let public_exponent =
+            unsafe { CBox::from_raw(raw) }.expect("CBox always has a non-null pointer");
+        Err(SetRsaKeygenPubexpError {
+            status,
+            public_exponent,
+        })
     }
 }

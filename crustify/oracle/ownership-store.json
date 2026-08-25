@@ -16192,6 +16192,51 @@
    ]
   },
   {
+   "name": "EVP_PKEY_CTX_get0_dh_kdf_oid",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The control query borrows a context and does not write through the context pointer."
+     }
+    },
+    {
+     "name": "oid",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:oid"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable non-null out-slot receives a nullable library-owned ASN1_OBJECT retained for the context lifetime."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_CTX_get0_dh_kdf_ukm",
    "defined_in": "crypto/evp/dh_ctrl.c",
    "ptr_args": [
@@ -16639,6 +16684,45 @@
      "nullable": true,
      "mutable": true,
      "note": "Opaque application/legacy data is externally owned; the context does not keep its allocation alive."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_cb",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The getter directly reads the callback field from a required live context."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Returns the nullable stored function pointer; executable code has static lifetime."
     }
    }
   },
@@ -17746,6 +17830,46 @@
    }
   },
   {
+   "name": "EVP_PKEY_CTX_set0_dh_kdf_oid",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The control setter mutates operation state when the context is non-null."
+     }
+    },
+    {
+     "name": "oid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:oid"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "set0 transfers the ASN1_OBJECT on success; on failure it remains caller-owned, and the call only reads it."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_CTX_set0_dh_kdf_ukm",
    "defined_in": "crypto/evp/dh_ctrl.c",
    "ptr_args": [
@@ -18066,6 +18190,46 @@
    ]
   },
   {
+   "name": "EVP_PKEY_CTX_set1_rsa_keygen_pubexp",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required live context is mutated by the key-generation parameter setter."
+     }
+    },
+    {
+     "name": "pubexp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pubexp"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The exponent is read synchronously and internally duplicated or converted to a copied provider parameter."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_CTX_set1_scrypt_salt",
    "defined_in": "crypto/evp/pmeth_lib.c",
    "ptr_args": [
@@ -18181,6 +18345,46 @@
       "nullable": true,
       "mutable": false,
       "note": "Opaque application cookie is stored without dereference or ownership transfer; the application must keep it live until replacement or final use."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_cb",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "cb",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Stores a nullable function pointer; the executable code has static lifetime and no pointee mutation occurs."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The setter writes the callback field of a required live context."
      }
     }
    ]
@@ -19234,6 +19438,46 @@
       "nullable": false,
       "mutable": true,
       "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_keygen_pubexp",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "RSA_pkey_ctx_ctrl rejects null; a successful call mutates the key-generation context."
+     }
+    },
+    {
+     "name": "pubexp",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:pubexp"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Deprecated set0 transfers the BIGNUM on success and leaves it caller-owned on failure; it is not modified."
      }
     }
    ]

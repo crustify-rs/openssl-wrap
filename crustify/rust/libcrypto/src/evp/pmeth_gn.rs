@@ -9,7 +9,7 @@ use ffibox::{CBox, CLenDropped, CSlice, CVec};
 use libcrypto_sys as ffi;
 
 use crate::core::openssl_core::{OsslCallback, OsslParam, OsslParamArray, terminated_param_len};
-use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyCtxRef, EvpPkeyRef};
+use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyCtxRef, EvpPkeyGenCallback, EvpPkeyRef};
 use crate::evp::p_lib::BorrowedEvpPkey;
 
 fn generate(
@@ -231,6 +231,10 @@ mod tests {
     use super::*;
     use crate::evp::p_lib::EVP_PKEY_is_a;
 
+    unsafe extern "C" fn accepts_generation_context(ctx: *mut ffi::evp_pkey_ctx_st) -> i32 {
+        i32::from(!ctx.is_null())
+    }
+
     #[test]
     fn provider_keygen_returns_an_owned_key() {
         // SAFETY: null selects the default process context, both C strings are
@@ -271,4 +275,46 @@ mod tests {
         assert_eq!(EVP_PKEY_export(key.as_ref(), 0x03, &mut callback), 1);
         assert!(parameter_count > 0);
     }
+
+    #[test]
+    fn generation_callback_round_trips_through_the_context() {
+        // SAFETY: this callback accepts every non-null live context, retains
+        // nothing, returns a valid C int, and cannot unwind.
+        let callback = unsafe { EvpPkeyGenCallback::from_raw(Some(accepts_generation_context)) }
+            .expect("non-null callback");
+        // SAFETY: null selects the default library context, the algorithm name
+        // is static, and null selects the default property query.
+        let raw = unsafe {
+            ffi::EVP_PKEY_CTX_new_from_name(ptr::null_mut(), c"RSA".as_ptr(), ptr::null())
+        };
+        // SAFETY: a non-null result transfers one complete context owner.
+        let mut ctx =
+            unsafe { CBox::<crate::evp::evp::EvpPkeyCtx>::from_raw(raw) }.expect("RSA context");
+
+        EVP_PKEY_CTX_set_cb(&mut ctx.as_mut(), Some(callback));
+        let stored = EVP_PKEY_CTX_get_cb(ctx.as_ref()).expect("stored callback");
+        assert_eq!(stored.call(&mut ctx.as_mut()), 1);
+
+        EVP_PKEY_CTX_set_cb(&mut ctx.as_mut(), None);
+        assert!(EVP_PKEY_CTX_get_cb(ctx.as_ref()).is_none());
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_get_cb
+#[must_use]
+pub fn EVP_PKEY_CTX_get_cb(ctx: EvpPkeyCtxRef<'_>) -> Option<EvpPkeyGenCallback> {
+    // SAFETY: the shared handle supplies a live context and the C getter only
+    // reads its callback field despite the legacy non-const signature.
+    let raw = unsafe { ffi::EVP_PKEY_CTX_get_cb(ctx.as_ptr().cast_mut()) };
+    // SAFETY: a callback stored by a live OpenSSL context satisfies the same
+    // C ABI invocation contract required by the callable handle.
+    unsafe { EvpPkeyGenCallback::from_raw(raw) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_cb
+pub fn EVP_PKEY_CTX_set_cb(ctx: &mut EvpPkeyCtxMut<'_>, callback: Option<EvpPkeyGenCallback>) {
+    let raw = callback.and_then(EvpPkeyGenCallback::as_raw);
+    // SAFETY: the context is exclusively borrowed and `raw` is null or a
+    // callback whose construction established the stored invocation contract.
+    unsafe { ffi::EVP_PKEY_CTX_set_cb(ctx.as_mut_ptr(), raw) }
 }

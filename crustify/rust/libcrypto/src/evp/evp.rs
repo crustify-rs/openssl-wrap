@@ -452,6 +452,10 @@ impl EvpPkeyGenCallback {
         raw.map(|callback| Self(Some(callback)))
     }
 
+    pub(crate) fn as_raw(self) -> ffi::EVP_PKEY_gen_cb {
+        self.0
+    }
+
     /// Invokes the callback with an exclusively borrowed operation context.
     pub fn call(self, ctx: &mut EvpPkeyCtxMut<'_>) -> i32 {
         let callback = self.0.expect("EvpPkeyGenCallback is non-null");

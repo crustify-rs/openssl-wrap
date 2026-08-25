@@ -27,6 +27,7 @@ typedef long (*crustify_BIO_callback_fn)(BIO *b, int oper,
 void BIO_set_callback(BIO *b, crustify_BIO_callback_fn callback);
 int EVP_PKEY_CTX_get0_dh_kdf_ukm(EVP_PKEY_CTX *ctx, unsigned char **ukm);
 int EVP_PKEY_CTX_get0_ecdh_kdf_ukm(EVP_PKEY_CTX *ctx, unsigned char **ukm);
+int EVP_PKEY_CTX_set_rsa_keygen_pubexp(EVP_PKEY_CTX *ctx, BIGNUM *pubexp);
 typedef struct dsa_st DSA;
 DSA *DSA_new(void);
 void DSA_free(DSA *dsa);
