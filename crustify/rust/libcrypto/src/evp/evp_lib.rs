@@ -3,15 +3,18 @@
 #![allow(non_snake_case)]
 
 use core::ffi::{CStr, c_char, c_int, c_ulong, c_void};
-use core::ptr;
+use core::marker::PhantomData;
+use core::ptr::{self, NonNull};
 use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 
 use ffibox::CBox;
 use libcrypto_sys as ffi;
 
 use crate::bio::context::OsslLibCtxRef;
-use crate::evp::evp::{EvpMdRef, EvpPkeyCtxMut};
+use crate::evp::evp::{EvpMdRef, EvpPkeyCtxMut, EvpPkeyCtxRef, SharedEvpMd};
+use crate::evp::evp_local::{EvpMdCtxMut, EvpMdCtxRef};
 use crate::evp::p_lib::BorrowedEvpPkey;
+use crate::provider::provider_core::OsslProviderRef;
 use crate::x509::x509::{X509Algor, X509AlgorMut, X509AlgorRef};
 
 /// The documented, type-safe argument shapes accepted by `EVP_PKEY_Q_keygen`.
@@ -232,6 +235,163 @@ mod algorithm_identifier_tests {
         let (status, retrieved) = EVP_PKEY_CTX_get_algor(&mut ctx.as_mut());
         assert!(status != 1 || retrieved.is_some());
     }
+}
+
+/// A type-erased legacy digest-data pointer borrowed from a digest context.
+#[derive(Clone, Copy)]
+pub struct EvpMdCtxData<'a> {
+    pointer: NonNull<c_void>,
+    borrow: PhantomData<EvpMdCtxRef<'a>>,
+}
+
+impl EvpMdCtxData<'_> {
+    /// Reinterprets the legacy provider-specific data pointer.
+    ///
+    /// # Safety
+    /// The active legacy digest must store a live, aligned `T` at this pointer,
+    /// and the caller must prevent conflicting access.
+    #[must_use]
+    pub unsafe fn cast<T>(self) -> NonNull<T> {
+        self.pointer.cast()
+    }
+}
+
+/// Wraps: EVP_MD_CTX_clear_flags
+pub fn EVP_MD_CTX_clear_flags(ctx: &mut EvpMdCtxMut<'_>, flags: i32) {
+    // SAFETY: the exclusive handle permits updating the context flags.
+    unsafe { ffi::EVP_MD_CTX_clear_flags(ctx.as_mut_ptr(), flags) }
+}
+
+/// Wraps: EVP_MD_CTX_get0_md
+#[must_use]
+pub fn EVP_MD_CTX_get0_md<'a>(ctx: EvpMdCtxRef<'a>) -> Option<EvpMdRef<'a>> {
+    // SAFETY: the context is live and the returned digest remains bounded by
+    // its borrow.
+    let raw = unsafe { ffi::EVP_MD_CTX_get0_md(ctx.as_ptr()) };
+    // SAFETY: OpenSSL returns null or a digest retained by `ctx`.
+    unsafe { EvpMdRef::from_ptr(raw.cast_mut()) }
+}
+
+#[cfg(feature = "deprecated-4-0")]
+/// Wraps: EVP_MD_CTX_get0_md_data
+#[must_use]
+pub fn EVP_MD_CTX_get0_md_data<'a>(ctx: EvpMdCtxRef<'a>) -> Option<EvpMdCtxData<'a>> {
+    // SAFETY: the context is live and OpenSSL returns null or context-borrowed
+    // type-erased legacy state.
+    NonNull::new(unsafe { ffi::EVP_MD_CTX_get0_md_data(ctx.as_ptr()) }).map(|pointer| {
+        EvpMdCtxData {
+            pointer,
+            borrow: PhantomData,
+        }
+    })
+}
+
+/// Wraps: EVP_MD_CTX_get1_md
+#[must_use]
+pub fn EVP_MD_CTX_get1_md<'a>(ctx: EvpMdCtxRef<'a>) -> Option<SharedEvpMd<'a>> {
+    // The C signature is non-const for historical reasons; only the digest
+    // reference count is changed.
+    // SAFETY: the context is live and a non-null result transfers one count.
+    let raw = unsafe { ffi::EVP_MD_CTX_get1_md(ctx.as_ptr().cast_mut()) };
+    // SAFETY: one successful up-reference is released by the shared owner and
+    // its context dependency is retained by `'a`.
+    unsafe { SharedEvpMd::from_raw(raw) }
+}
+
+/// Wraps: EVP_MD_CTX_get_pkey_ctx
+#[must_use]
+pub fn EVP_MD_CTX_get_pkey_ctx<'a>(ctx: EvpMdCtxRef<'a>) -> Option<EvpPkeyCtxRef<'a>> {
+    // SAFETY: the context is live and the returned pointer remains borrowed
+    // from it.
+    let raw = unsafe { ffi::EVP_MD_CTX_get_pkey_ctx(ctx.as_ptr()) };
+    // SAFETY: null is represented as `None`; non-null is retained by `ctx`.
+    unsafe { EvpPkeyCtxRef::from_ptr(raw) }
+}
+
+/// Wraps: EVP_MD_CTX_get_size_ex
+#[must_use]
+pub fn EVP_MD_CTX_get_size_ex(ctx: EvpMdCtxRef<'_>) -> i32 {
+    // SAFETY: the shared context is live and the query retains no pointer.
+    unsafe { ffi::EVP_MD_CTX_get_size_ex(ctx.as_ptr()) }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+/// Wraps: EVP_MD_CTX_md
+#[must_use]
+pub fn EVP_MD_CTX_md<'a>(ctx: EvpMdCtxRef<'a>) -> Option<EvpMdRef<'a>> {
+    // SAFETY: the context is live and the returned digest is borrowed from it.
+    let raw = unsafe { ffi::EVP_MD_CTX_md(ctx.as_ptr()) };
+    // SAFETY: null maps to `None`; non-null stays bounded by `'a`.
+    unsafe { EvpMdRef::from_ptr(raw.cast_mut()) }
+}
+
+/// Wraps: EVP_MD_CTX_set_flags
+pub fn EVP_MD_CTX_set_flags(ctx: &mut EvpMdCtxMut<'_>, flags: i32) {
+    // SAFETY: the exclusive handle permits updating flags.
+    unsafe { ffi::EVP_MD_CTX_set_flags(ctx.as_mut_ptr(), flags) }
+}
+
+/// Wraps: EVP_MD_CTX_set_pkey_ctx
+///
+/// # Safety
+/// A non-null `pctx` is stored as a caller-owned borrow and must outlive the
+/// digest context. It must remain valid and free of conflicting access until
+/// replaced or the digest context is destroyed.
+pub unsafe fn EVP_MD_CTX_set_pkey_ctx(
+    ctx: &mut EvpMdCtxMut<'_>,
+    pctx: Option<&mut EvpPkeyCtxMut<'_>>,
+) {
+    let pctx = pctx.map_or(ptr::null_mut(), |pctx| pctx.as_mut_ptr());
+    // SAFETY: the caller establishes the stored-borrow lifetime and aliasing
+    // contract; both typed handles are live for this call.
+    unsafe { ffi::EVP_MD_CTX_set_pkey_ctx(ctx.as_mut_ptr(), pctx) }
+}
+
+/// Wraps: EVP_MD_CTX_test_flags
+#[must_use]
+pub fn EVP_MD_CTX_test_flags(ctx: EvpMdCtxRef<'_>, flags: i32) -> i32 {
+    // SAFETY: the shared context is live and the query only reads flags.
+    unsafe { ffi::EVP_MD_CTX_test_flags(ctx.as_ptr(), flags) }
+}
+
+/// Wraps: EVP_MD_get0_description
+#[must_use]
+pub fn EVP_MD_get0_description<'a>(digest: EvpMdRef<'a>) -> Option<&'a CStr> {
+    // SAFETY: the digest is live and retains its description or legacy object
+    // database entry.
+    let raw = unsafe { ffi::EVP_MD_get0_description(digest.as_ptr()) };
+    (!raw.is_null()).then(|| {
+        // SAFETY: OpenSSL publishes the non-null result as NUL-terminated and
+        // keeps it live with the digest.
+        unsafe { CStr::from_ptr(raw) }
+    })
+}
+
+/// Wraps: EVP_MD_get0_name
+#[must_use]
+pub fn EVP_MD_get0_name<'a>(digest: EvpMdRef<'a>) -> Option<&'a CStr> {
+    // SAFETY: the digest is live and retains its name.
+    let raw = unsafe { ffi::EVP_MD_get0_name(digest.as_ptr()) };
+    (!raw.is_null()).then(|| {
+        // SAFETY: OpenSSL publishes a NUL-terminated name bounded by `digest`.
+        unsafe { CStr::from_ptr(raw) }
+    })
+}
+
+/// Wraps: EVP_MD_get0_provider
+#[must_use]
+pub fn EVP_MD_get0_provider<'a>(digest: EvpMdRef<'a>) -> Option<OsslProviderRef<'a>> {
+    // SAFETY: the digest is live and retains its optional provider.
+    let raw = unsafe { ffi::EVP_MD_get0_provider(digest.as_ptr()) };
+    // SAFETY: a non-null provider stays live with the digest borrow.
+    unsafe { OsslProviderRef::from_ptr(raw.cast_mut()) }
+}
+
+/// Wraps: EVP_MD_get_block_size
+#[must_use]
+pub fn EVP_MD_get_block_size(digest: EvpMdRef<'_>) -> i32 {
+    // SAFETY: the digest is live and the scalar query retains nothing.
+    unsafe { ffi::EVP_MD_get_block_size(digest.as_ptr()) }
 }
 
 /// Wraps: EVP_MD_get_flags

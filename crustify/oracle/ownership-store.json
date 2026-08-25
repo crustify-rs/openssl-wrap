@@ -15814,6 +15814,1194 @@
    ]
   },
   {
+   "name": "EVP_Digest",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "impl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:impl"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Legacy ENGINE argument must be null; OpenSSL asserts and rejects non-null."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "size",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:size"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestFinal",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "size",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:size"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestFinalXOF",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestFinal_ex",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "isize",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:isize"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestInit",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestInit_ex",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "impl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:impl"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Legacy ENGINE argument must be null; OpenSSL asserts and rejects non-null."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestInit_ex2",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestSign",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "siglen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:siglen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "In/out signature capacity/actual length."
+     }
+    },
+    {
+     "name": "sigret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sigret"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Null queries the required signature length."
+     }
+    },
+    {
+     "name": "tbs",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:tbs"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null is valid for an empty message."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestSignFinal",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "siglen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:siglen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "In/out signature capacity/actual length."
+     }
+    },
+    {
+     "name": "sigret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sigret"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Null queries the required signature length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestSignInit",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Legacy ENGINE argument must be null; OpenSSL asserts and rejects non-null."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": false,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receives the context-owned/retained EVP_PKEY_CTX borrowed from ctx."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Key is read and retained by reference through the resulting operation context; null is valid only on supported reinitialization paths."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestSignInit_ex",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional library context may be retained through ctx->pctx; it must outlive the digest context."
+     }
+    },
+    {
+     "name": "mdname",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdname"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": false,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receives the operation context borrowed from ctx."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Key is read and retained by reference through the resulting operation context; null is valid on reinitialization paths."
+     }
+    },
+    {
+     "name": "props",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:props"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Property query is consumed during initialization or copied into retained operation state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestSignUpdate",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null is valid only with zero length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestSqueeze",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestUpdate",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null is valid only when count is zero; the safe slice wrapper supplies the extent."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestVerify",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "sigret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sigret"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Signature slice; null is valid only for zero length."
+     }
+    },
+    {
+     "name": "tbs",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:tbs"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Message slice; null is valid only for zero length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestVerifyFinal",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "sig",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sig"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Signature slice; null is valid only for zero length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestVerifyInit",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Legacy ENGINE argument must be null; OpenSSL asserts and rejects non-null."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": false,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receives the context-owned/retained EVP_PKEY_CTX borrowed from ctx."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Key is read and retained by reference through the resulting operation context; null is valid only on supported reinitialization paths."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestVerifyInit_ex",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional library context may be retained through ctx->pctx; it must outlive the digest context."
+     }
+    },
+    {
+     "name": "mdname",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdname"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": false,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional output slot receives the operation context borrowed from ctx."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Key is read and retained by reference through the resulting operation context; null is valid on reinitialization paths."
+     }
+    },
+    {
+     "name": "props",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:props"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Property query is consumed during initialization or copied into retained operation state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DigestVerifyUpdate",
+   "defined_in": "crypto/evp/m_sigver.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null is valid only with zero length."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_KEYMGMT_do_all_provided",
    "defined_in": "crypto/evp/keymgmt_meth.c",
    "ptr_args": [
@@ -16361,6 +17549,189 @@
    ]
   },
   {
+   "name": "EVP_MD_CTX_clear_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_copy",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Source is read to duplicate provider, digest, and key state."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Destination is mutated and becomes an independent copy on success."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_copy_ex",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Source is read to duplicate provider, digest, and key state."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Destination is mutated and becomes an independent copy on success."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_ctrl",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "p2",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:p2"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Command-discriminated payload: output string for MICALG or input bytes for SSL3 master secret; null is command dependent."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_deserialize",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Input must be trusted serialized digest state; the public wrapper accepts only its opaque serialized-state type."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_MD_CTX_dup",
    "defined_in": "crypto/evp/digest.c",
    "lifetime": {
@@ -16385,9 +17756,9 @@
       "borrowed": {
        "lifetime": "arg:in"
       },
-      "nullable": true,
+      "nullable": false,
       "mutable": false,
-      "note": "Reads the source synchronously; a null source is rejected by copy_ex and yields null."
+      "note": ""
      }
     }
    ],
@@ -16428,10 +17799,290 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Consumes a uniquely owned context; null is explicitly accepted."
+      "note": "Consumes the context allocation and all non-KEEP retained state; null is a no-op."
      }
     }
    ]
+  },
+  {
+   "name": "EVP_MD_CTX_get0_md",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed digest selection valid only while ctx remains live and unchanged."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_get0_md_data",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Deprecated legacy data pointer; this implementation always returns null, but any non-null value would be context-borrowed and type-erased."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_get1_md",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "One raised digest reference, released by EVP_MD_free; its provider remains tied to the context library lifetime."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_get_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_get_pkey_ctx",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Borrowed operation context stored by ctx; no reference count is transferred."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_get_size_ex",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_gettable_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null context returns null; otherwise the context is only queried."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed key-terminated descriptor table owned by the active provider and bounded by the context."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_md",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Deprecated alias of get0_md; borrow is bounded by ctx."
+    }
+   }
   },
   {
    "name": "EVP_MD_CTX_new",
@@ -16475,7 +18126,349 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Disposes retained state and zeroes the context in place; null is accepted."
+      "note": "Null is a successful no-op; otherwise releases retained fields and keeps the context allocation reusable."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_serialize",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Null queries the necessary size; non-null addresses the capacity initially held in outlen."
+     }
+    },
+    {
+     "name": "outlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "In/out size: capacity on entry for a buffer, bytes required or written on return."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_set_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_set_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_set_pkey_ctx",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": ""
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Stored as a caller-owned borrow under KEEP_PKEY_CTX; must outlive ctx and remain valid until replaced."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_settable_params",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null context returns null; otherwise the context is only queried."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed key-terminated descriptor table owned by the active provider and bounded by the context."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_test_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_do_all",
+   "defined_in": "crypto/evp/names.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback cookie is passed through only during synchronous enumeration."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Callback is invoked synchronously and is not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_do_all_provided",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback cookie is passed through only during synchronous enumeration."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Callback is invoked synchronously and is not retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional library context used only during synchronous enumeration."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_do_all_sorted",
+   "defined_in": "crypto/evp/names.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback cookie is passed through only during synchronous enumeration."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Callback is invoked synchronously and is not retained."
      }
     }
    ]
@@ -16488,7 +18481,9 @@
      "name": "algorithm",
      "ptr": {
       "scalar": null,
-      "array": null,
+      "array": {
+       "by_val": true
+      },
       "string": true,
       "owned": false,
       "borrowed": {
@@ -16496,7 +18491,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Required transient NUL-terminated algorithm name; not retained."
+      "note": ""
      }
     },
     {
@@ -16512,15 +18507,17 @@
        "lifetime": "arg:ctx"
       },
       "nullable": true,
-      "mutable": true,
-      "note": "Optional library-context selector; fetch may update its method cache, and returned provider-backed objects must not outlive their context."
+      "mutable": false,
+      "note": "Null selects the process-wide default context; fetched result lifetime is tied to an explicit context."
      }
     },
     {
      "name": "properties",
      "ptr": {
       "scalar": null,
-      "array": null,
+      "array": {
+       "by_val": true
+      },
       "string": true,
       "owned": false,
       "borrowed": {
@@ -16528,7 +18525,7 @@
       },
       "nullable": true,
       "mutable": false,
-      "note": "Optional transient NUL-terminated property query; not retained."
+      "note": ""
      }
     }
    ],
@@ -16572,6 +18569,146 @@
       "nullable": true,
       "mutable": true,
       "note": "Consumes one public EVP_MD reference. Null and legacy/cached records are accepted as no-ops; a NO_STORE dynamic record is down-referenced and its final count releases fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_get0_description",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:md"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed NUL-terminated description owned by the digest or legacy object database."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_get0_name",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:md"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed NUL-terminated digest name owned by the digest or legacy object database."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_get0_provider",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": ""
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:md"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed provider retained by the digest."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_get_block_size",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": ""
      }
     }
    ]
