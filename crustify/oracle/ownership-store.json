@@ -3642,6 +3642,351 @@
    ]
   },
   {
+   "name": "evp_md_st",
+   "defined_in": "include/crypto/evp.h",
+   "_comment_agent": "The public EVP_MD surface is opaque, so no field accessor is emitted. Internal inspection shows dynamic records retain prov, own type_name, borrow description and dispatch callbacks from provider-backed algorithm metadata, and use refcnt for dynamic reference counting; legacy static records leave these pointers null.",
+   "fields": [
+    {
+     "name": "copyctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "description",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed algorithm-description string from the provider algorithm definition; the retained provider keeps its dispatch metadata alive. Legacy digests may leave it null."
+     }
+    },
+    {
+     "name": "deserialize",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "dfinal",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "digest",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "dinit",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "dsqueeze",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "dupctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "dupdate",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "freectx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "get_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "get_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "gettable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "gettable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "newctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider-backed digests retain one provider reference via ossl_provider_up_ref and release it in evp_md_free; legacy digests store null."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "serialize",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "set_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "settable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch function borrowed from the OSSL_DISPATCH table; the retained provider keeps that table alive. Legacy digest records leave provider callbacks null."
+     }
+    },
+    {
+     "name": "type_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned NUL-terminated copy made by ossl_algorithm_get1_first_name and released with OPENSSL_free; legacy digests leave it null."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_pkey_ctx_st",
    "defined_in": "include/crypto/evp.h",
    "_comment_agent": "EVP_PKEY_CTX is public-opaque. Findings describe the private record's complete pointer ownership; no private field accessor is emitted by this wrap campaign.",
@@ -15435,6 +15780,134 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live key-management method and conditionally increments its internal reference count when it is not cache-owned."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_fetch",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_args": [
+    {
+     "name": "algorithm",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algorithm"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required transient NUL-terminated algorithm name; not retained."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional library-context selector; fetch may update its method cache, and returned provider-backed objects must not outlive their context."
+     }
+    },
+    {
+     "name": "properties",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:properties"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional transient NUL-terminated property query; not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or one fetched reference released by EVP_MD_free. The fetched record retains a provider reached from the selected library context and must not outlive that context."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_free",
+   "defined_in": "crypto/evp/digest.c",
+   "lifetime": {
+    "for": "md",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one public EVP_MD reference. Null and legacy/cached records are accepted as no-ops; a NO_STORE dynamic record is down-referenced and its final count releases fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_up_ref",
+   "defined_in": "crypto/evp/digest.c",
+   "lifetime": {
+    "for": "md",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live digest and creates another public reference. NO_STORE dynamic records increment refcnt; cached and legacy records need no physical increment because EVP_MD_free is correspondingly a no-op."
      }
     }
    ]

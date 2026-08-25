@@ -369,3 +369,80 @@ pub fn EVP_PKEY_encrypt_old(
         )
     })
 }
+
+define_ctype!(
+    /// Wraps: evp_md_st
+    ///
+    /// OpenSSL publishes `EVP_MD` as an opaque digest implementation.
+    /// Provider-backed records retain their provider and are reference
+    /// counted, while legacy records are static. Both kinds use the public
+    /// `EVP_MD_up_ref` / `EVP_MD_free` pair; for cached or static records
+    /// those operations are deliberately no-ops.
+    ///
+    /// An owning reference is exposed as [`SharedEvpMd`], not as a public
+    /// `CBox<EvpMd>`, because fetches and reference-count increments may name
+    /// the same record and therefore cannot grant exclusive access.
+    EvpMd,
+    EvpMdRef,
+    EvpMdMut,
+    ffi::evp_md_st
+);
+
+// `EVP_MD_free` is the public down-reference operation. Depending on the
+// digest's origin and cache policy it either decrements the dynamic record or
+// is a no-op, exactly matching `EVP_MD_up_ref`.
+impl_dropped!(EvpMd, ffi::evp_md_st, ffi::EVP_MD_free);
+
+// Do not register `EVP_MD_up_ref` as `CCloned`: that would make `CBox<EvpMd>`
+// cloneable even though every clone could call `as_mut` on the same record.
+// `SharedEvpMd` intentionally grants shared access only.
+
+/// One owned reference to a digest implementation.
+///
+/// The lifetime carries the library-context dependency of a fetched digest.
+/// A digest selected from the default context may use `'static`; a fetch from
+/// an explicit context must use that context's borrow.
+pub type SharedEvpMd<'a> = crate::refcount::SharedRef<'a, EvpMd>;
+
+impl<'a> EvpMdRef<'a> {
+    /// Raise this digest's public reference and return a shared-only owner.
+    #[must_use]
+    pub fn try_share(&self) -> Option<SharedEvpMd<'a>> {
+        // SAFETY: the handle carries a live shared borrow. OpenSSL may update
+        // the dynamic record's atomic reference count but does not otherwise
+        // mutate it, and reports whether it created the matching public
+        // release obligation.
+        if unsafe { ffi::EVP_MD_up_ref(self.as_ptr().cast_mut()) } != 1 {
+            return None;
+        }
+
+        // SAFETY: successful `EVP_MD_up_ref` creates one matching
+        // `EVP_MD_free` obligation. The share retains the handle's library-
+        // context lifetime and exposes no exclusive access.
+        unsafe { SharedEvpMd::from_raw(self.as_ptr().cast_mut()) }
+    }
+}
+
+#[cfg(test)]
+mod md_tests {
+    use core::ptr;
+
+    use super::*;
+
+    #[test]
+    fn fetched_digest_and_raised_reference_are_shared_only() {
+        // SAFETY: null selects the process-wide default library context, the
+        // algorithm name is a live NUL-terminated string, and a null property
+        // query requests the default selection. A non-null result transfers
+        // one public EVP_MD reference.
+        let raw = unsafe { ffi::EVP_MD_fetch(ptr::null_mut(), c"SHA2-256".as_ptr(), ptr::null()) };
+        // SAFETY: the default library context is process-wide, and the fresh
+        // fetch result transfers one `EVP_MD_free` obligation.
+        let digest: SharedEvpMd<'static> =
+            unsafe { SharedEvpMd::from_raw(raw) }.expect("EVP_MD_fetch");
+
+        let shared = digest.as_ref().try_share().expect("EVP_MD_up_ref");
+        assert_eq!(shared.as_ptr(), digest.as_ptr());
+        assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+}
