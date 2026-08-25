@@ -15865,7 +15865,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": ""
+      "note": "Output capacity is never passed to C. The private context finalizes with EVP_MD_CTX_get_size(ctx) bytes; a caller can only pre-check EVP_MD_get_size(type), which equals it for every non-extendable digest and is 0 while the context size is negative for an extendable one, where EVP_DigestFinal_ex bails before writing."
      }
     },
     {
@@ -15939,7 +15939,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": ""
+      "note": "Output capacity is NEVER passed to C: EVP_DigestFinal_ex finalizes with EVP_MD_CTX_get_size(ctx) bytes and the provider's own outsz check is fed that same number, so the caller must size md from EVP_MD_CTX_get_size_ex before the call. EVP_DigestFinal adds a reset, so the size query must precede it too."
      }
     },
     {
@@ -15996,7 +15996,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": ""
+      "note": "Length is both the requested output size and the capacity: EVP_DigestFinalXOF publishes it as OSSL_DIGEST_PARAM_XOFLEN before finalizing and passes it as the provider's output-size argument, which a fixed-size digest rejects when short."
      }
     }
    ]
@@ -16053,7 +16053,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": ""
+      "note": "Output capacity is NEVER passed to C: EVP_DigestFinal_ex finalizes with EVP_MD_CTX_get_size(ctx) bytes and the provider's own outsz check is fed that same number, so the caller must size md from EVP_MD_CTX_get_size_ex before the call. EVP_DigestFinal adds a reset, so the size query must precede it too."
      }
     }
    ]
@@ -16413,11 +16413,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "arg:type"
+       "lifetime": "arg:ctx"
       },
       "nullable": true,
       "mutable": false,
-      "note": ""
+      "note": "Retained by ctx, NOT transient. do_sigver_init records `ctx->reqdigest = type` and never calls EVP_MD_up_ref, unlike evp_md_init_internal, which adopts a reference into ctx->fetched_digest. The stored pointer is read again by EVP_MD_CTX_get0_md, EVP_MD_CTX_get1_md (which up-refs it), EVP_MD_CTX_get_size_ex and EVP_MD_CTX_copy_ex, so it must outlive the digest context. Under cached fetch EVP_MD_free is a no-op for a stored record, but a record flagged EVP_MD_FLAG_NO_STORE, or any record in an OPENSSL_NO_CACHED_FETCH build, is really released by its last owner."
      }
     }
    ]
@@ -16839,11 +16839,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "arg:type"
+       "lifetime": "arg:ctx"
       },
       "nullable": true,
       "mutable": false,
-      "note": ""
+      "note": "Retained by ctx, NOT transient. do_sigver_init records `ctx->reqdigest = type` and never calls EVP_MD_up_ref, unlike evp_md_init_internal, which adopts a reference into ctx->fetched_digest. The stored pointer is read again by EVP_MD_CTX_get0_md, EVP_MD_CTX_get1_md (which up-refs it), EVP_MD_CTX_get_size_ex and EVP_MD_CTX_copy_ex, so it must outlive the digest context. Under cached fetch EVP_MD_free is a no-op for a stored record, but a record flagged EVP_MD_FLAG_NO_STORE, or any record in an OPENSSL_NO_CACHED_FETCH build, is really released by its last owner."
      }
     }
    ]

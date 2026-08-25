@@ -18,8 +18,43 @@ fn pkey_ptr(key: Option<EvpPkeyRef<'_>>) -> *mut ffi::evp_pkey_st {
     key.map_or(ptr::null_mut(), |key| key.as_ptr().cast_mut())
 }
 
-fn digest_ptr(digest: Option<EvpMdRef<'_>>) -> *const ffi::evp_md_st {
-    digest.map_or(ptr::null(), |digest| digest.as_ptr())
+/// Which half of `do_sigver_init` a shared seam drives.
+#[derive(Clone, Copy)]
+enum SigverOp {
+    Sign,
+    Verify,
+}
+
+/// The single FFI seam behind the four `EVP_Digest{Sign,Verify}Init` wrappers.
+///
+/// # Safety
+///
+/// A non-null `digest` is stored in `ctx->reqdigest` without a reference count
+/// and must outlive the digest context; see [`EVP_DigestSignInit_with_md`].
+unsafe fn sigver_init<'a>(
+    ctx: &'a mut EvpMdCtxMut<'_>,
+    digest: *const ffi::evp_md_st,
+    key: Option<EvpPkeyRef<'_>>,
+    op: SigverOp,
+) -> (i32, Option<EvpPkeyCtxRef<'a>>) {
+    let mut pctx = ptr::null_mut();
+    let ctx = ctx.as_mut_ptr();
+    let key = pkey_ptr(key);
+    // SAFETY: the context and key handles are live, null is the only supported
+    // ENGINE value, the output slot is writable, and the caller establishes
+    // the retained-digest obligation.
+    let status = unsafe {
+        match op {
+            SigverOp::Sign => ffi::EVP_DigestSignInit(ctx, &mut pctx, digest, ptr::null_mut(), key),
+            SigverOp::Verify => {
+                ffi::EVP_DigestVerifyInit(ctx, &mut pctx, digest, ptr::null_mut(), key)
+            }
+        }
+    };
+    // SAFETY: a non-null operation context is retained by the digest context;
+    // `'a` prevents the returned shared handle from outliving or aliasing
+    // mutation through that context borrow.
+    (status, unsafe { EvpPkeyCtxRef::from_ptr(pctx) })
 }
 
 fn params_ptr(params: Option<&OsslParamListRef<'_, '_>>) -> *const ffi::ossl_param_st {
@@ -98,28 +133,54 @@ pub fn EVP_DigestSignFinal_size(ctx: &mut EvpMdCtxMut<'_>) -> Result<usize, i32>
 }
 
 /// Wraps: EVP_DigestSignInit
+/// Initializes signing with the digest the key's algorithm selects by default.
+///
+/// No caller-held digest record is handed to C, so the context fetches the
+/// digest itself into `ctx->fetched_digest` and settles that reference on
+/// reset. Use [`EVP_DigestSignInit_with_md`] to install a digest the caller
+/// holds, or [`EVP_DigestSignInit_ex`] to name one.
 #[allow(non_snake_case)]
 pub fn EVP_DigestSignInit<'a>(
     ctx: &'a mut EvpMdCtxMut<'_>,
-    digest: Option<EvpMdRef<'_>>,
     key: Option<EvpPkeyRef<'_>>,
 ) -> (i32, Option<EvpPkeyCtxRef<'a>>) {
-    let mut pctx = ptr::null_mut();
-    // SAFETY: all typed handles are live, null is the only supported ENGINE
-    // value, and the output pointer slot is writable.
-    let status = unsafe {
-        ffi::EVP_DigestSignInit(
-            ctx.as_mut_ptr(),
-            &mut pctx,
-            digest_ptr(digest),
-            ptr::null_mut(),
-            pkey_ptr(key),
-        )
-    };
-    // SAFETY: a non-null result points into state retained by `ctx`; `'a`
-    // prevents the returned shared handle from outliving or aliasing mutation
-    // through that context borrow.
-    (status, unsafe { EvpPkeyCtxRef::from_ptr(pctx) })
+    // SAFETY: a null digest leaves `ctx->reqdigest` pointing at a record the
+    // context fetched and owns, so the retained-borrow obligation of
+    // `EVP_DigestSignInit_with_md` is discharged here.
+    unsafe { sigver_init(ctx, ptr::null(), key, SigverOp::Sign) }
+}
+
+/// Wraps: EVP_DigestSignInit
+/// Initializes signing with a digest implementation the caller holds.
+///
+/// # Safety
+///
+/// `digest` must remain live until this digest context is reset,
+/// reinitialized or freed.
+///
+/// Unlike `EVP_DigestInit_ex2`, which adopts one reference into
+/// `ctx->fetched_digest`, `do_sigver_init` only records `ctx->reqdigest =
+/// type` and never raises the digest's reference count. Every later read of
+/// that field dereferences the caller's record —
+/// [`EVP_MD_CTX_get0_md`](crate::evp::evp_lib::EVP_MD_CTX_get0_md),
+/// [`EVP_MD_CTX_get1_md`](crate::evp::evp_lib::EVP_MD_CTX_get1_md), which also
+/// up-references it, [`EVP_MD_CTX_get_size_ex`](crate::evp::evp_lib::EVP_MD_CTX_get_size_ex)
+/// and [`EVP_MD_CTX_copy_ex`](crate::evp::digest::EVP_MD_CTX_copy_ex), which
+/// copies the same unowned pointer into its destination.
+///
+/// Holding an owning [`SharedEvpMd`](crate::evp::evp::SharedEvpMd) is not
+/// enough on its own: dropping it runs `EVP_MD_free`, which releases a record
+/// carrying `EVP_MD_FLAG_NO_STORE`, and releases every fetched record in an
+/// `OPENSSL_NO_CACHED_FETCH` build.
+#[allow(non_snake_case)]
+pub unsafe fn EVP_DigestSignInit_with_md<'a>(
+    ctx: &'a mut EvpMdCtxMut<'_>,
+    digest: EvpMdRef<'_>,
+    key: Option<EvpPkeyRef<'_>>,
+) -> (i32, Option<EvpPkeyCtxRef<'a>>) {
+    // SAFETY: the caller establishes that the stored, unreferenced digest
+    // outlives the context.
+    unsafe { sigver_init(ctx, digest.as_ptr(), key, SigverOp::Sign) }
 }
 
 /// Wraps: EVP_DigestSignInit_ex
@@ -204,26 +265,37 @@ pub fn EVP_DigestVerifyFinal(ctx: &mut EvpMdCtxMut<'_>, signature: &[u8]) -> i32
 }
 
 /// Wraps: EVP_DigestVerifyInit
+/// Initializes verification with the key's default digest.
+///
+/// As with [`EVP_DigestSignInit`], omitting the digest leaves the fetched
+/// record owned by the context.
 #[allow(non_snake_case)]
 pub fn EVP_DigestVerifyInit<'a>(
     ctx: &'a mut EvpMdCtxMut<'_>,
-    digest: Option<EvpMdRef<'_>>,
     key: Option<EvpPkeyRef<'_>>,
 ) -> (i32, Option<EvpPkeyCtxRef<'a>>) {
-    let mut pctx = ptr::null_mut();
-    // SAFETY: all typed handles are live, null is the only supported ENGINE
-    // value, and the output slot is writable.
-    let status = unsafe {
-        ffi::EVP_DigestVerifyInit(
-            ctx.as_mut_ptr(),
-            &mut pctx,
-            digest_ptr(digest),
-            ptr::null_mut(),
-            pkey_ptr(key),
-        )
-    };
-    // SAFETY: a non-null pkey context is retained by and borrowed from `ctx`.
-    (status, unsafe { EvpPkeyCtxRef::from_ptr(pctx) })
+    // SAFETY: a null digest leaves the context owning whatever it fetches.
+    unsafe { sigver_init(ctx, ptr::null(), key, SigverOp::Verify) }
+}
+
+/// Wraps: EVP_DigestVerifyInit
+/// Initializes verification with a digest implementation the caller holds.
+///
+/// # Safety
+///
+/// `digest` must remain live until this digest context is reset,
+/// reinitialized or freed, for the reason spelled out on
+/// [`EVP_DigestSignInit_with_md`]: `do_sigver_init` stores it in
+/// `ctx->reqdigest` without raising its reference count.
+#[allow(non_snake_case)]
+pub unsafe fn EVP_DigestVerifyInit_with_md<'a>(
+    ctx: &'a mut EvpMdCtxMut<'_>,
+    digest: EvpMdRef<'_>,
+    key: Option<EvpPkeyRef<'_>>,
+) -> (i32, Option<EvpPkeyCtxRef<'a>>) {
+    // SAFETY: the caller establishes that the stored, unreferenced digest
+    // outlives the context.
+    unsafe { sigver_init(ctx, digest.as_ptr(), key, SigverOp::Verify) }
 }
 
 /// Wraps: EVP_DigestVerifyInit_ex
@@ -286,6 +358,7 @@ pub fn EVP_DigestVerifyUpdate(ctx: &mut EvpMdCtxMut<'_>, data: &[u8]) -> i32 {
 mod tests {
     use super::*;
     use crate::evp::digest::{EVP_DigestInit_ex, EVP_MD_CTX_new, EVP_MD_fetch};
+    use crate::evp::evp_lib::{EVP_MD_CTX_get0_md, EVP_PKEY_Q_keygen, QuickKeygen};
 
     #[test]
     fn update_variants_fall_back_to_plain_digest_updates() {
@@ -302,5 +375,52 @@ mod tests {
             1
         );
         assert_eq!(EVP_DigestVerifyUpdate(&mut ctx.as_mut(), b"b"), 1);
+    }
+
+    /// The safe initializers name no digest, so the whole sign/verify round
+    /// trip runs without a caller-held `EVP_MD` for the context to borrow.
+    #[test]
+    fn default_digest_round_trip_needs_no_caller_held_digest() {
+        let key = EVP_PKEY_Q_keygen(None, None, QuickKeygen::Ed25519).expect("ED25519 key");
+
+        let mut ctx = EVP_MD_CTX_new().expect("context");
+        let mut signer = ctx.as_mut();
+        let (status, _) = EVP_DigestSignInit(&mut signer, Some(key.as_ref()));
+        assert_eq!(status, 1);
+        let len = EVP_DigestSign_size(&mut signer, b"message").expect("signature size");
+        let mut signature = vec![0_u8; len];
+        assert_eq!(
+            EVP_DigestSign(&mut signer, &mut signature, b"message"),
+            Ok(len)
+        );
+
+        let mut ctx = EVP_MD_CTX_new().expect("context");
+        let mut verifier = ctx.as_mut();
+        let (status, _) = EVP_DigestVerifyInit(&mut verifier, Some(key.as_ref()));
+        assert_eq!(status, 1);
+        assert_eq!(EVP_DigestVerify(&mut verifier, &signature, b"message"), 1);
+        assert_ne!(EVP_DigestVerify(&mut verifier, &signature, b"other"), 1);
+    }
+
+    /// `do_sigver_init` records an explicitly supplied digest as
+    /// `ctx->reqdigest` and raises no reference count, so the context hands
+    /// back the caller's own record. That identity is the reason
+    /// [`EVP_DigestSignInit_with_md`] is `unsafe`.
+    #[test]
+    fn an_explicit_digest_is_stored_by_pointer_not_by_reference() {
+        let key = EVP_PKEY_Q_keygen(None, None, QuickKeygen::Rsa { bits: 2048 }).expect("RSA key");
+        let digest = EVP_MD_fetch(None, c"SHA2-256", None).expect("fetch");
+        let supplied = digest.as_ref().as_ptr();
+
+        let mut ctx = EVP_MD_CTX_new().expect("context");
+        let mut signer = ctx.as_mut();
+        // SAFETY: `digest` outlives `ctx` in this scope, which is exactly the
+        // obligation the wrapper states.
+        let (status, _) =
+            unsafe { EVP_DigestSignInit_with_md(&mut signer, digest.as_ref(), Some(key.as_ref())) };
+        assert_eq!(status, 1);
+
+        let stored = EVP_MD_CTX_get0_md(ctx.as_ref()).expect("digest recorded");
+        assert_eq!(stored.as_ptr(), supplied);
     }
 }

@@ -238,6 +238,11 @@ mod algorithm_identifier_tests {
 }
 
 /// A type-erased legacy digest-data pointer borrowed from a digest context.
+///
+/// No value of this type is reachable in this tree: the only wrapper that
+/// produces one is [`EVP_MD_CTX_get0_md_data`], whose C implementation is a
+/// deprecated stub that always returns null. It is retained because the C
+/// declaration still publishes the erased-borrow shape.
 #[derive(Clone, Copy)]
 pub struct EvpMdCtxData<'a> {
     pointer: NonNull<c_void>,
@@ -263,21 +268,37 @@ pub fn EVP_MD_CTX_clear_flags(ctx: &mut EvpMdCtxMut<'_>, flags: i32) {
 }
 
 /// Wraps: EVP_MD_CTX_get0_md
+/// Borrows the digest record the context was initialized with.
+///
+/// The result is `ctx->reqdigest`. A context initialized through
+/// `EVP_DigestInit*` owns that record, because `evp_md_init_internal` adopts a
+/// reference into `ctx->fetched_digest`. A context initialized through
+/// [`EVP_DigestSignInit_with_md`](crate::evp::m_sigver::EVP_DigestSignInit_with_md)
+/// or its verify twin does not: those store the caller's pointer unreferenced,
+/// which is exactly the obligation those `unsafe` wrappers place on their
+/// caller.
 #[must_use]
 pub fn EVP_MD_CTX_get0_md<'a>(ctx: EvpMdCtxRef<'a>) -> Option<EvpMdRef<'a>> {
     // SAFETY: the context is live and the returned digest remains bounded by
     // its borrow.
     let raw = unsafe { ffi::EVP_MD_CTX_get0_md(ctx.as_ptr()) };
-    // SAFETY: OpenSSL returns null or a digest retained by `ctx`.
+    // SAFETY: OpenSSL returns null or the record `ctx` was initialized with,
+    // which stays live for `'a` by the initializer's contract.
     unsafe { EvpMdRef::from_ptr(raw.cast_mut()) }
 }
 
 #[cfg(feature = "deprecated-4-0")]
 /// Wraps: EVP_MD_CTX_get0_md_data
+/// Always yields `None`.
+///
+/// The legacy `md_data` slot is gone: `EVP_MD_CTX_get0_md_data` is retained
+/// only for backward compatibility and its body is `return NULL;`. The call is
+/// still made rather than short-circuited, so this wrapper keeps tracking the C
+/// implementation if it ever grows a result again.
 #[must_use]
 pub fn EVP_MD_CTX_get0_md_data<'a>(ctx: EvpMdCtxRef<'a>) -> Option<EvpMdCtxData<'a>> {
-    // SAFETY: the context is live and OpenSSL returns null or context-borrowed
-    // type-erased legacy state.
+    // SAFETY: the context is live; the deprecated stub reads nothing from it
+    // and returns null.
     NonNull::new(unsafe { ffi::EVP_MD_CTX_get0_md_data(ctx.as_ptr()) }).map(|pointer| {
         EvpMdCtxData {
             pointer,
@@ -333,10 +354,24 @@ pub fn EVP_MD_CTX_set_flags(ctx: &mut EvpMdCtxMut<'_>, flags: i32) {
 
 /// Wraps: EVP_MD_CTX_set_pkey_ctx
 ///
+/// Installs, or with `None` clears, the public-key context a digest context
+/// drives. The call first releases whatever `ctx->pctx` already held unless
+/// `EVP_MD_CTX_FLAG_KEEP_PKEY_CTX` is set — so it frees the operation context
+/// an `EVP_Digest{Sign,Verify}Init*` created — and then sets that flag for a
+/// non-null `pctx`, leaving the installed one caller-owned.
+///
 /// # Safety
 /// A non-null `pctx` is stored as a caller-owned borrow and must outlive the
 /// digest context. It must remain valid and free of conflicting access until
 /// replaced or the digest context is destroyed.
+///
+/// Two further paths release that storage while the caller still owns it, and
+/// the caller must keep the context away from both. `EVP_MD_CTX_reset` and
+/// `EVP_MD_CTX_free` consult `EVP_MD_CTX_FLAG_KEEP_PKEY_CTX`, which this call
+/// sets, so clearing it through [`EVP_MD_CTX_clear_flags`] re-arms them. And
+/// [`EVP_MD_CTX_copy_ex`](crate::evp::digest::EVP_MD_CTX_copy_ex) frees
+/// `out->pctx` without consulting the flag at all on its in-place copy path,
+/// so this context must not be used as a copy destination either.
 pub unsafe fn EVP_MD_CTX_set_pkey_ctx(
     ctx: &mut EvpMdCtxMut<'_>,
     pctx: Option<&mut EvpPkeyCtxMut<'_>>,

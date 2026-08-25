@@ -21,6 +21,13 @@ fn optional_cstr(value: Option<&CStr>) -> *const core::ffi::c_char {
     value.map_or(ptr::null(), CStr::as_ptr)
 }
 
+/// Checks a finalization buffer against the byte count OpenSSL will write.
+///
+/// `EVP_DigestFinal_ex` takes no capacity: it finalizes into `md` with
+/// `EVP_MD_CTX_get_size(ctx)`, the macro spelling of `EVP_MD_CTX_get_size_ex`
+/// queried here. Checking the same number is therefore what bounds the write,
+/// and it is checked under the caller's exclusive borrow so nothing can change
+/// the context in between.
 fn output_fits(ctx: EvpMdCtxRef<'_>, output: &[u8]) -> bool {
     // SAFETY: the shared handle is live and the size query retains nothing.
     let required = unsafe { ffi::EVP_MD_CTX_get_size_ex(ctx.as_ptr()) };
@@ -128,11 +135,18 @@ pub fn EVP_MD_settable_ctx_params<'md>(
 
 /// Wraps: EVP_Digest
 /// Computes a fixed-size digest after checking output capacity.
+///
+/// C never learns `output`'s length: the private context `EVP_Digest` builds
+/// finalizes with `EVP_MD_CTX_get_size(ctx)` bytes, so this wrapper is the only
+/// bound on the write. `EVP_MD_get_size` is that same number for every
+/// non-extendable digest, and for an extendable one it is `0` while the context
+/// size is negative, which makes `EVP_DigestFinal_ex` fail before writing —
+/// see `every_provided_digest_bounds_its_one_shot_output`.
 #[allow(non_snake_case)]
 pub fn EVP_Digest(data: &[u8], output: &mut [u8], digest: EvpMdRef<'_>) -> Result<usize, i32> {
     // SAFETY: the digest handle is live and the query retains nothing.
     let required = unsafe { ffi::EVP_MD_get_size(digest.as_ptr()) };
-    if required < 0 || usize::try_from(required).map_or(true, |len| output.len() < len) {
+    if required < 0 || !usize::try_from(required).is_ok_and(|len| output.len() >= len) {
         return Err(0);
     }
     let mut written = 0_u32;
@@ -167,10 +181,17 @@ pub fn EVP_DigestFinal(ctx: &mut EvpMdCtxMut<'_>, output: &mut [u8]) -> Result<u
 }
 
 /// Wraps: EVP_DigestFinalXOF
+/// Finalizes an extendable-output function into exactly `output.len()` bytes.
+///
+/// The length is both the requested output size and the buffer capacity:
+/// `EVP_DigestFinalXOF` publishes it as `OSSL_DIGEST_PARAM_XOFLEN` before
+/// finalizing, and also passes it as the provider's output-size argument, which
+/// a fixed-size digest rejects when it is short of its own digest length.
 #[allow(non_snake_case)]
 pub fn EVP_DigestFinalXOF(ctx: &mut EvpMdCtxMut<'_>, output: &mut [u8]) -> i32 {
     // SAFETY: the exclusive context is live and the slice supplies the exact
-    // writable extent.
+    // writable extent, which is the length OpenSSL both requests and bounds
+    // the finalization by.
     unsafe { ffi::EVP_DigestFinalXOF(ctx.as_mut_ptr(), output.as_mut_ptr(), output.len()) }
 }
 
@@ -221,9 +242,11 @@ pub fn EVP_DigestInit_ex2(
 }
 
 /// Wraps: EVP_DigestSqueeze
+/// Squeezes `output.len()` further bytes out of an extendable-output function.
 #[allow(non_snake_case)]
 pub fn EVP_DigestSqueeze(ctx: &mut EvpMdCtxMut<'_>, output: &mut [u8]) -> i32 {
-    // SAFETY: the exclusive context and writable slice are live for the call.
+    // SAFETY: the exclusive context and writable slice are live for the call,
+    // and the squeeze writes exactly the requested count.
     unsafe { ffi::EVP_DigestSqueeze(ctx.as_mut_ptr(), output.as_mut_ptr(), output.len()) }
 }
 
@@ -479,5 +502,207 @@ mod digest_descriptor_tests {
         assert!(EVP_MD_gettable_params(None).is_none());
         assert!(EVP_MD_gettable_ctx_params(None).is_none());
         assert!(EVP_MD_settable_ctx_params(None).is_none());
+    }
+
+    /// Pins the precondition [`EVP_Digest`]'s capacity check rests on.
+    ///
+    /// `EVP_Digest` finalizes into a context this wrapper cannot reach, using
+    /// `EVP_MD_CTX_get_size(ctx)` bytes, while the check ahead of the call can
+    /// only ask the digest itself. The two must not disagree in the unsafe
+    /// direction: for every provided digest the context size is either equal to
+    /// the digest size or negative, and a negative one makes
+    /// `EVP_DigestFinal_ex` bail before it writes.
+    #[test]
+    fn every_provided_digest_bounds_its_one_shot_output() {
+        use crate::evp::evp_lib::{EVP_MD_CTX_get_size_ex, EVP_MD_get_size, EVP_MD_get0_name};
+
+        let mut visited = 0_usize;
+        EVP_MD_do_all_provided(None, &mut |md| {
+            visited += 1;
+            let name = EVP_MD_get0_name(md).expect("digest name").to_owned();
+            let algorithm_size = EVP_MD_get_size(Some(md));
+
+            let mut ctx = EVP_MD_CTX_new().expect("context");
+            let mut ctx_mut = ctx.as_mut();
+            assert_eq!(
+                EVP_DigestInit_ex(&mut ctx_mut, Some(md)),
+                1,
+                "{name:?} could not be initialized"
+            );
+            let context_size = EVP_MD_CTX_get_size_ex(ctx.as_ref());
+
+            assert!(
+                context_size < 0 || context_size == algorithm_size,
+                "{name:?} finalizes {context_size} bytes but advertises {algorithm_size}"
+            );
+        });
+        assert!(visited > 0);
+    }
+}
+
+#[cfg(test)]
+mod digest_lifecycle_tests {
+    use super::*;
+    use crate::evp::evp_lib::{
+        EVP_MD_CTX_clear_flags, EVP_MD_CTX_get_size_ex, EVP_MD_CTX_get0_md, EVP_MD_CTX_set_flags,
+        EVP_MD_CTX_test_flags,
+    };
+
+    fn started(algorithm: &CStr, message: &[u8]) -> (SharedEvpMd<'static>, CBox<EvpMdCtx>) {
+        let digest = EVP_MD_fetch(None, algorithm, None).expect("fetch");
+        let mut ctx = EVP_MD_CTX_new().expect("context");
+        assert_eq!(
+            EVP_DigestInit_ex(&mut ctx.as_mut(), Some(digest.as_ref())),
+            1
+        );
+        assert_eq!(EVP_DigestUpdate(&mut ctx.as_mut(), message), 1);
+        (digest, ctx)
+    }
+
+    /// `EVP_DigestFinal` is `EVP_DigestFinal_ex` plus a reset, so only the
+    /// first leaves the context able to name its digest afterwards.
+    #[test]
+    fn plain_finalization_resets_the_context_and_the_ex_form_does_not() {
+        let (_digest, mut ctx) = started(c"SHA2-256", b"abc");
+        let mut output = [0_u8; 32];
+        assert_eq!(EVP_DigestFinal_ex(&mut ctx.as_mut(), &mut output), Ok(32));
+        assert!(EVP_MD_CTX_get0_md(ctx.as_ref()).is_some());
+
+        let (_digest, mut ctx) = started(c"SHA2-256", b"abc");
+        let mut reset_output = [0_u8; 32];
+        assert_eq!(
+            EVP_DigestFinal(&mut ctx.as_mut(), &mut reset_output),
+            Ok(32)
+        );
+        assert_eq!(output, reset_output);
+        assert!(EVP_MD_CTX_get0_md(ctx.as_ref()).is_none());
+    }
+
+    /// C never sees the caller's buffer length, so a short buffer has to be
+    /// refused here — before the finalization that would overrun it.
+    #[test]
+    fn a_short_buffer_is_refused_before_the_call() {
+        let (_digest, mut ctx) = started(c"SHA2-256", b"abc");
+        let mut output = [0_u8; 31];
+        assert_eq!(EVP_DigestFinal_ex(&mut ctx.as_mut(), &mut output), Err(0));
+        assert_eq!(output, [0_u8; 31]);
+        // Refusing left the context untouched, so it still finalizes normally.
+        let mut full = [0_u8; 32];
+        assert_eq!(EVP_DigestFinal_ex(&mut ctx.as_mut(), &mut full), Ok(32));
+    }
+
+    /// The extendable-output paths take their length from the slice, and
+    /// squeezing the same stream in pieces reproduces one long finalization.
+    #[test]
+    fn extendable_output_length_comes_from_the_slice() {
+        let (_digest, mut ctx) = started(c"SHAKE-128", b"abc");
+        let mut whole = [0_u8; 32];
+        assert_eq!(EVP_DigestFinalXOF(&mut ctx.as_mut(), &mut whole), 1);
+
+        let (_digest, mut ctx) = started(c"SHAKE-128", b"abc");
+        let mut pieces = [0_u8; 32];
+        let (head, tail) = pieces.split_at_mut(16);
+        assert_eq!(EVP_DigestSqueeze(&mut ctx.as_mut(), head), 1);
+        assert_eq!(EVP_DigestSqueeze(&mut ctx.as_mut(), tail), 1);
+        assert_eq!(whole, pieces);
+    }
+
+    /// A serialization only this module can mint travels through a second
+    /// context and resumes the same digest stream.
+    #[test]
+    fn provider_state_round_trips_through_an_opaque_serialization() {
+        let (digest, mut ctx) = started(c"SHA3-256", b"abc");
+        let state = EVP_MD_CTX_serialize(&mut ctx.as_mut()).expect("serialize");
+        assert!(!state.as_bytes().is_empty());
+
+        let mut resumed = EVP_MD_CTX_new().expect("context");
+        assert_eq!(
+            EVP_DigestInit_ex(&mut resumed.as_mut(), Some(digest.as_ref())),
+            1
+        );
+        assert_eq!(EVP_MD_CTX_deserialize(&mut resumed.as_mut(), &state), 1);
+        assert_eq!(EVP_DigestUpdate(&mut resumed.as_mut(), b"def"), 1);
+        assert_eq!(EVP_DigestUpdate(&mut ctx.as_mut(), b"def"), 1);
+
+        let mut original = [0_u8; 32];
+        let mut copy = [0_u8; 32];
+        assert_eq!(EVP_DigestFinal_ex(&mut ctx.as_mut(), &mut original), Ok(32));
+        assert_eq!(EVP_DigestFinal_ex(&mut resumed.as_mut(), &mut copy), Ok(32));
+        assert_eq!(original, copy);
+    }
+
+    /// Both copy forms produce an independent context that continues the
+    /// source's stream; only `EVP_MD_CTX_copy` resets the destination first.
+    #[test]
+    fn copies_continue_the_source_stream_independently() {
+        let (_digest, mut source) = started(c"SHA2-256", b"ab");
+        let mut destination = EVP_MD_CTX_new().expect("context");
+        assert_eq!(
+            EVP_MD_CTX_copy(&mut destination.as_mut(), source.as_ref()),
+            1
+        );
+        assert_eq!(EVP_DigestUpdate(&mut destination.as_mut(), b"c"), 1);
+        assert_eq!(EVP_DigestUpdate(&mut source.as_mut(), b"c"), 1);
+
+        let mut from_copy = [0_u8; 32];
+        let mut from_source = [0_u8; 32];
+        assert_eq!(
+            EVP_DigestFinal_ex(&mut destination.as_mut(), &mut from_copy),
+            Ok(32)
+        );
+        assert_eq!(
+            EVP_DigestFinal_ex(&mut source.as_mut(), &mut from_source),
+            Ok(32)
+        );
+        assert_eq!(from_copy, from_source);
+
+        let (_digest, source) = started(c"SHA2-256", b"ab");
+        let mut reused = EVP_MD_CTX_new().expect("context");
+        assert_eq!(EVP_MD_CTX_copy_ex(&mut reused.as_mut(), source.as_ref()), 1);
+        assert!(EVP_MD_CTX_get0_md(reused.as_ref()).is_some());
+    }
+
+    /// Flag reads and writes go through the shared and exclusive handles
+    /// respectively, and clearing is the exact inverse of setting.
+    #[test]
+    fn flags_round_trip_through_the_matching_handle() {
+        const PROBE: i32 = 0x0001;
+
+        let mut ctx = EVP_MD_CTX_new().expect("context");
+        assert_eq!(EVP_MD_CTX_test_flags(ctx.as_ref(), PROBE), 0);
+        EVP_MD_CTX_set_flags(&mut ctx.as_mut(), PROBE);
+        assert_eq!(EVP_MD_CTX_test_flags(ctx.as_ref(), PROBE), PROBE);
+        EVP_MD_CTX_clear_flags(&mut ctx.as_mut(), PROBE);
+        assert_eq!(EVP_MD_CTX_test_flags(ctx.as_ref(), PROBE), 0);
+    }
+
+    /// The context parameter tables are advertised per context and stay bound
+    /// to its borrow; an extendable-output context publishes a length key.
+    #[test]
+    fn context_parameter_tables_are_bound_to_the_context() {
+        let (_digest, mut ctx) = started(c"SHAKE-128", b"abc");
+
+        let mut terminator = [OsslParam::end()];
+        let mut empty =
+            OsslParamListMut::from_values(&mut terminator).expect("terminated empty list");
+        assert_eq!(EVP_MD_CTX_get_params(&mut ctx.as_mut(), &mut empty), 1);
+        assert_eq!(EVP_MD_CTX_set_params(&mut ctx.as_mut(), &empty.as_ref()), 1);
+
+        let gettable: Vec<_> = EVP_MD_CTX_gettable_params(ctx.as_ref())
+            .expect("gettable table")
+            .filter_map(|param| param.key().map(CStr::to_owned))
+            .collect();
+        assert!(gettable.iter().any(|key| key.as_c_str() == c"xoflen"));
+
+        let settable: Vec<_> = EVP_MD_CTX_settable_params(ctx.as_ref())
+            .expect("settable table")
+            .filter_map(|param| param.key().map(CStr::to_owned))
+            .collect();
+        assert!(settable.iter().any(|key| key.as_c_str() == c"xoflen"));
+
+        // Both tables end at the terminator rather than running on.
+        assert!(gettable.len() < 32 && settable.len() < 32);
+
+        assert!(EVP_MD_CTX_get_size_ex(ctx.as_ref()) < 0);
     }
 }
