@@ -88,8 +88,10 @@ in Notes.
 - **C LoC** — `336,418` across the `1,044` targeted files
 - **ported types** — `0`
 - **ported symbols** — `1`
-- **wrapped types** — `81`, plus `10` callbacks
-- **wrapped symbols** — `672`
+- **wrapped types** — `81` (`16.1`% of the API), plus `10` callbacks (`1.5`%)
+- **remaining types** — `385`, plus `638` callbacks
+- **wrapped symbols** — `672` (`9.9`% of the API)
+- **remaining symbols** — `6,093`
 
 Implementation `openai/gpt-5.6-sol` via `codex`; review `anthropic/claude-opus-5`
 via `claude`. Each row names the model that produced it.
@@ -443,6 +445,30 @@ which the audit calls the least excusable placement. Returning a predicate
 instead keeps the key pointer inside the wrapper and scores zero on both.
 Raw-pointer dereferences outside an accessor fell from `5` to `3` as a side
 effect, since the duplicated scan disappeared.
+
+### What the API percentages are measured against
+
+`--api-headers-only` over `include/openssl/` publishes `459` types, `6,761`
+functions, `648` callbacks, `2` globals and `5,742` macros. The percentages
+above use the type and function denominators.
+
+Macros are excluded deliberately. Nearly all `5,742` are constant macros, which
+`conventions.md` keeps as generated constants in the `-sys` crate rather than
+wrapping — folding them into a symbol denominator would report `5.3`% instead
+of `9.9`% and would measure the bindgen surface, not the wrapper campaign. The
+one macro carrying an anchor is a callable shim.
+
+Callbacks are counted separately from types for the same reason they are
+scheduled separately: they are function-pointer typedefs, and `648` of them is
+mostly the `OSSL_FUNC_*` provider dispatch surface, which a consumer of the
+library never implements by hand.
+
+The wrapped counts here are tree-wide, so they slightly exceed the API-scoped
+intersection the percentages use: `81` wrapped types against `74` that are
+API-published, and `672` wrapped symbols against `668`. The difference is
+private types the closure required — `evp_pkey_ctx_st` and the legacy key
+handles are declared in `include/crypto/`, not `include/openssl/`, so they are
+wrapped but are not themselves API surface.
 
 ### The EVP_PKEY_CTX wave, and a batch-count ceiling
 
