@@ -11,6 +11,7 @@ pub mod evp_pkey;
 pub mod evp_pkey_type;
 pub mod exchange;
 pub mod kem;
+pub mod keymgmt_meth;
 pub mod p_legacy;
 pub mod p_lib;
 pub mod pmeth_check;

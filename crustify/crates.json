@@ -1498,6 +1498,29 @@
                 "types": []
               },
               "tu": "crypto/evp/dsa_ctrl.c"
+            },
+            "src/evp/keymgmt_meth.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_KEYMGMT_do_all_provided",
+                  "EVP_KEYMGMT_fetch",
+                  "EVP_KEYMGMT_gen_gettable_params",
+                  "EVP_KEYMGMT_gen_settable_params",
+                  "EVP_KEYMGMT_get0_description",
+                  "EVP_KEYMGMT_get0_name",
+                  "EVP_KEYMGMT_get0_provider",
+                  "EVP_KEYMGMT_gettable_params",
+                  "EVP_KEYMGMT_is_a",
+                  "EVP_KEYMGMT_names_do_all",
+                  "EVP_KEYMGMT_settable_params"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/keymgmt_meth.c"
             }
           },
           "rust_path": "src/evp"
