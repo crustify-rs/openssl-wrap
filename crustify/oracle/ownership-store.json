@@ -15913,6 +15913,212 @@
    ]
   },
   {
+   "name": "EVP_PKEY_CTX_add1_hkdf_info",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "info",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:info"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Length-delimited array read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_add1_tls1_prf_seed",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "seed",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:seed"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Length-delimited array read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_ctrl",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "p2",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:p2"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Command-dependent untyped operand: it may be null, input, output, or ownership-transferred; the command fixes its shape and lifecycle."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_ctrl_str",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "value",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:value"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_ctrl_uint64",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_CTX_dup",
    "defined_in": "crypto/evp/pmeth_lib.c",
    "lifetime": {
@@ -15981,6 +16187,3507 @@
       "nullable": true,
       "mutable": true,
       "note": "Consumes a uniquely owned EVP_PKEY_CTX and all retained operation state; NULL is accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_dh_kdf_ukm",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "pukm",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pukm"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable output slot receives a context/provider-owned byte array whose length is the return value."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_ecdh_kdf_ukm",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "pukm",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pukm"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable output slot receives a context/provider-owned byte array whose length is the return value."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_libctx",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed result remains live with its owner."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_peerkey",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed result remains live with its owner."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_pkey",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed result remains live with its owner."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_propq",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": {
+      "by_val": true
+     },
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed result remains live with its owner."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_provider",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed result remains live with its owner."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get0_rsa_oaep_label",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "label",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:label"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable output slot receives a context/provider-owned byte array whose length is the return value."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get1_id",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "id",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:id"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned output array receives the previously copied identifier."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get1_id_len",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "id_len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:id_len"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable scalar output slot used only for the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_app_data",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Opaque application/legacy data is externally owned; the context does not keep its allocation alive."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_data",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Opaque application/legacy data is externally owned; the context does not keep its allocation alive."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_dh_kdf_md",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "pmd",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pmd"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Writable output slot receives a borrowed pointer tied to the context."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_dh_kdf_outlen",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "plen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:plen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable scalar output slot used only for the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_dh_kdf_type",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_ecdh_cofactor_mode",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_ecdh_kdf_md",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "pmd",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pmd"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Writable output slot receives a borrowed pointer tied to the context."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_ecdh_kdf_outlen",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "plen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:plen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable scalar output slot used only for the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_ecdh_kdf_type",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_group_name",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned output array is written up to its explicit capacity."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_keygen_info",
+   "defined_in": "crypto/evp/pmeth_gn.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_operation",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_params",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "params",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:params"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned terminated OSSL_PARAM descriptor array and output data slots are written synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_rsa_mgf1_md",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Writable output slot receives a borrowed pointer tied to the context."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_rsa_mgf1_md_name",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned output array is written up to its explicit capacity."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_rsa_oaep_md",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Writable output slot receives a borrowed pointer tied to the context."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_rsa_oaep_md_name",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned output array is written up to its explicit capacity."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_rsa_padding",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "pad_mode",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pad_mode"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable scalar output slot used only for the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_rsa_pss_saltlen",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "saltlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:saltlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable scalar output slot used only for the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_signature_md",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:ctx"
+        }
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Writable output slot receives a borrowed pointer tied to the context."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_gettable_params",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed result remains live with its owner."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_hex2ctrl",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "hex",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:hex"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_is_a",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The function only reads the live context and state it retains."
+     }
+    },
+    {
+     "name": "keytype",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:keytype"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_md",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_new",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Legacy ENGINE argument must be null in this build and is never retained."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Input key is read and OpenSSL raises its own retained reference."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_new_from_name",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional library context is stored as a non-owning dependency of the constructed context."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    },
+    {
+     "name": "propquery",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propquery"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_new_from_pkey",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional library context is stored as a non-owning dependency of the constructed context."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Input key is read and OpenSSL raises its own retained reference."
+     }
+    },
+    {
+     "name": "propquery",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propquery"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "NUL-terminated string read synchronously and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_new_id",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Legacy ENGINE argument must be null in this build and is never retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_set0_dh_kdf_ukm",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "ukm",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:ukm"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Ownership transfers and OpenSSL frees the allocation only on success; on failure it remains caller-owned."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set0_ecdh_kdf_ukm",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "ukm",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:ukm"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Ownership transfers and OpenSSL frees the allocation only on success; on failure it remains caller-owned."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set0_keygen_info",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "dat",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dat"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The context stores this mutable array without copying; it must remain live and unaliased until cleared or context destruction."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set0_rsa_oaep_label",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "label",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:label"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Ownership transfers and OpenSSL frees the allocation only on success; on failure it remains caller-owned."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set1_hkdf_key",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Length-delimited array read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set1_hkdf_salt",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "salt",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:salt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Length-delimited array read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set1_id",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
+     }
+    },
+    {
+     "name": "id",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:id"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Length-delimited array read synchronously and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set1_pbe_pass",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "pass",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pass"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set1_scrypt_salt",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "salt",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:salt"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set1_tls1_prf_secret",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "sec",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sec"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_app_data",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Opaque application cookie is stored without dereference or ownership transfer; the application must keep it live until replacement or final use."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_data",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Opaque legacy method data is stored; its eventual cleanup contract is method-specific, so callers must establish the matching lifetime/ownership invariant."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_kdf_md",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_kdf_outlen",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_kdf_type",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_nid",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_pad",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_paramgen_generator",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_paramgen_gindex",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_paramgen_prime_len",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_paramgen_seed",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "seed",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:seed"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_paramgen_subprime_len",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_paramgen_type",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dh_rfc5114",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dhx_rfc5114",
+   "defined_in": "crypto/evp/dh_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dsa_paramgen_bits",
+   "defined_in": "crypto/evp/dsa_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dsa_paramgen_gindex",
+   "defined_in": "crypto/evp/dsa_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dsa_paramgen_md",
+   "defined_in": "crypto/evp/dsa_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dsa_paramgen_md_props",
+   "defined_in": "crypto/evp/dsa_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md_name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md_name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    },
+    {
+     "name": "md_properties",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md_properties"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NUL-terminated name/property string consumed synchronously; optional property query may be NULL."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dsa_paramgen_q_bits",
+   "defined_in": "crypto/evp/dsa_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dsa_paramgen_seed",
+   "defined_in": "crypto/evp/dsa_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "seed",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:seed"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_dsa_paramgen_type",
+   "defined_in": "crypto/evp/dsa_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_ec_param_enc",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_ec_paramgen_curve_nid",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_ecdh_cofactor_mode",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_ecdh_kdf_md",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_ecdh_kdf_outlen",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_ecdh_kdf_type",
+   "defined_in": "crypto/evp/ec_ctrl.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_group_name",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_hkdf_md",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_hkdf_mode",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_kem_op",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "op",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:op"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_mac_key",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_params",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "params",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:params"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_keygen_bits",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_keygen_primes",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_mgf1_md",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_mgf1_md_name",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "mdname",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdname"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    },
+    {
+     "name": "mdprops",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdprops"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NUL-terminated name/property string consumed synchronously; optional property query may be NULL."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_oaep_md",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_oaep_md_name",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "mdname",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdname"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    },
+    {
+     "name": "mdprops",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdprops"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NUL-terminated name/property string consumed synchronously; optional property query may be NULL."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_padding",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_md",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_md_name",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "mdname",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdname"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    },
+    {
+     "name": "mdprops",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdprops"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed NUL-terminated name/property string consumed synchronously; optional property query may be NULL."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Legacy control paths may retain this digest pointer without raising its reference count; the safe wrapper therefore requires an immortal digest handle. Provider paths consume its name synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    },
+    {
+     "name": "mdname",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mdname"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed non-null NUL-terminated name consumed synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_pss_keygen_saltlen",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_rsa_pss_saltlen",
+   "defined_in": "crypto/rsa/rsa_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live exclusive EVP_PKEY_CTX borrow; the setter may mutate operation/provider state synchronously."
      }
     }
    ]
@@ -30106,2046 +33813,6 @@
      "note": "Fresh malloc-family NUL-terminated copy owned by the caller and releasable with free; NULL on allocation failure."
     }
    }
-  },
-  {
-   "name": "EVP_PKEY_CTX_add1_hkdf_info",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "info",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:info"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Length-delimited array read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_add1_tls1_prf_seed",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "seed",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:seed"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Length-delimited array read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_ctrl",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "p2",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": true,
-      "borrowed": {
-       "lifetime": "arg:p2"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "Command-dependent untyped operand: it may be null, input, output, or ownership-transferred; the command fixes its shape and lifecycle."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_ctrl_str",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "name",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:name"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    },
-    {
-     "name": "value",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:value"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_ctrl_uint64",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_dh_kdf_ukm",
-   "defined_in": "crypto/evp/dh_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "pukm",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pukm"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable output slot receives a context/provider-owned byte array whose length is the return value."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_ecdh_kdf_ukm",
-   "defined_in": "crypto/evp/ec_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "pukm",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pukm"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable output slot receives a context/provider-owned byte array whose length is the return value."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_libctx",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:ctx"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Borrowed result remains live with its owner."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_peerkey",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:ctx"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Borrowed result remains live with its owner."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_pkey",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:ctx"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Borrowed result remains live with its owner."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_propq",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": {
-      "by_val": true
-     },
-     "string": true,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:ctx"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Borrowed result remains live with its owner."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_provider",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:ctx"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Borrowed result remains live with its owner."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_get0_rsa_oaep_label",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "label",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:label"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable output slot receives a context/provider-owned byte array whose length is the return value."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get1_id",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "id",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:id"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Caller-owned output array receives the previously copied identifier."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get1_id_len",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "id_len",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:id_len"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable scalar output slot used only for the call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_app_data",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "other"
-     },
-     "nullable": true,
-     "mutable": true,
-     "note": "Opaque application/legacy data is externally owned; the context does not keep its allocation alive."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_data",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "other"
-     },
-     "nullable": true,
-     "mutable": true,
-     "note": "Opaque application/legacy data is externally owned; the context does not keep its allocation alive."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_dh_kdf_md",
-   "defined_in": "crypto/evp/dh_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "pmd",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pmd"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Writable output slot receives a borrowed pointer tied to the context."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_dh_kdf_outlen",
-   "defined_in": "crypto/evp/dh_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "plen",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:plen"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable scalar output slot used only for the call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_dh_kdf_type",
-   "defined_in": "crypto/evp/dh_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_ecdh_cofactor_mode",
-   "defined_in": "crypto/evp/ec_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_ecdh_kdf_md",
-   "defined_in": "crypto/evp/ec_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "pmd",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pmd"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Writable output slot receives a borrowed pointer tied to the context."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_ecdh_kdf_outlen",
-   "defined_in": "crypto/evp/ec_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "plen",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:plen"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable scalar output slot used only for the call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_ecdh_kdf_type",
-   "defined_in": "crypto/evp/ec_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_group_name",
-   "defined_in": "crypto/evp/evp_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "name",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:name"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Caller-owned output array is written up to its explicit capacity."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_keygen_info",
-   "defined_in": "crypto/evp/pmeth_gn.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_operation",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_params",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "params",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:params"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Caller-owned terminated OSSL_PARAM descriptor array and output data slots are written synchronously."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_rsa_mgf1_md",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "md",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:md"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Writable output slot receives a borrowed pointer tied to the context."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_rsa_mgf1_md_name",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "name",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:name"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Caller-owned output array is written up to its explicit capacity."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_rsa_oaep_md",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "md",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:md"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Writable output slot receives a borrowed pointer tied to the context."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_rsa_oaep_md_name",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "name",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:name"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Caller-owned output array is written up to its explicit capacity."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_rsa_padding",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "pad_mode",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pad_mode"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable scalar output slot used only for the call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_rsa_pss_saltlen",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "saltlen",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:saltlen"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "Writable scalar output slot used only for the call."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_get_signature_md",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "md",
-     "ptr": {
-      "scalar": {
-       "by_ref": {
-        "owned": null,
-        "borrowed": {
-         "lifetime": "arg:ctx"
-        }
-       }
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:md"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Writable output slot receives a borrowed pointer tied to the context."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_gettable_params",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": null,
-     "array": {
-      "by_val": true
-     },
-     "string": false,
-     "owned": false,
-     "borrowed": {
-      "lifetime": "arg:ctx"
-     },
-     "nullable": true,
-     "mutable": false,
-     "note": "Borrowed result remains live with its owner."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_hex2ctrl",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "hex",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:hex"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_is_a",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "The function only reads the live context and state it retains."
-     }
-    },
-    {
-     "name": "keytype",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:keytype"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_md",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "md",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:md"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_new",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "e",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:e"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Legacy ENGINE argument must be null in this build and is never retained."
-     }
-    },
-    {
-     "name": "pkey",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pkey"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Input key is read and OpenSSL raises its own retained reference."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_new_from_name",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "libctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:libctx"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional library context is stored as a non-owning dependency of the constructed context."
-     }
-    },
-    {
-     "name": "name",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:name"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    },
-    {
-     "name": "propquery",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:propquery"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_new_from_pkey",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "libctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:libctx"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Optional library context is stored as a non-owning dependency of the constructed context."
-     }
-    },
-    {
-     "name": "pkey",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:pkey"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Input key is read and OpenSSL raises its own retained reference."
-     }
-    },
-    {
-     "name": "propquery",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": {
-       "by_val": true
-      },
-      "string": true,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:propquery"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "NUL-terminated string read synchronously and not retained."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_new_id",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "e",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:e"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Legacy ENGINE argument must be null in this build and is never retained."
-     }
-    }
-   ],
-   "ptr_ret": {
-    "ptr": {
-     "scalar": {
-      "by_val": true
-     },
-     "array": null,
-     "string": false,
-     "owned": true,
-     "borrowed": null,
-     "nullable": true,
-     "mutable": true,
-     "note": "Null on failure; otherwise transfers a fresh EVP_PKEY_CTX ownership obligation."
-    }
-   }
-  },
-  {
-   "name": "EVP_PKEY_CTX_set0_dh_kdf_ukm",
-   "defined_in": "crypto/evp/dh_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "ukm",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": true,
-      "borrowed": {
-       "lifetime": "arg:ukm"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Ownership transfers and OpenSSL frees the allocation only on success; on failure it remains caller-owned."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_set0_ecdh_kdf_ukm",
-   "defined_in": "crypto/evp/ec_ctrl.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "ukm",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": true,
-      "borrowed": {
-       "lifetime": "arg:ukm"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Ownership transfers and OpenSSL frees the allocation only on success; on failure it remains caller-owned."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_set0_keygen_info",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "dat",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:dat"
-      },
-      "nullable": true,
-      "mutable": true,
-      "note": "The context stores this mutable array without copying; it must remain live and unaliased until cleared or context destruction."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_set0_rsa_oaep_label",
-   "defined_in": "crypto/rsa/rsa_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "label",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": true,
-      "borrowed": {
-       "lifetime": "arg:label"
-      },
-      "nullable": true,
-      "mutable": false,
-      "note": "Ownership transfers and OpenSSL frees the allocation only on success; on failure it remains caller-owned."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_set1_hkdf_key",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "key",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:key"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Length-delimited array read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_set1_hkdf_salt",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "salt",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:salt"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Length-delimited array read synchronously and not retained."
-     }
-    }
-   ]
-  },
-  {
-   "name": "EVP_PKEY_CTX_set1_id",
-   "defined_in": "crypto/evp/pmeth_lib.c",
-   "ptr_args": [
-    {
-     "name": "ctx",
-     "ptr": {
-      "scalar": {
-       "by_val": true
-      },
-      "array": null,
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:ctx"
-      },
-      "nullable": false,
-      "mutable": true,
-      "note": "The context is borrowed; provider/legacy control operations may mutate its operation state."
-     }
-    },
-    {
-     "name": "id",
-     "ptr": {
-      "scalar": null,
-      "array": {
-       "by_val": true
-      },
-      "string": false,
-      "owned": false,
-      "borrowed": {
-       "lifetime": "arg:id"
-      },
-      "nullable": false,
-      "mutable": false,
-      "note": "Length-delimited array read synchronously and not retained."
-     }
-    }
-   ]
   }
  ]
 }

@@ -119,4 +119,36 @@ mod tests {
             EVP_PKEY_Q_keygen(None, None, QuickKeygen::Ed25519).expect("ED25519 quick keygen");
         assert!(!key.as_ref().as_ptr().is_null());
     }
+
+    #[test]
+    fn group_name_configures_an_ec_generation_context() {
+        use ffibox::CBox;
+
+        use crate::evp::evp::EvpPkeyCtx;
+        use crate::evp::pmeth_gn::EVP_PKEY_paramgen_init;
+
+        // SAFETY: null selects the process default context and properties; a
+        // non-null result transfers one fully initialized context allocation.
+        let raw = unsafe {
+            ffi::EVP_PKEY_CTX_new_from_name(ptr::null_mut(), c"EC".as_ptr(), ptr::null())
+        };
+        // SAFETY: ownership of the fresh context transfers to this owner once.
+        let mut ctx = unsafe { CBox::<EvpPkeyCtx>::from_raw(raw) }.expect("EC context");
+        assert_eq!(EVP_PKEY_paramgen_init(&mut ctx.as_mut()), 1);
+        assert_eq!(
+            EVP_PKEY_CTX_set_group_name(&mut ctx.as_mut(), c"prime256v1"),
+            1
+        );
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_group_name
+/// Selects a NUL-terminated group name for key or parameter generation.
+pub fn EVP_PKEY_CTX_set_group_name(
+    ctx: &mut crate::evp::evp::EvpPkeyCtxMut<'_>,
+    name: &CStr,
+) -> i32 {
+    // SAFETY: the context is exclusively borrowed and `name` is a live
+    // NUL-terminated string consumed synchronously by the parameter setter.
+    unsafe { ffi::EVP_PKEY_CTX_set_group_name(ctx.as_mut_ptr(), name.as_ptr()) }
 }

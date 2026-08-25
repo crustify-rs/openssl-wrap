@@ -2,6 +2,7 @@
 
 #![allow(non_snake_case)]
 
+use core::ffi::CStr;
 use core::ptr::{self, NonNull};
 
 use ffibox::{CSlice, CVec};
@@ -110,6 +111,133 @@ pub fn EVP_PKEY_CTX_set0_rsa_oaep_label(
     })
 }
 
+fn name_and_properties(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    digest_name: &CStr,
+    properties: Option<&CStr>,
+    setter: unsafe extern "C" fn(
+        *mut ffi::evp_pkey_ctx_st,
+        *const core::ffi::c_char,
+        *const core::ffi::c_char,
+    ) -> i32,
+) -> i32 {
+    let properties = properties.map_or(ptr::null(), CStr::as_ptr);
+    // SAFETY: the exclusive context and digest name are live, and properties
+    // is null or a live NUL-terminated string for the synchronous setter.
+    unsafe { setter(ctx.as_mut_ptr(), digest_name.as_ptr(), properties) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_rsa_keygen_bits
+pub fn EVP_PKEY_CTX_set_rsa_keygen_bits(ctx: &mut EvpPkeyCtxMut<'_>, bits: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value RSA control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_keygen_bits(ctx.as_mut_ptr(), bits) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_keygen_primes
+pub fn EVP_PKEY_CTX_set_rsa_keygen_primes(ctx: &mut EvpPkeyCtxMut<'_>, primes: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value RSA control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_keygen_primes(ctx.as_mut_ptr(), primes) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_mgf1_md
+pub fn EVP_PKEY_CTX_set_rsa_mgf1_md(ctx: &mut EvpPkeyCtxMut<'_>, digest: EvpMdRef<'static>) -> i32 {
+    // SAFETY: the digest handle is immortal and the context is exclusively
+    // borrowed, covering provider copying and legacy RSA control retention.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_mgf1_md(ctx.as_mut_ptr(), digest.as_ptr()) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_mgf1_md_name
+pub fn EVP_PKEY_CTX_set_rsa_mgf1_md_name(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    digest_name: &CStr,
+    properties: Option<&CStr>,
+) -> i32 {
+    name_and_properties(
+        ctx,
+        digest_name,
+        properties,
+        ffi::EVP_PKEY_CTX_set_rsa_mgf1_md_name,
+    )
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_oaep_md
+pub fn EVP_PKEY_CTX_set_rsa_oaep_md(ctx: &mut EvpPkeyCtxMut<'_>, digest: EvpMdRef<'static>) -> i32 {
+    // SAFETY: the digest handle is immortal and the context is exclusively
+    // borrowed, covering provider copying and legacy RSA control retention.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_oaep_md(ctx.as_mut_ptr(), digest.as_ptr()) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_oaep_md_name
+pub fn EVP_PKEY_CTX_set_rsa_oaep_md_name(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    digest_name: &CStr,
+    properties: Option<&CStr>,
+) -> i32 {
+    name_and_properties(
+        ctx,
+        digest_name,
+        properties,
+        ffi::EVP_PKEY_CTX_set_rsa_oaep_md_name,
+    )
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_padding
+pub fn EVP_PKEY_CTX_set_rsa_padding(ctx: &mut EvpPkeyCtxMut<'_>, padding: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value RSA control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_padding(ctx.as_mut_ptr(), padding) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_pss_keygen_md
+pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_md(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    digest: EvpMdRef<'static>,
+) -> i32 {
+    // SAFETY: the digest handle is immortal and the context is exclusively
+    // borrowed, covering provider copying and legacy RSA control retention.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_pss_keygen_md(ctx.as_mut_ptr(), digest.as_ptr()) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_pss_keygen_md_name
+pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_md_name(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    digest_name: &CStr,
+    properties: Option<&CStr>,
+) -> i32 {
+    name_and_properties(
+        ctx,
+        digest_name,
+        properties,
+        ffi::EVP_PKEY_CTX_set_rsa_pss_keygen_md_name,
+    )
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md
+pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    digest: EvpMdRef<'static>,
+) -> i32 {
+    // SAFETY: the digest handle is immortal and the context is exclusively
+    // borrowed, covering provider copying and legacy RSA control retention.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md(ctx.as_mut_ptr(), digest.as_ptr()) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name
+pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    digest_name: &CStr,
+) -> i32 {
+    // SAFETY: the exclusive context and NUL-terminated digest name remain live
+    // for the synchronous RSA parameter setter.
+    unsafe {
+        ffi::EVP_PKEY_CTX_set_rsa_pss_keygen_mgf1_md_name(ctx.as_mut_ptr(), digest_name.as_ptr())
+    }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_pss_keygen_saltlen
+pub fn EVP_PKEY_CTX_set_rsa_pss_keygen_saltlen(ctx: &mut EvpPkeyCtxMut<'_>, salt_len: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value RSA control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_pss_keygen_saltlen(ctx.as_mut_ptr(), salt_len) }
+}
+/// Wraps: EVP_PKEY_CTX_set_rsa_pss_saltlen
+pub fn EVP_PKEY_CTX_set_rsa_pss_saltlen(ctx: &mut EvpPkeyCtxMut<'_>, salt_len: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value RSA control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_rsa_pss_saltlen(ctx.as_mut_ptr(), salt_len) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -125,5 +253,17 @@ mod tests {
         assert_eq!(salt_len.is_some(), status == 1);
         let mut name = [0_u8; 80];
         assert!(EVP_PKEY_CTX_get_rsa_oaep_md_name(&mut handle, &mut name) <= 1);
+    }
+    #[test]
+    fn keygen_setters_use_typed_values_and_names() {
+        use crate::evp::pmeth_gn::EVP_PKEY_keygen_init;
+
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"RSA-PSS", None).expect("RSA-PSS context");
+        assert_eq!(EVP_PKEY_keygen_init(&mut ctx.as_mut()), 1);
+        assert_eq!(EVP_PKEY_CTX_set_rsa_keygen_bits(&mut ctx.as_mut(), 1024), 1);
+        assert_eq!(
+            EVP_PKEY_CTX_set_rsa_pss_keygen_md_name(&mut ctx.as_mut(), c"SHA256", None),
+            1
+        );
     }
 }

@@ -10,7 +10,9 @@ use ffibox::{CBox, CSlice, CType, CVec};
 use libcrypto_sys as ffi;
 
 use crate::bio::context::OsslLibCtxRef;
-use crate::core::openssl_core::{OsslParam, OsslParamListMut, terminated_param_len};
+use crate::core::openssl_core::{
+    OsslParam, OsslParamListMut, OsslParamListRef, terminated_param_len,
+};
 use crate::evp::evp::{EvpMdRef, EvpPkeyCtx, EvpPkeyCtxMut, EvpPkeyCtxRef, EvpPkeyRef};
 use crate::mem::CryptoFree;
 use crate::provider::provider_core::OsslProviderRef;
@@ -546,6 +548,113 @@ pub fn EVP_PKEY_CTX_str2ctrl(ctx: &mut EvpPkeyCtxMut<'_>, command: i32, value: &
     unsafe { ffi::EVP_PKEY_CTX_str2ctrl(ctx.as_mut_ptr(), command, value.as_ptr()) }
 }
 
+fn int_len(bytes: &[u8]) -> Option<i32> {
+    i32::try_from(bytes.len()).ok()
+}
+
+/// Wraps: EVP_PKEY_CTX_set1_pbe_pass
+/// Copies the password bytes into a password-based derivation context.
+pub fn EVP_PKEY_CTX_set1_pbe_pass(ctx: &mut EvpPkeyCtxMut<'_>, password: &[u8]) -> i32 {
+    let Some(len) = int_len(password) else {
+        return 0;
+    };
+    // SAFETY: the exclusive context is live and `password` supplies exactly
+    // `len` readable bytes; set1 copies the value before returning.
+    unsafe { ffi::EVP_PKEY_CTX_set1_pbe_pass(ctx.as_mut_ptr(), password.as_ptr().cast(), len) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set1_scrypt_salt
+/// Copies the salt bytes into an scrypt derivation context.
+pub fn EVP_PKEY_CTX_set1_scrypt_salt(ctx: &mut EvpPkeyCtxMut<'_>, salt: &[u8]) -> i32 {
+    let Some(len) = int_len(salt) else { return 0 };
+    // SAFETY: the exclusive context is live and `salt` supplies exactly `len`
+    // readable bytes; set1 copies the value before returning.
+    unsafe { ffi::EVP_PKEY_CTX_set1_scrypt_salt(ctx.as_mut_ptr(), salt.as_ptr(), len) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set1_tls1_prf_secret
+/// Copies the secret bytes into a TLS1-PRF derivation context.
+pub fn EVP_PKEY_CTX_set1_tls1_prf_secret(ctx: &mut EvpPkeyCtxMut<'_>, secret: &[u8]) -> i32 {
+    let Some(len) = int_len(secret) else { return 0 };
+    // SAFETY: the exclusive context is live and `secret` supplies exactly
+    // `len` readable bytes; set1 copies the value before returning.
+    unsafe { ffi::EVP_PKEY_CTX_set1_tls1_prf_secret(ctx.as_mut_ptr(), secret.as_ptr(), len) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_app_data
+/// Stores an opaque application cookie in the context.
+///
+/// # Safety
+///
+/// A non-null cookie must remain valid for every later application use through
+/// this context, or until it is replaced. OpenSSL does not manage its lifetime.
+pub unsafe fn EVP_PKEY_CTX_set_app_data(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    data: Option<NonNull<c_void>>,
+) {
+    let data = data.map_or(ptr::null_mut(), NonNull::as_ptr);
+    // SAFETY: the context is exclusively borrowed. The caller establishes the
+    // stored cookie's lifetime because that relationship is type-erased by C.
+    unsafe { ffi::EVP_PKEY_CTX_set_app_data(ctx.as_mut_ptr(), data) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_data
+/// Stores legacy method-private state in the context.
+///
+/// # Safety
+///
+/// `data` must have the exact layout and ownership contract expected by the
+/// context's active legacy method, including its eventual cleanup routine.
+pub unsafe fn EVP_PKEY_CTX_set_data(ctx: &mut EvpPkeyCtxMut<'_>, data: Option<NonNull<c_void>>) {
+    let data = data.map_or(ptr::null_mut(), NonNull::as_ptr);
+    // SAFETY: the context is exclusively borrowed. The caller establishes the
+    // method-specific type and cleanup contract erased by the `void *` field.
+    unsafe { ffi::EVP_PKEY_CTX_set_data(ctx.as_mut_ptr(), data) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_hkdf_md
+/// Selects the digest used by an HKDF derivation context.
+pub fn EVP_PKEY_CTX_set_hkdf_md(ctx: &mut EvpPkeyCtxMut<'_>, digest: EvpMdRef<'static>) -> i32 {
+    // SAFETY: the digest handle is immortal, covering both provider copying and a
+    // legacy method retaining the selected digest pointer.
+    unsafe { ffi::EVP_PKEY_CTX_set_hkdf_md(ctx.as_mut_ptr(), digest.as_ptr()) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_hkdf_mode
+pub fn EVP_PKEY_CTX_set_hkdf_mode(ctx: &mut EvpPkeyCtxMut<'_>, mode: i32) -> i32 {
+    // SAFETY: the exclusive context is live; `mode` is passed by value and C
+    // validates whether it is supported by the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_hkdf_mode(ctx.as_mut_ptr(), mode) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_kem_op
+/// Selects a NUL-terminated KEM operation name.
+pub fn EVP_PKEY_CTX_set_kem_op(ctx: &mut EvpPkeyCtxMut<'_>, operation: &CStr) -> i32 {
+    // SAFETY: the context and NUL-terminated name are live for the synchronous
+    // call; provider state consumes the name before return.
+    unsafe { ffi::EVP_PKEY_CTX_set_kem_op(ctx.as_mut_ptr(), operation.as_ptr()) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_mac_key
+/// Copies the key bytes into a MAC key-generation context.
+pub fn EVP_PKEY_CTX_set_mac_key(ctx: &mut EvpPkeyCtxMut<'_>, key: &[u8]) -> i32 {
+    let Some(len) = int_len(key) else { return 0 };
+    // SAFETY: the exclusive context is live and `key` supplies exactly `len`
+    // readable bytes; the setter copies the value before returning.
+    unsafe { ffi::EVP_PKEY_CTX_set_mac_key(ctx.as_mut_ptr(), key.as_ptr(), len) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_params
+/// Applies a validated, terminated parameter list to the active operation.
+pub fn EVP_PKEY_CTX_set_params(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    params: &OsslParamListRef<'_, '_>,
+) -> i32 {
+    // SAFETY: the list wrapper guarantees initialized descriptors followed by
+    // an OSSL_PARAM_END sentinel; all descriptor borrows cover the call.
+    unsafe { ffi::EVP_PKEY_CTX_set_params(ctx.as_mut_ptr(), params.as_ptr()) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -605,5 +714,17 @@ mod tests {
         let mut handle = context.as_mut();
         let status = EVP_PKEY_CTX_ctrl_str(&mut handle, c"rsa_padding_mode", c"pkcs1");
         assert!(status <= 1);
+    }
+    #[test]
+    fn scrypt_set1_inputs_are_copied_from_slices() {
+        use crate::evp::exchange::EVP_PKEY_derive_init;
+
+        let mut ctx = context(c"SCRYPT");
+        assert_eq!(EVP_PKEY_derive_init(&mut ctx.as_mut()), 1);
+        assert_eq!(
+            EVP_PKEY_CTX_set1_pbe_pass(&mut ctx.as_mut(), b"password"),
+            1
+        );
+        assert_eq!(EVP_PKEY_CTX_set1_scrypt_salt(&mut ctx.as_mut(), b"salt"), 1);
     }
 }

@@ -84,6 +84,43 @@ pub fn EVP_PKEY_CTX_set0_ecdh_kdf_ukm(
     })
 }
 
+/// Wraps: EVP_PKEY_CTX_set_ec_param_enc
+pub fn EVP_PKEY_CTX_set_ec_param_enc(ctx: &mut EvpPkeyCtxMut<'_>, encoding: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_ec_param_enc(ctx.as_mut_ptr(), encoding) }
+}
+/// Wraps: EVP_PKEY_CTX_set_ec_paramgen_curve_nid
+pub fn EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx: &mut EvpPkeyCtxMut<'_>, nid: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx.as_mut_ptr(), nid) }
+}
+/// Wraps: EVP_PKEY_CTX_set_ecdh_cofactor_mode
+pub fn EVP_PKEY_CTX_set_ecdh_cofactor_mode(ctx: &mut EvpPkeyCtxMut<'_>, mode: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_ecdh_cofactor_mode(ctx.as_mut_ptr(), mode) }
+}
+/// Wraps: EVP_PKEY_CTX_set_ecdh_kdf_md
+pub fn EVP_PKEY_CTX_set_ecdh_kdf_md(ctx: &mut EvpPkeyCtxMut<'_>, digest: EvpMdRef<'static>) -> i32 {
+    // SAFETY: the digest handle is immortal and the context is exclusively
+    // borrowed, covering provider copying and legacy control retention.
+    unsafe { ffi::EVP_PKEY_CTX_set_ecdh_kdf_md(ctx.as_mut_ptr(), digest.as_ptr()) }
+}
+/// Wraps: EVP_PKEY_CTX_set_ecdh_kdf_outlen
+pub fn EVP_PKEY_CTX_set_ecdh_kdf_outlen(ctx: &mut EvpPkeyCtxMut<'_>, output_len: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_ecdh_kdf_outlen(ctx.as_mut_ptr(), output_len) }
+}
+/// Wraps: EVP_PKEY_CTX_set_ecdh_kdf_type
+pub fn EVP_PKEY_CTX_set_ecdh_kdf_type(ctx: &mut EvpPkeyCtxMut<'_>, kdf: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_ecdh_kdf_type(ctx.as_mut_ptr(), kdf) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -97,5 +134,17 @@ mod tests {
         assert!(EVP_PKEY_CTX_get_ecdh_kdf_type(&mut handle) <= 1);
         let (status, len) = EVP_PKEY_CTX_get_ecdh_kdf_outlen(&mut handle);
         assert_eq!(len.is_some(), status == 1);
+    }
+    #[test]
+    fn curve_setter_uses_an_exclusive_context() {
+        use crate::evp::pmeth_gn::EVP_PKEY_paramgen_init;
+        use crate::objects::obj_dat::OBJ_txt2nid;
+
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"EC", None).expect("EC context");
+        assert_eq!(EVP_PKEY_paramgen_init(&mut ctx.as_mut()), 1);
+        assert_eq!(
+            EVP_PKEY_CTX_set_ec_paramgen_curve_nid(&mut ctx.as_mut(), OBJ_txt2nid(c"prime256v1")),
+            1
+        );
     }
 }

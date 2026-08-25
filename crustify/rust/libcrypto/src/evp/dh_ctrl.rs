@@ -77,6 +77,85 @@ pub fn EVP_PKEY_CTX_set0_dh_kdf_ukm(
     })
 }
 
+/// Wraps: EVP_PKEY_CTX_set_dh_kdf_md
+pub fn EVP_PKEY_CTX_set_dh_kdf_md(ctx: &mut EvpPkeyCtxMut<'_>, digest: EvpMdRef<'static>) -> i32 {
+    // SAFETY: the digest handle is immortal and the context is exclusively
+    // borrowed, covering provider copying and legacy control retention.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_kdf_md(ctx.as_mut_ptr(), digest.as_ptr()) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_kdf_outlen
+pub fn EVP_PKEY_CTX_set_dh_kdf_outlen(ctx: &mut EvpPkeyCtxMut<'_>, output_len: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_kdf_outlen(ctx.as_mut_ptr(), output_len) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_kdf_type
+pub fn EVP_PKEY_CTX_set_dh_kdf_type(ctx: &mut EvpPkeyCtxMut<'_>, kdf: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_kdf_type(ctx.as_mut_ptr(), kdf) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_nid
+pub fn EVP_PKEY_CTX_set_dh_nid(ctx: &mut EvpPkeyCtxMut<'_>, nid: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_nid(ctx.as_mut_ptr(), nid) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_pad
+pub fn EVP_PKEY_CTX_set_dh_pad(ctx: &mut EvpPkeyCtxMut<'_>, pad: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_pad(ctx.as_mut_ptr(), pad) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_paramgen_generator
+pub fn EVP_PKEY_CTX_set_dh_paramgen_generator(ctx: &mut EvpPkeyCtxMut<'_>, generator: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_paramgen_generator(ctx.as_mut_ptr(), generator) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_paramgen_gindex
+pub fn EVP_PKEY_CTX_set_dh_paramgen_gindex(ctx: &mut EvpPkeyCtxMut<'_>, gindex: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_paramgen_gindex(ctx.as_mut_ptr(), gindex) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_paramgen_prime_len
+pub fn EVP_PKEY_CTX_set_dh_paramgen_prime_len(ctx: &mut EvpPkeyCtxMut<'_>, bits: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_paramgen_prime_len(ctx.as_mut_ptr(), bits) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_paramgen_seed
+pub fn EVP_PKEY_CTX_set_dh_paramgen_seed(ctx: &mut EvpPkeyCtxMut<'_>, seed: &[u8]) -> i32 {
+    // SAFETY: `seed` supplies its exact readable length and remains live for
+    // the synchronous parameter setter, which copies the seed value.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_paramgen_seed(ctx.as_mut_ptr(), seed.as_ptr(), seed.len()) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_paramgen_subprime_len
+pub fn EVP_PKEY_CTX_set_dh_paramgen_subprime_len(ctx: &mut EvpPkeyCtxMut<'_>, bits: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_paramgen_subprime_len(ctx.as_mut_ptr(), bits) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_paramgen_type
+pub fn EVP_PKEY_CTX_set_dh_paramgen_type(ctx: &mut EvpPkeyCtxMut<'_>, parameter_type: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_paramgen_type(ctx.as_mut_ptr(), parameter_type) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dh_rfc5114
+pub fn EVP_PKEY_CTX_set_dh_rfc5114(ctx: &mut EvpPkeyCtxMut<'_>, group: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dh_rfc5114(ctx.as_mut_ptr(), group) }
+}
+/// Wraps: EVP_PKEY_CTX_set_dhx_rfc5114
+pub fn EVP_PKEY_CTX_set_dhx_rfc5114(ctx: &mut EvpPkeyCtxMut<'_>, group: i32) -> i32 {
+    // SAFETY: the context is exclusively borrowed and C validates the
+    // by-value control argument for the active operation.
+    unsafe { ffi::EVP_PKEY_CTX_set_dhx_rfc5114(ctx.as_mut_ptr(), group) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,5 +169,20 @@ mod tests {
         assert!(status <= 1);
         let (status, len) = EVP_PKEY_CTX_get_dh_kdf_outlen(&mut handle);
         assert_eq!(len.is_some(), status == 1);
+    }
+    #[test]
+    fn parameter_setters_accept_typed_context_and_slice() {
+        use crate::evp::pmeth_gn::EVP_PKEY_paramgen_init;
+
+        let mut ctx = EVP_PKEY_CTX_new_from_name(None, c"DH", None).expect("DH context");
+        assert_eq!(EVP_PKEY_paramgen_init(&mut ctx.as_mut()), 1);
+        assert_eq!(
+            EVP_PKEY_CTX_set_dh_paramgen_prime_len(&mut ctx.as_mut(), 512),
+            1
+        );
+        assert_eq!(
+            EVP_PKEY_CTX_set_dh_paramgen_seed(&mut ctx.as_mut(), b"seed"),
+            -2
+        );
     }
 }
