@@ -2,6 +2,7 @@
 
 pub mod asymcipher;
 pub mod dh_ctrl;
+pub mod digest;
 pub mod dsa_ctrl;
 pub mod ec_ctrl;
 pub mod evp;
@@ -12,6 +13,8 @@ pub mod evp_pkey_type;
 pub mod exchange;
 pub mod kem;
 pub mod keymgmt_meth;
+pub mod m_sigver;
+pub mod names;
 pub mod p_legacy;
 pub mod p_lib;
 pub mod pmeth_check;

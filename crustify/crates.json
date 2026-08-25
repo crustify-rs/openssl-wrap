@@ -1070,6 +1070,27 @@
               "members": {
                 "callbacks": [],
                 "functions": [
+                  "EVP_MD_CTX_clear_flags",
+                  "EVP_MD_CTX_get0_md",
+                  "EVP_MD_CTX_get0_md_data",
+                  "EVP_MD_CTX_get1_md",
+                  "EVP_MD_CTX_get_pkey_ctx",
+                  "EVP_MD_CTX_get_size_ex",
+                  "EVP_MD_CTX_md",
+                  "EVP_MD_CTX_set_flags",
+                  "EVP_MD_CTX_set_pkey_ctx",
+                  "EVP_MD_CTX_test_flags",
+                  "EVP_MD_get0_description",
+                  "EVP_MD_get0_name",
+                  "EVP_MD_get0_provider",
+                  "EVP_MD_get_block_size",
+                  "EVP_MD_get_flags",
+                  "EVP_MD_get_pkey_type",
+                  "EVP_MD_get_size",
+                  "EVP_MD_get_type",
+                  "EVP_MD_is_a",
+                  "EVP_MD_names_do_all",
+                  "EVP_MD_xof",
                   "EVP_PKEY_CTX_get_algor",
                   "EVP_PKEY_CTX_get_algor_params",
                   "EVP_PKEY_CTX_get_group_name",
@@ -1359,6 +1380,7 @@
                 "macros": [],
                 "types": [
                   "evp_keymgmt_st",
+                  "evp_md_ctx_st",
                   "evp_signature_st",
                   "evp_skeymgmt_st"
                 ]
@@ -1521,6 +1543,82 @@
                 "types": []
               },
               "tu": "crypto/evp/keymgmt_meth.c"
+            },
+            "src/evp/digest.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_Digest",
+                  "EVP_DigestFinal",
+                  "EVP_DigestFinalXOF",
+                  "EVP_DigestFinal_ex",
+                  "EVP_DigestInit",
+                  "EVP_DigestInit_ex",
+                  "EVP_DigestInit_ex2",
+                  "EVP_DigestSqueeze",
+                  "EVP_DigestUpdate",
+                  "EVP_MD_CTX_copy",
+                  "EVP_MD_CTX_copy_ex",
+                  "EVP_MD_CTX_ctrl",
+                  "EVP_MD_CTX_deserialize",
+                  "EVP_MD_CTX_dup",
+                  "EVP_MD_CTX_free",
+                  "EVP_MD_CTX_get_params",
+                  "EVP_MD_CTX_gettable_params",
+                  "EVP_MD_CTX_new",
+                  "EVP_MD_CTX_reset",
+                  "EVP_MD_CTX_serialize",
+                  "EVP_MD_CTX_set_params",
+                  "EVP_MD_CTX_settable_params",
+                  "EVP_MD_do_all_provided",
+                  "EVP_MD_fetch",
+                  "EVP_MD_get_params",
+                  "EVP_MD_gettable_ctx_params",
+                  "EVP_MD_gettable_params",
+                  "EVP_MD_settable_ctx_params"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/digest.c"
+            },
+            "src/evp/m_sigver.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_DigestSign",
+                  "EVP_DigestSignFinal",
+                  "EVP_DigestSignInit",
+                  "EVP_DigestSignInit_ex",
+                  "EVP_DigestSignUpdate",
+                  "EVP_DigestVerify",
+                  "EVP_DigestVerifyFinal",
+                  "EVP_DigestVerifyInit",
+                  "EVP_DigestVerifyInit_ex",
+                  "EVP_DigestVerifyUpdate"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/m_sigver.c"
+            },
+            "src/evp/names.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_MD_do_all",
+                  "EVP_MD_do_all_sorted"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/names.c"
             }
           },
           "rust_path": "src/evp"
