@@ -3642,6 +3642,94 @@
    ]
   },
   {
+   "name": "evp_md_ctx_st",
+   "defined_in": "crypto/evp/evp_local.h",
+   "_comment_agent": "EVP_MD_CTX is publicly opaque. Findings follow digest.c initialization, copy and reset paths; no field accessor is exposed by this wrap wave.",
+   "fields": [
+    {
+     "name": "algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Provider digest state owned by the context and released through digest->freectx; concrete type is provider-specific."
+     }
+    },
+    {
+     "name": "digest",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:fetched_digest"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Active provider digest borrowed from the context-owned fetched_digest reference; null before initialization and after reset."
+     }
+    },
+    {
+     "name": "fetched_digest",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "One owned EVP_MD reference released by EVP_MD_free; replacement and copying balance it with fetch/up_ref."
+     }
+    },
+    {
+     "name": "pctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Normally owned and freed by reset; EVP_MD_CTX_FLAG_KEEP_PKEY_CTX makes the same slot caller-owned/borrowed at runtime."
+     }
+    },
+    {
+     "name": "reqdigest",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Non-owning original digest selection: static for legacy methods or kept alive by the context's fetched_digest reference for provider methods."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_md_st",
    "defined_in": "include/crypto/evp.h",
    "_comment_agent": "The public EVP_MD surface is opaque, so no field accessor is emitted. Internal inspection shows dynamic records retain prov, own type_name, borrow description and dispatch callbacks from provider-backed algorithm metadata, and use refcnt for dynamic reference counting; legacy static records leave these pointers null.",
@@ -16268,6 +16356,126 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live key-management method and conditionally increments its internal reference count when it is not cache-owned."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_dup",
+   "defined_in": "crypto/evp/digest.c",
+   "lifetime": {
+    "for": "in",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reads the source synchronously; a null source is rejected by copy_ex and yields null."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a distinct deep duplicate with its own EVP_MD_CTX_free obligation, or null."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_free",
+   "defined_in": "crypto/evp/digest.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a uniquely owned context; null is explicitly accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MD_CTX_new",
+   "defined_in": "crypto/evp/digest.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns a fresh zero-initialized digest context or null; caller owns one EVP_MD_CTX_free obligation."
+    }
+   }
+  },
+  {
+   "name": "EVP_MD_CTX_reset",
+   "defined_in": "crypto/evp/digest.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": false,
+    "is_disposer": true,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Disposes retained state and zeroes the context in place; null is accepted."
      }
     }
    ]

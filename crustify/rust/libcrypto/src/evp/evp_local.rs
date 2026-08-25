@@ -1,6 +1,6 @@
 //! Wrappers assigned from `crypto/evp/evp_local.h`.
 
-use ffibox::{define_ctype, impl_dropped};
+use ffibox::{define_ctype, impl_cloned, impl_dropped};
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -203,6 +203,81 @@ mod skeymgmt_tests {
         assert_eq!(
             size_of::<SharedEvpSkeymgmt>(),
             size_of::<*mut ffi::evp_skeymgmt_st>()
+        );
+    }
+}
+
+define_ctype!(
+    /// Wraps: evp_md_ctx_st
+    ///
+    /// Pointer-compatible target for OpenSSL's opaque digest context. The
+    /// active digest, provider state, optional public-key context, and their
+    /// runtime-dependent ownership remain behind the public `EVP_MD_CTX_*`
+    /// call surface rather than becoming Rust field accessors.
+    ///
+    /// An owning [`ffibox::CBox<EvpMdCtx>`] uniquely owns the context header
+    /// and settles its retained state through `EVP_MD_CTX_free`. Cloning calls
+    /// `EVP_MD_CTX_dup`, which creates an independent context and duplicates
+    /// or raises the references needed by that copy.
+    EvpMdCtx,
+    EvpMdCtxRef,
+    EvpMdCtxMut,
+    ffi::evp_md_ctx_st
+);
+
+// `EVP_MD_CTX_free` first resets the context, releasing its provider digest
+// state, fetched digest reference, and normally its public-key context, then
+// releases the uniquely owned context allocation. The KEEP_PKEY_CTX flag is
+// the documented exception: that public-key context remains caller-owned.
+impl_dropped!(EvpMdCtx, ffi::evp_md_ctx_st, ffi::EVP_MD_CTX_free);
+
+// Digest contexts are not reference counted. `EVP_MD_CTX_dup` allocates a
+// distinct header and duplicates provider and public-key operation state while
+// balancing retained digest references, so the copy may be mutably borrowed
+// and freed independently.
+impl_cloned!(EvpMdCtx, ffi::evp_md_ctx_st, dup = ffi::EVP_MD_CTX_dup);
+
+#[cfg(test)]
+mod md_ctx_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CBox, CCell, CCloned, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
+
+    #[test]
+    fn opaque_digest_context_borrows_and_deep_clones() {
+        assert_owned_cloneable_cell::<EvpMdCtx>();
+
+        // SAFETY: a non-null result is a fresh, fully initialized empty digest
+        // context with one matching `EVP_MD_CTX_free` obligation.
+        let raw = unsafe { ffi::EVP_MD_CTX_new() };
+        // SAFETY: ownership of the fresh result transfers exactly once to the
+        // owner whose registered destructor is `EVP_MD_CTX_free`.
+        let mut context = unsafe { CBox::<EvpMdCtx>::from_raw(raw) }.expect("EVP_MD_CTX_new");
+
+        assert_eq!(context.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(context.as_mut().as_mut_ptr(), raw);
+
+        let duplicate = context.try_clone().expect("EVP_MD_CTX_dup");
+        assert_ne!(duplicate.as_ptr(), raw);
+    }
+
+    #[test]
+    fn opaque_digest_context_handles_are_pointer_sized() {
+        assert_eq!(
+            size_of::<EvpMdCtxRef<'static>>(),
+            size_of::<*const ffi::evp_md_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<EvpMdCtxMut<'static>>(),
+            size_of::<*mut ffi::evp_md_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<EvpMdCtx>>(),
+            size_of::<*mut ffi::evp_md_ctx_st>()
         );
     }
 }
