@@ -16649,6 +16649,89 @@
    ]
   },
   {
+   "name": "EVP_PKEY_CTX_get_algor",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "alg",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:alg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional borrowed in/out slot: NULL probes support; a NULL pointee receives a newly allocated X509_ALGOR, while a non-NULL caller-owned value may be decoded into in place."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required context borrowed for the synchronous provider parameter query; provider dispatch may mutate context state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_get_algor_params",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "alg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:alg"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned algorithm identifier is borrowed and its parameter field is overwritten or allocated. Although the manual claims NULL probes support, the implementation dereferences alg after a successful size query, so the safe contract requires non-NULL."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required context borrowed for the synchronous provider parameter query; provider dispatch may mutate context state."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_CTX_get_app_data",
    "defined_in": "crypto/evp/pmeth_lib.c",
    "ptr_args": [
@@ -18305,6 +18388,46 @@
       "nullable": true,
       "mutable": false,
       "note": "Borrowed element run consumed synchronously; set1/parameter setters copy or consume its value before returning."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_algor_params",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "alg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:alg"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Algorithm identifier is read synchronously to encode its parameter; the implementation dereferences alg, so NULL is not valid despite the manual's support-probe claim."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Required context borrowed for synchronous provider parameter dispatch and may be mutated by it."
      }
     }
    ]

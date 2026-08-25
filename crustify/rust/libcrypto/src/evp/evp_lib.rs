@@ -5,11 +5,13 @@
 use core::ffi::CStr;
 use core::ptr;
 
+use ffibox::CBox;
 use libcrypto_sys as ffi;
 
 use crate::bio::context::OsslLibCtxRef;
 use crate::evp::evp::EvpPkeyCtxMut;
 use crate::evp::p_lib::BorrowedEvpPkey;
+use crate::x509::x509::{X509Algor, X509AlgorMut, X509AlgorRef};
 
 /// The documented, type-safe argument shapes accepted by `EVP_PKEY_Q_keygen`.
 pub enum QuickKeygen<'a> {
@@ -151,4 +153,82 @@ pub fn EVP_PKEY_CTX_set_group_name(
     // SAFETY: the context is exclusively borrowed and `name` is a live
     // NUL-terminated string consumed synchronously by the parameter setter.
     unsafe { ffi::EVP_PKEY_CTX_set_group_name(ctx.as_mut_ptr(), name.as_ptr()) }
+}
+
+/// Wraps: EVP_PKEY_CTX_get_algor
+///
+/// Retrieves a newly allocated algorithm identifier. Any partial output from
+/// an unsuccessful decode is reclaimed before returning `None`.
+#[must_use]
+pub fn EVP_PKEY_CTX_get_algor(ctx: &mut EvpPkeyCtxMut<'_>) -> (i32, Option<CBox<X509Algor>>) {
+    let mut algorithm = ptr::null_mut();
+    // SAFETY: the context is exclusively borrowed and the initialized local
+    // slot is writable. Starting with null selects the allocating C contract.
+    let status = unsafe { ffi::EVP_PKEY_CTX_get_algor(ctx.as_mut_ptr(), &mut algorithm) };
+    // SAFETY: the slot started null. Any non-null value written by the decoder
+    // carries exactly one X509_ALGOR_free obligation, even if decoding later
+    // reports failure.
+    let algorithm = unsafe { CBox::from_raw(algorithm) };
+    if status == 1 {
+        (status, algorithm)
+    } else {
+        drop(algorithm);
+        (status, None)
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_get_algor_params
+///
+/// Replaces the algorithm identifier's owned parameter with the value
+/// reported by the active provider operation.
+pub fn EVP_PKEY_CTX_get_algor_params(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    algorithm: &mut X509AlgorMut<'_>,
+) -> i32 {
+    // SAFETY: both handles are exclusively borrowed. The algorithm identifier
+    // is non-null and owns its optional parameter, which the C decoder may
+    // reuse or replace while preserving its destructor contract.
+    unsafe { ffi::EVP_PKEY_CTX_get_algor_params(ctx.as_mut_ptr(), algorithm.as_mut_ptr()) }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_algor_params
+///
+/// Passes the borrowed algorithm identifier parameter to the active provider
+/// operation without transferring it.
+pub fn EVP_PKEY_CTX_set_algor_params(
+    ctx: &mut EvpPkeyCtxMut<'_>,
+    algorithm: X509AlgorRef<'_>,
+) -> i32 {
+    // SAFETY: the context is exclusively borrowed and the algorithm identifier
+    // remains live and readable for the synchronous encoding and dispatch.
+    unsafe { ffi::EVP_PKEY_CTX_set_algor_params(ctx.as_mut_ptr(), algorithm.as_ptr()) }
+}
+
+#[cfg(test)]
+mod algorithm_identifier_tests {
+    use super::*;
+
+    #[test]
+    fn calls_preserve_typed_ownership() {
+        use crate::evp::evp::EvpPkeyCtx;
+        use crate::evp::pmeth_gn::EVP_PKEY_paramgen_init;
+
+        // SAFETY: null selects the process default context and properties; a
+        // non-null result transfers one fully initialized context allocation.
+        let raw = unsafe {
+            ffi::EVP_PKEY_CTX_new_from_name(ptr::null_mut(), c"EC".as_ptr(), ptr::null())
+        };
+        // SAFETY: ownership of the fresh context transfers to this owner once.
+        let mut ctx = unsafe { CBox::<EvpPkeyCtx>::from_raw(raw) }.expect("EC context");
+        assert_eq!(EVP_PKEY_paramgen_init(&mut ctx.as_mut()), 1);
+
+        let mut algorithm = X509Algor::new().expect("algorithm identifier");
+        let address = algorithm.as_ref().as_ptr();
+        let _ = EVP_PKEY_CTX_set_algor_params(&mut ctx.as_mut(), algorithm.as_ref());
+        let _ = EVP_PKEY_CTX_get_algor_params(&mut ctx.as_mut(), &mut algorithm.as_mut());
+        assert_eq!(algorithm.as_ref().as_ptr(), address);
+
+        let (status, retrieved) = EVP_PKEY_CTX_get_algor(&mut ctx.as_mut());
+        assert!(status != 1 || retrieved.is_some());
+    }
 }
