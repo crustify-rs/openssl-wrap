@@ -446,3 +446,60 @@ mod md_tests {
         assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
     }
 }
+
+/// Wraps: EVP_PKEY_gen_cb
+///
+/// Callable handle for OpenSSL's key-generation progress callback.
+#[derive(Clone, Copy)]
+pub struct EvpPkeyGenCallback(ffi::EVP_PKEY_gen_cb);
+
+impl EvpPkeyGenCallback {
+    /// Adopts a raw callback, returning `None` for a null function pointer.
+    ///
+    /// # Safety
+    ///
+    /// A non-null callback must accept every live generation context supplied
+    /// by OpenSSL, obey its thread-safety rules, return a valid C `int`, and
+    /// never unwind across the C ABI.
+    #[must_use]
+    pub unsafe fn from_raw(raw: ffi::EVP_PKEY_gen_cb) -> Option<Self> {
+        raw.map(|callback| Self(Some(callback)))
+    }
+
+    /// Invokes the callback with an exclusively borrowed operation context.
+    pub fn call(self, ctx: &mut EvpPkeyCtxMut<'_>) -> i32 {
+        let callback = self.0.expect("EvpPkeyGenCallback is non-null");
+        // SAFETY: construction established the callback contract and the
+        // exclusive handle supplies a live context for this invocation.
+        unsafe { callback(ctx.as_mut_ptr()) }
+    }
+}
+
+#[cfg(test)]
+mod pkey_gen_callback_tests {
+    use super::*;
+
+    unsafe extern "C" fn accepts_context(ctx: *mut ffi::evp_pkey_ctx_st) -> i32 {
+        i32::from(!ctx.is_null())
+    }
+
+    #[test]
+    fn callback_handle_invokes_with_a_typed_context() {
+        // SAFETY: null selects the process-wide library context, the algorithm
+        // name is static, and null selects the default properties.
+        let raw = unsafe {
+            ffi::EVP_PKEY_CTX_new_from_name(
+                core::ptr::null_mut(),
+                c"RSA".as_ptr(),
+                core::ptr::null(),
+            )
+        };
+        // SAFETY: a non-null result transfers one context-free obligation.
+        let mut ctx = unsafe { CBox::<EvpPkeyCtx>::from_raw(raw) }.expect("RSA context");
+        // SAFETY: the test callback accepts every non-null live context and
+        // cannot unwind or retain its argument.
+        let callback = unsafe { EvpPkeyGenCallback::from_raw(Some(accepts_context)) }
+            .expect("non-null callback");
+        assert_eq!(callback.call(&mut ctx.as_mut()), 1);
+    }
+}

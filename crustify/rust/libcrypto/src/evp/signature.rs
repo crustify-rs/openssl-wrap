@@ -382,11 +382,27 @@ mod tests {
     fn operation_wrappers_do_not_expose_raw_buffers() {
         let mut context = context();
         let mut output = [MaybeUninit::uninit(); 32];
+        assert_eq!(
+            EVP_PKEY_CTX_set_signature(&mut context.as_mut(), b"signature"),
+            0,
+        );
         assert!(EVP_PKEY_sign(&mut context.as_mut(), &mut output, b"message").is_err());
         assert_eq!(
             EVP_PKEY_verify(&mut context.as_mut(), b"signature", b"message"),
             -1,
         );
         assert!(EVP_PKEY_verify_recover(&mut context.as_mut(), &mut output, b"signature").is_err());
+    }
+}
+
+/// Wraps: EVP_PKEY_CTX_set_signature
+///
+/// Copies a signature value into the active provider operation parameters.
+#[allow(non_snake_case)]
+pub fn EVP_PKEY_CTX_set_signature(ctx: &mut EvpPkeyCtxMut<'_>, signature: &[u8]) -> i32 {
+    // SAFETY: the exclusive context is live and the readable signature run
+    // remains valid for the synchronous parameter-setting operation.
+    unsafe {
+        ffi::EVP_PKEY_CTX_set_signature(ctx.as_mut_ptr(), signature.as_ptr(), signature.len())
     }
 }

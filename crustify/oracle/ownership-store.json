@@ -15986,6 +15986,297 @@
    ]
   },
   {
+   "name": "EVP_PKEY_CTX_set_scrypt_N",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The setter borrows and mutates the context for the call; its shared helper explicitly rejects a null context before access."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_scrypt_maxmem_bytes",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The setter borrows and mutates the context for the call; its shared helper explicitly rejects a null context before access."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_scrypt_p",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The setter borrows and mutates the context for the call; its shared helper explicitly rejects a null context before access."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_scrypt_r",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The setter borrows and mutates the context for the call; its shared helper explicitly rejects a null context before access."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_signature",
+   "defined_in": "crypto/evp/signature.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The function rejects a null context and otherwise mutates its provider parameters synchronously."
+     }
+    },
+    {
+     "name": "sig",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sig"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The byte run is read during the parameter setter; null is accepted for a zero-length run and no pointer is retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_signature_md",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The exported wrapper reads operation union state before its helper's null check, so null is not valid; the context is mutated."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null selects an empty digest name. Provider paths consume the name synchronously; legacy controls may retain the digest pointer, which the Rust wrapper handles by requiring an immortal digest."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_set_tls1_prf_md",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The exported wrapper reads operation union state before its helper's null check, so null is not valid; the context is mutated."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null selects an empty digest name. Provider paths consume the name synchronously; legacy controls may retain the digest pointer, which the Rust wrapper handles by requiring an immortal digest."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_PKEY_CTX_settable_params",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Operation-dispatch macros dereference the const context, so it must be non-null and is only read."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Returns null or a provider-owned null-key-terminated OSSL_PARAM table retained by context operation state."
+    }
+   }
+  },
+  {
+   "name": "EVP_PKEY_CTX_str2ctrl",
+   "defined_in": "crypto/evp/pmeth_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "EVP_PKEY_CTX_ctrl explicitly rejects a null context; a live context may be mutated by control dispatch."
+     }
+    },
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "strlen requires a non-null NUL-terminated string, which control dispatch reads synchronously."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_PKEY_Q_keygen",
    "defined_in": "crypto/evp/evp_lib.c",
    "ptr_args": [
@@ -17747,6 +18038,29 @@
      "note": "Reviewed against the public contract and implementation."
     }
    }
+  },
+  {
+   "name": "EVP_PKEY_gen_cb",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "arg0",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg0"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Both invokers call the callback synchronously with their live generation context; callback code may inspect or mutate that context and must not retain it."
+     }
+    }
+   ]
   },
   {
    "name": "EVP_PKEY_generate",

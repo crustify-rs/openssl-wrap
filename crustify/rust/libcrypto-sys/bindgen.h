@@ -8,6 +8,7 @@
 #include <openssl/dsa.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
+#include <openssl/kdf.h>
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
 #include <openssl/provider.h>
