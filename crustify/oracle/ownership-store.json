@@ -42079,6 +42079,26 @@
    }
   },
   {
+   "name": "RAND_OpenSSL",
+   "defined_in": null,
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": false,
+     "mutable": true,
+     "note": "Returns the address of the mutable process-static ossl_rand_meth table; ownership never transfers."
+    }
+   }
+  },
+  {
    "name": "RAND_add",
    "defined_in": "crypto/rand/rand_lib.c",
    "ptr_args": [
@@ -42125,6 +42145,46 @@
    ]
   },
   {
+   "name": "RAND_bytes_ex",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The required num-byte output buffer is filled synchronously and is not retained."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    }
+   ]
+  },
+  {
    "name": "RAND_file_name",
    "defined_in": "crypto/rand/randfile.c",
    "ptr_args": [
@@ -42158,6 +42218,143 @@
      "nullable": true,
      "mutable": false,
      "note": "Null on failure or a NUL-terminated string aliasing the caller's buf argument."
+    }
+   }
+  },
+  {
+   "name": "RAND_get0_primary",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "The returned shared DRBG is owned by the selected library context (or its current-thread state), may be NULL on failure, and is not a transferred reference."
+    }
+   }
+  },
+  {
+   "name": "RAND_get0_private",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "The returned shared DRBG is owned by the selected library context (or its current-thread state), may be NULL on failure, and is not a transferred reference."
+    }
+   }
+  },
+  {
+   "name": "RAND_get0_public",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "The returned shared DRBG is owned by the selected library context (or its current-thread state), may be NULL on failure, and is not a transferred reference."
+    }
+   }
+  },
+  {
+   "name": "RAND_get_rand_method",
+   "defined_in": null,
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "static"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Returns the current process-global method table, or NULL on initialization/locking failure; the pointer is not owned and the const table may not be mutated."
     }
    }
   },
@@ -42214,6 +42411,46 @@
    ]
   },
   {
+   "name": "RAND_priv_bytes_ex",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The required num-byte output buffer is filled synchronously and is not retained."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    }
+   ]
+  },
+  {
    "name": "RAND_pseudo_bytes",
    "defined_in": null,
    "ptr_args": [
@@ -42255,6 +42492,297 @@
       "nullable": false,
       "mutable": false,
       "note": "Synchronous read of exactly num bytes; the safe wrapper derives num from a borrowed byte slice."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_set0_private",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    },
+    {
+     "name": "rand",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:rand"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "On success ownership transfers into current-thread RAND state and the old context is freed; on failure the pointer remains caller-owned. NULL clears the slot."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_set0_public",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    },
+    {
+     "name": "rand",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": {
+       "lifetime": "arg:rand"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "On success ownership transfers into current-thread RAND state and the old context is freed; on failure the pointer remains caller-owned. NULL clears the slot."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_set1_random_provider",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    },
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The provider is not up-refed. RAND stores its address, but provider load/unload hooks clear and restore that address by name; NULL disables the override."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_set_DRBG_type",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated cipher name is duplicated synchronously into context-owned storage."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    },
+    {
+     "name": "digest",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:digest"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated digest name is duplicated synchronously into context-owned storage."
+     }
+    },
+    {
+     "name": "drbg",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:drbg"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated generator name is duplicated synchronously into context-owned storage."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query is duplicated synchronously into context-owned storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_set_rand_method",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The process-global RAND slot stores this const table without cloning it, so a non-NULL table must remain live until replacement or library cleanup; NULL restores lazy default selection."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_set_seed_source_type",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The library context is borrowed and may be NULL to select the default context; lazy RAND state initialization mutates context-owned internals."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query is duplicated synchronously into context-owned storage."
+     }
+    },
+    {
+     "name": "seed",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:seed"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated seed-source name is duplicated synchronously into context-owned storage."
      }
     }
    ]

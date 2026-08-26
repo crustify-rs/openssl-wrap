@@ -225,6 +225,42 @@ impl RandMethodMut<'_> {
     }
 }
 
+/// Wraps: RAND_OpenSSL
+/// Borrows OpenSSL's process-static default random-method table.
+#[cfg(feature = "deprecated-3-0")]
+#[allow(non_snake_case)]
+#[must_use]
+pub fn RAND_OpenSSL() -> RandMethodRef<'static> {
+    // SAFETY: OpenSSL returns the non-null address of `ossl_rand_meth`, whose
+    // static storage lives for the process. A shared handle deliberately does
+    // not expose the C signature's incidental mutability.
+    unsafe { RandMethodRef::from_ptr(ffi::RAND_OpenSSL()) }.expect("static RAND method")
+}
+
+/// Wraps: RAND_get_rand_method
+/// Borrows the current process-global random-method table.
+#[cfg(feature = "deprecated-3-0")]
+#[allow(non_snake_case)]
+#[must_use]
+pub fn RAND_get_rand_method() -> Option<RandMethodRef<'static>> {
+    // SAFETY: the installed table is either OpenSSL's static default or a
+    // process-lifetime table accepted by the safe setter below. A null result
+    // reports initialization or locking failure.
+    unsafe { RandMethodRef::from_ptr(ffi::RAND_get_rand_method().cast_mut()) }
+}
+
+/// Wraps: RAND_set_rand_method
+/// Installs a process-lifetime method table, or restores lazy default selection.
+#[cfg(feature = "deprecated-3-0")]
+#[allow(non_snake_case)]
+#[must_use]
+pub fn RAND_set_rand_method(method: Option<RandMethodRef<'static>>) -> bool {
+    let method = method.map_or(ptr::null(), |method| method.as_ptr());
+    // SAFETY: a non-null handle proves that the table and its callbacks remain
+    // live for the process, which is the lifetime OpenSSL stores globally.
+    unsafe { ffi::RAND_set_rand_method(method) == 1 }
+}
+
 /// Wraps: RAND_pseudo_bytes
 /// Fills `output` through the deprecated compatibility random method.
 #[cfg(feature = "deprecated-1-1-0")]
@@ -333,5 +369,18 @@ mod tests {
         // SAFETY: this is the test method's sole cleanup invocation.
         unsafe { shared.cleanup().expect("cleanup").call() };
         assert!(CLEANED.load(Ordering::Relaxed));
+    }
+
+    #[cfg(feature = "deprecated-3-0")]
+    #[test]
+    fn deprecated_default_method_is_borrowed_from_static_storage() {
+        let default = RAND_OpenSSL();
+        assert!(RAND_set_rand_method(Some(default)));
+        assert_eq!(
+            RAND_get_rand_method()
+                .expect("installed RAND method")
+                .as_ptr(),
+            default.as_ptr()
+        );
     }
 }

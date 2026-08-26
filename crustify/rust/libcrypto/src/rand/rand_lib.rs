@@ -2,7 +2,23 @@
 
 #![allow(non_snake_case)]
 
+use core::ffi::CStr;
+use core::ptr;
+
+use ffibox::CBox;
 use libcrypto_sys as ffi;
+
+use crate::bio::context::{OsslLibCtxMut, OsslLibCtxRef};
+use crate::evp::evp_local::{EvpRandCtx, EvpRandCtxRef};
+use crate::provider::provider_core::OsslProviderRef;
+
+fn context_ptr(context: Option<OsslLibCtxRef<'_>>) -> *mut ffi::ossl_lib_ctx_st {
+    context.map_or(ptr::null_mut(), |context| context.as_ptr().cast_mut())
+}
+
+fn c_string_ptr(value: Option<&CStr>) -> *const core::ffi::c_char {
+    value.map_or(ptr::null(), CStr::as_ptr)
+}
 
 /// Wraps: RAND_add
 /// Mixes `buffer` into the default random generator with the given entropy estimate.
@@ -72,9 +88,248 @@ pub fn RAND_status() -> bool {
     unsafe { ffi::RAND_status() == 1 }
 }
 
+/// Wraps: RAND_bytes_ex
+/// Fills `output` from the public generator belonging to `context`.
+pub fn RAND_bytes_ex(context: Option<OsslLibCtxRef<'_>>, output: &mut [u8], strength: u32) -> i32 {
+    // SAFETY: the optional handle addresses a live library context, while
+    // `output` supplies exactly its reported writable extent and is borrowed
+    // exclusively for this synchronous call.
+    unsafe {
+        ffi::RAND_bytes_ex(
+            context_ptr(context),
+            output.as_mut_ptr(),
+            output.len(),
+            strength,
+        )
+    }
+}
+
+/// Wraps: RAND_get0_primary
+/// Borrows the primary generator owned by `context` (or the default context).
+#[must_use]
+pub fn RAND_get0_primary<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRandCtxRef<'a>> {
+    // SAFETY: OpenSSL returns null or a shared, non-owning pointer into the
+    // selected context's RAND state. The returned handle cannot outlive the
+    // explicit context borrow; the null-context state is library-managed.
+    unsafe { EvpRandCtxRef::from_ptr(ffi::RAND_get0_primary(context_ptr(context))) }
+}
+
+/// Wraps: RAND_get0_private
+/// Borrows the current thread's private generator for `context`.
+#[must_use]
+pub fn RAND_get0_private<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRandCtxRef<'a>> {
+    // SAFETY: OpenSSL retains this thread-local context and returns no new
+    // ownership count. Its lifetime is bounded by the explicit library
+    // context, or managed by the default context and current thread.
+    unsafe { EvpRandCtxRef::from_ptr(ffi::RAND_get0_private(context_ptr(context))) }
+}
+
+/// Wraps: RAND_get0_public
+/// Borrows the current thread's public generator for `context`.
+#[must_use]
+pub fn RAND_get0_public<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRandCtxRef<'a>> {
+    // SAFETY: as for `RAND_get0_private`, for the public thread-local slot.
+    unsafe { EvpRandCtxRef::from_ptr(ffi::RAND_get0_public(context_ptr(context))) }
+}
+
+/// Wraps: RAND_priv_bytes_ex
+/// Fills `output` from the private generator belonging to `context`.
+pub fn RAND_priv_bytes_ex(
+    context: Option<OsslLibCtxRef<'_>>,
+    output: &mut [u8],
+    strength: u32,
+) -> i32 {
+    // SAFETY: the optional handle addresses a live library context, while
+    // `output` supplies exactly its reported writable extent and is borrowed
+    // exclusively for this synchronous call.
+    unsafe {
+        ffi::RAND_priv_bytes_ex(
+            context_ptr(context),
+            output.as_mut_ptr(),
+            output.len(),
+            strength,
+        )
+    }
+}
+
+/// Wraps: RAND_set0_private
+/// Replaces the current thread's private generator, returning it on failure.
+pub fn RAND_set0_private(
+    context: &mut OsslLibCtxMut<'_>,
+    generator: Option<CBox<EvpRandCtx>>,
+) -> Result<(), Option<CBox<EvpRandCtx>>> {
+    set0_generator(context.as_mut_ptr(), generator, ffi::RAND_set0_private)
+}
+
+/// Wraps: RAND_set0_private
+/// Replaces the default context's current-thread private generator.
+///
+/// # Safety
+///
+/// No borrowed handle to the private generator being replaced may remain live.
+/// A successful call frees that generator's current-thread ownership count.
+pub unsafe fn RAND_set0_private_default(
+    generator: Option<CBox<EvpRandCtx>>,
+) -> Result<(), Option<CBox<EvpRandCtx>>> {
+    set0_generator(ptr::null_mut(), generator, ffi::RAND_set0_private)
+}
+
+/// Wraps: RAND_set0_public
+/// Replaces the current thread's public generator, returning it on failure.
+pub fn RAND_set0_public(
+    context: &mut OsslLibCtxMut<'_>,
+    generator: Option<CBox<EvpRandCtx>>,
+) -> Result<(), Option<CBox<EvpRandCtx>>> {
+    set0_generator(context.as_mut_ptr(), generator, ffi::RAND_set0_public)
+}
+
+/// Wraps: RAND_set0_public
+/// Replaces the default context's current-thread public generator.
+///
+/// # Safety
+///
+/// No borrowed handle to the public generator being replaced may remain live.
+/// A successful call frees that generator's current-thread ownership count.
+pub unsafe fn RAND_set0_public_default(
+    generator: Option<CBox<EvpRandCtx>>,
+) -> Result<(), Option<CBox<EvpRandCtx>>> {
+    set0_generator(ptr::null_mut(), generator, ffi::RAND_set0_public)
+}
+
+fn set0_generator(
+    context: *mut ffi::ossl_lib_ctx_st,
+    generator: Option<CBox<EvpRandCtx>>,
+    setter: unsafe extern "C" fn(*mut ffi::ossl_lib_ctx_st, *mut ffi::evp_rand_ctx_st) -> i32,
+) -> Result<(), Option<CBox<EvpRandCtx>>> {
+    let raw = generator.map_or(ptr::null_mut(), CBox::into_raw);
+    // SAFETY: `raw` is null or transfers one fully initialized ownership
+    // obligation. OpenSSL takes it only when the setter reports success.
+    if unsafe { setter(context, raw) } > 0 {
+        Ok(())
+    } else {
+        // SAFETY: failure leaves the exact ownership obligation represented by
+        // `raw` with the caller; null reconstructs the original `None`.
+        Err(unsafe { CBox::from_raw(raw) })
+    }
+}
+
+/// Wraps: RAND_set1_random_provider
+/// Selects a provider for random generation, or disables the override.
+///
+/// # Safety
+///
+/// No other thread may generate randomness from, configure, load, or unload a
+/// provider in the selected library context during this call. OpenSSL stores a
+/// borrowed provider pointer and documents this operation as not thread-safe;
+/// its provider lifecycle hooks clear the pointer when that provider unloads.
+#[must_use]
+pub unsafe fn RAND_set1_random_provider(
+    context: Option<OsslLibCtxRef<'_>>,
+    provider: Option<OsslProviderRef<'_>>,
+) -> bool {
+    let provider = provider.map_or(ptr::null_mut(), |provider| provider.as_ptr().cast_mut());
+    // SAFETY: the caller excludes the documented concurrent operations, and
+    // both optional handles address live objects for this call. OpenSSL's
+    // unload hook manages the stored non-owning provider pointer afterwards.
+    unsafe { ffi::RAND_set1_random_provider(context_ptr(context), provider) == 1 }
+}
+
+/// Wraps: RAND_set_DRBG_type
+/// Configures the generator fetched for a library context.
+#[must_use]
+pub fn RAND_set_DRBG_type(
+    context: &mut OsslLibCtxMut<'_>,
+    generator: Option<&CStr>,
+    properties: Option<&CStr>,
+    cipher: Option<&CStr>,
+    digest: Option<&CStr>,
+) -> bool {
+    set_drbg_type(context.as_mut_ptr(), generator, properties, cipher, digest)
+}
+
+/// Wraps: RAND_set_DRBG_type
+/// Configures the generator fetched for the default library context.
+///
+/// # Safety
+///
+/// No other thread may initialize, generate from, or configure the default
+/// context's RAND state during this call.
+#[must_use]
+pub unsafe fn RAND_set_DRBG_type_default(
+    generator: Option<&CStr>,
+    properties: Option<&CStr>,
+    cipher: Option<&CStr>,
+    digest: Option<&CStr>,
+) -> bool {
+    set_drbg_type(ptr::null_mut(), generator, properties, cipher, digest)
+}
+
+fn set_drbg_type(
+    context: *mut ffi::ossl_lib_ctx_st,
+    generator: Option<&CStr>,
+    properties: Option<&CStr>,
+    cipher: Option<&CStr>,
+    digest: Option<&CStr>,
+) -> bool {
+    // SAFETY: `context` is null or comes from an exclusive live handle. Each
+    // C string is live and NUL-terminated for the call; OpenSSL duplicates
+    // every non-null value it retains.
+    unsafe {
+        ffi::RAND_set_DRBG_type(
+            context,
+            c_string_ptr(generator),
+            c_string_ptr(properties),
+            c_string_ptr(cipher),
+            c_string_ptr(digest),
+        ) == 1
+    }
+}
+
+/// Wraps: RAND_set_seed_source_type
+/// Configures the seed source fetched for a library context.
+#[must_use]
+pub fn RAND_set_seed_source_type(
+    context: &mut OsslLibCtxMut<'_>,
+    seed_source: Option<&CStr>,
+    properties: Option<&CStr>,
+) -> bool {
+    set_seed_source_type(context.as_mut_ptr(), seed_source, properties)
+}
+
+/// Wraps: RAND_set_seed_source_type
+/// Configures the seed source fetched for the default library context.
+///
+/// # Safety
+///
+/// No other thread may initialize, generate from, or configure the default
+/// context's RAND state during this call.
+#[must_use]
+pub unsafe fn RAND_set_seed_source_type_default(
+    seed_source: Option<&CStr>,
+    properties: Option<&CStr>,
+) -> bool {
+    set_seed_source_type(ptr::null_mut(), seed_source, properties)
+}
+
+fn set_seed_source_type(
+    context: *mut ffi::ossl_lib_ctx_st,
+    seed_source: Option<&CStr>,
+    properties: Option<&CStr>,
+) -> bool {
+    // SAFETY: `context` is null or comes from an exclusive live handle.
+    // OpenSSL synchronously duplicates both optional C strings before return.
+    unsafe {
+        ffi::RAND_set_seed_source_type(context, c_string_ptr(seed_source), c_string_ptr(properties))
+            == 1
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use ffibox::CBox;
+
     use super::*;
+    use crate::bio::context::OsslLibCtx;
 
     #[test]
     fn seed_poll_and_generate_use_bounded_slices() {
@@ -87,5 +342,53 @@ mod tests {
         let mut private = [0; 32];
         assert_eq!(RAND_bytes(&mut public), 1);
         assert_eq!(RAND_priv_bytes(&mut private), 1);
+    }
+
+    #[test]
+    fn explicit_context_generation_returns_borrowed_generators() {
+        // SAFETY: a non-null constructor result transfers one fresh, fully
+        // initialized context to its registered owner.
+        let mut context = unsafe { CBox::<OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
+            .expect("isolated library context");
+        let mut public = [0_u8; 16];
+        let mut private = [0_u8; 16];
+
+        assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut public, 128), 1);
+        assert_eq!(
+            RAND_priv_bytes_ex(Some(context.as_ref()), &mut private, 128),
+            1
+        );
+        assert!(RAND_get0_primary(Some(context.as_ref())).is_some());
+        assert!(RAND_get0_public(Some(context.as_ref())).is_some());
+        assert!(RAND_get0_private(Some(context.as_ref())).is_some());
+
+        // Clearing transfers no owner but still exercises the nullable set0
+        // contract. The next generation call recreates the thread-local slot.
+        assert!(RAND_set0_public(&mut context.as_mut(), None).is_ok());
+        assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut public, 128), 1);
+    }
+
+    #[test]
+    fn configuration_copies_optional_c_strings_before_generation() {
+        // SAFETY: a non-null constructor result transfers one fresh, fully
+        // initialized context to its registered owner.
+        let mut context = unsafe { CBox::<OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
+            .expect("isolated library context");
+
+        assert!(RAND_set_DRBG_type(
+            &mut context.as_mut(),
+            Some(c"CTR-DRBG"),
+            None,
+            Some(c"AES-256-CTR"),
+            None,
+        ));
+        assert!(RAND_set_seed_source_type(
+            &mut context.as_mut(),
+            Some(c"SEED-SRC"),
+            None
+        ));
+
+        let mut output = [0_u8; 16];
+        assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut output, 128), 1);
     }
 }

@@ -40,6 +40,9 @@ struct rand_meth_st {
     int (*pseudorand)(unsigned char *buf, int num);
     int (*status)(void);
 };
+int RAND_set_rand_method(const RAND_METHOD *meth);
+const RAND_METHOD *RAND_get_rand_method(void);
+RAND_METHOD *RAND_OpenSSL(void);
 void BIO_set_callback(BIO *b, crustify_BIO_callback_fn callback);
 int EVP_PKEY_CTX_get0_dh_kdf_ukm(EVP_PKEY_CTX *ctx, unsigned char **ukm);
 int EVP_PKEY_CTX_get0_ecdh_kdf_ukm(EVP_PKEY_CTX *ctx, unsigned char **ukm);
