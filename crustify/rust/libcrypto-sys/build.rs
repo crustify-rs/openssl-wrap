@@ -1090,6 +1090,11 @@ const AGENT_ALLOWED_VARS: &[&str] = &[
     "XN_FLAG_SEP_COMMA_PLUS",
     "OSSL_PARAM_OCTET_PTR",
     "OSSL_PARAM_UTF8_PTR",
+    "EVP_CIPH_GCM_MODE",
+    "EVP_CIPH_CCM_MODE",
+    "EVP_CIPH_OCB_MODE",
+    "EVP_CIPH_SIV_MODE",
+    "EVP_CIPH_GCM_SIV_MODE",
 ];
 const AGENT_BLOCKLIST: &[&str] = &[];
 // crustify:allowlist-agent:end

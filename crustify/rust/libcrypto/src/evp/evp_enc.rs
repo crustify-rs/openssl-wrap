@@ -19,7 +19,7 @@ use crate::core::openssl_core::{
 use crate::evp::evp::{EvpCipherRef, EvpSkeyRef, SharedEvpCipher};
 use crate::evp::evp_lib::{
     EVP_CIPHER_CTX_get_block_size, EVP_CIPHER_CTX_get_iv_length, EVP_CIPHER_CTX_get_key_length,
-    EVP_CIPHER_get_iv_length, EVP_CIPHER_get_key_length,
+    EVP_CIPHER_CTX_get0_cipher, EVP_CIPHER_CTX_is_encrypting, EVP_CIPHER_get_mode, EVP_CIPHER_is_a,
 };
 use crate::evp::evp_local::{BorrowedEvpCipherCtx, EvpCipherCtx, EvpCipherCtxMut, EvpCipherCtxRef};
 
@@ -288,40 +288,82 @@ fn params_ptr(params: Option<&OsslParamListRef<'_, '_>>) -> *const ffi::ossl_par
     params.map_or(ptr::null(), OsslParamListRef::as_ptr)
 }
 
-fn params_change_lengths(params: Option<&OsslParamListRef<'_, '_>>) -> bool {
-    params.is_some_and(|params| {
-        params.values().iter().any(|param| {
-            param
-                .key()
-                .is_some_and(|key| key == c"keylen" || key == c"ivlen")
-        })
-    })
+/// Derives the key and IV extents the C initializer will hand the provider.
+///
+/// `evp_cipher_init_internal` passes `EVP_CIPHER_CTX_get_key_length(ctx)` and
+/// `EVP_CIPHER_CTX_get_iv_length(ctx)` as the extents of `key` and `iv`, and it
+/// evaluates both *after* installing the cipher and after applying any
+/// `keylen` / `ivlen` entry of `params`. Those are not the cipher's published
+/// lengths: AES-128-CCM publishes a 12-byte IV while its context reports the
+/// 7-byte nonce the provider actually reads.
+///
+/// With no cipher to install, the caller's context already publishes the
+/// extents. Otherwise a scratch context installs the same cipher and the same
+/// parameters with both buffers null, which reproduces exactly the state the
+/// caller's context is about to reach while reading no caller memory and
+/// leaving the caller's context untouched. `None` means that installation
+/// failed, so no extent is known and no buffer may be handed over.
+fn expected_lengths(
+    ctx: &EvpCipherCtxMut<'_>,
+    cipher: Option<EvpCipherRef<'_>>,
+    params: Option<&OsslParamListRef<'_, '_>>,
+    direction: c_int,
+) -> Option<(c_int, c_int)> {
+    let Some(cipher) = cipher else {
+        return Some((
+            EVP_CIPHER_CTX_get_key_length(ctx.as_ref()),
+            EVP_CIPHER_CTX_get_iv_length(ctx.as_ref()),
+        ));
+    };
+    // `-1` means "keep the context's direction", which the scratch context
+    // cannot know, so resolve it against the caller's context first.
+    let direction = if direction < 0 {
+        c_int::from(EVP_CIPHER_CTX_is_encrypting(ctx.as_ref()))
+    } else {
+        direction
+    };
+    let mut probe = EVP_CIPHER_CTX_new()?;
+    let mut probe = probe.as_mut();
+    // SAFETY: the scratch context is exclusively owned by this frame, the
+    // cipher handle is live, both buffer arguments are null so nothing is
+    // read through them, and the optional parameter list stays live and
+    // terminated for the synchronous call.
+    let installed = unsafe {
+        ffi::EVP_CipherInit_ex2(
+            probe.as_mut_ptr(),
+            cipher.as_ptr(),
+            ptr::null(),
+            ptr::null(),
+            direction,
+            params_ptr(params),
+        )
+    };
+    if installed != 1 {
+        return None;
+    }
+    Some((
+        EVP_CIPHER_CTX_get_key_length(probe.as_ref()),
+        EVP_CIPHER_CTX_get_iv_length(probe.as_ref()),
+    ))
 }
 
-fn expected_lengths(ctx: &EvpCipherCtxMut<'_>, cipher: Option<EvpCipherRef<'_>>) -> (i32, i32) {
-    cipher.map_or_else(
-        || {
-            (
-                EVP_CIPHER_CTX_get_key_length(ctx.as_ref()),
-                EVP_CIPHER_CTX_get_iv_length(ctx.as_ref()),
-            )
-        },
-        |cipher| {
-            (
-                EVP_CIPHER_get_key_length(cipher),
-                EVP_CIPHER_get_iv_length(cipher),
-            )
-        },
-    )
-}
-
+/// Reports whether every supplied buffer covers the extent the provider reads.
 fn init_buffers_fit(
     ctx: &EvpCipherCtxMut<'_>,
     cipher: Option<EvpCipherRef<'_>>,
     key: Option<&[u8]>,
     iv: Option<&[u8]>,
+    params: Option<&OsslParamListRef<'_, '_>>,
+    direction: c_int,
 ) -> bool {
-    let (key_len, iv_len) = expected_lengths(ctx, cipher);
+    if key.is_none() && iv.is_none() {
+        // The initializer reads no caller buffer, so there is no extent to
+        // establish and no reason to pay for a scratch installation.
+        return true;
+    }
+    let Some((key_len, iv_len)) = expected_lengths(ctx, cipher, params, direction) else {
+        return false;
+    };
     key.is_none_or(|key| key_len >= 0 && key.len() >= key_len as usize)
         && iv.is_none_or(|iv| iv_len >= 0 && iv.len() >= iv_len as usize)
 }
@@ -341,17 +383,106 @@ fn final_capacity(ctx: &EvpCipherCtxMut<'_>) -> Option<usize> {
     block_size(ctx).map(|block| if block == 1 { 0 } else { block })
 }
 
+/// The shared `EVP_*Update` ABI: context, output, written count, input, length.
+type CipherUpdate =
+    unsafe extern "C" fn(*mut ffi::evp_cipher_ctx_st, *mut u8, *mut i32, *const u8, i32) -> i32;
+
+/// Reports whether the context's cipher documents a null output as an
+/// additional-authenticated-data update.
+///
+/// The AEAD flag alone does not decide this: `AES-128-CBC-HMAC-SHA1` and
+/// `RC4-HMAC-MD5` also publish it, yet their update routine writes through
+/// `out` unconditionally. Only the modes listed here, plus
+/// ChaCha20-Poly1305, branch on a null output, so anything else is refused.
+fn accepts_aad_update(ctx: &EvpCipherCtxMut<'_>) -> bool {
+    EVP_CIPHER_CTX_get0_cipher(ctx.as_ref()).is_some_and(|cipher| {
+        u32::try_from(EVP_CIPHER_get_mode(cipher)).is_ok_and(|mode| {
+            matches!(
+                mode,
+                ffi::EVP_CIPH_GCM_MODE
+                    | ffi::EVP_CIPH_CCM_MODE
+                    | ffi::EVP_CIPH_OCB_MODE
+                    | ffi::EVP_CIPH_SIV_MODE
+                    | ffi::EVP_CIPH_GCM_SIV_MODE
+            )
+        }) || EVP_CIPHER_is_a(Some(cipher), c"ChaCha20-Poly1305")
+    })
+}
+
+/// Reports whether the context's cipher is a CCM mode, the only mode whose
+/// provider reads a null input as the declaration of the total message length.
+fn is_ccm(ctx: &EvpCipherCtxMut<'_>) -> bool {
+    EVP_CIPHER_CTX_get0_cipher(ctx.as_ref()).is_some_and(|cipher| {
+        u32::try_from(EVP_CIPHER_get_mode(cipher)).is_ok_and(|mode| mode == ffi::EVP_CIPH_CCM_MODE)
+    })
+}
+
+/// Feeds additional authenticated data by passing the null output that AEAD
+/// providers read as the AAD selector.
+fn checked_aad_update(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    aad: &[u8],
+    call: CipherUpdate,
+) -> Result<usize, i32> {
+    if !accepts_aad_update(ctx) {
+        return Err(0);
+    }
+    let aad_len = i32::try_from(aad.len()).map_err(|_| 0)?;
+    let mut written = 0;
+    // SAFETY: the exclusive context is live and its cipher is one of the AEAD
+    // implementations that branch on a null output, so no ciphertext is
+    // written anywhere; `aad` supplies the exact readable extent it is paired
+    // with, and the provider retains neither pointer past the call.
+    let status = unsafe {
+        call(
+            ctx.as_mut_ptr(),
+            ptr::null_mut(),
+            &mut written,
+            aad.as_ptr(),
+            aad_len,
+        )
+    };
+    if status <= 0 {
+        return Err(status);
+    }
+    usize::try_from(written)
+        .ok()
+        .filter(|written| *written <= aad.len())
+        .ok_or(0)
+}
+
+/// Declares the total CCM message length by passing the null input and output
+/// pair that the CCM provider reads as a length declaration.
+fn checked_total_length(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    total: usize,
+    call: CipherUpdate,
+) -> Result<(), i32> {
+    if !is_ccm(ctx) {
+        return Err(0);
+    }
+    let total = i32::try_from(total).map_err(|_| 0)?;
+    let mut written = 0;
+    // SAFETY: the exclusive context is live and holds a CCM cipher, whose
+    // update routine reads the null input and output pair as a length
+    // declaration and dereferences neither; only `written` is written.
+    let status = unsafe {
+        call(
+            ctx.as_mut_ptr(),
+            ptr::null_mut(),
+            &mut written,
+            ptr::null(),
+            total,
+        )
+    };
+    if status <= 0 { Err(status) } else { Ok(()) }
+}
+
 fn checked_update(
     ctx: &mut EvpCipherCtxMut<'_>,
     output: &mut [u8],
     input: &[u8],
-    call: unsafe extern "C" fn(
-        *mut ffi::evp_cipher_ctx_st,
-        *mut u8,
-        *mut i32,
-        *const u8,
-        i32,
-    ) -> i32,
+    call: CipherUpdate,
 ) -> Result<usize, i32> {
     let input_len = i32::try_from(input.len()).map_err(|_| 0)?;
     let required = update_capacity(ctx, input.len()).ok_or(0)?;
@@ -398,7 +529,7 @@ fn checked_final(
     }
     usize::try_from(written)
         .ok()
-        .filter(|written| *written <= output.len())
+        .filter(|written| *written <= required)
         .ok_or(0)
 }
 
@@ -473,12 +604,12 @@ pub fn EVP_CipherInit(
     iv: Option<&[u8]>,
     direction: CipherDirection,
 ) -> i32 {
-    if !init_buffers_fit(ctx, cipher, key, iv) {
+    if !init_buffers_fit(ctx, cipher, key, iv, None, direction.as_c_int()) {
         return 0;
     }
-    // SAFETY: the exclusive context and all optional borrows are live. Length
-    // checks cover the implicit key and IV extents; OpenSSL retains neither
-    // byte buffer and raises any cipher reference stored in the context.
+    // SAFETY: the exclusive context and all optional borrows are live. The
+    // admission check established the implicit key and IV extents; OpenSSL
+    // retains neither byte buffer and raises any cipher reference it stores.
     unsafe {
         ffi::EVP_CipherInit(
             ctx.as_mut_ptr(),
@@ -499,7 +630,7 @@ pub fn EVP_CipherInit_ex(
     iv: Option<&[u8]>,
     direction: CipherDirection,
 ) -> i32 {
-    if !init_buffers_fit(ctx, cipher, key, iv) {
+    if !init_buffers_fit(ctx, cipher, key, iv, None, direction.as_c_int()) {
         return 0;
     }
     // SAFETY: as `EVP_CipherInit`; null is the only supported ENGINE value.
@@ -516,7 +647,8 @@ pub fn EVP_CipherInit_ex(
 }
 
 /// Wraps: EVP_CipherInit_ex2
-/// Key and IV slices are rejected only when the parameter list changes their implicit extents.
+/// A `keylen` or `ivlen` entry of `params` takes effect before the key material is read, so
+/// the slices are measured against the extents it selects.
 pub fn EVP_CipherInit_ex2(
     ctx: &mut EvpCipherCtxMut<'_>,
     cipher: Option<EvpCipherRef<'_>>,
@@ -525,14 +657,12 @@ pub fn EVP_CipherInit_ex2(
     params: Option<&OsslParamListRef<'_, '_>>,
     direction: CipherDirection,
 ) -> i32 {
-    if (params_change_lengths(params) && (key.is_some() || iv.is_some()))
-        || !init_buffers_fit(ctx, cipher, key, iv)
-    {
+    if !init_buffers_fit(ctx, cipher, key, iv, params, direction.as_c_int()) {
         return 0;
     }
     // SAFETY: all handles and the optional terminated list remain live for the
-    // synchronous call. The byte runs meet the currently selected cipher's
-    // published lengths; callers changing those lengths initialize in stages.
+    // synchronous call, and the byte runs cover the extents the same cipher and
+    // the same parameters publish once installed.
     unsafe {
         ffi::EVP_CipherInit_ex2(
             ctx.as_mut_ptr(),
@@ -713,6 +843,7 @@ pub fn EVP_CipherUpdate(
 }
 
 /// Wraps: EVP_EncryptUpdate
+/// Encrypts `input`, which needs `input.len()` plus one block of output room.
 pub fn EVP_EncryptUpdate(
     ctx: &mut EvpCipherCtxMut<'_>,
     output: &mut [u8],
@@ -721,13 +852,52 @@ pub fn EVP_EncryptUpdate(
     checked_update(ctx, output, input, ffi::EVP_EncryptUpdate)
 }
 
+/// Wraps: EVP_EncryptUpdate
+/// The null-output form of the same call: `aad` is authenticated but not
+/// encrypted, and the count returned is the number of AAD bytes consumed.
+/// Rejected unless the context holds a cipher whose provider reads a null
+/// output as AAD.
+pub fn EVP_EncryptUpdate_aad(ctx: &mut EvpCipherCtxMut<'_>, aad: &[u8]) -> Result<usize, i32> {
+    checked_aad_update(ctx, aad, ffi::EVP_EncryptUpdate)
+}
+
+/// Wraps: EVP_EncryptUpdate
+/// The null-input-and-output form of the same call. CCM requires the total
+/// plaintext length before any AAD is supplied; rejected for every other mode.
+pub fn EVP_EncryptUpdate_total_length(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    total: usize,
+) -> Result<(), i32> {
+    checked_total_length(ctx, total, ffi::EVP_EncryptUpdate)
+}
+
 /// Wraps: EVP_DecryptUpdate
+/// Decrypts `input`, which needs `input.len()` plus one block of output room.
 pub fn EVP_DecryptUpdate(
     ctx: &mut EvpCipherCtxMut<'_>,
     output: &mut [u8],
     input: &[u8],
 ) -> Result<usize, i32> {
     checked_update(ctx, output, input, ffi::EVP_DecryptUpdate)
+}
+
+/// Wraps: EVP_DecryptUpdate
+/// The null-output form of the same call: `aad` is authenticated but not
+/// decrypted, and the count returned is the number of AAD bytes consumed.
+/// Rejected unless the context holds a cipher whose provider reads a null
+/// output as AAD.
+pub fn EVP_DecryptUpdate_aad(ctx: &mut EvpCipherCtxMut<'_>, aad: &[u8]) -> Result<usize, i32> {
+    checked_aad_update(ctx, aad, ffi::EVP_DecryptUpdate)
+}
+
+/// Wraps: EVP_DecryptUpdate
+/// The null-input-and-output form of the same call. CCM requires the total
+/// ciphertext length before any AAD is supplied; rejected for every other mode.
+pub fn EVP_DecryptUpdate_total_length(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    total: usize,
+) -> Result<(), i32> {
+    checked_total_length(ctx, total, ffi::EVP_DecryptUpdate)
 }
 
 /// Wraps: EVP_CipherFinal
@@ -741,11 +911,15 @@ pub fn EVP_CipherFinal_ex(ctx: &mut EvpCipherCtxMut<'_>, output: &mut [u8]) -> R
 }
 
 /// Wraps: EVP_EncryptFinal
+/// `output` needs one block of room; an AEAD context, whose block size is one
+/// and which emits nothing here, accepts an empty slice in place of C's null.
 pub fn EVP_EncryptFinal(ctx: &mut EvpCipherCtxMut<'_>, output: &mut [u8]) -> Result<usize, i32> {
     checked_final(ctx, output, ffi::EVP_EncryptFinal)
 }
 
 /// Wraps: EVP_EncryptFinal_ex
+/// `output` needs one block of room; an AEAD context, whose block size is one
+/// and which emits nothing here, accepts an empty slice in place of C's null.
 pub fn EVP_EncryptFinal_ex(ctx: &mut EvpCipherCtxMut<'_>, output: &mut [u8]) -> Result<usize, i32> {
     checked_final(ctx, output, ffi::EVP_EncryptFinal_ex)
 }
@@ -767,7 +941,7 @@ pub fn EVP_EncryptInit(
     key: Option<&[u8]>,
     iv: Option<&[u8]>,
 ) -> i32 {
-    if !init_buffers_fit(ctx, cipher, key, iv) {
+    if !init_buffers_fit(ctx, cipher, key, iv, None, 1) {
         return 0;
     }
     // SAFETY: as `EVP_CipherInit`, with the direction fixed to encryption.
@@ -782,13 +956,14 @@ pub fn EVP_EncryptInit(
 }
 
 /// Wraps: EVP_EncryptInit_ex
+/// The legacy ENGINE argument is intentionally omitted because C asserts it is null.
 pub fn EVP_EncryptInit_ex(
     ctx: &mut EvpCipherCtxMut<'_>,
     cipher: Option<EvpCipherRef<'_>>,
     key: Option<&[u8]>,
     iv: Option<&[u8]>,
 ) -> i32 {
-    if !init_buffers_fit(ctx, cipher, key, iv) {
+    if !init_buffers_fit(ctx, cipher, key, iv, None, 1) {
         return 0;
     }
     // SAFETY: as `EVP_CipherInit_ex`; null is the only supported ENGINE.
@@ -804,6 +979,8 @@ pub fn EVP_EncryptInit_ex(
 }
 
 /// Wraps: EVP_EncryptInit_ex2
+/// A `keylen` or `ivlen` entry of `params` takes effect before the key material is read, so
+/// the slices are measured against the extents it selects.
 pub fn EVP_EncryptInit_ex2(
     ctx: &mut EvpCipherCtxMut<'_>,
     cipher: Option<EvpCipherRef<'_>>,
@@ -811,9 +988,7 @@ pub fn EVP_EncryptInit_ex2(
     iv: Option<&[u8]>,
     params: Option<&OsslParamListRef<'_, '_>>,
 ) -> i32 {
-    if (params_change_lengths(params) && (key.is_some() || iv.is_some()))
-        || !init_buffers_fit(ctx, cipher, key, iv)
-    {
+    if !init_buffers_fit(ctx, cipher, key, iv, params, 1) {
         return 0;
     }
     // SAFETY: as `EVP_CipherInit_ex2`, with the direction fixed to encryption.
@@ -835,7 +1010,7 @@ pub fn EVP_DecryptInit(
     key: Option<&[u8]>,
     iv: Option<&[u8]>,
 ) -> i32 {
-    if !init_buffers_fit(ctx, cipher, key, iv) {
+    if !init_buffers_fit(ctx, cipher, key, iv, None, 0) {
         return 0;
     }
     // SAFETY: as `EVP_CipherInit`, with the direction fixed to decryption.
@@ -850,13 +1025,14 @@ pub fn EVP_DecryptInit(
 }
 
 /// Wraps: EVP_DecryptInit_ex
+/// The legacy ENGINE argument is intentionally omitted because C asserts it is null.
 pub fn EVP_DecryptInit_ex(
     ctx: &mut EvpCipherCtxMut<'_>,
     cipher: Option<EvpCipherRef<'_>>,
     key: Option<&[u8]>,
     iv: Option<&[u8]>,
 ) -> i32 {
-    if !init_buffers_fit(ctx, cipher, key, iv) {
+    if !init_buffers_fit(ctx, cipher, key, iv, None, 0) {
         return 0;
     }
     // SAFETY: as `EVP_CipherInit_ex`; null is the only supported ENGINE.
@@ -872,6 +1048,8 @@ pub fn EVP_DecryptInit_ex(
 }
 
 /// Wraps: EVP_DecryptInit_ex2
+/// A `keylen` or `ivlen` entry of `params` takes effect before the key material is read, so
+/// the slices are measured against the extents it selects.
 pub fn EVP_DecryptInit_ex2(
     ctx: &mut EvpCipherCtxMut<'_>,
     cipher: Option<EvpCipherRef<'_>>,
@@ -879,9 +1057,7 @@ pub fn EVP_DecryptInit_ex2(
     iv: Option<&[u8]>,
     params: Option<&OsslParamListRef<'_, '_>>,
 ) -> i32 {
-    if (params_change_lengths(params) && (key.is_some() || iv.is_some()))
-        || !init_buffers_fit(ctx, cipher, key, iv)
-    {
+    if !init_buffers_fit(ctx, cipher, key, iv, params, 0) {
         return 0;
     }
     // SAFETY: as `EVP_CipherInit_ex2`, with the direction fixed to decryption.
@@ -898,9 +1074,12 @@ pub fn EVP_DecryptInit_ex2(
 
 #[cfg(test)]
 mod cipher_operations_tests {
+    use core::mem::MaybeUninit;
+
     use ffibox::CBox;
 
     use super::*;
+    use crate::core::openssl_core::OsslParamArray;
     use crate::evp::evp::{EvpCipher, SharedEvpCipher};
     use crate::evp::evp_local::EvpCipherCtx;
 
@@ -956,6 +1135,247 @@ mod cipher_operations_tests {
             EVP_DecryptFinal_ex(&mut dec.as_mut(), &mut clear[first..]).expect("decrypt final");
         clear.truncate(first + last);
         assert_eq!(clear, plaintext);
+    }
+
+    /// `OSSL_PARAM_OCTET_STRING`, per `include/openssl/core.h`.
+    const OCTET_STRING: u32 = 5;
+    const TAG_LEN: usize = 16;
+
+    fn read_tag(params: &OsslParamArray<'_>) -> [u8; TAG_LEN] {
+        let values = params.as_list().values();
+        let tag = values.get(0).expect("the tag descriptor");
+        assert_eq!(tag.return_size(), TAG_LEN);
+        let written = tag.data().expect("the filled run");
+        let mut bytes = [0_u8; TAG_LEN];
+        for (index, byte) in bytes.iter_mut().enumerate() {
+            // SAFETY: `return_size` reports that the provider initialized the
+            // whole run, so every byte of it now holds a value.
+            *byte = unsafe { written.elem(index).expect("in range").assume_init() };
+        }
+        bytes
+    }
+
+    /// `OSSL_PARAM_UNSIGNED_INTEGER`, per `include/openssl/core.h`.
+    const UNSIGNED_INTEGER: u32 = 2;
+
+    #[test]
+    fn init_measures_buffers_against_the_installed_context() {
+        let ccm = EVP_CIPHER_fetch(None, c"AES-128-CCM", None).expect("AES-128-CCM");
+        let key = [0x01; 16];
+
+        // AES-128-CCM publishes a 12-byte IV, but the context it installs
+        // reports the 7-byte nonce the provider reads, which is the extent the
+        // guard has to measure against.
+        let mut accepted = context();
+        let mut ctx = accepted.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex2(
+                &mut ctx,
+                Some(ccm.as_ref()),
+                Some(&key),
+                Some(&[0x02; 7]),
+                None
+            ),
+            1
+        );
+        assert_eq!(EVP_CIPHER_CTX_get_iv_length(ctx.as_ref()), 7);
+
+        // Anything shorter than the installed extent is still refused, on
+        // either buffer.
+        let mut refused = context();
+        let mut ctx = refused.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex2(
+                &mut ctx,
+                Some(ccm.as_ref()),
+                Some(&key),
+                Some(&[0x02; 6]),
+                None
+            ),
+            0
+        );
+        assert_eq!(
+            EVP_DecryptInit_ex2(
+                &mut ctx,
+                Some(ccm.as_ref()),
+                Some(&key[..8]),
+                Some(&[0x02; 7]),
+                None,
+            ),
+            0
+        );
+    }
+
+    #[test]
+    fn init_follows_a_length_parameter_that_takes_effect_first() {
+        let gcm = EVP_CIPHER_fetch(None, c"AES-128-GCM", None).expect("AES-128-GCM");
+        let key = [0x03; 16];
+        let iv = [0x04; 16];
+
+        // The `ivlen` entry is applied before the provider reads `iv`, so a
+        // 16-byte IV that the published 12-byte length would have accepted
+        // anyway becomes the exact requirement.
+        let mut storage = 16_usize.to_ne_bytes().map(MaybeUninit::new);
+        let params = OsslParamArray::new([OsslParam::for_slice(
+            c"ivlen",
+            UNSIGNED_INTEGER,
+            &mut storage,
+        )]);
+
+        let mut accepted = context();
+        let mut ctx = accepted.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex2(
+                &mut ctx,
+                Some(gcm.as_ref()),
+                Some(&key),
+                Some(&iv),
+                Some(&params.as_list()),
+            ),
+            1
+        );
+        assert_eq!(EVP_CIPHER_CTX_get_iv_length(ctx.as_ref()), 16);
+
+        // The same 12-byte IV that suits plain GCM is now too short.
+        let mut refused = context();
+        assert_eq!(
+            EVP_EncryptInit_ex2(
+                &mut refused.as_mut(),
+                Some(gcm.as_ref()),
+                Some(&key),
+                Some(&iv[..12]),
+                Some(&params.as_list()),
+            ),
+            0
+        );
+    }
+
+    #[test]
+    fn aead_round_trip_authenticates_associated_data() {
+        let cipher = EVP_CIPHER_fetch(None, c"AES-128-GCM", None).expect("AES-128-GCM");
+        let key = [0x11; 16];
+        let iv = [0x22; 12];
+        let aad = b"authenticated but not encrypted";
+        let plaintext = b"secret payload";
+
+        let mut enc = context();
+        let mut ctx = enc.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex2(&mut ctx, Some(cipher.as_ref()), Some(&key), Some(&iv), None),
+            1
+        );
+        assert_eq!(EVP_EncryptUpdate_aad(&mut ctx, aad), Ok(aad.len()));
+        let mut encrypted = vec![0; plaintext.len() + TAG_LEN];
+        let written =
+            EVP_EncryptUpdate(&mut ctx, &mut encrypted, plaintext).expect("encrypt update");
+        encrypted.truncate(written);
+        // GCM has a block size of one and emits nothing here, so the empty
+        // slice stands in for the null output the C API also accepts.
+        assert_eq!(EVP_EncryptFinal_ex(&mut ctx, &mut []), Ok(0));
+
+        let mut storage = [MaybeUninit::new(0_u8); TAG_LEN];
+        let mut produced =
+            OsslParamArray::new([OsslParam::for_slice(c"tag", OCTET_STRING, &mut storage)]);
+        assert_eq!(
+            EVP_CIPHER_CTX_get_params(&mut ctx, &mut produced.as_list_mut()),
+            1
+        );
+        let tag = read_tag(&produced);
+
+        let decrypt_with = |aad: &[u8]| -> Result<usize, i32> {
+            let mut dec = context();
+            let mut ctx = dec.as_mut();
+            assert_eq!(
+                EVP_DecryptInit_ex2(&mut ctx, Some(cipher.as_ref()), Some(&key), Some(&iv), None),
+                1
+            );
+            assert_eq!(EVP_DecryptUpdate_aad(&mut ctx, aad), Ok(aad.len()));
+            let mut clear = vec![0; encrypted.len() + TAG_LEN];
+            let written =
+                EVP_DecryptUpdate(&mut ctx, &mut clear, &encrypted).expect("decrypt update");
+            clear.truncate(written);
+
+            let mut expected = tag.map(MaybeUninit::new);
+            let wanted =
+                OsslParamArray::new([OsslParam::for_slice(c"tag", OCTET_STRING, &mut expected)]);
+            assert_eq!(EVP_CIPHER_CTX_set_params(&mut ctx, &wanted.as_list()), 1);
+            let result = EVP_DecryptFinal_ex(&mut ctx, &mut []);
+            if result.is_ok() {
+                assert_eq!(clear, plaintext);
+            }
+            result
+        };
+
+        assert_eq!(decrypt_with(aad), Ok(0));
+        // The AAD really reached the tag computation: altering it invalidates
+        // the same ciphertext and tag.
+        assert!(decrypt_with(b"a different associated string").is_err());
+    }
+
+    #[test]
+    fn ccm_declares_its_total_length_before_associated_data() {
+        let cipher = EVP_CIPHER_fetch(None, c"AES-128-CCM", None).expect("AES-128-CCM");
+        let key = [0x33; 16];
+        let iv = [0x44; 7];
+        let aad = b"ccm associated data";
+        let plaintext = b"ccm payload";
+
+        let mut enc = context();
+        let mut ctx = enc.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex2(&mut ctx, Some(cipher.as_ref()), Some(&key), Some(&iv), None),
+            1
+        );
+        // CCM refuses AAD until the total message length is declared.
+        assert!(EVP_EncryptUpdate_aad(&mut ctx, aad).is_err());
+        assert_eq!(
+            EVP_EncryptUpdate_total_length(&mut ctx, plaintext.len()),
+            Ok(())
+        );
+        assert_eq!(EVP_EncryptUpdate_aad(&mut ctx, aad), Ok(aad.len()));
+        let mut encrypted = vec![0; plaintext.len() + TAG_LEN];
+        let written =
+            EVP_EncryptUpdate(&mut ctx, &mut encrypted, plaintext).expect("encrypt update");
+        assert_eq!(written, plaintext.len());
+    }
+
+    #[test]
+    fn null_output_forms_are_refused_outside_their_modes() {
+        let cbc = cipher();
+        let key = [0x55; 16];
+        let iv = [0x66; 16];
+
+        let mut ctx = context();
+        let mut ctx = ctx.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex2(&mut ctx, Some(cbc.as_ref()), Some(&key), Some(&iv), None),
+            1
+        );
+        // AES-128-CBC writes through `out` unconditionally, so the AAD form
+        // must refuse instead of handing its provider a null pointer.
+        assert_eq!(EVP_EncryptUpdate_aad(&mut ctx, b"aad"), Err(0));
+        assert_eq!(EVP_EncryptUpdate_total_length(&mut ctx, 16), Err(0));
+
+        // GCM takes AAD but has no message-length declaration.
+        let gcm = EVP_CIPHER_fetch(None, c"AES-128-GCM", None).expect("AES-128-GCM");
+        let mut ctx = context();
+        let mut ctx = ctx.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex2(
+                &mut ctx,
+                Some(gcm.as_ref()),
+                Some(&key),
+                Some(&[0x77; 12]),
+                None,
+            ),
+            1
+        );
+        assert_eq!(EVP_EncryptUpdate_aad(&mut ctx, b"aad"), Ok(3));
+        assert_eq!(EVP_EncryptUpdate_total_length(&mut ctx, 16), Err(0));
+
+        // An empty context has no cipher at all.
+        let mut empty = context();
+        assert_eq!(EVP_DecryptUpdate_aad(&mut empty.as_mut(), b"aad"), Err(0));
     }
 
     #[test]
