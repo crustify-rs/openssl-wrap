@@ -1,0 +1,4367 @@
+{
+  "schema_version": 2,
+  "oracle_target": "crypto",
+  "api_headers_only": true,
+  "budgets": {
+    "max_syms": 50,
+    "max_loc": 1000,
+    "max_types": 4,
+    "min_fields": 20
+  },
+  "summary": {
+    "unit_count": 94,
+    "layer_count": 2,
+    "batch_count": 6,
+    "file_count": 5
+  },
+  "plan_items": [
+    {
+      "name": "EVP_KDF_CTX_dup",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 24,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_free",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_get0_kdf",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_get1_kdf",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_get_kdf_size",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 16,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_get_params",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_gettable_params",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_kdf",
+      "defined_in": "include/openssl/kdf.h",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 0,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_new",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_reset",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_set_SKEY",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 30,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_skey_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_set_params",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_CTX_settable_params",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_derive",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_derive_SKEY",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 78,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_skey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "evp_skeymgmt_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_do_all_provided",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_fetch",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_free",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_get0_description",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_get0_name",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_get0_provider",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_provider_st",
+            "defined_in": "crypto/provider_core.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_get_params",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_gettable_ctx_params",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_gettable_params",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_is_a",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_names_do_all",
+      "defined_in": "crypto/evp/kdf_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_settable_ctx_params",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_KDF_up_ref",
+      "defined_in": "crypto/evp/kdf_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_kdf_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_dup",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 25,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_free",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_get0_mac",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_get_block_size",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_get_mac_size",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_get_params",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_gettable_params",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_new",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 15,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_set_params",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_CTX_settable_params",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_do_all_provided",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_fetch",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_final",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_finalXOF",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_free",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_get0_description",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_get0_name",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_get0_provider",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_provider_st",
+            "defined_in": "crypto/provider_core.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_get_params",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_gettable_ctx_params",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_gettable_params",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_init",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 7,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_init_SKEY",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "evp_skey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_is_a",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_names_do_all",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 6,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_settable_ctx_params",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_param_st",
+            "defined_in": "include/openssl/core.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_up_ref",
+      "defined_in": "crypto/evp/mac_meth.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_st",
+            "defined_in": "include/crypto/evp.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "EVP_MAC_update",
+      "defined_in": "crypto/evp/mac_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_mac_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_CTX_copy",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 21,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_CTX_free",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_CTX_get_md",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_CTX_new",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 11,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_CTX_reset",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_CTX_set_flags",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_Final",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 24,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_Init",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_Init_ex",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 84,
+      "deps": {
+        "types": [
+          {
+            "name": "engine_st",
+            "defined_in": "include/openssl/types.h"
+          },
+          {
+            "name": "evp_md_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_Update",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 11,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "HMAC_size",
+      "defined_in": "crypto/hmac/hmac.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "hmac_ctx_st",
+            "defined_in": "crypto/hmac/hmac_local.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_free",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 18,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_get_seq",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_new",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 48,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          },
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_set1_authpriv",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_set1_authpub",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 64,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_set1_ikme",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 20,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_set1_psk",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 42,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_CTX_set_seq",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 17,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_SUITE",
+      "defined_in": "include/openssl/hpke.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 3,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_decap",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 43,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_encap",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 43,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_export",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 52,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_get_ciphertext_size",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 8,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_get_grease_value",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 59,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_get_public_encap_size",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 9,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_get_recommended_ikmelen",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 10,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_keygen",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 63,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          },
+          {
+            "name": "evp_pkey_st",
+            "defined_in": "include/crypto/evp.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_open",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 36,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_seal",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 37,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_hpke_ctx_st",
+            "defined_in": "crypto/hpke/hpke.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_str2suite",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "OSSL_HPKE_suite_check",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 3,
+      "deps": {
+        "types": [
+          {
+            "name": "OSSL_HPKE_SUITE",
+            "defined_in": "include/openssl/hpke.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_kdf_ctx_st",
+      "defined_in": "crypto/evp/evp_local.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 2,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_kdf_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 19,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_mac_ctx_st",
+      "defined_in": "crypto/evp/evp_local.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 2,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_mac_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 19,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "hmac_ctx_st",
+      "defined_in": "crypto/hmac/hmac_local.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 6,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "ossl_hpke_ctx_st",
+      "defined_in": "crypto/hpke/hpke.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 26,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    }
+  ],
+  "dependency_nodes": [
+    {
+      "name": "engine_st",
+      "defined_in": "include/openssl/types.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 0,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_md_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 28,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_pkey_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 21,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_skey_st",
+      "defined_in": "include/crypto/evp.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 4,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "evp_skeymgmt_st",
+      "defined_in": "crypto/evp/evp_local.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 13,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_lib_ctx_st",
+      "defined_in": "crypto/context.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 24,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_param_st",
+      "defined_in": "include/openssl/core.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 5,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_provider_st",
+      "defined_in": "crypto/provider_core.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 30,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    }
+  ],
+  "steps": [
+    {
+      "layers": [
+        0
+      ],
+      "unit_count": 7,
+      "batches": [
+        {
+          "kind": "type",
+          "source_file": "include/openssl/hpke.h",
+          "items": [
+            {
+              "name": "OSSL_HPKE_SUITE",
+              "defined_in": "include/openssl/hpke.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 3,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": [
+                "aead_id",
+                "kdf_id",
+                "kem_id"
+              ]
+            },
+            {
+              "name": "evp_kdf_ctx_st",
+              "defined_in": "crypto/evp/evp_local.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 2,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "evp_kdf_st",
+              "defined_in": "include/crypto/evp.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 19,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "type",
+          "source_file": "crypto/evp/evp_local.h",
+          "items": [
+            {
+              "name": "evp_mac_ctx_st",
+              "defined_in": "crypto/evp/evp_local.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 2,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "evp_mac_st",
+              "defined_in": "include/crypto/evp.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 19,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "type",
+          "source_file": "crypto/hmac/hmac_local.h",
+          "items": [
+            {
+              "name": "hmac_ctx_st",
+              "defined_in": "crypto/hmac/hmac_local.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 6,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "type",
+          "source_file": "crypto/hpke/hpke.c",
+          "items": [
+            {
+              "name": "ossl_hpke_ctx_st",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 26,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        1
+      ],
+      "unit_count": 87,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_KDF_CTX_dup",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 24,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_free",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_get0_kdf",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_get1_kdf",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_get_kdf_size",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 16,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_get_params",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_gettable_params",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_kdf",
+              "defined_in": "include/openssl/kdf.h",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 0,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_new",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_reset",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_set_SKEY",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 30,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_skey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_set_params",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_CTX_settable_params",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_derive",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_derive_SKEY",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 78,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_skey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "evp_skeymgmt_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_do_all_provided",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_fetch",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_free",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_get0_description",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_get0_name",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_get0_provider",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_provider_st",
+                    "defined_in": "crypto/provider_core.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_get_params",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_gettable_ctx_params",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_gettable_params",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_is_a",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_names_do_all",
+              "defined_in": "crypto/evp/kdf_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_settable_ctx_params",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_KDF_up_ref",
+              "defined_in": "crypto/evp/kdf_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_kdf_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_dup",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 25,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_free",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_get0_mac",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_get_block_size",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_get_mac_size",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_get_params",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_gettable_params",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_new",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 15,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_set_params",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_CTX_settable_params",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_do_all_provided",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_fetch",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_final",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_finalXOF",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_free",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_get0_description",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_get0_name",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_get0_provider",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_provider_st",
+                    "defined_in": "crypto/provider_core.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_get_params",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_gettable_ctx_params",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_gettable_params",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_init",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 7,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        },
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "EVP_MAC_init_SKEY",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "evp_skey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_is_a",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_names_do_all",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 6,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_settable_ctx_params",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_param_st",
+                    "defined_in": "include/openssl/core.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_up_ref",
+              "defined_in": "crypto/evp/mac_meth.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_st",
+                    "defined_in": "include/crypto/evp.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "EVP_MAC_update",
+              "defined_in": "crypto/evp/mac_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_mac_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_CTX_copy",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 21,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_CTX_free",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_CTX_get_md",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_CTX_new",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 11,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_CTX_reset",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_CTX_set_flags",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_Final",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 24,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_Init",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_Init_ex",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 84,
+              "deps": {
+                "types": [
+                  {
+                    "name": "engine_st",
+                    "defined_in": "include/openssl/types.h"
+                  },
+                  {
+                    "name": "evp_md_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_Update",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 11,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "HMAC_size",
+              "defined_in": "crypto/hmac/hmac.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "hmac_ctx_st",
+                    "defined_in": "crypto/hmac/hmac_local.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_free",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 18,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_get_seq",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_new",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 48,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  },
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_set1_authpriv",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_set1_authpub",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 64,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_set1_ikme",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 20,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_set1_psk",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 42,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_CTX_set_seq",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 17,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_decap",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 43,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_encap",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 43,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_export",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 52,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_get_ciphertext_size",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 8,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_get_grease_value",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 59,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_get_public_encap_size",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 9,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_get_recommended_ikmelen",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 10,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_keygen",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 63,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  },
+                  {
+                    "name": "evp_pkey_st",
+                    "defined_in": "include/crypto/evp.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_open",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 36,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_seal",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 37,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_hpke_ctx_st",
+                    "defined_in": "crypto/hpke/hpke.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_str2suite",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "OSSL_HPKE_suite_check",
+              "defined_in": "crypto/hpke/hpke.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 3,
+              "deps": {
+                "types": [
+                  {
+                    "name": "OSSL_HPKE_SUITE",
+                    "defined_in": "include/openssl/hpke.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

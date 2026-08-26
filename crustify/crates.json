@@ -1057,6 +1057,8 @@
                 "macros": [],
                 "types": [
                   "evp_cipher_st",
+                  "evp_kdf_st",
+                  "evp_mac_st",
                   "evp_md_st",
                   "evp_pkey_ctx_st",
                   "evp_pkey_st",
@@ -1425,7 +1427,9 @@
                 "macros": [],
                 "types": [
                   "evp_cipher_ctx_st",
+                  "evp_kdf_ctx_st",
                   "evp_keymgmt_st",
+                  "evp_mac_ctx_st",
                   "evp_md_ctx_st",
                   "evp_signature_st",
                   "evp_skeymgmt_st"
@@ -1722,6 +1726,109 @@
                 "types": []
               },
               "tu": "crypto/evp/evp_enc.c"
+            },
+            "src/evp/kdf_lib.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_KDF_CTX_dup",
+                  "EVP_KDF_CTX_free",
+                  "EVP_KDF_CTX_get0_kdf",
+                  "EVP_KDF_CTX_get1_kdf",
+                  "EVP_KDF_CTX_get_kdf_size",
+                  "EVP_KDF_CTX_get_params",
+                  "EVP_KDF_CTX_new",
+                  "EVP_KDF_CTX_reset",
+                  "EVP_KDF_CTX_set_SKEY",
+                  "EVP_KDF_CTX_set_params",
+                  "EVP_KDF_derive",
+                  "EVP_KDF_derive_SKEY",
+                  "EVP_KDF_get0_description",
+                  "EVP_KDF_get0_name",
+                  "EVP_KDF_get0_provider",
+                  "EVP_KDF_get_params",
+                  "EVP_KDF_is_a",
+                  "EVP_KDF_names_do_all"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/kdf_lib.c"
+            },
+            "src/evp/kdf_meth.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_KDF_CTX_gettable_params",
+                  "EVP_KDF_CTX_settable_params",
+                  "EVP_KDF_do_all_provided",
+                  "EVP_KDF_fetch",
+                  "EVP_KDF_free",
+                  "EVP_KDF_gettable_ctx_params",
+                  "EVP_KDF_gettable_params",
+                  "EVP_KDF_settable_ctx_params",
+                  "EVP_KDF_up_ref"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/kdf_meth.c"
+            },
+            "src/evp/mac_lib.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_MAC_CTX_dup",
+                  "EVP_MAC_CTX_free",
+                  "EVP_MAC_CTX_get0_mac",
+                  "EVP_MAC_CTX_get_block_size",
+                  "EVP_MAC_CTX_get_mac_size",
+                  "EVP_MAC_CTX_get_params",
+                  "EVP_MAC_CTX_new",
+                  "EVP_MAC_CTX_set_params",
+                  "EVP_MAC_final",
+                  "EVP_MAC_finalXOF",
+                  "EVP_MAC_get0_description",
+                  "EVP_MAC_get0_name",
+                  "EVP_MAC_get_params",
+                  "EVP_MAC_init",
+                  "EVP_MAC_init_SKEY",
+                  "EVP_MAC_is_a",
+                  "EVP_MAC_names_do_all",
+                  "EVP_MAC_update"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/mac_lib.c"
+            },
+            "src/evp/mac_meth.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_MAC_CTX_gettable_params",
+                  "EVP_MAC_CTX_settable_params",
+                  "EVP_MAC_do_all_provided",
+                  "EVP_MAC_fetch",
+                  "EVP_MAC_free",
+                  "EVP_MAC_get0_provider",
+                  "EVP_MAC_gettable_ctx_params",
+                  "EVP_MAC_gettable_params",
+                  "EVP_MAC_settable_ctx_params",
+                  "EVP_MAC_up_ref"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/mac_meth.c"
             }
           },
           "rust_path": "src/evp"
@@ -2689,6 +2796,123 @@
                 ]
               },
               "tu": "crypto/provider_core.c"
+            }
+          }
+        },
+        "hmac": {
+          "rust_path": "src/hmac",
+          "rs": {
+            "src/hmac/hmac.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "HMAC_CTX_copy",
+                  "HMAC_CTX_free",
+                  "HMAC_CTX_get_md",
+                  "HMAC_CTX_new",
+                  "HMAC_CTX_reset",
+                  "HMAC_CTX_set_flags",
+                  "HMAC_Final",
+                  "HMAC_Init",
+                  "HMAC_Init_ex",
+                  "HMAC_Update",
+                  "HMAC_size"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/hmac/hmac.c"
+            },
+            "src/hmac/hmac_local.rs": {
+              "headers": [
+                "crypto/hmac/hmac_local.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "hmac_ctx_st"
+                ]
+              },
+              "tu": null
+            }
+          }
+        },
+        "hpke": {
+          "rust_path": "src/hpke",
+          "rs": {
+            "src/hpke/hpke.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "OSSL_HPKE_CTX_free",
+                  "OSSL_HPKE_CTX_get_seq",
+                  "OSSL_HPKE_CTX_new",
+                  "OSSL_HPKE_CTX_set1_authpriv",
+                  "OSSL_HPKE_CTX_set1_authpub",
+                  "OSSL_HPKE_CTX_set1_ikme",
+                  "OSSL_HPKE_CTX_set1_psk",
+                  "OSSL_HPKE_CTX_set_seq",
+                  "OSSL_HPKE_decap",
+                  "OSSL_HPKE_encap",
+                  "OSSL_HPKE_export",
+                  "OSSL_HPKE_get_ciphertext_size",
+                  "OSSL_HPKE_get_grease_value",
+                  "OSSL_HPKE_get_public_encap_size",
+                  "OSSL_HPKE_get_recommended_ikmelen",
+                  "OSSL_HPKE_keygen",
+                  "OSSL_HPKE_open",
+                  "OSSL_HPKE_seal",
+                  "OSSL_HPKE_str2suite",
+                  "OSSL_HPKE_suite_check"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "ossl_hpke_ctx_st"
+                ]
+              },
+              "tu": "crypto/hpke/hpke.c"
+            },
+            "src/hpke/openssl_hpke.rs": {
+              "headers": [
+                "include/openssl/hpke.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [],
+                "globals": [],
+                "macros": [],
+                "types": [
+                  "OSSL_HPKE_SUITE"
+                ]
+              },
+              "tu": null
+            }
+          }
+        },
+        "kdf": {
+          "rust_path": "src/kdf",
+          "rs": {
+            "src/kdf/kdf.rs": {
+              "headers": [
+                "include/openssl/kdf.h"
+              ],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_KDF_CTX_kdf"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": null
             }
           }
         }
