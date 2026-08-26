@@ -130,6 +130,17 @@ pub fn RAND_status() -> bool {
 
 /// Wraps: RAND_bytes_ex
 /// Fills `output` from the public generator belonging to `context`.
+///
+/// `strength` is the security strength required of the result, in bits; the
+/// call fails when the selected generator cannot supply it. Returns `1` on
+/// success and `0` on failure, and `output` keeps its previous contents unless
+/// the call reports success. A build that retains the deprecated
+/// `RAND_METHOD` path can additionally return `-1` when an installed legacy
+/// table rejects the length or implements no `bytes` callback; this build
+/// compiles that path out.
+///
+/// A provider registered through [`RAND_set1_random_provider`] answers instead
+/// of the context's DRBG, and receives `strength` unchanged.
 pub fn RAND_bytes_ex(context: Option<OsslLibCtxRef<'_>>, output: &mut [u8], strength: u32) -> i32 {
     // SAFETY: the optional handle addresses a live library context, while
     // `output` supplies exactly its reported writable extent and is borrowed
@@ -145,7 +156,19 @@ pub fn RAND_bytes_ex(context: Option<OsslLibCtxRef<'_>>, output: &mut [u8], stre
 }
 
 /// Wraps: RAND_get0_primary
-/// Borrows the primary generator owned by `context` (or the default context).
+/// Borrows the primary generator of `context`, creating it on first use.
+///
+/// The primary DRBG is not generated from directly: it only reseeds the public
+/// and private generators. One instance is shared by every thread using the
+/// context, which is why OpenSSL enables locking on it. The context owns it, so
+/// no reference is transferred, and `None` reports that creating or seeding it
+/// failed. Creating it also settles the context's seed source, which is what
+/// closes the [`RAND_set_DRBG_type`] and [`RAND_set_seed_source_type`] windows.
+///
+/// With `Some(context)` the returned handle cannot outlive that borrow. With
+/// `None` it names the default context's primary DRBG and this signature
+/// constrains its lifetime not at all; that generator is released only when the
+/// library is cleaned up, which no safe wrapper performs.
 #[must_use]
 pub fn RAND_get0_primary<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRandCtxRef<'a>> {
     // SAFETY: OpenSSL returns null or a shared, non-owning pointer into the
@@ -155,7 +178,20 @@ pub fn RAND_get0_primary<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRa
 }
 
 /// Wraps: RAND_get0_private
-/// Borrows the current thread's private generator for `context`.
+/// Borrows the calling thread's private generator for `context`, creating it
+/// and the context's primary DRBG on first use.
+///
+/// The generator belongs to the pair of `context` and the calling thread; it is
+/// released when that thread exits or when [`RAND_set0_private`] replaces it.
+/// Neither release can invalidate the returned handle: the handle is neither
+/// `Send` nor `Sync`, so it never reaches the thread whose exit would free the
+/// generator, and replacing the generator needs an exclusive context handle
+/// that this shared borrow already excludes. `None` reports that creation
+/// failed.
+///
+/// With `None` the returned lifetime is unconstrained, and the default
+/// context's slot is replaced only through the unsafe
+/// [`RAND_set0_private_default`], whose contract covers an outstanding handle.
 #[must_use]
 pub fn RAND_get0_private<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRandCtxRef<'a>> {
     // SAFETY: OpenSSL retains this thread-local context and returns no new
@@ -165,7 +201,11 @@ pub fn RAND_get0_private<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRa
 }
 
 /// Wraps: RAND_get0_public
-/// Borrows the current thread's public generator for `context`.
+/// Borrows the calling thread's public generator for `context`, creating it
+/// and the context's primary DRBG on first use.
+///
+/// Scoped, released and bounded exactly as [`RAND_get0_private`] is, for the
+/// public thread-local slot and [`RAND_set0_public`].
 #[must_use]
 pub fn RAND_get0_public<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRandCtxRef<'a>> {
     // SAFETY: as for `RAND_get0_private`, for the public thread-local slot.
@@ -174,6 +214,9 @@ pub fn RAND_get0_public<'a>(context: Option<OsslLibCtxRef<'a>>) -> Option<EvpRan
 
 /// Wraps: RAND_priv_bytes_ex
 /// Fills `output` from the private generator belonging to `context`.
+///
+/// Interprets `strength`, reports success and honours a registered random
+/// provider exactly as [`RAND_bytes_ex`] does.
 pub fn RAND_priv_bytes_ex(
     context: Option<OsslLibCtxRef<'_>>,
     output: &mut [u8],
@@ -193,7 +236,13 @@ pub fn RAND_priv_bytes_ex(
 }
 
 /// Wraps: RAND_set0_private
-/// Replaces the current thread's private generator, returning it on failure.
+/// Installs `generator` as the calling thread's private generator for
+/// `context`, returning it unchanged when the call fails.
+///
+/// On success the thread's previously installed private generator is freed and
+/// `None` leaves the slot empty, so the next private generation call rebuilds
+/// one. The exclusive context handle is what rules out an outstanding
+/// [`RAND_get0_private`] borrow of the generator being freed.
 pub fn RAND_set0_private(
     context: &mut OsslLibCtxMut<'_>,
     generator: Option<CBox<EvpRandCtx>>,
@@ -215,7 +264,11 @@ pub unsafe fn RAND_set0_private_default(
 }
 
 /// Wraps: RAND_set0_public
-/// Replaces the current thread's public generator, returning it on failure.
+/// Installs `generator` as the calling thread's public generator for
+/// `context`, returning it unchanged when the call fails.
+///
+/// Frees the replaced generator and bounds outstanding borrows exactly as
+/// [`RAND_set0_private`] does, for the public thread-local slot.
 pub fn RAND_set0_public(
     context: &mut OsslLibCtxMut<'_>,
     generator: Option<CBox<EvpRandCtx>>,
@@ -254,14 +307,38 @@ fn set0_generator(
 }
 
 /// Wraps: RAND_set1_random_provider
-/// Selects a provider for random generation, or disables the override.
+/// Routes `context`'s public and private generation through `provider`, or
+/// clears that override with `None`. Reports whether the request was applied.
+///
+/// Despite the `set1` spelling only the provider's *name* is copied; the
+/// provider itself is stored as a bare address that OpenSSL never up-refs. A
+/// registered provider answers [`RAND_bytes_ex`] and [`RAND_priv_bytes_ex`]
+/// through its `OSSL_FUNC_PROVIDER_RANDOM_BYTES` dispatch entry. No provider
+/// shipped with OpenSSL supplies one, and `ossl_provider_random_bytes`
+/// (`crypto/provider_core.c`) reports failure when it is absent, so registering
+/// a stock provider makes both calls fail until the override is cleared.
 ///
 /// # Safety
 ///
-/// No other thread may generate randomness from, configure, load, or unload a
-/// provider in the selected library context during this call. OpenSSL stores a
-/// borrowed provider pointer and documents this operation as not thread-safe;
-/// its provider lifecycle hooks clear the pointer when that provider unloads.
+/// The registration must not outlive `provider`'s allocation, and OpenSSL
+/// guarantees that only for a provider loaded against the very library context
+/// this call selects. Such a provider is kept alive by that context's provider
+/// store until the context itself is freed, after which nothing reads the
+/// stored address. A provider loaded against a *different* context is not:
+/// `crypto/provider_core.c` deregisters through
+/// `ossl_rand_check_random_provider_on_unload(prov->libctx, prov)`, keyed on the
+/// provider's own context, so it never clears this context's registration, and
+/// its owning context can be freed first — leaving the safe generation calls
+/// above reading a released provider.
+///
+/// No other thread may generate randomness from, configure, load or unload a
+/// provider in the selected context during the call: OpenSSL replaces the
+/// stored name and address without holding a lock, and documents the operation
+/// as not thread-safe. The other setters in this module obtain that exclusion
+/// from the borrow checker by taking an exclusive
+/// [`OsslLibCtxMut`](crate::bio::context::OsslLibCtxMut); this one cannot,
+/// because an owned provider handle holds the same context's shared borrow for
+/// as long as it lives.
 #[must_use]
 pub unsafe fn RAND_set1_random_provider(
     context: Option<OsslLibCtxRef<'_>>,
@@ -275,7 +352,15 @@ pub unsafe fn RAND_set1_random_provider(
 }
 
 /// Wraps: RAND_set_DRBG_type
-/// Configures the generator fetched for a library context.
+/// Names the generator, property query, cipher and digest that `context`
+/// fetches when it builds its DRBGs.
+///
+/// Each supplied string is duplicated into context-owned storage and each
+/// `None` clears the stored value. Returns `false` once the context's primary
+/// DRBG has been instantiated — any generation, seeding or
+/// [`RAND_get0_primary`] call does that — and also when a duplication fails, in
+/// which case the arguments accepted before the failure have already replaced
+/// their stored values.
 #[must_use]
 pub fn RAND_set_DRBG_type(
     context: &mut OsslLibCtxMut<'_>,
@@ -288,7 +373,11 @@ pub fn RAND_set_DRBG_type(
 }
 
 /// Wraps: RAND_set_DRBG_type
-/// Configures the generator fetched for the default library context.
+/// Names the generator, property query, cipher and digest fetched for the
+/// default library context.
+///
+/// Copies its arguments and reports failure exactly as [`RAND_set_DRBG_type`]
+/// does.
 ///
 /// # Safety
 ///
@@ -326,7 +415,13 @@ fn set_drbg_type(
 }
 
 /// Wraps: RAND_set_seed_source_type
-/// Configures the seed source fetched for a library context.
+/// Names the seed source and property query that `context` fetches when it
+/// builds its entropy source.
+///
+/// Copies its arguments as [`RAND_set_DRBG_type`] does. Returns `false` once
+/// the context's seed source has been instantiated, which happens while the
+/// primary DRBG is created, and also on a duplication failure that leaves an
+/// already accepted argument stored.
 #[must_use]
 pub fn RAND_set_seed_source_type(
     context: &mut OsslLibCtxMut<'_>,
@@ -337,7 +432,11 @@ pub fn RAND_set_seed_source_type(
 }
 
 /// Wraps: RAND_set_seed_source_type
-/// Configures the seed source fetched for the default library context.
+/// Names the seed source and property query fetched for the default library
+/// context.
+///
+/// Copies its arguments and reports failure exactly as
+/// [`RAND_set_seed_source_type`] does.
 ///
 /// # Safety
 ///
@@ -370,6 +469,54 @@ mod tests {
 
     use super::*;
     use crate::bio::context::OsslLibCtx;
+    use crate::provider::provider_core::SharedOsslProvider;
+
+    /// An isolated context keeps these tests from configuring, or disabling
+    /// fallback loading in, the process-global context other tests share.
+    fn new_context() -> CBox<OsslLibCtx> {
+        // SAFETY: a non-null constructor result transfers one fresh, fully
+        // initialized context to its registered owner.
+        unsafe { CBox::<OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
+            .expect("isolated library context")
+    }
+
+    /// Loads the default provider, tying the owner to the context's borrow.
+    fn load_default(context: OsslLibCtxRef<'_>) -> SharedOsslProvider<'_> {
+        // SAFETY: the handle addresses a live library context and the literal
+        // is a live NUL-terminated name. The call returns null or one active
+        // public provider handle.
+        let raw =
+            unsafe { ffi::OSSL_PROVIDER_load(context.as_ptr().cast_mut(), c"default".as_ptr()) };
+        // SAFETY: a non-null result transfers exactly one activation and one
+        // reference, settled by the owner's single `OSSL_PROVIDER_unload`.
+        unsafe { SharedOsslProvider::from_raw(raw) }.expect("load the default provider")
+    }
+
+    /// Builds one uninstantiated HASH-DRBG that the caller solely owns.
+    fn new_generator(context: OsslLibCtxRef<'_>) -> CBox<EvpRandCtx> {
+        // SAFETY: the handle addresses a live library context and the literal
+        // is a live NUL-terminated algorithm name; a null property query
+        // selects the default one.
+        let algorithm = unsafe {
+            ffi::EVP_RAND_fetch(
+                context.as_ptr().cast_mut(),
+                c"HASH-DRBG".as_ptr(),
+                ptr::null(),
+            )
+        };
+        assert!(!algorithm.is_null(), "fetch HASH-DRBG");
+
+        // SAFETY: `algorithm` is a live fetched implementation, which the
+        // constructor up-refs for itself; a null parent selects no reseeding
+        // source, which this generator never needs.
+        let raw = unsafe { ffi::EVP_RAND_CTX_new(algorithm, ptr::null_mut()) };
+        // SAFETY: the constructor took its own reference, so this settles the
+        // fetch obligation created just above and leaves `raw` valid.
+        unsafe { ffi::EVP_RAND_free(algorithm) };
+        // SAFETY: a non-null result transfers exactly one fresh, fully
+        // constructed generator to its registered owner.
+        unsafe { CBox::<EvpRandCtx>::from_raw(raw) }.expect("build a DRBG context")
+    }
 
     #[test]
     fn seed_poll_and_generate_use_bounded_slices() {
@@ -386,10 +533,7 @@ mod tests {
 
     #[test]
     fn explicit_context_generation_returns_borrowed_generators() {
-        // SAFETY: a non-null constructor result transfers one fresh, fully
-        // initialized context to its registered owner.
-        let mut context = unsafe { CBox::<OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
-            .expect("isolated library context");
+        let mut context = new_context();
         let mut public = [0_u8; 16];
         let mut private = [0_u8; 16];
 
@@ -410,10 +554,7 @@ mod tests {
 
     #[test]
     fn configuration_copies_optional_c_strings_before_generation() {
-        // SAFETY: a non-null constructor result transfers one fresh, fully
-        // initialized context to its registered owner.
-        let mut context = unsafe { CBox::<OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
-            .expect("isolated library context");
+        let mut context = new_context();
 
         assert!(RAND_set_DRBG_type(
             &mut context.as_mut(),
@@ -430,5 +571,113 @@ mod tests {
 
         let mut output = [0_u8; 16];
         assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut output, 128), 1);
+    }
+
+    #[test]
+    fn configuration_is_refused_once_the_context_has_instantiated_its_drbgs() {
+        let mut context = new_context();
+
+        assert!(RAND_set_DRBG_type(
+            &mut context.as_mut(),
+            Some(c"HASH-DRBG"),
+            None,
+            None,
+            Some(c"SHA2-512"),
+        ));
+
+        // Building the primary DRBG also settles the seed source, which closes
+        // both configuration windows for this context.
+        assert!(RAND_get0_primary(Some(context.as_ref())).is_some());
+
+        assert!(!RAND_set_DRBG_type(
+            &mut context.as_mut(),
+            Some(c"CTR-DRBG"),
+            None,
+            Some(c"AES-256-CTR"),
+            None,
+        ));
+        assert!(!RAND_set_seed_source_type(
+            &mut context.as_mut(),
+            Some(c"SEED-SRC"),
+            None
+        ));
+    }
+
+    #[test]
+    fn a_registered_random_provider_answers_generation_until_it_is_cleared() {
+        let context = new_context();
+        let provider = load_default(context.as_ref());
+        let mut output = [0_u8; 16];
+
+        // The provider owner already holds the context's shared borrow, which
+        // is why this setter takes a shared context handle and states its
+        // exclusion requirement in prose instead.
+        //
+        // SAFETY: the provider was loaded against this very context, so its
+        // store keeps it alive for as long as the registration can be read.
+        // Nothing else in this test uses the context concurrently.
+        assert!(unsafe {
+            RAND_set1_random_provider(Some(context.as_ref()), Some(provider.as_ref()))
+        });
+
+        // The default provider implements no `OSSL_FUNC_PROVIDER_RANDOM_BYTES`,
+        // so generation now reports failure rather than reaching the DRBGs.
+        assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut output, 128), 0);
+        assert_eq!(
+            RAND_priv_bytes_ex(Some(context.as_ref()), &mut output, 128),
+            0
+        );
+
+        // SAFETY: as above; clearing the override stores no borrowed pointer.
+        assert!(unsafe { RAND_set1_random_provider(Some(context.as_ref()), None) });
+        assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut output, 128), 1);
+
+        // The owner unloads before the context it borrows is freed.
+        drop(provider);
+    }
+
+    #[test]
+    fn set0_public_and_private_take_over_a_caller_built_generator() {
+        let mut context = new_context();
+        let public = new_generator(context.as_ref());
+        let private = new_generator(context.as_ref());
+        let installed_public = public.as_ref().as_ptr();
+        let installed_private = private.as_ref().as_ptr();
+        let mut output = [0_u8; 16];
+
+        assert!(RAND_set0_public(&mut context.as_mut(), Some(public)).is_ok());
+        assert!(RAND_set0_private(&mut context.as_mut(), Some(private)).is_ok());
+        assert_eq!(
+            RAND_get0_public(Some(context.as_ref()))
+                .expect("installed public generator")
+                .as_ptr(),
+            installed_public
+        );
+        assert_eq!(
+            RAND_get0_private(Some(context.as_ref()))
+                .expect("installed private generator")
+                .as_ptr(),
+            installed_private
+        );
+
+        // The transferred generators were never instantiated, so generation
+        // fails — evidence that they, and not the DRBGs OpenSSL would have
+        // built, are what this thread now generates through.
+        assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut output, 0), 0);
+        assert_eq!(
+            RAND_priv_bytes_ex(Some(context.as_ref()), &mut output, 0),
+            0
+        );
+
+        // Clearing frees both transferred generators; the next call rebuilds
+        // the thread-local slots. Running this under the C build's sanitizers
+        // is what proves the transfer released each obligation exactly once.
+        assert!(RAND_set0_public(&mut context.as_mut(), None).is_ok());
+        assert!(RAND_set0_private(&mut context.as_mut(), None).is_ok());
+        assert_eq!(RAND_bytes_ex(Some(context.as_ref()), &mut output, 0), 1);
+        assert_eq!(
+            RAND_priv_bytes_ex(Some(context.as_ref()), &mut output, 0),
+            1
+        );
     }
 }

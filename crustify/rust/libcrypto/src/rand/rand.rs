@@ -227,6 +227,11 @@ impl RandMethodMut<'_> {
 
 /// Wraps: RAND_OpenSSL
 /// Borrows OpenSSL's process-static default random-method table.
+///
+/// This is the table `RAND_bytes` and friends compare the installed method
+/// against to decide whether to take the legacy callback path or their own DRBG
+/// path, so installing it with [`RAND_set_rand_method`] is indistinguishable
+/// from installing nothing.
 #[cfg(feature = "deprecated-3-0")]
 #[allow(non_snake_case)]
 #[must_use]
@@ -238,7 +243,12 @@ pub fn RAND_OpenSSL() -> RandMethodRef<'static> {
 }
 
 /// Wraps: RAND_get_rand_method
-/// Borrows the current process-global random-method table.
+/// Borrows the current process-global random-method table, installing
+/// OpenSSL's own default when no table is set.
+///
+/// That lazy installation is why clearing the table with
+/// [`RAND_set_rand_method(None)`](RAND_set_rand_method) restores default
+/// selection rather than leaving the process without a method.
 #[cfg(feature = "deprecated-3-0")]
 #[allow(non_snake_case)]
 #[must_use]
@@ -250,7 +260,18 @@ pub fn RAND_get_rand_method() -> Option<RandMethodRef<'static>> {
 }
 
 /// Wraps: RAND_set_rand_method
-/// Installs a process-lifetime method table, or restores lazy default selection.
+/// Installs a process-lifetime method table, or restores lazy default
+/// selection with `None`. Reports whether the table was stored.
+///
+/// Installing publishes the table process-wide: from here on OpenSSL may read
+/// its slots and invoke its callbacks concurrently, on any thread, from safe
+/// generation calls such as [`RAND_bytes`](crate::rand::rand_lib::RAND_bytes).
+/// This call therefore carries no contract of its own — both obligations were
+/// already discharged where the table and its callbacks were adopted. A
+/// `'static` [`RandMethodRef`] comes only from [`RAND_OpenSSL`] or from
+/// `RandMethodRef::from_ptr`, whose caller asserts that no [`RandMethodMut`]
+/// aliases the same storage, and every callback slot is filled from a
+/// `from_raw` whose caller asserts OpenSSL's thread-safety requirements.
 #[cfg(feature = "deprecated-3-0")]
 #[allow(non_snake_case)]
 #[must_use]

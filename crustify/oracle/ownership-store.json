@@ -42607,11 +42607,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "arg:prov"
+       "lifetime": "arg:ctx"
       },
       "nullable": true,
       "mutable": false,
-      "note": "The provider is not up-refed. RAND stores its address, but provider load/unload hooks clear and restore that address by name; NULL disables the override."
+      "note": "The provider is not up-refed; RAND stores its bare address alongside a strdup of its name (only the name is the 'set1' copy). NULL disables the override. The stored address is kept alive by the provider store of the provider's OWN libctx, not by RAND: provider_deactivate deregisters via ossl_rand_check_random_provider_on_unload(prov->libctx, prov), so registering a provider loaded against a DIFFERENT context is never cleared here and dangles once that context is freed - RAND_bytes_ex/RAND_priv_bytes_ex then dereference released storage. That hook is also gated on prov->random_bytes != NULL, so a provider without an OSSL_FUNC_PROVIDER_RANDOM_BYTES dispatch entry (every provider OpenSSL ships) is never deregistered on unload; in-context it survives in the store, so the stale registration only makes generation report failure. Reads/writes of random_provider and random_provider_name are unlocked."
      }
     }
    ]
