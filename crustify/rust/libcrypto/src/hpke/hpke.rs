@@ -516,10 +516,9 @@ mod tests {
             OSSL_HPKE_CTX_new(2, suite.as_ref(), 0, None, None).expect("auth sender");
         // SAFETY: `private` lives longer than `auth_sender` and both use the
         // process-wide library context, so the copied key's provider does too.
-        assert_eq!(
-            unsafe { OSSL_HPKE_CTX_set1_authpriv(&mut auth_sender.as_mut(), private.as_ref()) },
-            1
-        );
+        let authorized =
+            unsafe { OSSL_HPKE_CTX_set1_authpriv(&mut auth_sender.as_mut(), private.as_ref()) };
+        assert_eq!(authorized, 1);
         let mut auth_receiver =
             OSSL_HPKE_CTX_new(2, suite.as_ref(), 1, None, None).expect("auth receiver");
         assert_eq!(

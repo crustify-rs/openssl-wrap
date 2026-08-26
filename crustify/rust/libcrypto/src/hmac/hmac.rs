@@ -173,24 +173,20 @@ mod tests {
 
         // SAFETY: `digest` remains alive until both contexts have finalized and
         // the copied context inherits the same live dependency.
-        assert_eq!(
-            unsafe {
-                HMAC_Init_ex(
-                    &mut source.as_mut(),
-                    Some(b"a sufficiently long test key"),
-                    Some(digest.as_ref()),
-                )
-            },
-            1
-        );
+        let initialized = unsafe {
+            HMAC_Init_ex(
+                &mut source.as_mut(),
+                Some(b"a sufficiently long test key"),
+                Some(digest.as_ref()),
+            )
+        };
+        assert_eq!(initialized, 1);
         assert!(HMAC_CTX_get_md(source.as_ref()).is_some());
         HMAC_CTX_set_flags(&mut source.as_mut(), 0);
         assert_eq!(HMAC_Update(&mut source.as_mut(), b"message"), 1);
         // SAFETY: `digest` also remains alive for every use of `copy`.
-        assert_eq!(
-            unsafe { HMAC_CTX_copy(&mut copy.as_mut(), source.as_ref()) },
-            1
-        );
+        let copied = unsafe { HMAC_CTX_copy(&mut copy.as_mut(), source.as_ref()) };
+        assert_eq!(copied, 1);
 
         let mut first = [0_u8; 64];
         let mut second = [0_u8; 64];
