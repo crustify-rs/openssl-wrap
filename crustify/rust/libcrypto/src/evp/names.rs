@@ -3,6 +3,9 @@
 #![allow(non_snake_case)]
 
 use core::ffi::{CStr, c_void};
+use std::any::Any;
+use std::boxed::Box;
+use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 
 use libcrypto_sys as ffi;
 
@@ -88,6 +91,18 @@ mod tests {
     }
 }
 
+/// Trampoline state for the cipher enumerators.
+///
+/// `EVP_CIPHER_do_all[_sorted]` walk the legacy name table while holding its
+/// lock, so a panic escaping the closure must not unwind through OpenSSL. It
+/// is captured here, the remaining entries are skipped, and the panic resumes
+/// once C has returned — the same discipline the other cipher enumerators in
+/// this crate use.
+struct CipherNames<'a, F> {
+    callback: &'a mut F,
+    panic: Option<Box<dyn Any + Send>>,
+}
+
 fn do_all_cipher<F>(sorted: bool, callback: &mut F)
 where
     F: for<'a> FnMut(Option<EvpCipherRef<'a>>, &'a CStr, Option<&'a CStr>),
@@ -100,7 +115,10 @@ where
     ) where
         F: for<'a> FnMut(Option<EvpCipherRef<'a>>, &'a CStr, Option<&'a CStr>),
     {
-        if from.is_null() {
+        // SAFETY: the outer wrapper supplies this exact uniquely borrowed
+        // state, and C neither retains nor concurrently invokes it.
+        let state = unsafe { &mut *state.cast::<CipherNames<'_, F>>() };
+        if state.panic.is_some() || from.is_null() {
             return;
         }
         // SAFETY: OpenSSL supplies a live cipher for a method entry or null for
@@ -113,20 +131,26 @@ where
             // SAFETY: established by the callback contract above.
             unsafe { CStr::from_ptr(to) }
         });
-        // SAFETY: the outer wrapper supplies the unique live closure and C
-        // neither retains nor concurrently invokes it.
-        let callback = unsafe { &mut *state.cast::<F>() };
-        callback(cipher, from, to);
+        if let Err(panic) = catch_unwind(AssertUnwindSafe(|| (state.callback)(cipher, from, to))) {
+            state.panic = Some(panic);
+        }
     }
 
-    let state = core::ptr::from_mut(callback).cast();
+    let mut state = CipherNames {
+        callback,
+        panic: None,
+    };
+    let state_ptr = core::ptr::from_mut(&mut state).cast();
     // SAFETY: callback code and state remain live for synchronous enumeration.
     unsafe {
         if sorted {
-            ffi::EVP_CIPHER_do_all_sorted(Some(trampoline::<F>), state);
+            ffi::EVP_CIPHER_do_all_sorted(Some(trampoline::<F>), state_ptr);
         } else {
-            ffi::EVP_CIPHER_do_all(Some(trampoline::<F>), state);
+            ffi::EVP_CIPHER_do_all(Some(trampoline::<F>), state_ptr);
         }
+    }
+    if let Some(panic) = state.panic {
+        resume_unwind(panic);
     }
 }
 
@@ -162,5 +186,20 @@ mod cipher_tests {
         let mut sorted_count = 0usize;
         EVP_CIPHER_do_all_sorted(&mut |_, _, _| sorted_count += 1);
         assert_eq!(sorted_count, count);
+    }
+
+    #[test]
+    fn cipher_enumerator_panics_resume_only_after_c_returns() {
+        let mut seen = 0usize;
+        let panic = catch_unwind(AssertUnwindSafe(|| {
+            EVP_CIPHER_do_all(&mut |_, _, _| {
+                seen += 1;
+                panic!("callback panic");
+            });
+        }));
+        assert!(panic.is_err());
+        // The traversal ran to completion with the remaining entries skipped,
+        // so exactly one visit reached the panicking closure.
+        assert_eq!(seen, 1);
     }
 }

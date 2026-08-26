@@ -16571,7 +16571,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Live non-owning argument used only for this synchronous call."
+      "note": "Live non-owning argument used only for this synchronous call. A null context is explicitly accepted and yields null, but a NON-null context must already hold an active cipher: the body reads cctx->cipher->gettable_ctx_params behind a null check on cctx only, so a context fresh from EVP_CIPHER_CTX_new or EVP_CIPHER_CTX_reset dereferences a null EVP_CIPHER."
      }
     }
    ],
@@ -16650,7 +16650,7 @@
      },
      "nullable": true,
      "mutable": false,
-     "note": "Optional IV byte run retained by the context/provider and valid for the active IV length."
+     "note": "Optional running-IV byte run retained by the context/provider. Its readable extent is NOT unconditionally EVP_CIPHER_CTX_get_iv_length: the body seeds the result with the EVP-level ctx->iv array and asks for OSSL_CIPHER_PARAM_UPDATED_IV as an octet_ptr of at most sizeof(ctx->iv) == EVP_MAX_IV_LENGTH. A provider that answers replaces it with its own buffer holding the active IV length; a provider that does not answer (or a legacy cipher, where evp_do_ciph_ctx_getparams returns EVP_CTRL_RET_UNSUPPORTED and the result is still treated as success) leaves the EVP-level EVP_MAX_IV_LENGTH array. Only min(active IV length, EVP_MAX_IV_LENGTH) bytes are provably readable."
     }
    }
   },
@@ -16689,7 +16689,7 @@
      },
      "nullable": true,
      "mutable": true,
-     "note": "Optional writable running-IV byte run retained by the exclusively borrowed context/provider."
+     "note": "Optional writable running-IV byte run retained by the exclusively borrowed context/provider. Its writable extent is NOT unconditionally EVP_CIPHER_CTX_get_iv_length: the body seeds the result with the EVP-level ctx->iv array and asks for OSSL_CIPHER_PARAM_UPDATED_IV as an octet_ptr of at most sizeof(ctx->iv) == EVP_MAX_IV_LENGTH. When no provider answers, the EVP-level EVP_MAX_IV_LENGTH array is returned unchanged, so only min(active IV length, EVP_MAX_IV_LENGTH) bytes are provably writable."
     }
    }
   },
@@ -16746,7 +16746,7 @@
      },
      "nullable": true,
      "mutable": false,
-     "note": "Optional IV byte run retained by the context/provider and valid for the active IV length."
+     "note": "Optional original-IV byte run retained by the context/provider. Its readable extent is NOT unconditionally EVP_CIPHER_CTX_get_iv_length: the body seeds the result with the EVP-level ctx->oiv array and asks for OSSL_CIPHER_PARAM_IV as an octet_ptr of at most sizeof(ctx->oiv) == EVP_MAX_IV_LENGTH. When no provider answers, the EVP-level EVP_MAX_IV_LENGTH array is returned unchanged, so only min(active IV length, EVP_MAX_IV_LENGTH) bytes are provably readable."
     }
    }
   },
@@ -16768,7 +16768,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Live non-owning argument used only for this synchronous call."
+      "note": "Live non-owning argument used only for this synchronous call. PRECONDITION: the context must already hold an active cipher \u2014 the body reads ctx->cipher->flags with no null check, so a context fresh from EVP_CIPHER_CTX_new or EVP_CIPHER_CTX_reset dereferences a null EVP_CIPHER. EVP_CIPHER_CTX_get_key_length returns 0 for that state, so a positive key length proves the precondition."
      }
     },
     {
@@ -16785,7 +16785,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Writable key buffer; the function writes exactly the active cipher key length and retains nothing."
+      "note": "Writable key buffer; the function writes exactly EVP_CIPHER_CTX_get_key_length(ctx) bytes, directly or through the EVP_CTRL_RAND_KEY octet-string param for EVP_CIPH_RAND_KEY ciphers, and retains nothing."
      }
     }
    ]
@@ -16996,7 +16996,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Live non-owning argument used only for this synchronous call."
+      "note": "Live non-owning argument used only for this synchronous call. PRECONDITION: the context must already hold an active cipher \u2014 the body reads c->cipher->prov with no null check, so a context fresh from EVP_CIPHER_CTX_new or EVP_CIPHER_CTX_reset dereferences a null EVP_CIPHER."
      }
     }
    ]
@@ -17088,7 +17088,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Live non-owning argument used only for this synchronous call."
+      "note": "Live non-owning argument used only for this synchronous call. A null context is explicitly accepted and yields null, but a NON-null context must already hold an active cipher: the body reads cctx->cipher->settable_ctx_params behind a null check on cctx only, so a context fresh from EVP_CIPHER_CTX_new or EVP_CIPHER_CTX_reset dereferences a null EVP_CIPHER."
      }
     }
    ],

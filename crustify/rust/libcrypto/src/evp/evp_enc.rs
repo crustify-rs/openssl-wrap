@@ -27,6 +27,16 @@ fn optional_cstr(value: Option<&CStr>) -> *const core::ffi::c_char {
     value.map_or(ptr::null(), CStr::as_ptr)
 }
 
+/// Whether the context already holds an active cipher.
+///
+/// Several `EVP_CIPHER_CTX` entry points read `ctx->cipher->...` behind a null
+/// check on the *context* only, so a context fresh from `EVP_CIPHER_CTX_new`
+/// or `EVP_CIPHER_CTX_reset` would dereference a null `EVP_CIPHER`. Safe
+/// wrappers over those entry points refuse the call instead.
+fn has_active_cipher(ctx: &EvpCipherCtxMut<'_>) -> bool {
+    EVP_CIPHER_CTX_get0_cipher(ctx.as_ref()).is_some()
+}
+
 unsafe fn cipher_params<'ctx>(
     params: *const ffi::OSSL_PARAM,
 ) -> Option<CSlice<'ctx, OsslParam<'ctx>>> {
@@ -110,8 +120,12 @@ pub fn EVP_CIPHER_CTX_get_params(
 pub fn EVP_CIPHER_CTX_gettable_params<'a>(
     ctx: &'a mut EvpCipherCtxMut<'_>,
 ) -> Option<CSlice<'a, OsslParam<'a>>> {
+    if !has_active_cipher(ctx) {
+        return None;
+    }
     // SAFETY: the exclusive reborrow keeps the context/provider live while C
-    // selects its constant advertised parameter table.
+    // selects its constant advertised parameter table, and the check above
+    // established the active cipher its body dereferences unguarded.
     let params = unsafe { ffi::EVP_CIPHER_CTX_gettable_params(ctx.as_mut_ptr()) };
     // SAFETY: a non-null result is a provider-owned terminated table retained
     // by the context for this reborrow.
@@ -127,11 +141,17 @@ pub fn EVP_CIPHER_CTX_new() -> Option<CBox<EvpCipherCtx>> {
 }
 
 /// Wraps: EVP_CIPHER_CTX_rand_key
-/// Fills `key` only when it is large enough for the active cipher.
+/// Fills `key` only when the context has an active cipher and `key` is large
+/// enough for it.
+///
+/// The C body reads `ctx->cipher->flags` unguarded, so a context with no
+/// active cipher is refused here rather than passed on. That state is exactly
+/// the one for which `EVP_CIPHER_CTX_get_key_length` reports `0`, so a
+/// strictly positive key length is the proof this wrapper relies on.
 pub fn EVP_CIPHER_CTX_rand_key(ctx: &mut EvpCipherCtxMut<'_>, key: &mut [u8]) -> c_int {
     // The safe metadata query retains no pointer.
     let required = EVP_CIPHER_CTX_get_key_length(ctx.as_ref());
-    if required < 0 || usize::try_from(required).map_or(true, |len| key.len() < len) {
+    if required <= 0 || usize::try_from(required).map_or(true, |len| key.len() < len) {
         return 0;
     }
     // SAFETY: the preceding query established the number of bytes C writes,
@@ -146,8 +166,14 @@ pub fn EVP_CIPHER_CTX_reset(ctx: &mut EvpCipherCtxMut<'_>) -> c_int {
 }
 
 /// Wraps: EVP_CIPHER_CTX_set_key_length
+/// Fails without calling C when the context has no active cipher, whose
+/// `prov` field the C body reads unguarded.
 pub fn EVP_CIPHER_CTX_set_key_length(ctx: &mut EvpCipherCtxMut<'_>, length: c_int) -> c_int {
-    // SAFETY: the context is exclusively borrowed; the scalar is passed by value.
+    if !has_active_cipher(ctx) {
+        return 0;
+    }
+    // SAFETY: the context is exclusively borrowed and now proven to hold the
+    // active cipher C dereferences; the scalar is passed by value.
     unsafe { ffi::EVP_CIPHER_CTX_set_key_length(ctx.as_mut_ptr(), length) }
 }
 
@@ -172,7 +198,12 @@ pub fn EVP_CIPHER_CTX_set_params(
 pub fn EVP_CIPHER_CTX_settable_params<'a>(
     ctx: &'a mut EvpCipherCtxMut<'_>,
 ) -> Option<CSlice<'a, OsslParam<'a>>> {
-    // SAFETY: the exclusive reborrow retains the active provider.
+    if !has_active_cipher(ctx) {
+        return None;
+    }
+    // SAFETY: the exclusive reborrow retains the active provider, and the
+    // check above established the active cipher its body dereferences
+    // unguarded.
     let params = unsafe { ffi::EVP_CIPHER_CTX_settable_params(ctx.as_mut_ptr()) };
     // SAFETY: a non-null result is a provider-owned terminated table retained
     // by the context for this reborrow.
@@ -264,6 +295,40 @@ mod tests {
         let mut context = EVP_CIPHER_CTX_new().expect("cipher context");
         assert!(EVP_CIPHER_CTX_dup(context.as_ref()).is_none());
         assert_eq!(EVP_CIPHER_CTX_reset(&mut context.as_mut()), 1);
+    }
+
+    #[test]
+    fn cipherless_context_entry_points_never_reach_c() {
+        // `EVP_CIPHER_CTX_set_key_length`, `EVP_CIPHER_CTX_{get,set}table_params`
+        // and `EVP_CIPHER_CTX_rand_key` all read `ctx->cipher->...` with no null
+        // check on the cipher, so a context that never selected one must be
+        // refused before the FFI call.
+        let mut context = EVP_CIPHER_CTX_new().expect("cipher context");
+        let mut context = context.as_mut();
+        assert!(EVP_CIPHER_CTX_get0_cipher(context.as_ref()).is_none());
+
+        assert_eq!(EVP_CIPHER_CTX_set_key_length(&mut context, 16), 0);
+        assert!(EVP_CIPHER_CTX_gettable_params(&mut context).is_none());
+        assert!(EVP_CIPHER_CTX_settable_params(&mut context).is_none());
+        assert_eq!(EVP_CIPHER_CTX_rand_key(&mut context, &mut [0; 64]), 0);
+    }
+
+    #[test]
+    fn initialized_context_entry_points_reach_c() {
+        let cipher = EVP_CIPHER_fetch(None, c"AES-128-CBC", None).expect("cipher");
+        let mut context = EVP_CIPHER_CTX_new().expect("cipher context");
+        let mut context = context.as_mut();
+        assert_eq!(
+            EVP_EncryptInit_ex(&mut context, Some(cipher.as_ref()), None, None),
+            1
+        );
+
+        assert!(EVP_CIPHER_CTX_gettable_params(&mut context).is_some());
+        assert!(EVP_CIPHER_CTX_settable_params(&mut context).is_some());
+        // AES-128-CBC has a fixed 16-byte key, so a short buffer is refused and
+        // an exactly sized one is filled.
+        assert_eq!(EVP_CIPHER_CTX_rand_key(&mut context, &mut [0; 15]), 0);
+        assert_eq!(EVP_CIPHER_CTX_rand_key(&mut context, &mut [0; 16]), 1);
     }
 
     #[test]

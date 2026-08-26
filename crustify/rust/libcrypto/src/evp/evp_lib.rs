@@ -592,17 +592,22 @@ mod digest_metadata_tests {
     }
 }
 
-#[cfg(feature = "deprecated-3-0")]
-const EVP_MAX_BLOCK_LENGTH: usize = 32;
-
 /// Wraps: EVP_CIPHER_CTX_buf_noconst
 #[cfg(feature = "deprecated-3-0")]
 pub fn EVP_CIPHER_CTX_buf_noconst<'a>(ctx: &'a mut EvpCipherCtxMut<'_>) -> CSliceMut<'a, u8> {
     // SAFETY: the exclusive reborrow retains the context and its inline,
     // initialized `EVP_MAX_BLOCK_LENGTH` byte array.
     let buffer = unsafe { ffi::EVP_CIPHER_CTX_buf_noconst(ctx.as_mut_ptr()) };
-    // SAFETY: the C getter always returns the start of that inline array.
-    unsafe { CSliceMut::from_raw_parts(NonNull::new_unchecked(buffer), EVP_MAX_BLOCK_LENGTH) }
+    // SAFETY: the getter returns `&ctx->buf`, the start of an inline
+    // `unsigned char[EVP_MAX_BLOCK_LENGTH]` member, so it is never null and
+    // always publishes exactly that many writable bytes. The extent comes from
+    // the generated binding for the same macro the C member is declared with.
+    unsafe {
+        CSliceMut::from_raw_parts(
+            NonNull::new_unchecked(buffer),
+            ffi::EVP_MAX_BLOCK_LENGTH as usize,
+        )
+    }
 }
 
 /// Wraps: EVP_CIPHER_CTX_cipher
@@ -743,6 +748,29 @@ pub fn EVP_CIPHER_CTX_is_encrypting(ctx: EvpCipherCtxRef<'_>) -> bool {
     unsafe { ffi::EVP_CIPHER_CTX_is_encrypting(ctx.as_ptr()) != 0 }
 }
 
+/// The IV extent these deprecated pointer getters can prove.
+///
+/// `EVP_CIPHER_CTX_iv`, `EVP_CIPHER_CTX_original_iv` and
+/// `EVP_CIPHER_CTX_iv_noconst` seed their result with the EVP-level
+/// `ctx->iv` / `ctx->oiv` member — an inline `unsigned char[EVP_MAX_IV_LENGTH]`
+/// — and only then ask the provider for the IV as an `octet_ptr` param sized
+/// `sizeof(ctx->iv)`. A provider that answers substitutes its own buffer,
+/// which holds the active IV length; a provider that does not answer, and a
+/// legacy cipher whose `evp_do_ciph_ctx_getparams` reports
+/// `EVP_CTRL_RET_UNSUPPORTED` (still treated as success by the getters),
+/// leaves the EVP-level array in place. Only
+/// `min(active IV length, EVP_MAX_IV_LENGTH)` bytes are therefore provably
+/// valid, so an active IV length above that bound — an AEAD IV length raised
+/// through `EVP_CTRL_AEAD_SET_IVLEN`, say — yields `None` here instead of a
+/// slice this wrapper cannot justify. Use
+/// [`EVP_CIPHER_CTX_get_updated_iv`] or [`EVP_CIPHER_CTX_get_original_iv`],
+/// which pass an explicitly sized buffer, for those contexts.
+#[cfg(feature = "deprecated-3-0")]
+fn provable_iv_len(len: c_int) -> Option<usize> {
+    let len = usize::try_from(len).ok()?;
+    (len <= ffi::EVP_MAX_IV_LENGTH as usize).then_some(len)
+}
+
 #[cfg(feature = "deprecated-3-0")]
 unsafe fn deprecated_iv<'a>(
     ctx: EvpCipherCtxRef<'a>,
@@ -750,16 +778,22 @@ unsafe fn deprecated_iv<'a>(
 ) -> Option<CSlice<'a, u8>> {
     // SAFETY: the context is live and the scalar query retains nothing.
     let len = unsafe { ffi::EVP_CIPHER_CTX_get_iv_length(ctx.as_ptr()) };
-    let len = usize::try_from(len).ok()?;
+    let len = provable_iv_len(len)?;
     // SAFETY: selected getter has the same live-context contract.
     let iv = unsafe { get(ctx.as_ptr()) };
     let iv = NonNull::new(iv.cast_mut())?;
-    // SAFETY: OpenSSL publishes at least the active IV length at this pointer,
-    // retained by the context for `'a`. `CSlice` forms no Rust reference.
+    // SAFETY: whichever buffer the getter selected — the provider's, holding
+    // the active IV length, or the EVP-level `EVP_MAX_IV_LENGTH` array —
+    // publishes at least `len` readable bytes, retained by the context for
+    // `'a`. `CSlice` forms no Rust reference.
     Some(unsafe { CSlice::from_raw_parts(iv, len) })
 }
 
 /// Wraps: EVP_CIPHER_CTX_iv
+/// Yields `None` when the active IV length exceeds `EVP_MAX_IV_LENGTH`, the
+/// extent this deprecated pointer getter can prove; use
+/// [`EVP_CIPHER_CTX_get_updated_iv`] or [`EVP_CIPHER_CTX_get_original_iv`] for
+/// those contexts.
 #[cfg(feature = "deprecated-3-0")]
 #[must_use]
 pub fn EVP_CIPHER_CTX_iv<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<CSlice<'a, u8>> {
@@ -768,6 +802,10 @@ pub fn EVP_CIPHER_CTX_iv<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<CSlice<'a, u8>>
 }
 
 /// Wraps: EVP_CIPHER_CTX_iv_noconst
+/// Yields `None` when the active IV length exceeds `EVP_MAX_IV_LENGTH`, the
+/// extent this deprecated pointer getter can prove; use
+/// [`EVP_CIPHER_CTX_get_updated_iv`] or [`EVP_CIPHER_CTX_get_original_iv`] for
+/// those contexts.
 #[cfg(feature = "deprecated-3-0")]
 #[must_use]
 pub fn EVP_CIPHER_CTX_iv_noconst<'a>(
@@ -775,16 +813,21 @@ pub fn EVP_CIPHER_CTX_iv_noconst<'a>(
 ) -> Option<CSliceMut<'a, u8>> {
     // SAFETY: the context is live and the query retains nothing.
     let len = unsafe { ffi::EVP_CIPHER_CTX_get_iv_length(ctx.as_ref().as_ptr()) };
-    let len = usize::try_from(len).ok()?;
+    let len = provable_iv_len(len)?;
     // SAFETY: the exclusive context permits requesting its writable running IV.
     let iv = unsafe { ffi::EVP_CIPHER_CTX_iv_noconst(ctx.as_mut_ptr()) };
     let iv = NonNull::new(iv)?;
-    // SAFETY: OpenSSL publishes at least `len` writable IV bytes retained by
-    // the exclusive reborrow. `CSliceMut` forms no Rust reference.
+    // SAFETY: whichever buffer the getter selected publishes at least `len`
+    // writable bytes, retained by the exclusive reborrow — see
+    // [`provable_iv_len`]. `CSliceMut` forms no Rust reference.
     Some(unsafe { CSliceMut::from_raw_parts(iv, len) })
 }
 
 /// Wraps: EVP_CIPHER_CTX_original_iv
+/// Yields `None` when the active IV length exceeds `EVP_MAX_IV_LENGTH`, the
+/// extent this deprecated pointer getter can prove; use
+/// [`EVP_CIPHER_CTX_get_updated_iv`] or [`EVP_CIPHER_CTX_get_original_iv`] for
+/// those contexts.
 #[cfg(feature = "deprecated-3-0")]
 #[must_use]
 pub fn EVP_CIPHER_CTX_original_iv<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<CSlice<'a, u8>> {
