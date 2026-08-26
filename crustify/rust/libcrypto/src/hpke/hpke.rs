@@ -218,7 +218,8 @@ pub fn OSSL_HPKE_encap(
 }
 
 /// Wraps: OSSL_HPKE_export
-/// Derives exactly `secret.len()` exporter bytes under an optional label.
+/// Derives exactly `secret.len()` exporter bytes under `label`, which may be
+/// empty.
 pub fn OSSL_HPKE_export(ctx: &mut OsslHpkeCtxMut<'_>, secret: &mut [u8], label: &[u8]) -> i32 {
     // SAFETY: the exclusive handle is live, `secret` supplies the writable
     // extent and `label` supplies the readable extent; neither is retained.

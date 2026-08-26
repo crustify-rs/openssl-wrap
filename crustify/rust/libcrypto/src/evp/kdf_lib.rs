@@ -135,10 +135,17 @@ pub fn EVP_KDF_derive(
 
 /// Wraps: EVP_KDF_derive_SKEY
 /// Derives a reference-counted provider secret key.
+///
+/// The result retains the `EVP_SKEYMGMT` it was allocated from: the supplied
+/// `management` method when one is given, otherwise one fetched from the
+/// context's own library context. `EVP_SKEYMGMT_up_ref` is a deliberate no-op
+/// for a cached method, so that retained pointer names a record the fetching
+/// `OSSL_LIB_CTX`'s method store owns. Both sources therefore share the single
+/// lifetime `'a`, which the returned key may not outlive.
 #[must_use]
 pub fn EVP_KDF_derive_SKEY<'a>(
     ctx: &mut EvpKdfCtxMut<'a>,
-    management: Option<EvpSkeymgmtRef<'_>>,
+    management: Option<EvpSkeymgmtRef<'a>>,
     key_type: &CStr,
     property_query: Option<&CStr>,
     key_len: usize,
@@ -160,8 +167,9 @@ pub fn EVP_KDF_derive_SKEY<'a>(
             params,
         )
     };
-    // SAFETY: the new public key reference is tied conservatively to the KDF
-    // context borrow that retains its provider dependencies.
+    // SAFETY: the new public key reference is tied to `'a`, which covers both
+    // the KDF context and the optional key-management method whose record the
+    // key retains.
     unsafe { SharedEvpSkey::from_raw(key) }
 }
 
@@ -208,11 +216,13 @@ pub fn EVP_KDF_get_params(kdf: EvpKdfRef<'_>, params: &mut OsslParamListMut<'_, 
 }
 
 /// Wraps: EVP_KDF_is_a
-/// Tests whether a method has the requested algorithm name.
+/// Tests whether an optional method has the requested algorithm name.
 #[must_use]
-pub fn EVP_KDF_is_a(kdf: EvpKdfRef<'_>, name: &CStr) -> bool {
-    // SAFETY: the method and NUL-terminated name are live for the query.
-    unsafe { ffi::EVP_KDF_is_a(kdf.as_ptr(), name.as_ptr()) == 1 }
+pub fn EVP_KDF_is_a(kdf: Option<EvpKdfRef<'_>>, name: &CStr) -> bool {
+    let kdf = kdf.map_or(ptr::null(), |kdf| kdf.as_ptr());
+    // SAFETY: null is accepted for the method and reports no match; `name` is
+    // NUL-terminated and the lookup retains neither pointer.
+    unsafe { ffi::EVP_KDF_is_a(kdf, name.as_ptr()) == 1 }
 }
 
 /// Wraps: EVP_KDF_names_do_all
@@ -264,13 +274,37 @@ where
 
 #[cfg(test)]
 mod tests {
+    use core::mem::MaybeUninit;
+
+    use ffibox::CVal;
+
     use super::*;
+    use crate::core::openssl_core::{OsslParam, OsslParamArray};
     use crate::evp::kdf_meth::EVP_KDF_fetch;
+
+    /// `OSSL_PARAM_UTF8_STRING` / `OSSL_PARAM_OCTET_STRING`, per
+    /// `include/openssl/core.h`.
+    const UTF8_STRING: u32 = 4;
+    const OCTET_STRING: u32 = 5;
+
+    /// Descriptor over an already-initialized run, for a parameter C reads.
+    fn input<'data>(
+        key: &'data CStr,
+        data_type: u32,
+        bytes: &'data mut [MaybeUninit<u8>],
+    ) -> CVal<OsslParam<'data>> {
+        OsslParam::for_slice(key, data_type, bytes).expect("byte descriptor")
+    }
+
+    fn initialized(bytes: &[u8]) -> Vec<MaybeUninit<u8>> {
+        bytes.iter().copied().map(MaybeUninit::new).collect()
+    }
 
     #[test]
     fn fetched_kdf_context_exposes_lifetime_bound_method_metadata() {
         let kdf = EVP_KDF_fetch(None, c"HKDF", None).expect("fetch HKDF");
-        assert!(EVP_KDF_is_a(kdf.as_ref(), c"HKDF"));
+        assert!(EVP_KDF_is_a(Some(kdf.as_ref()), c"HKDF"));
+        assert!(!EVP_KDF_is_a(None, c"HKDF"));
         assert_eq!(EVP_KDF_get0_name(kdf.as_ref()), Some(c"HKDF"));
         assert!(EVP_KDF_get0_provider(kdf.as_ref()).is_some());
 
@@ -288,5 +322,50 @@ mod tests {
         assert!(EVP_KDF_CTX_get1_kdf(ctx.as_ref()).is_some());
         EVP_KDF_CTX_reset(&mut ctx.as_mut());
         assert!(EVP_KDF_CTX_dup(ctx.as_ref()).is_some());
+    }
+
+    #[test]
+    fn hkdf_derives_bytes_and_a_provider_secret_key_bound_to_one_lifetime() {
+        let kdf = EVP_KDF_fetch(None, c"HKDF", None).expect("fetch HKDF");
+        let mut context = EVP_KDF_CTX_new(kdf.as_ref()).expect("new KDF context");
+        let mut ctx = context.as_mut();
+        assert!(EVP_KDF_CTX_get_kdf_size(&mut ctx) > 0);
+
+        let mut digest = initialized(b"SHA256");
+        let mut secret = initialized(b"secret");
+        let mut salt = initialized(b"salt");
+        let params = OsslParamArray::new([
+            input(c"digest", UTF8_STRING, &mut digest),
+            input(c"key", OCTET_STRING, &mut secret),
+            input(c"salt", OCTET_STRING, &mut salt),
+        ]);
+        assert_eq!(EVP_KDF_CTX_set_params(&mut ctx, &params.as_list()), 1);
+
+        let mut derived = [0_u8; 32];
+        assert_eq!(EVP_KDF_derive(&mut ctx, &mut derived, None), 1);
+        assert_ne!(derived, [0_u8; 32]);
+
+        // No management method: the key retains one fetched from the
+        // context's own library context, which `'a` already covers.
+        let key = EVP_KDF_derive_SKEY(&mut ctx, None, c"GENERIC-SECRET", None, 32, None)
+            .expect("derive GENERIC-SECRET");
+        assert!(!key.as_ptr().is_null());
+    }
+
+    /// A supplied `EVP_SKEYMGMT` is retained by the derived key, so the two
+    /// share one lifetime and the key cannot outlive the method's owner.
+    #[test]
+    fn supplied_key_management_and_derived_key_share_one_lifetime() {
+        fn assert_bound<'a>(
+            _ctx: &mut EvpKdfCtxMut<'a>,
+            _management: Option<EvpSkeymgmtRef<'a>>,
+            _key: Option<SharedEvpSkey<'a>>,
+        ) {
+        }
+
+        let kdf = EVP_KDF_fetch(None, c"HKDF", None).expect("fetch HKDF");
+        let mut context = EVP_KDF_CTX_new(kdf.as_ref()).expect("new KDF context");
+        let mut ctx = context.as_mut();
+        assert_bound(&mut ctx, None, None);
     }
 }

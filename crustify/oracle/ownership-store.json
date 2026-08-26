@@ -22149,13 +22149,13 @@
      },
      "array": null,
      "string": false,
-     "owned": false,
+     "owned": true,
      "borrowed": {
       "lifetime": "arg:ctx"
      },
      "nullable": true,
      "mutable": false,
-     "note": "Borrowed method retained by the input context."
+     "note": "Ownership transfers: the body raises the method's public reference with EVP_KDF_up_ref and returns null when that fails, so the caller settles exactly one EVP_KDF_free. That count is a deliberate no-op for a cached record, which the fetching OSSL_LIB_CTX method store owns, so the result additionally stays bound to the context that reached it."
     }
    }
   },
@@ -22301,7 +22301,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Borrowed only for the synchronous call and not retained."
+      "note": "Retained, not transient: the constructor calls kdf->newctx and EVP_KDF_up_ref, then stores ctx->meth = kdf. The caller keeps its own reference, and because the up-ref is a no-op for a cached record the new context stays bound to the library context whose method store owns it."
      }
     }
    ],
@@ -22379,8 +22379,8 @@
        "lifetime": "arg:key"
       },
       "nullable": false,
-      "mutable": true,
-      "note": "Borrowed only for the synchronous call and not retained."
+      "mutable": false,
+      "note": "Read-only and required: the body dereferences key->skeymgmt->prov and key->keydata with no null check, and the fallback path goes through EVP_SKEY_export, which takes a const EVP_SKEY *. Provider set_skey implementations copy the key material out (kdf_pbkdf1_set_membuf_skey memdups it), so no part of the key is retained."
      }
     },
     {
@@ -22552,7 +22552,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "Borrowed only for the synchronous call and not retained."
+      "note": "Optional caller-supplied key-management method, retained rather than transient when non-null: it becomes the skeymgmt that evp_skey_alloc (direct path) or EVP_SKEY_import_SKEYMGMT (fallback path) stores in the returned key after EVP_SKEYMGMT_up_ref. That up-ref is a no-op for a cached record, so the result depends on this method and on the library context whose store owns it. The matching EVP_SKEYMGMT_free is skipped precisely because mgmt == skeymgmt."
      }
     },
     {
@@ -22580,11 +22580,11 @@
      "string": false,
      "owned": true,
      "borrowed": {
-      "lifetime": "arg:ctx"
+      "lifetime": "other"
      },
      "nullable": true,
      "mutable": true,
-     "note": "Transfers one public secret-key reference retaining provider dependencies reached from the context."
+     "note": "Transfers one EVP_SKEY_free obligation. The key retains the EVP_SKEYMGMT it was allocated from - the caller's mgmt when supplied, otherwise one fetched from ossl_provider_libctx(ctx->meth->prov) - and each is a cached record its OSSL_LIB_CTX owns. The result therefore depends on BOTH arg:ctx and arg:mgmt, which no single lifetime source names; the safe wrapper unifies them under one lifetime parameter."
     }
    }
   },
@@ -22971,9 +22971,9 @@
       "borrowed": {
        "lifetime": "arg:kdf"
       },
-      "nullable": false,
+      "nullable": true,
       "mutable": false,
-      "note": "Borrowed only for the synchronous call and not retained."
+      "note": "Optional: the body is `kdf != NULL && evp_is_a(...)`, so a null method is a defined input that reports no match. Read-only for the synchronous lookup and not retained."
      }
     },
     {
@@ -23760,8 +23760,8 @@
        "lifetime": "arg:ctx"
       },
       "nullable": false,
-      "mutable": true,
-      "note": "Borrowed only for the synchronous call and not retained."
+      "mutable": false,
+      "note": "Read-only despite the non-const C parameter: the body is `return ctx->meth;`. Required, since it is dereferenced without a null check."
      }
     }
    ],
@@ -37530,7 +37530,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Mutably borrows caller-owned destination storage and overwrites its logical state without consuming it."
+      "note": "Mutably borrows caller-owned destination storage, fills in any missing digest subcontexts, and overwrites its logical state without consuming it. It also inherits sctx->md verbatim (dctx->md = sctx->md, no reference count), so the source's digest must outlive the destination as well."
      }
     },
     {
@@ -37547,7 +37547,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Reads the source state without consuming or mutating the source HMAC_CTX."
+      "note": "Read-only source despite the non-const C parameter: its three subcontexts are read through EVP_MD_CTX_copy_ex, whose input is const, and its md pointer is only copied out."
      }
     }
    ]
@@ -37787,11 +37787,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "arg:md"
+       "lifetime": "arg:ctx"
       },
       "nullable": true,
       "mutable": false,
-      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+      "note": "Same contract as HMAC_Init_ex, which this deprecated spelling delegates to after an optional reset: a non-null digest is stored as ctx->md with no reference count and must outlive every later use of ctx."
      }
     }
    ]
@@ -37861,11 +37861,11 @@
       "string": false,
       "owned": false,
       "borrowed": {
-       "lifetime": "arg:md"
+       "lifetime": "arg:ctx"
       },
       "nullable": true,
       "mutable": false,
-      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+      "note": "Retained, not transient: a non-null digest is stored as ctx->md with no reference count, so it must outlive every later use of ctx (HMAC_Update, HMAC_Final, HMAC_size, HMAC_CTX_get_md) or until HMAC_CTX_reset clears it. Null keeps the digest already selected and fails when none is. Rust cannot state that obligation in the signature, so the safe wrapper is unsafe."
      }
     }
    ]
@@ -40680,16 +40680,18 @@
     {
      "name": "propq",
      "ptr": {
-      "scalar": null,
+      "scalar": {
+       "by_val": true
+      },
       "array": null,
       "string": true,
       "owned": false,
       "borrowed": {
-       "lifetime": "other"
+       "lifetime": "arg:propq"
       },
       "nullable": true,
       "mutable": false,
-      "note": "Optional NUL-terminated property query is read synchronously and duplicated into the context."
+      "note": "Transient: the optional NUL-terminated property query is OPENSSL_strdup'd into ctx->propq and forwarded to EVP_CIPHER_fetch during the call, so nothing borrows the caller's string afterwards."
      }
     }
    ],
@@ -40701,10 +40703,12 @@
      "array": null,
      "string": false,
      "owned": true,
-     "borrowed": null,
+     "borrowed": {
+      "lifetime": "arg:libctx"
+     },
      "nullable": true,
      "mutable": true,
-     "note": "Returns null on validation/allocation failure or a fresh context released by OSSL_HPKE_CTX_free."
+     "note": "Returns null on validation or allocation failure, or a fresh context carrying one OSSL_HPKE_CTX_free obligation. It stores the library context verbatim (ctx->libctx = libctx, no up-ref) and fetches its AEAD cipher from it, so the returned context must not outlive that library context - a dependency the earlier record left off the return."
     }
    }
   },
