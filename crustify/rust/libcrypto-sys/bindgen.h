@@ -9,6 +9,7 @@
 #include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <openssl/hpke.h>
 #include <openssl/kdf.h>
 #include <openssl/hpke.h>
 #include <openssl/lhash.h>

@@ -464,3 +464,117 @@ mod cipher_ctx_tests {
         );
     }
 }
+
+define_ctype!(
+    /// Wraps: evp_kdf_ctx_st
+    ///
+    /// Pointer-compatible target for OpenSSL's opaque KDF operation context.
+    /// The C implementation owns provider-specific state and one retained
+    /// `EVP_KDF` method reference; `EVP_KDF_CTX_free` settles both.
+    ///
+    /// Duplication is fallible and provider-dependent, so it is exposed by
+    /// [`EvpKdfCtxRef::try_dup`] rather than as an infallible `Clone`.
+    EvpKdfCtx,
+    EvpKdfCtxRef,
+    EvpKdfCtxMut,
+    ffi::evp_kdf_ctx_st
+);
+
+impl_dropped!(EvpKdfCtx, ffi::evp_kdf_ctx_st, ffi::EVP_KDF_CTX_free);
+
+/// An independently allocated KDF context retaining its source dependencies.
+///
+/// Provider duplication creates new algorithm state and raises the method
+/// reference, but the provider and cached method can still belong to the
+/// source's library context. The borrow prevents the duplicate from escaping
+/// that source lifetime.
+#[must_use = "dropping the owner releases the EVP_KDF_CTX"]
+pub struct BorrowedEvpKdfCtx<'a> {
+    inner: CBox<EvpKdfCtx>,
+    borrow: PhantomData<EvpKdfCtxRef<'a>>,
+}
+
+impl<'a> BorrowedEvpKdfCtx<'a> {
+    unsafe fn from_raw(raw: *mut ffi::evp_kdf_ctx_st) -> Option<Self> {
+        // SAFETY: the caller transfers a fully initialized duplicate and has
+        // selected a lifetime covering the retained provider dependencies.
+        unsafe { CBox::from_raw(raw) }.map(|inner| Self {
+            inner,
+            borrow: PhantomData,
+        })
+    }
+
+    /// Borrow the duplicated context without write access.
+    #[must_use]
+    pub fn as_ref(&self) -> EvpKdfCtxRef<'_> {
+        self.inner.as_ref()
+    }
+
+    /// Exclusively borrow the duplicated context.
+    #[must_use]
+    pub fn as_mut(&mut self) -> EvpKdfCtxMut<'_> {
+        self.inner.as_mut()
+    }
+
+    /// Create another context with the same provider dependencies.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<Self> {
+        // SAFETY: the owner keeps a live source context throughout the call;
+        // a non-null result owns distinct state and one free obligation.
+        let raw = unsafe { ffi::EVP_KDF_CTX_dup(self.inner.as_ref().as_ptr()) };
+        // SAFETY: the new context inherits only dependencies already covered
+        // by this owner's lifetime and transfers its free obligation.
+        unsafe { Self::from_raw(raw) }
+    }
+}
+
+impl<'a> EvpKdfCtxRef<'a> {
+    /// Attempt to duplicate this context and its provider-specific state.
+    ///
+    /// Returns `None` when the provider has no `dupctx`, when its duplication
+    /// rejects the active state, or when allocation fails.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<BorrowedEvpKdfCtx<'a>> {
+        // SAFETY: the handle supplies a live shared source for the synchronous
+        // call. A non-null result is a separate fully initialized context.
+        let raw = unsafe { ffi::EVP_KDF_CTX_dup(self.as_ptr()) };
+        // SAFETY: a successful duplicate transfers one matching free
+        // obligation and retains no dependency beyond this handle's lifetime.
+        unsafe { BorrowedEvpKdfCtx::from_raw(raw) }
+    }
+}
+
+#[cfg(test)]
+mod kdf_ctx_tests {
+    use core::mem::size_of;
+    use core::ptr;
+
+    use crate::evp::evp::{EvpKdf, SharedEvpKdf};
+
+    use super::*;
+
+    #[test]
+    fn context_owner_borrows_and_duplicates_provider_state() {
+        // SAFETY: null selects the process-wide default context and properties;
+        // the static algorithm name is NUL-terminated.
+        let raw_kdf = unsafe { ffi::EVP_KDF_fetch(ptr::null_mut(), c"HKDF".as_ptr(), ptr::null()) };
+        // SAFETY: a successful fetch transfers one public method reference.
+        let kdf: SharedEvpKdf<'static> =
+            unsafe { SharedEvpKdf::from_raw(raw_kdf) }.expect("EVP_KDF_fetch");
+
+        // SAFETY: the borrowed method is live; a non-null result transfers a
+        // fully initialized context and one `EVP_KDF_CTX_free` obligation.
+        let raw_ctx = unsafe { ffi::EVP_KDF_CTX_new(kdf.as_ptr()) };
+        // SAFETY: ownership of the fresh context transfers exactly once.
+        let mut ctx = unsafe { CBox::<EvpKdfCtx>::from_raw(raw_ctx) }.expect("KDF context");
+        let duplicate = ctx.as_ref().try_dup().expect("EVP_KDF_CTX_dup");
+
+        assert_ne!(duplicate.as_ref().as_ptr(), ctx.as_ref().as_ptr());
+        assert_eq!(ctx.as_mut().as_mut_ptr(), raw_ctx);
+        assert_eq!(
+            size_of::<CBox<EvpKdfCtx>>(),
+            size_of::<*mut ffi::evp_kdf_ctx_st>()
+        );
+        assert_eq!(size_of::<EvpKdf>(), size_of::<ffi::evp_kdf_st>());
+    }
+}

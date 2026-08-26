@@ -760,6 +760,12 @@
    ]
   },
   {
+   "name": "OSSL_HPKE_SUITE",
+   "defined_in": "include/openssl/hpke.h",
+   "_comment_agent": "OSSL_HPKE_SUITE is a public by-value record containing only three uint16_t identifiers; it has no pointer ownership or lifecycle operation.",
+   "fields": []
+  },
+  {
    "name": "POLICYINFO_st",
    "defined_in": "include/openssl/x509v3.h",
    "_comment_agent": "ASN1_SEQUENCE(POLICYINFO) declares an owned ASN1_OBJECT and optional owned SEQUENCE OF POLICYQUALINFO. policy_section/r2i_certpol construct them; POLICYINFO_free recursively releases them; ossl_policy_data_new transfers both by nulling the source fields.",
@@ -3212,6 +3218,318 @@
       "nullable": true,
       "mutable": false,
       "note": "Owned NUL-terminated copy made by ossl_algorithm_get1_first_name and released with OPENSSL_free; legacy ciphers leave it null."
+     }
+    }
+   ]
+  },
+  {
+   "name": "evp_kdf_ctx_st",
+   "defined_in": "crypto/evp/evp_local.h",
+   "_comment_agent": "EVP_KDF_CTX is public-opaque. Both private pointer fields are owned by a fully constructed context and are settled by EVP_KDF_CTX_free; no private field accessor is emitted.",
+   "fields": [
+    {
+     "name": "algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Provider-specific mutable KDF state created by meth->newctx, duplicated by meth->dupctx when supported, and released through meth->freectx."
+     }
+    },
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "A completed context owns one EVP_KDF reference established by EVP_KDF_up_ref; duplication raises it and EVP_KDF_CTX_free releases it."
+     }
+    }
+   ]
+  },
+  {
+   "name": "evp_kdf_st",
+   "defined_in": "include/crypto/evp.h",
+   "_comment_agent": "EVP_KDF is a public-opaque reference-counted provider method. It owns its provider reference and copied name; description and dispatch callbacks borrow from the retained provider module. No private field accessor is emitted.",
+   "fields": [
+    {
+     "name": "derive",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "derive_skey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "description",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed algorithm-description string from provider metadata; the retained provider keeps it alive."
+     }
+    },
+    {
+     "name": "dupctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "freectx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "get_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "get_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "gettable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "gettable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "newctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "The completed method owns one provider reference established by ossl_provider_up_ref and released by evp_kdf_free."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "reset",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "set_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "set_skey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "settable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider module."
+     }
+    },
+    {
+     "name": "type_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": false,
+      "note": "Owned NUL-terminated first algorithm name copied during construction and released by evp_kdf_free."
      }
     }
    ]
@@ -21374,6 +21692,138 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_CTX_dup",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "lifetime": {
+    "for": "src",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "src",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:src"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrows the source for the call; null or a context/provider without dupctx returns null."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "A non-null result is a distinct context owning duplicated provider state and a raised method reference."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_CTX_free",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the context allocation, provider state, and retained method reference; null is a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_free",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "lifetime": {
+    "for": "kdf",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one public EVP_KDF reference. Null and cached records are accepted as no-ops; a no-store record is down-referenced and final release frees its fields and allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_up_ref",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "lifetime": {
+    "for": "kdf",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live method and creates another public reference. A no-store record increments refcnt; cached records pair a no-op increment with no-op free."
      }
     }
    ]

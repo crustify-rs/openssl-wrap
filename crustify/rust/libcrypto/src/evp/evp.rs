@@ -607,3 +607,68 @@ mod pkey_gen_callback_tests {
         assert_eq!(callback.call(&mut ctx.as_mut()), 1);
     }
 }
+
+define_ctype!(
+    /// Wraps: evp_kdf_st
+    ///
+    /// OpenSSL publishes `EVP_KDF` as an opaque provider method. Provider-
+    /// backed records retain their provider and own their algorithm name;
+    /// their description and dispatch functions borrow from that provider.
+    ///
+    /// Fetches and reference increments can name the same cached record. Safe
+    /// owners therefore use [`SharedEvpKdf`] and expose shared borrows only.
+    EvpKdf,
+    EvpKdfRef,
+    EvpKdfMut,
+    ffi::evp_kdf_st
+);
+
+// `EVP_KDF_free` consumes one public reference. A no-store record is down-
+// referenced and releases its provider, name, and allocation on the final
+// count; cached records deliberately pair this with a no-op up-reference.
+impl_dropped!(EvpKdf, ffi::evp_kdf_st, ffi::EVP_KDF_free);
+
+/// One owned, shared-only reference to an `EVP_KDF` method.
+///
+/// The lifetime carries the library-context dependency of a fetched method.
+/// A method fetched from the process-wide default context may use `'static`.
+pub type SharedEvpKdf<'a> = crate::refcount::SharedRef<'a, EvpKdf>;
+
+impl<'a> EvpKdfRef<'a> {
+    /// Raise this method's public reference and return a shared-only owner.
+    #[must_use]
+    pub fn try_share(&self) -> Option<SharedEvpKdf<'a>> {
+        // SAFETY: the handle carries a live shared borrow. OpenSSL only
+        // changes the reference count (or performs the paired cached no-op).
+        if unsafe { ffi::EVP_KDF_up_ref(self.as_ptr().cast_mut()) } != 1 {
+            return None;
+        }
+
+        // SAFETY: successful up-reference creates one matching public free
+        // obligation, and the owner retains this handle's context lifetime.
+        unsafe { SharedEvpKdf::from_raw(self.as_ptr().cast_mut()) }
+    }
+}
+
+#[cfg(test)]
+mod kdf_tests {
+    use core::ptr;
+
+    use super::*;
+
+    #[test]
+    fn fetched_kdf_and_raised_reference_are_shared_only() {
+        // SAFETY: null selects the process-wide default library context, the
+        // algorithm name is live and NUL-terminated, and null selects default
+        // properties. A non-null result transfers one public reference.
+        let raw = unsafe { ffi::EVP_KDF_fetch(ptr::null_mut(), c"HKDF".as_ptr(), ptr::null()) };
+        // SAFETY: the default context is process-wide and the fetch result
+        // transfers one matching `EVP_KDF_free` obligation.
+        let kdf: SharedEvpKdf<'static> =
+            unsafe { SharedEvpKdf::from_raw(raw) }.expect("EVP_KDF_fetch");
+
+        let shared = kdf.as_ref().try_share().expect("EVP_KDF_up_ref");
+        assert_eq!(shared.as_ptr(), kdf.as_ptr());
+        assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+}
