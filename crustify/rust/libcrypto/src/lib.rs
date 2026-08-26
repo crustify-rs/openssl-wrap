@@ -13,6 +13,7 @@ pub mod mem_sec;
 pub mod o_str;
 pub mod objects;
 pub mod provider;
+pub mod rand;
 pub mod refcount;
 pub mod stack;
 pub mod x509;

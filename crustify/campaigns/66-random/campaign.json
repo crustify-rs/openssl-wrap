@@ -1,0 +1,1080 @@
+{
+  "schema_version": 2,
+  "oracle_target": "crypto",
+  "api_headers_only": true,
+  "budgets": {
+    "max_syms": 50,
+    "max_loc": 1000,
+    "max_types": 4,
+    "min_fields": 20
+  },
+  "summary": {
+    "unit_count": 26,
+    "layer_count": 2,
+    "batch_count": 3,
+    "file_count": 2
+  },
+  "plan_items": [
+    {
+      "name": "RAND_OpenSSL",
+      "defined_in": "include/openssl/rand.h",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 0,
+      "deps": {
+        "types": [
+          {
+            "name": "rand_meth_st",
+            "defined_in": "include/openssl/rand.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_add",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 20,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_bytes",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 5,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_bytes_ex",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 34,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_file_name",
+      "defined_in": "crypto/rand/randfile.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 66,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_get0_primary",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_rand_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_get0_private",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_rand_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_get0_public",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 5,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_rand_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_get_rand_method",
+      "defined_in": "include/openssl/rand.h",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 0,
+      "deps": {
+        "types": [
+          {
+            "name": "rand_meth_st",
+            "defined_in": "include/openssl/rand.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_keep_random_devices_open",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 4,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_load_file",
+      "defined_in": "crypto/rand/randfile.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 99,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_poll",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 39,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_priv_bytes",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 5,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_priv_bytes_ex",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 33,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_pseudo_bytes",
+      "defined_in": "include/openssl/rand.h",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 0,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_seed",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 15,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_set0_private",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_rand_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_set0_public",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "evp_rand_ctx_st",
+            "defined_in": "crypto/evp/evp_local.h"
+          },
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_set1_random_provider",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 22,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          },
+          {
+            "name": "ossl_provider_st",
+            "defined_in": "crypto/provider_core.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_set_DRBG_type",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 14,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_set_rand_method",
+      "defined_in": "include/openssl/rand.h",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 0,
+      "deps": {
+        "types": [
+          {
+            "name": "rand_meth_st",
+            "defined_in": "include/openssl/rand.h"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_set_seed_source_type",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 1,
+      "loc": 12,
+      "deps": {
+        "types": [
+          {
+            "name": "ossl_lib_ctx_st",
+            "defined_in": "crypto/context.c"
+          }
+        ],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_status",
+      "defined_in": "crypto/rand/rand_lib.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 13,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "RAND_write_file",
+      "defined_in": "crypto/rand/randfile.c",
+      "kind": "symbol",
+      "source_kind": "function_exported",
+      "layer": 0,
+      "loc": 82,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "evp_rand_ctx_st",
+      "defined_in": "crypto/evp/evp_local.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 5,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    },
+    {
+      "name": "rand_meth_st",
+      "defined_in": "include/openssl/rand.h",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 6,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": []
+    }
+  ],
+  "dependency_nodes": [
+    {
+      "name": "ossl_lib_ctx_st",
+      "defined_in": "crypto/context.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 24,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    },
+    {
+      "name": "ossl_provider_st",
+      "defined_in": "crypto/provider_core.c",
+      "kind": "type",
+      "source_kind": "struct",
+      "layer": 0,
+      "loc": 30,
+      "deps": {
+        "types": [],
+        "symbols": []
+      },
+      "fallback": [],
+      "back_fill": [],
+      "generates": [],
+      "in_scope": true
+    }
+  ],
+  "steps": [
+    {
+      "layers": [
+        0
+      ],
+      "unit_count": 13,
+      "batches": [
+        {
+          "kind": "type",
+          "source_file": "crypto/evp/evp_local.h",
+          "items": [
+            {
+              "name": "evp_rand_ctx_st",
+              "defined_in": "crypto/evp/evp_local.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 5,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "rand_meth_st",
+              "defined_in": "include/openssl/rand.h",
+              "kind": "type",
+              "source_kind": "struct",
+              "layer": 0,
+              "loc": 6,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": [
+                "seed",
+                "cleanup",
+                "status",
+                "bytes",
+                "add",
+                "pseudorand"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "RAND_add",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 20,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_bytes",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 5,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_file_name",
+              "defined_in": "crypto/rand/randfile.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 66,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_keep_random_devices_open",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 4,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_load_file",
+              "defined_in": "crypto/rand/randfile.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 99,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_poll",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 39,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_priv_bytes",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 5,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_pseudo_bytes",
+              "defined_in": "include/openssl/rand.h",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 0,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_seed",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 15,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_status",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 13,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_write_file",
+              "defined_in": "crypto/rand/randfile.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 0,
+              "loc": 82,
+              "deps": {
+                "types": [],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "layers": [
+        1
+      ],
+      "unit_count": 13,
+      "batches": [
+        {
+          "kind": "symbol",
+          "source_file": null,
+          "items": [
+            {
+              "name": "RAND_OpenSSL",
+              "defined_in": "include/openssl/rand.h",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 0,
+              "deps": {
+                "types": [
+                  {
+                    "name": "rand_meth_st",
+                    "defined_in": "include/openssl/rand.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_bytes_ex",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 34,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_get0_primary",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_rand_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_get0_private",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_rand_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_get0_public",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 5,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_rand_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_get_rand_method",
+              "defined_in": "include/openssl/rand.h",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 0,
+              "deps": {
+                "types": [
+                  {
+                    "name": "rand_meth_st",
+                    "defined_in": "include/openssl/rand.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_priv_bytes_ex",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 33,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_set0_private",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_rand_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_set0_public",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "evp_rand_ctx_st",
+                    "defined_in": "crypto/evp/evp_local.h"
+                  },
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_set1_random_provider",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 22,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  },
+                  {
+                    "name": "ossl_provider_st",
+                    "defined_in": "crypto/provider_core.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_set_DRBG_type",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 14,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_set_rand_method",
+              "defined_in": "include/openssl/rand.h",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 0,
+              "deps": {
+                "types": [
+                  {
+                    "name": "rand_meth_st",
+                    "defined_in": "include/openssl/rand.h"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            },
+            {
+              "name": "RAND_set_seed_source_type",
+              "defined_in": "crypto/rand/rand_lib.c",
+              "kind": "symbol",
+              "source_kind": "function_exported",
+              "layer": 1,
+              "loc": 12,
+              "deps": {
+                "types": [
+                  {
+                    "name": "ossl_lib_ctx_st",
+                    "defined_in": "crypto/context.c"
+                  }
+                ],
+                "symbols": []
+              },
+              "fallback": [],
+              "back_fill": [],
+              "generates": [],
+              "field_anchors": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
