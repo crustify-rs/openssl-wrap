@@ -225,6 +225,19 @@ impl RandMethodMut<'_> {
     }
 }
 
+/// Wraps: RAND_pseudo_bytes
+/// Fills `output` through the deprecated compatibility random method.
+#[cfg(feature = "deprecated-1-1-0")]
+#[allow(non_snake_case)]
+pub fn RAND_pseudo_bytes(output: &mut [u8]) -> i32 {
+    let Ok(length) = i32::try_from(output.len()) else {
+        return -1;
+    };
+    // SAFETY: `output` supplies exactly `length` writable bytes for the
+    // synchronous generation call and is exclusively borrowed.
+    unsafe { ffi::RAND_pseudo_bytes(output.as_mut_ptr(), length) }
+}
+
 #[cfg(test)]
 mod tests {
     use core::mem::{align_of, size_of};

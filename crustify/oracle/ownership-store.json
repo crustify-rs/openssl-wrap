@@ -42079,6 +42079,212 @@
    }
   },
   {
+   "name": "RAND_add",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Synchronous read of exactly num bytes; the safe wrapper derives num from a borrowed byte slice."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_bytes",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Synchronous write of exactly num bytes; the safe wrapper derives num from an exclusively borrowed byte slice."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_file_name",
+   "defined_in": "crypto/rand/randfile.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller-owned output array; on success the callee writes a NUL-terminated pathname into it and returns its start."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:buf"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Null on failure or a NUL-terminated string aliasing the caller's buf argument."
+    }
+   }
+  },
+  {
+   "name": "RAND_keep_random_devices_open",
+   "defined_in": "crypto/rand/rand_lib.c"
+  },
+  {
+   "name": "RAND_load_file",
+   "defined_in": "crypto/rand/randfile.c",
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated pathname read only during the synchronous file operation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_poll",
+   "defined_in": "crypto/rand/rand_lib.c"
+  },
+  {
+   "name": "RAND_priv_bytes",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Synchronous write of exactly num bytes; the safe wrapper derives num from an exclusively borrowed byte slice."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_pseudo_bytes",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Synchronous write of exactly num bytes; the safe wrapper derives num from an exclusively borrowed byte slice."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_seed",
+   "defined_in": "crypto/rand/rand_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Synchronous read of exactly num bytes; the safe wrapper derives num from a borrowed byte slice."
+     }
+    }
+   ]
+  },
+  {
+   "name": "RAND_status",
+   "defined_in": "crypto/rand/rand_lib.c"
+  },
+  {
+   "name": "RAND_write_file",
+   "defined_in": "crypto/rand/randfile.c",
+   "ptr_args": [
+    {
+     "name": "file",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:file"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "NUL-terminated pathname read only during the synchronous file operation."
+     }
+    }
+   ]
+  },
+  {
    "name": "RSA_free",
    "defined_in": "crypto/rsa/rsa_lib.c",
    "lifetime": {
