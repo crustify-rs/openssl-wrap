@@ -120,7 +120,7 @@ via `claude`. Each row names the model that produced it.
 | `67-sign-verify` | wrap | `0` | `4` | `11m59s` | `$4.61` (`gpt56sol`) | — | `$1.15` | — | — |
 | `74-review-signverify` | review | `3` | `4` | `26m47s` | `$12.78` (`opus5`) | `$4.26` | `$3.20` | — | — |
 | orchestrator | orchestration | `88` | `961` | — | `$77.52`+ (`gpt56sol`) | — | — | — | — |
-| **Σ recorded agents** | | **`88`** | **`961`** | **`16h48m`** | **`$1,066.72`** | **$12.12** | **$1.11** | | **`$66.81`** |
+| **Σ recorded agents** | | **`88`** | **`961`** | **`24h44m`** | **`$1,066.72`** | **`$12.12`** | **`$1.11`** | | **`$66.81`** |
 
 ## Raw lifetime discovery
 
@@ -234,7 +234,7 @@ via `claude`. Each row names the model that produced it.
 | `1` | `0` | `0` | `$3.30` | `8m12s` | `$3.30` | — |
 | `1` | `0` | `0` | `$4.35` | `11m16s` | `$4.35` | — |
 | `2` | `6` | `0` | `$4.40` | `12m32s` | `$2.20` | `$0.73` |
-| **Σ `103`** | **`141`** | **`113`** | **`$314.44`** | — | **$3.05** | **$2.23** |
+| **Σ `103`** | **`141`** | **`113`** | **`$314.44`** | — | **`$3.05`** | **`$2.23`** |
 
 ### Batches — review types
 
@@ -272,7 +272,7 @@ via `claude`. Each row names the model that produced it.
 | `3` | — | `$9.34` | `19m02s` | `$3.11` |
 | `4` | — | `$8.81` | `21m49s` | `$2.20` |
 | `3` | — | `$9.92` | `17m32s` | `$3.31` |
-| **Σ `107`** | — | **`$249.83`** | — | **$2.33** |
+| **Σ `107`** | — | **`$249.83`** | — | **`$2.33`** |
 
 ### Batches — symbols
 
@@ -324,7 +324,7 @@ via `claude`. Each row names the model that produced it.
 | wrap | `11` | `348` | `$7.19` | `14m19s` | `$0.65` | `$0.02` |
 | wrap | `13` | `154` | `$7.09` | `19m17s` | `$0.55` | `$0.05` |
 | wrap | `4` | `92` | `$4.61` | `11m59s` | `$1.15` | `$0.05` |
-| **Σ** | **`990`** | **`13,248`** | **`$290.97`** | | **$0.29** | **$0.02** |
+| **Σ** | **`990`** | **`13,248`** | **`$290.97`** | | **`$0.29`** | **`$0.02`** |
 
 ### Batches — review symbols
 
@@ -360,7 +360,7 @@ via `claude`. Each row names the model that produced it.
 | `11` | — | `$5.01` | `15m19s` | `$0.46` |
 | `13` | — | `$7.99` | `16m08s` | `$0.61` |
 | `4` | — | `$2.86` | `9m13s` | `$0.71` |
-| **Σ `676`** | — | **`$202.13`** | — | **$0.30** |
+| **Σ `676`** | — | **`$202.13`** | — | **`$0.30`** |
 
 ## Safety audit
 
@@ -442,9 +442,12 @@ within each. A row is one agent.
 settled, and `03-review-string` was scheduled and then superseded without ever
 running — it has no `campaign.json` and no logs. `10-foundation` ran twice: an
 `11m06s` first session (`e1fa`) whose plan was regenerated after a scheduler
-admission repair, and the `2h34m03s` session (`95ed`) that actually landed. All
-three of `e1fa`'s surviving agent records price into the Σ row but have no
-batch row, because the plan they ran against no longer exists.
+admission repair, and the `2h34m03s` session (`95ed`) that actually landed. All three of `e1fa`'s surviving agent records price into the Σ row but have no
+batch row, because the plan they ran against no longer exists. They are
+`wrap-type_BIO_hostserv_priorities` at `$2.52`, `wrap-type_BIO_sock_info_type`
+at `$4.08` and `wrap-type__IO_FILE` at `$2.72`, `$9.31` together. That is the
+whole of the gap between the Overview's Σ and the batch tables: `$1,066.72`
+against `$1,057.37`, the residual `$0.04` being rounding across 177 rows.
 
 ### Overview unit counts are what a sub-campaign was scheduled for
 
