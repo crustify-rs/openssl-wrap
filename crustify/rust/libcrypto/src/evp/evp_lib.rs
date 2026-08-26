@@ -1261,17 +1261,22 @@ mod cipher_asn1_parameter_tests {
 
 /// Wraps: EVP_CIPHER_CTX_get_algor
 ///
-/// Retrieves a newly allocated algorithm identifier. Any partial output from
-/// an unsuccessful decode is reclaimed before returning `None`.
+/// Decodes the operation's AlgorithmIdentifier into a freshly allocated owner.
+///
+/// The slot passed to C starts null, which selects `d2i_X509_ALGOR`'s
+/// allocating contract; `ASN1_item_d2i` releases what it built and stores null
+/// again when the decode fails, so the slot is non-null only on success.
+/// Adopting it before inspecting the status keeps the wrapper leak-free
+/// whatever C wrote there.
 #[must_use]
 pub fn EVP_CIPHER_CTX_get_algor(ctx: &mut EvpCipherCtxMut<'_>) -> (i32, Option<CBox<X509Algor>>) {
     let mut algorithm = ptr::null_mut();
     // SAFETY: the context is exclusively borrowed and the initialized local
     // slot is writable. Starting with null selects the allocating C contract.
     let status = unsafe { ffi::EVP_CIPHER_CTX_get_algor(ctx.as_mut_ptr(), &mut algorithm) };
-    // SAFETY: the slot started null. Any non-null value written by the decoder
-    // carries exactly one X509_ALGOR_free obligation, even if decoding later
-    // reports failure.
+    // SAFETY: the slot started null, and C only ever stores a decoded
+    // identifier there. Such a value is a fresh allocation carrying exactly one
+    // X509_ALGOR_free obligation, which transfers to this owner.
     let algorithm = unsafe { CBox::from_raw(algorithm) };
     if status == 1 {
         (status, algorithm)
@@ -1283,22 +1288,53 @@ pub fn EVP_CIPHER_CTX_get_algor(ctx: &mut EvpCipherCtxMut<'_>) -> (i32, Option<C
 
 /// Wraps: EVP_CIPHER_CTX_get_algor_params
 ///
-/// Replaces the algorithm identifier's owned parameter with the value
-/// reported by the active cipher provider operation.
+/// Replaces the algorithm identifier's owned parameter with the value the
+/// active cipher provider operation reports, and leaves the previous parameter
+/// installed when nothing was decoded.
+///
+/// # Why the parameter is detached first
+///
+/// The C routine hands `alg->parameter` to `d2i_ASN1_TYPE` as the reuse slot
+/// but only stores the decoded pointer back on success. `ASN1_item_d2i`
+/// releases the reused value on a failed decode and clears its own local slot,
+/// so `alg->parameter` would be left pointing at freed storage that
+/// `X509_ALGOR_free` then releases a second time. Detaching the parameter
+/// before the call denies the decoder that slot: it allocates a fresh value
+/// which C stores on success, and on failure the untouched original is put
+/// back. The only behavioural difference from C is that a successful decode
+/// now reports a new parameter address instead of rewriting the old object in
+/// place.
 pub fn EVP_CIPHER_CTX_get_algor_params(
     ctx: &mut EvpCipherCtxMut<'_>,
     algorithm: &mut X509AlgorMut<'_>,
 ) -> i32 {
-    // SAFETY: both handles are exclusively borrowed. The algorithm identifier
-    // is non-null and owns its optional parameter, which the C decoder may
-    // reuse or replace while preserving its destructor contract.
-    unsafe { ffi::EVP_CIPHER_CTX_get_algor_params(ctx.as_mut_ptr(), algorithm.as_mut_ptr()) }
+    let previous = algorithm.take_parameter();
+    // SAFETY: both handles are exclusively borrowed and non-null. The
+    // parameter slot is null across the call, so the decoder allocates into it
+    // and cannot release a value the identifier still points at.
+    let status =
+        unsafe { ffi::EVP_CIPHER_CTX_get_algor_params(ctx.as_mut_ptr(), algorithm.as_mut_ptr()) };
+    if status == 1 {
+        // C stored a freshly decoded parameter; the detached one is now
+        // unreachable and this owner releases it.
+        drop(previous);
+    } else {
+        // C reached no assignment, so the slot is still the null this wrapper
+        // installed. Restoring hands the parameter's release back to the field.
+        algorithm.set_parameter(previous);
+    }
+    status
 }
 
 /// Wraps: EVP_CIPHER_CTX_set_algor_params
 ///
 /// Passes the borrowed algorithm identifier parameter to the active cipher
 /// provider operation without transferring it.
+///
+/// Only `parameter` is read; the identifier's `algorithm` object is ignored.
+/// An absent parameter is not rejected: `i2d_ASN1_TYPE` reports a zero-length
+/// encoding for it, which C forwards as an empty octet string under both the
+/// current and the deprecated AlgorithmIdentifier parameter keys.
 pub fn EVP_CIPHER_CTX_set_algor_params(
     ctx: &mut EvpCipherCtxMut<'_>,
     algorithm: X509AlgorRef<'_>,
@@ -1311,12 +1347,12 @@ pub fn EVP_CIPHER_CTX_set_algor_params(
 #[cfg(test)]
 mod cipher_algorithm_identifier_tests {
     use super::*;
+    use crate::asn1::openssl_asn1::Asn1Type;
     use crate::evp::evp_enc::{
         CipherDirection, EVP_CIPHER_CTX_new, EVP_CIPHER_fetch, EVP_CipherInit_ex2,
     };
 
-    #[test]
-    fn calls_preserve_typed_ownership() {
+    fn initialized_context() -> CBox<crate::evp::evp_local::EvpCipherCtx> {
         let cipher = EVP_CIPHER_fetch(None, c"AES-128-CBC", None).expect("AES-128-CBC");
         let mut ctx = EVP_CIPHER_CTX_new().expect("cipher context");
         assert_eq!(
@@ -1330,6 +1366,12 @@ mod cipher_algorithm_identifier_tests {
             ),
             1
         );
+        ctx
+    }
+
+    #[test]
+    fn calls_preserve_typed_ownership() {
+        let mut ctx = initialized_context();
 
         let mut algorithm = X509Algor::new().expect("algorithm identifier");
         let address = algorithm.as_ref().as_ptr();
@@ -1339,5 +1381,41 @@ mod cipher_algorithm_identifier_tests {
 
         let (status, retrieved) = EVP_CIPHER_CTX_get_algor(&mut ctx.as_mut());
         assert!(status != 1 || retrieved.is_some());
+    }
+
+    #[test]
+    fn an_absent_parameter_is_accepted_by_the_setter() {
+        let mut ctx = initialized_context();
+        let algorithm = X509Algor::new().expect("algorithm identifier");
+
+        // `X509_ALGOR_new` leaves `parameter` null, which C encodes as a
+        // zero-length AlgorithmIdentifier parameter rather than refusing.
+        assert!(algorithm.as_ref().parameter().is_none());
+        let _ = EVP_CIPHER_CTX_set_algor_params(&mut ctx.as_mut(), algorithm.as_ref());
+    }
+
+    #[test]
+    fn a_failed_get_keeps_the_previous_parameter_owned() {
+        let mut ctx = initialized_context();
+        let mut algorithm = X509Algor::new().expect("algorithm identifier");
+        algorithm
+            .as_mut()
+            .set_parameter(Some(Asn1Type::new().expect("ASN1_TYPE_new")));
+        let parameter = algorithm.as_ref().parameter().expect("parameter").as_ptr();
+
+        // The AES implementations publish no AlgorithmIdentifier parameters, so
+        // the two-pass query stops before decoding and the wrapper must hand
+        // the detached parameter back to the field it came from.
+        assert_ne!(
+            EVP_CIPHER_CTX_get_algor_params(&mut ctx.as_mut(), &mut algorithm.as_mut()),
+            1
+        );
+        assert_eq!(
+            algorithm.as_ref().parameter().expect("parameter").as_ptr(),
+            parameter
+        );
+
+        // Dropping the identifier must still release exactly one parameter.
+        drop(algorithm);
     }
 }

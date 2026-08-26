@@ -16172,7 +16172,7 @@
       },
       "nullable": true,
       "mutable": true,
-      "note": "The outer X509_ALGOR ** slot is optional and borrowed for the call; on successful decode it receives or reuses an X509_ALGOR carrying a caller-owned X509_ALGOR_free obligation."
+      "note": "The outer X509_ALGOR ** slot is optional and borrowed for the call; on successful decode it receives or reuses an X509_ALGOR carrying a caller-owned X509_ALGOR_free obligation. A failed decode is safe for this slot: d2i_X509_ALGOR releases whatever *alg held - a caller-supplied reuse value included - and stores null there, so the slot is non-null only when the function returns 1."
      }
     },
     {
@@ -16212,7 +16212,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "The required algorithm identifier is borrowed and its owned parameter may be decoded in place or replaced without transferring the X509_ALGOR itself."
+      "note": "The required algorithm identifier is borrowed; only its owned parameter is touched and the X509_ALGOR itself never transfers. alg->parameter is handed to d2i_ASN1_TYPE as the reuse slot, so a non-null parameter is RELEASED by ASN1_item_d2i on a failed decode while alg->parameter keeps pointing at it - the field is left dangling and X509_ALGOR_free would double-free it. Only a successful decode assigns the field. Callers that must stay safe should detach the parameter before the call and restore it unless the call returns 1; the in-tree caller EVP_CIPHER_param_to_asn1_ex instead relies on the reuse to decode into a borrowed ASN1_TYPE it does not own, and inherits the same failure-path hazard."
      }
     },
     {
