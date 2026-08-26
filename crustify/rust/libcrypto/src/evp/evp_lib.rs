@@ -8,11 +8,15 @@ use core::ptr::{self, NonNull};
 use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 
 use ffibox::CBox;
+#[cfg(feature = "deprecated-3-0")]
+use ffibox::{CSlice, CSliceMut};
 use libcrypto_sys as ffi;
 
 use crate::bio::context::OsslLibCtxRef;
-use crate::evp::evp::{EvpMdRef, EvpPkeyCtxMut, EvpPkeyCtxRef, SharedEvpMd};
-use crate::evp::evp_local::{EvpMdCtxMut, EvpMdCtxRef};
+use crate::evp::evp::{
+    EvpCipherRef, EvpMdRef, EvpPkeyCtxMut, EvpPkeyCtxRef, SharedEvpCipher, SharedEvpMd,
+};
+use crate::evp::evp_local::{EvpCipherCtxMut, EvpCipherCtxRef, EvpMdCtxMut, EvpMdCtxRef};
 use crate::evp::p_lib::BorrowedEvpPkey;
 use crate::provider::provider_core::OsslProviderRef;
 use crate::x509::x509::{X509Algor, X509AlgorMut, X509AlgorRef};
@@ -129,6 +133,8 @@ mod tests {
     #[test]
     fn group_name_configures_an_ec_generation_context() {
         use ffibox::CBox;
+        #[cfg(feature = "deprecated-3-0")]
+        use ffibox::{CSlice, CSliceMut};
 
         use crate::evp::evp::EvpPkeyCtx;
         use crate::evp::pmeth_gn::EVP_PKEY_paramgen_init;
@@ -582,5 +588,370 @@ mod digest_metadata_tests {
             EVP_MD_names_do_all(digest.as_ref(), &mut |_| panic!("callback panic"));
         }));
         assert!(panic.is_err());
+    }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+const EVP_MAX_BLOCK_LENGTH: usize = 32;
+
+/// Wraps: EVP_CIPHER_CTX_buf_noconst
+#[cfg(feature = "deprecated-3-0")]
+pub fn EVP_CIPHER_CTX_buf_noconst<'a>(ctx: &'a mut EvpCipherCtxMut<'_>) -> CSliceMut<'a, u8> {
+    // SAFETY: the exclusive reborrow retains the context and its inline,
+    // initialized `EVP_MAX_BLOCK_LENGTH` byte array.
+    let buffer = unsafe { ffi::EVP_CIPHER_CTX_buf_noconst(ctx.as_mut_ptr()) };
+    // SAFETY: the C getter always returns the start of that inline array.
+    unsafe { CSliceMut::from_raw_parts(NonNull::new_unchecked(buffer), EVP_MAX_BLOCK_LENGTH) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_cipher
+#[cfg(feature = "deprecated-3-0")]
+#[must_use]
+pub fn EVP_CIPHER_CTX_cipher<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<EvpCipherRef<'a>> {
+    // SAFETY: the live context retains its optional active cipher.
+    let cipher = unsafe { ffi::EVP_CIPHER_CTX_cipher(ctx.as_ptr()) };
+    // SAFETY: a non-null cipher remains live for the context borrow.
+    unsafe { EvpCipherRef::from_ptr(cipher.cast_mut()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_clear_flags
+pub fn EVP_CIPHER_CTX_clear_flags(ctx: &mut EvpCipherCtxMut<'_>, flags: c_int) {
+    // SAFETY: the context is exclusively borrowed for this mutation.
+    unsafe { ffi::EVP_CIPHER_CTX_clear_flags(ctx.as_mut_ptr(), flags) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get0_cipher
+#[must_use]
+pub fn EVP_CIPHER_CTX_get0_cipher<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<EvpCipherRef<'a>> {
+    // SAFETY: the live context retains its optional active cipher.
+    let cipher = unsafe { ffi::EVP_CIPHER_CTX_get0_cipher(ctx.as_ptr()) };
+    // SAFETY: a non-null cipher remains live for the context borrow.
+    unsafe { EvpCipherRef::from_ptr(cipher.cast_mut()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get1_cipher
+#[must_use]
+pub fn EVP_CIPHER_CTX_get1_cipher<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<SharedEvpCipher<'a>> {
+    // SAFETY: the context is live and C only reads its active cipher before
+    // atomically raising that cipher's public reference count.
+    let cipher = unsafe { ffi::EVP_CIPHER_CTX_get1_cipher(ctx.as_ptr().cast_mut()) };
+    // SAFETY: a non-null result transfers the raised reference and remains
+    // conservatively bounded by the context's dependencies.
+    unsafe { SharedEvpCipher::from_raw(cipher) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_app_data
+///
+/// # Safety
+///
+/// `T` must be the concrete type previously stored in this context, and that
+/// object must still be live. The returned pointer remains non-owning.
+#[must_use]
+pub unsafe fn EVP_CIPHER_CTX_get_app_data<T>(ctx: EvpCipherCtxRef<'_>) -> Option<NonNull<T>> {
+    // SAFETY: the context is live and C only returns the stored opaque value.
+    NonNull::new(unsafe { ffi::EVP_CIPHER_CTX_get_app_data(ctx.as_ptr()) }.cast())
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_block_size
+#[must_use]
+pub fn EVP_CIPHER_CTX_get_block_size(ctx: EvpCipherCtxRef<'_>) -> c_int {
+    // SAFETY: the context is live and the query retains nothing.
+    unsafe { ffi::EVP_CIPHER_CTX_get_block_size(ctx.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_cipher_data
+///
+/// # Safety
+///
+/// `T` must be the concrete type previously stored in this context, and that
+/// object must still be live. The returned pointer remains non-owning.
+#[must_use]
+pub unsafe fn EVP_CIPHER_CTX_get_cipher_data<T>(ctx: EvpCipherCtxRef<'_>) -> Option<NonNull<T>> {
+    // SAFETY: the context is live and C only returns the stored opaque value.
+    NonNull::new(unsafe { ffi::EVP_CIPHER_CTX_get_cipher_data(ctx.as_ptr()) }.cast())
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_iv_length
+#[must_use]
+pub fn EVP_CIPHER_CTX_get_iv_length(ctx: EvpCipherCtxRef<'_>) -> c_int {
+    // SAFETY: the context is live; OpenSSL may update its internal length cache
+    // but returns no borrow.
+    unsafe { ffi::EVP_CIPHER_CTX_get_iv_length(ctx.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_key_length
+#[must_use]
+pub fn EVP_CIPHER_CTX_get_key_length(ctx: EvpCipherCtxRef<'_>) -> c_int {
+    // SAFETY: the context is live; OpenSSL may update its internal length cache
+    // but returns no borrow.
+    unsafe { ffi::EVP_CIPHER_CTX_get_key_length(ctx.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_nid
+#[must_use]
+pub fn EVP_CIPHER_CTX_get_nid(ctx: EvpCipherCtxRef<'_>) -> c_int {
+    // SAFETY: the context is live and the query retains nothing.
+    unsafe { ffi::EVP_CIPHER_CTX_get_nid(ctx.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_num
+#[cfg(feature = "deprecated-4-1")]
+#[must_use]
+pub fn EVP_CIPHER_CTX_get_num(ctx: EvpCipherCtxRef<'_>) -> c_int {
+    // SAFETY: the context is live and C returns the provider's scalar value.
+    unsafe { ffi::EVP_CIPHER_CTX_get_num(ctx.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_original_iv
+pub fn EVP_CIPHER_CTX_get_original_iv(ctx: &mut EvpCipherCtxMut<'_>, output: &mut [u8]) -> bool {
+    // SAFETY: the exclusive context and exact writable byte extent remain live
+    // throughout the synchronous provider call.
+    unsafe {
+        ffi::EVP_CIPHER_CTX_get_original_iv(
+            ctx.as_mut_ptr(),
+            output.as_mut_ptr().cast(),
+            output.len(),
+        ) == 1
+    }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_tag_length
+#[must_use]
+pub fn EVP_CIPHER_CTX_get_tag_length(ctx: EvpCipherCtxRef<'_>) -> c_int {
+    // SAFETY: the context is live and the query retains nothing.
+    unsafe { ffi::EVP_CIPHER_CTX_get_tag_length(ctx.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_updated_iv
+pub fn EVP_CIPHER_CTX_get_updated_iv(ctx: &mut EvpCipherCtxMut<'_>, output: &mut [u8]) -> bool {
+    // SAFETY: the exclusive context and exact writable byte extent remain live
+    // throughout the synchronous provider call.
+    unsafe {
+        ffi::EVP_CIPHER_CTX_get_updated_iv(
+            ctx.as_mut_ptr(),
+            output.as_mut_ptr().cast(),
+            output.len(),
+        ) == 1
+    }
+}
+
+/// Wraps: EVP_CIPHER_CTX_is_encrypting
+#[must_use]
+pub fn EVP_CIPHER_CTX_is_encrypting(ctx: EvpCipherCtxRef<'_>) -> bool {
+    // SAFETY: the context is live and the query retains nothing.
+    unsafe { ffi::EVP_CIPHER_CTX_is_encrypting(ctx.as_ptr()) != 0 }
+}
+
+#[cfg(feature = "deprecated-3-0")]
+unsafe fn deprecated_iv<'a>(
+    ctx: EvpCipherCtxRef<'a>,
+    get: unsafe extern "C" fn(*const ffi::EVP_CIPHER_CTX) -> *const u8,
+) -> Option<CSlice<'a, u8>> {
+    // SAFETY: the context is live and the scalar query retains nothing.
+    let len = unsafe { ffi::EVP_CIPHER_CTX_get_iv_length(ctx.as_ptr()) };
+    let len = usize::try_from(len).ok()?;
+    // SAFETY: selected getter has the same live-context contract.
+    let iv = unsafe { get(ctx.as_ptr()) };
+    let iv = NonNull::new(iv.cast_mut())?;
+    // SAFETY: OpenSSL publishes at least the active IV length at this pointer,
+    // retained by the context for `'a`. `CSlice` forms no Rust reference.
+    Some(unsafe { CSlice::from_raw_parts(iv, len) })
+}
+
+/// Wraps: EVP_CIPHER_CTX_iv
+#[cfg(feature = "deprecated-3-0")]
+#[must_use]
+pub fn EVP_CIPHER_CTX_iv<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<CSlice<'a, u8>> {
+    // SAFETY: the selected C getter returns the running IV retained by `ctx`.
+    unsafe { deprecated_iv(ctx, ffi::EVP_CIPHER_CTX_iv) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_iv_noconst
+#[cfg(feature = "deprecated-3-0")]
+#[must_use]
+pub fn EVP_CIPHER_CTX_iv_noconst<'a>(
+    ctx: &'a mut EvpCipherCtxMut<'_>,
+) -> Option<CSliceMut<'a, u8>> {
+    // SAFETY: the context is live and the query retains nothing.
+    let len = unsafe { ffi::EVP_CIPHER_CTX_get_iv_length(ctx.as_ref().as_ptr()) };
+    let len = usize::try_from(len).ok()?;
+    // SAFETY: the exclusive context permits requesting its writable running IV.
+    let iv = unsafe { ffi::EVP_CIPHER_CTX_iv_noconst(ctx.as_mut_ptr()) };
+    let iv = NonNull::new(iv)?;
+    // SAFETY: OpenSSL publishes at least `len` writable IV bytes retained by
+    // the exclusive reborrow. `CSliceMut` forms no Rust reference.
+    Some(unsafe { CSliceMut::from_raw_parts(iv, len) })
+}
+
+/// Wraps: EVP_CIPHER_CTX_original_iv
+#[cfg(feature = "deprecated-3-0")]
+#[must_use]
+pub fn EVP_CIPHER_CTX_original_iv<'a>(ctx: EvpCipherCtxRef<'a>) -> Option<CSlice<'a, u8>> {
+    // SAFETY: the selected C getter returns the original IV retained by `ctx`.
+    unsafe { deprecated_iv(ctx, ffi::EVP_CIPHER_CTX_original_iv) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_set_app_data
+///
+/// # Safety
+///
+/// A non-null `data` must remain live and at a stable address until it is
+/// replaced or the context is dropped, including across context duplication.
+pub unsafe fn EVP_CIPHER_CTX_set_app_data<T>(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    data: Option<NonNull<T>>,
+) {
+    // SAFETY: the exclusive context is live; the stored-lifetime obligation is
+    // carried by the caller because the C context cannot encode it.
+    unsafe {
+        ffi::EVP_CIPHER_CTX_set_app_data(
+            ctx.as_mut_ptr(),
+            data.map_or(ptr::null_mut(), |data| data.as_ptr().cast()),
+        )
+    }
+}
+
+/// Wraps: EVP_CIPHER_CTX_set_cipher_data
+///
+/// # Safety
+///
+/// A non-null `data` must remain live and at a stable address until replaced
+/// or the context is dropped, including across context duplication. `T` must
+/// also match the type of any previously stored pointer returned here.
+#[must_use]
+pub unsafe fn EVP_CIPHER_CTX_set_cipher_data<T>(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    data: Option<NonNull<T>>,
+) -> Option<NonNull<T>> {
+    // SAFETY: the exclusive context is live; the erased type and stored
+    // lifetime are the caller obligations stated above.
+    NonNull::new(
+        unsafe {
+            ffi::EVP_CIPHER_CTX_set_cipher_data(
+                ctx.as_mut_ptr(),
+                data.map_or(ptr::null_mut(), |data| data.as_ptr().cast()),
+            )
+        }
+        .cast(),
+    )
+}
+
+/// Wraps: EVP_CIPHER_CTX_set_flags
+pub fn EVP_CIPHER_CTX_set_flags(ctx: &mut EvpCipherCtxMut<'_>, flags: c_int) {
+    // SAFETY: the context is exclusively borrowed for this mutation.
+    unsafe { ffi::EVP_CIPHER_CTX_set_flags(ctx.as_mut_ptr(), flags) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_set_num
+#[cfg(feature = "deprecated-4-1")]
+pub fn EVP_CIPHER_CTX_set_num(ctx: &mut EvpCipherCtxMut<'_>, num: c_int) -> c_int {
+    // SAFETY: the context is exclusively borrowed for this mutation.
+    unsafe { ffi::EVP_CIPHER_CTX_set_num(ctx.as_mut_ptr(), num) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_test_flags
+#[must_use]
+pub fn EVP_CIPHER_CTX_test_flags(ctx: EvpCipherCtxRef<'_>, flags: c_int) -> c_int {
+    // SAFETY: the context is live and only its scalar flag word is inspected.
+    unsafe { ffi::EVP_CIPHER_CTX_test_flags(ctx.as_ptr(), flags) }
+}
+
+/// Wraps: EVP_CIPHER_get0_description
+#[must_use]
+pub fn EVP_CIPHER_get0_description<'a>(cipher: EvpCipherRef<'a>) -> Option<&'a CStr> {
+    // SAFETY: the live cipher retains its optional NUL-terminated description.
+    let description = unsafe { ffi::EVP_CIPHER_get0_description(cipher.as_ptr()) };
+    if description.is_null() {
+        None
+    } else {
+        // SAFETY: the cipher retains the string throughout `'a`.
+        Some(unsafe { CStr::from_ptr(description) })
+    }
+}
+
+/// Wraps: EVP_CIPHER_get0_name
+#[must_use]
+pub fn EVP_CIPHER_get0_name<'a>(cipher: EvpCipherRef<'a>) -> Option<&'a CStr> {
+    // SAFETY: the live cipher retains or statically references its name.
+    let name = unsafe { ffi::EVP_CIPHER_get0_name(cipher.as_ptr()) };
+    if name.is_null() {
+        None
+    } else {
+        // SAFETY: the cipher retains the NUL-terminated string throughout `'a`.
+        Some(unsafe { CStr::from_ptr(name) })
+    }
+}
+
+/// Wraps: EVP_CIPHER_get0_provider
+#[must_use]
+pub fn EVP_CIPHER_get0_provider<'a>(cipher: EvpCipherRef<'a>) -> Option<OsslProviderRef<'a>> {
+    // SAFETY: the live cipher retains its optional provider reference.
+    let provider = unsafe { ffi::EVP_CIPHER_get0_provider(cipher.as_ptr()) };
+    // SAFETY: ownership is not transferred and the cipher keeps it live.
+    unsafe { OsslProviderRef::from_ptr(provider.cast_mut()) }
+}
+
+/// Wraps: EVP_CIPHER_get_block_size
+#[must_use]
+pub fn EVP_CIPHER_get_block_size(cipher: EvpCipherRef<'_>) -> c_int {
+    // SAFETY: the cipher is live and only immutable metadata is read.
+    unsafe { ffi::EVP_CIPHER_get_block_size(cipher.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_get_flags
+#[must_use]
+pub fn EVP_CIPHER_get_flags(cipher: EvpCipherRef<'_>) -> c_ulong {
+    // SAFETY: the cipher is live and only immutable metadata is read.
+    unsafe { ffi::EVP_CIPHER_get_flags(cipher.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_get_iv_length
+#[must_use]
+pub fn EVP_CIPHER_get_iv_length(cipher: EvpCipherRef<'_>) -> c_int {
+    // SAFETY: the cipher is live and only immutable metadata is read.
+    unsafe { ffi::EVP_CIPHER_get_iv_length(cipher.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_get_key_length
+#[must_use]
+pub fn EVP_CIPHER_get_key_length(cipher: EvpCipherRef<'_>) -> c_int {
+    // SAFETY: the cipher is live and only immutable metadata is read.
+    unsafe { ffi::EVP_CIPHER_get_key_length(cipher.as_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_get_mode
+#[must_use]
+pub fn EVP_CIPHER_get_mode(cipher: EvpCipherRef<'_>) -> c_int {
+    // SAFETY: the cipher is live and only immutable metadata is read.
+    unsafe { ffi::EVP_CIPHER_get_mode(cipher.as_ptr()) }
+}
+
+#[cfg(test)]
+mod cipher_metadata_tests {
+    use super::*;
+    use crate::evp::evp_enc::{EVP_CIPHER_CTX_new, EVP_CIPHER_fetch};
+
+    #[test]
+    fn fetched_cipher_metadata_is_lifetime_bound() {
+        let cipher = EVP_CIPHER_fetch(None, c"AES-128-CBC", None).expect("cipher");
+        let cipher = cipher.as_ref();
+        assert_eq!(EVP_CIPHER_get_block_size(cipher), 16);
+        assert_eq!(EVP_CIPHER_get_key_length(cipher), 16);
+        assert_eq!(EVP_CIPHER_get_iv_length(cipher), 16);
+        assert_eq!(
+            EVP_CIPHER_get0_name(cipher).unwrap().to_bytes(),
+            b"AES-128-CBC"
+        );
+        assert!(EVP_CIPHER_get0_provider(cipher).is_some());
+    }
+
+    #[test]
+    fn empty_context_has_safe_scalar_queries() {
+        let context = EVP_CIPHER_CTX_new().expect("context");
+        let context = context.as_ref();
+        assert!(EVP_CIPHER_CTX_get0_cipher(context).is_none());
+        assert_eq!(EVP_CIPHER_CTX_get_block_size(context), 0);
+        assert_eq!(EVP_CIPHER_CTX_get_iv_length(context), 0);
+        assert_eq!(EVP_CIPHER_CTX_get_key_length(context), 0);
     }
 }

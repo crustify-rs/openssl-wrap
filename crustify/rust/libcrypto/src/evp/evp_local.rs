@@ -346,7 +346,7 @@ pub struct BorrowedEvpCipherCtx<'a> {
 }
 
 impl<'a> BorrowedEvpCipherCtx<'a> {
-    unsafe fn from_raw(raw: *mut ffi::evp_cipher_ctx_st) -> Option<Self> {
+    pub(crate) unsafe fn from_raw(raw: *mut ffi::evp_cipher_ctx_st) -> Option<Self> {
         // SAFETY: the caller transfers a fully initialized duplicate and has
         // selected a lifetime covering every non-owning pointer it copied.
         unsafe { CBox::from_raw(raw) }.map(|inner| Self {

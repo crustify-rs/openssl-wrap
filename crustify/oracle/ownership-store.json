@@ -15774,6 +15774,187 @@
    }
   },
   {
+   "name": "EVP_CIPHER_CTX_buf_noconst",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": false,
+     "mutable": true,
+     "note": "Writable start of the context inline EVP_MAX_BLOCK_LENGTH buffer, retained by the context."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_cipher",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional active cipher borrowed from and retained by the context."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_clear_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_copy",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live initialized source read synchronously; provider state is duplicated and fetched cipher reference raised."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Uniquely borrowed destination reset and overwritten in place; it retains independently owned provider state but copies external app/cipher data pointers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_ctrl",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    },
+    {
+     "name": "ptr",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ptr"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional type-erased control payload; direction, layout and byte extent depend on the runtime control and argument. It is never retained."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_CIPHER_CTX_dup",
    "defined_in": "crypto/evp/evp_enc.c",
    "lifetime": {
@@ -15849,6 +16030,543 @@
    ]
   },
   {
+   "name": "EVP_CIPHER_CTX_get0_cipher",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional active cipher borrowed from and retained by the context."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get1_cipher",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Null or one raised public cipher reference released by EVP_CIPHER_free; dependency lifetime remains bounded by the context."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_app_data",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Externally managed opaque application data pointer returned unchanged; not cloned, dereferenced, or released."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_block_size",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_cipher_data",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Externally managed opaque legacy cipher data pointer returned unchanged; not cloned, dereferenced, or released."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_iv_length",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_key_length",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_nid",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_num",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_original_iv",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller-sized writable byte run; `len` is its exact extent and the provider retains nothing."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_tag_length",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_updated_iv",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "buf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:buf"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller-sized writable byte run; `len` is its exact extent and the provider retains nothing."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_gettable_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned null-key-terminated constant OSSL_PARAM table retained by the active context/provider."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_is_encrypting",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_iv",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional IV byte run retained by the context/provider and valid for the active IV length."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_iv_noconst",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Optional writable running-IV byte run retained by the exclusively borrowed context/provider."
+    }
+   }
+  },
+  {
    "name": "EVP_CIPHER_CTX_new",
    "defined_in": "crypto/evp/evp_enc.c",
    "ptr_ret": {
@@ -15865,6 +16583,85 @@
      "note": "Returns a fresh zero-initialized cipher context with iv_len -1, or null; the caller owns one EVP_CIPHER_CTX_free obligation."
     }
    }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_original_iv",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional IV byte run retained by the context/provider and valid for the active IV length."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_rand_key",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Writable key buffer; the function writes exactly the active cipher key length and retains nothing."
+     }
+    }
+   ]
   },
   {
    "name": "EVP_CIPHER_CTX_reset",
@@ -15891,6 +16688,439 @@
       "nullable": true,
       "mutable": true,
       "note": "Disposes provider state and the owned fetched cipher and zeroes an initialized context in place; null and never-initialized contexts are accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_app_data",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Externally managed opaque pointer stored verbatim, never dereferenced or released, and copied by context duplication."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_cipher_data",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher_data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Externally managed opaque pointer stored verbatim, never dereferenced or released, and copied by context duplication."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "other"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Previous externally managed cipher-data pointer, removed from the context without release."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_key_length",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:c"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_num",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_padding",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_settable_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned null-key-terminated constant OSSL_PARAM table retained by the active context/provider."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_CTX_test_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_can_pipeline",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_do_all",
+   "defined_in": "crypto/evp/names.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback state passed through unchanged for synchronous invocations."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked synchronously and never retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_do_all_provided",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback state passed through unchanged for synchronous invocations."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked synchronously and never retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional library context used synchronously; callback ciphers cannot outlive it."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_do_all_sorted",
+   "defined_in": "crypto/evp/names.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback state passed through unchanged for synchronous invocations."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked synchronously and never retained."
      }
     }
    ]
@@ -15987,6 +17217,238 @@
       "nullable": true,
       "mutable": true,
       "note": "Consumes one public EVP_CIPHER reference. Null and legacy/cached records are accepted as no-ops; a NO_STORE dynamic record is down-referenced and its final count releases fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_get0_description",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cipher"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional borrowed NUL-terminated metadata string retained by the cipher/provider or static object database."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_get0_name",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cipher"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional borrowed NUL-terminated metadata string retained by the cipher/provider or static object database."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_get0_provider",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cipher"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Optional provider borrowed from and retained by the cipher; no reference is transferred."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_get_block_size",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_get_flags",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_get_iv_length",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_get_key_length",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_get_mode",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Live non-owning argument used only for this synchronous call."
      }
     }
    ]

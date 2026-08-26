@@ -12,6 +12,7 @@ deprecated-1-1-0 = []
 deprecated-3-0 = []
 deprecated-3-5 = []
 deprecated-4-0 = []
+deprecated-4-1 = []
 
 [dependencies]
 ffibox.workspace = true

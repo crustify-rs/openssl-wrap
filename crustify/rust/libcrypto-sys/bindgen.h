@@ -59,6 +59,15 @@ RSA *EVP_PKEY_get1_RSA(EVP_PKEY *pkey);
 int EVP_PKEY_set1_RSA(EVP_PKEY *pkey, RSA *key);
 EVP_PKEY *EVP_PKEY_new_CMAC_key(ENGINE *e, const unsigned char *priv,
     size_t len, const EVP_CIPHER *cipher);
+const EVP_CIPHER *EVP_CIPHER_CTX_cipher(const EVP_CIPHER_CTX *ctx);
+const unsigned char *EVP_CIPHER_CTX_iv(const EVP_CIPHER_CTX *ctx);
+const unsigned char *EVP_CIPHER_CTX_original_iv(const EVP_CIPHER_CTX *ctx);
+unsigned char *EVP_CIPHER_CTX_iv_noconst(EVP_CIPHER_CTX *ctx);
+unsigned char *EVP_CIPHER_CTX_buf_noconst(EVP_CIPHER_CTX *ctx);
+#endif
+#if defined(OPENSSL_NO_DEPRECATED_4_1)
+int EVP_CIPHER_CTX_get_num(const EVP_CIPHER_CTX *ctx);
+int EVP_CIPHER_CTX_set_num(EVP_CIPHER_CTX *ctx, int num);
 #endif
 /* crustify:macros:end */
 
