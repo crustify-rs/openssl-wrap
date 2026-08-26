@@ -495,7 +495,7 @@ pub struct BorrowedEvpKdfCtx<'a> {
 }
 
 impl<'a> BorrowedEvpKdfCtx<'a> {
-    unsafe fn from_raw(raw: *mut ffi::evp_kdf_ctx_st) -> Option<Self> {
+    pub(crate) unsafe fn from_raw(raw: *mut ffi::evp_kdf_ctx_st) -> Option<Self> {
         // SAFETY: the caller transfers a fully initialized duplicate and has
         // selected a lifetime covering the retained provider dependencies.
         unsafe { CBox::from_raw(raw) }.map(|inner| Self {

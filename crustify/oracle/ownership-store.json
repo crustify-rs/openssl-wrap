@@ -22082,6 +22082,639 @@
    ]
   },
   {
+   "name": "EVP_KDF_CTX_get0_kdf",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed method retained by the input context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_CTX_get1_kdf",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed method retained by the input context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_CTX_get_kdf_size",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_CTX_get_params",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_CTX_gettable_params",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_CTX_kdf",
+   "defined_in": null,
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed method retained by the input context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_CTX_new",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:kdf"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Fresh context with one free obligation; retains the input method and its provider dependency."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_CTX_reset",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_CTX_set_SKEY",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "paramname",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:paramname"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_CTX_set_params",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_CTX_settable_params",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_derive",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_derive_SKEY",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "key_type",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key_type"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "mgmt",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mgmt"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "propquery",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propquery"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Transfers one public secret-key reference retaining provider dependencies reached from the context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_do_all_provided",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Nullable opaque callback state forwarded synchronously and never retained."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked synchronously and never retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_fetch",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "ptr_args": [
+    {
+     "name": "algorithm",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algorithm"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "properties",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:properties"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:libctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Transfers one public reference and retains the selected library-context dependency."
+    }
+   }
+  },
+  {
    "name": "EVP_KDF_free",
    "defined_in": "crypto/evp/kdf_meth.c",
    "lifetime": {
@@ -22107,6 +22740,354 @@
      }
     }
    ]
+  },
+  {
+   "name": "EVP_KDF_get0_description",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:kdf"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed NUL-terminated metadata retained by the input method."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_get0_name",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:kdf"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed NUL-terminated metadata retained by the input method."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_get0_provider",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:kdf"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed provider retained by the input method."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_get_params",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed read-only for the synchronous provider parameter query; the method record itself is not mutated."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_gettable_ctx_params",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:kdf"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_gettable_params",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:kdf"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
+   "name": "EVP_KDF_is_a",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_names_do_all",
+   "defined_in": "crypto/evp/kdf_lib.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Nullable opaque callback state forwarded synchronously and never retained."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked synchronously and never retained."
+     }
+    },
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_KDF_settable_ctx_params",
+   "defined_in": "crypto/evp/kdf_meth.c",
+   "ptr_args": [
+    {
+     "name": "kdf",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:kdf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:kdf"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
   },
   {
    "name": "EVP_KDF_up_ref",
@@ -22763,6 +23744,153 @@
    ]
   },
   {
+   "name": "EVP_MAC_CTX_get0_mac",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed method retained by the input context."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_CTX_get_block_size",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_CTX_get_mac_size",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_CTX_get_params",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_CTX_gettable_params",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
    "name": "EVP_MAC_CTX_new",
    "defined_in": "crypto/evp/mac_lib.c",
    "ptr_args": [
@@ -22800,6 +23928,125 @@
      "note": "Returns null or a fresh initialized context with one EVP_MAC_CTX_free obligation. It retains the input method and therefore its OSSL_LIB_CTX dependency."
     }
    }
+  },
+  {
+   "name": "EVP_MAC_CTX_set_params",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_CTX_settable_params",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_do_all_provided",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "arg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:arg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Nullable opaque callback state forwarded synchronously and never retained."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required callback invoked synchronously and never retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
   },
   {
    "name": "EVP_MAC_fetch",
@@ -22871,6 +24118,103 @@
    }
   },
   {
+   "name": "EVP_MAC_final",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_finalXOF",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_MAC_free",
    "defined_in": "crypto/evp/mac_meth.c",
    "lifetime": {
@@ -22893,6 +24237,260 @@
       "nullable": true,
       "mutable": true,
       "note": "Consumes one public EVP_MAC reference. Null and cached methods are accepted as no-ops; a no-store method is down-referenced and its final count releases fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_get0_description",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:mac"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed NUL-terminated metadata retained by the input method."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_get0_name",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": null,
+     "string": true,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:mac"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed NUL-terminated metadata retained by the input method."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_get0_provider",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:mac"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Borrowed provider retained by the input method."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_get_params",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed read-only for the synchronous provider parameter query; the method record itself is not mutated."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_gettable_ctx_params",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:mac"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_gettable_params",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:mac"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned constant null-key-terminated descriptor table retained by the input method or context."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_init",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed only for the synchronous call and not retained."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed only for the synchronous call and not retained."
      }
     }
    ]
