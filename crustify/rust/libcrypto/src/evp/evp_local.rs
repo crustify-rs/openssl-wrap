@@ -155,10 +155,13 @@ define_ctype!(
     /// handle, so its provider reference, names, reference count, and provider
     /// dispatch table remain behind OpenSSL's call surface.
     ///
-    /// The method is reference counted. A sole owner may use
-    /// [`ffibox::CBox<EvpSkeymgmt>`], while a raised or fetched shared reference
-    /// must use [`SharedEvpSkeymgmt`] so safe code cannot obtain exclusive
-    /// access to an allocation that another owner can reach.
+    /// The method is reference counted, and every public way to acquire one
+    /// names a record somebody else may also hold: `EVP_SKEYMGMT_fetch` routes
+    /// through `evp_generic_fetch`, which stores the constructed method in the
+    /// library context's method store and hands back the *stored* record on
+    /// every later fetch. Acquisition therefore yields [`SharedEvpSkeymgmt`],
+    /// never a `CBox<EvpSkeymgmt>`: an owner offering `as_mut` would assert an
+    /// exclusivity neither a raised count nor a cached record can provide.
     EvpSkeymgmt,
     EvpSkeymgmtRef,
     EvpSkeymgmtMut,
@@ -173,12 +176,40 @@ impl_dropped!(EvpSkeymgmt, ffi::evp_skeymgmt_st, ffi::EVP_SKEYMGMT_free);
 
 // Do not register `EVP_SKEYMGMT_up_ref` as `CCloned`: cloning a CBox would give
 // two owners exclusive `as_mut` access to the same reference-counted method.
+
 /// One owned, shared-only reference to an `EVP_SKEYMGMT` method.
-pub type SharedEvpSkeymgmt = crate::refcount::SharedRef<'static, EvpSkeymgmt>;
+///
+/// The borrow parameter carries the library-context dependency of a fetched
+/// method, exactly as [`SharedEvpSignature`] and the other cached provider
+/// methods do. Under OpenSSL's default cached fetch the method store of the
+/// `OSSL_LIB_CTX` owns the record and both `EVP_SKEYMGMT_up_ref` and
+/// `EVP_SKEYMGMT_free` are deliberate no-ops for it, so an owner cannot be
+/// `'static` unless it was fetched from the process-wide default context.
+pub type SharedEvpSkeymgmt<'a> = crate::refcount::SharedRef<'a, EvpSkeymgmt>;
+
+impl<'a> EvpSkeymgmtRef<'a> {
+    /// Raise this method's public reference and return a shared-only owner.
+    #[must_use]
+    pub fn try_share(&self) -> Option<SharedEvpSkeymgmt<'a>> {
+        // SAFETY: the handle carries a live shared borrow. OpenSSL only
+        // updates an uncached method's atomic reference count, and performs
+        // the paired no-op for a method the library context's store owns.
+        if unsafe { ffi::EVP_SKEYMGMT_up_ref(self.as_ptr().cast_mut()) } != 1 {
+            return None;
+        }
+
+        // SAFETY: successful `EVP_SKEYMGMT_up_ref` creates one matching
+        // `EVP_SKEYMGMT_free` obligation (or the paired cached no-op). The
+        // share keeps this handle's library-context lifetime and grants no
+        // exclusive access.
+        unsafe { SharedEvpSkeymgmt::from_raw(self.as_ptr().cast_mut()) }
+    }
+}
 
 #[cfg(test)]
 mod skeymgmt_tests {
     use core::mem::size_of;
+    use core::ptr;
 
     use ffibox::{CBox, CCell, CDropped};
 
@@ -203,9 +234,27 @@ mod skeymgmt_tests {
             size_of::<*mut ffi::evp_skeymgmt_st>()
         );
         assert_eq!(
-            size_of::<SharedEvpSkeymgmt>(),
+            size_of::<SharedEvpSkeymgmt<'static>>(),
             size_of::<*mut ffi::evp_skeymgmt_st>()
         );
+    }
+
+    #[test]
+    fn fetched_skeymgmt_and_raised_reference_are_shared_only() {
+        // SAFETY: null selects the process-wide default library context, the
+        // algorithm name is a live NUL-terminated string, and a null property
+        // query selects the default implementation. A non-null result carries
+        // one public `EVP_SKEYMGMT_free` obligation.
+        let raw = unsafe { ffi::EVP_SKEYMGMT_fetch(ptr::null_mut(), c"AES".as_ptr(), ptr::null()) };
+        // SAFETY: the default context is process-wide, so `'static` is the
+        // borrow this record's library-context dependency needs, and the fetch
+        // transfers its public release obligation exactly once.
+        let method: SharedEvpSkeymgmt<'static> =
+            unsafe { SharedEvpSkeymgmt::from_raw(raw) }.expect("EVP_SKEYMGMT_fetch");
+
+        let shared = method.as_ref().try_share().expect("EVP_SKEYMGMT_up_ref");
+        assert_eq!(shared.as_ptr(), method.as_ptr());
+        assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
     }
 }
 

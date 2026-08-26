@@ -11,12 +11,20 @@ define_ctype!(
     /// selected digest, three owned digest contexts, and platform-specific
     /// state remain behind OpenSSL's call surface.
     ///
-    /// A context owns its inner, outer, and working `EVP_MD_CTX` objects. It
-    /// borrows the selected `EVP_MD` without raising its reference count, so a
-    /// fetched digest supplied to `HMAC_Init_ex` must outlive this context.
-    /// Safe constructors for that operation must carry the dependency in
-    /// their owner type; adopting a raw context as a plain [`ffibox::CBox`]
-    /// retains that obligation at the unsafe adoption seam.
+    /// A context owns its inner, outer, and working `EVP_MD_CTX` objects:
+    /// `hmac_ctx_alloc_mds` allocates all three and `HMAC_CTX_free` releases
+    /// them before the allocation. It only *borrows* the selected `EVP_MD` —
+    /// `HMAC_Init_ex` stores the caller's pointer in `md` without raising a
+    /// reference count, and only a reset clears it — so that digest must
+    /// outlive every later use of the context.
+    ///
+    /// The owner cannot state that: the digest is chosen after construction,
+    /// long after the owner's type is fixed, so no borrow parameter on
+    /// [`ffibox::CBox<HmacCtx>`] could name it. The obligation is carried by
+    /// the operations that install one instead —
+    /// [`HMAC_Init_ex`](crate::hmac::hmac::HMAC_Init_ex) and
+    /// [`HMAC_CTX_copy`](crate::hmac::hmac::HMAC_CTX_copy) are `unsafe fn` and
+    /// document it as a caller contract.
     ///
     /// `HMAC_CTX` is uniquely owned: the API has neither an up-reference
     /// operation nor a constructor that returns a copied context. The

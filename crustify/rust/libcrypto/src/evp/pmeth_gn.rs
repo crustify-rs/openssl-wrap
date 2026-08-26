@@ -12,10 +12,18 @@ use crate::core::openssl_core::{OsslCallback, OsslParam, OsslParamArray, termina
 use crate::evp::evp::{EvpPkey, EvpPkeyCtxMut, EvpPkeyCtxRef, EvpPkeyGenCallback, EvpPkeyRef};
 use crate::evp::p_lib::BorrowedEvpPkey;
 
-fn generate(
-    context: &mut EvpPkeyCtxMut<'_>,
+// A generated key is not context-independent: `EVP_PKEY_gen` assigns the
+// provider-side result through `EVP_PKEY_set_type_by_keymgmt`, which stores the
+// operation's `EVP_KEYMGMT` behind `EVP_KEYMGMT_up_ref` — and for a method the
+// library context's store owns, that increment and the matching
+// `EVP_KEYMGMT_free` are both no-ops. The key therefore reaches the
+// `OSSL_LIB_CTX` its context was built from and nothing keeps that context
+// alive, so every generated key carries the context's borrow, exactly as
+// `EVP_PKEY_generate` and `EVP_PKEY_fromdata` already do.
+fn generate<'a>(
+    context: &'a mut EvpPkeyCtxMut<'_>,
     operation: unsafe extern "C" fn(*mut ffi::evp_pkey_ctx_st, *mut *mut ffi::evp_pkey_st) -> i32,
-) -> Result<CBox<EvpPkey>, i32> {
+) -> Result<BorrowedEvpPkey<'a>, i32> {
     let mut output = ptr::null_mut();
     // SAFETY: the exclusive context is live, and the local owner slot starts
     // null so OpenSSL either creates a fresh key or leaves no ownership behind.
@@ -25,21 +33,40 @@ fn generate(
             // SAFETY: if a failing provider nevertheless left a key in the
             // caller-owned slot, adopting and immediately dropping it prevents
             // a leak while preserving the reported failure.
-            unsafe { CBox::<EvpPkey>::from_raw(output) }
+            unsafe { BorrowedEvpPkey::from_raw(output) }
         {
             drop(unexpected);
         }
         return Err(status);
     }
     // SAFETY: successful generation stores one fresh, fully initialized key
-    // reference in the required output slot.
-    unsafe { CBox::from_raw(output) }.ok_or(status)
+    // reference in the required output slot, whose provider-side dependencies
+    // are the ones the context borrow already covers.
+    unsafe { BorrowedEvpPkey::from_raw(output) }.ok_or(status)
 }
 
 /// Wraps: EVP_PKEY_keygen
 /// Generates a fresh key and returns the original OpenSSL status on failure.
+///
+/// The key retains the operation's key-management method, so it borrows the
+/// context it was generated from and cannot escape it:
+///
+/// ```compile_fail
+/// use libcrypto::evp::pmeth_gn::{EVP_PKEY_keygen, EVP_PKEY_keygen_init};
+/// use libcrypto::evp::pmeth_lib::EVP_PKEY_CTX_new_from_name;
+///
+/// let key = {
+///     let mut context =
+///         EVP_PKEY_CTX_new_from_name(None, c"ED25519", None).expect("context");
+///     let mut handle = context.as_mut();
+///     assert_eq!(EVP_PKEY_keygen_init(&mut handle), 1);
+///     // The key borrows the context, which the block then drops.
+///     EVP_PKEY_keygen(&mut handle).expect("keygen")
+/// };
+/// drop(key);
+/// ```
 #[allow(non_snake_case)]
-pub fn EVP_PKEY_keygen(context: &mut EvpPkeyCtxMut<'_>) -> Result<CBox<EvpPkey>, i32> {
+pub fn EVP_PKEY_keygen<'a>(context: &'a mut EvpPkeyCtxMut<'_>) -> Result<BorrowedEvpPkey<'a>, i32> {
     generate(context, ffi::EVP_PKEY_keygen)
 }
 
@@ -67,7 +94,9 @@ pub fn EVP_PKEY_new_mac_key(key_type: i32, key: &[u8]) -> Option<CBox<EvpPkey>> 
 /// Wraps: EVP_PKEY_paramgen
 /// Generates a fresh parameter key and returns the C status on failure.
 #[allow(non_snake_case)]
-pub fn EVP_PKEY_paramgen(context: &mut EvpPkeyCtxMut<'_>) -> Result<CBox<EvpPkey>, i32> {
+pub fn EVP_PKEY_paramgen<'a>(
+    context: &'a mut EvpPkeyCtxMut<'_>,
+) -> Result<BorrowedEvpPkey<'a>, i32> {
     generate(context, ffi::EVP_PKEY_paramgen)
 }
 

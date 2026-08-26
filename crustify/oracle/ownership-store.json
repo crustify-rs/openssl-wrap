@@ -5138,7 +5138,7 @@
   {
    "name": "evp_pkey_st",
    "defined_in": "include/crypto/evp.h",
-   "_comment_agent": "EVP_PKEY is opaque on the published API. Its complete value owns the attribute stack and elements, an acquired EVP_KEYMGMT reference with provider-owned keydata, its thread lock, and the operation-cache stack. The ASN.1 method pointer refers to static method-table storage. references is the object's atomic reference count. Reviewed for lifetime coupling: the struct has no OSSL_LIB_CTX field, but a provider-backed key transitively depends on the library context it was created in through the EVP_KEYMGMT it retains, and nothing in that chain keeps the context alive - EVP_KEYMGMT holds a provider reference, and OSSL_PROVIDER borrows its libctx. Every Rust owner of an EVP_PKEY must therefore carry the creating context's borrow, including one obtained by raising the reference count (X509_get_pubkey, X509_PUBKEY_get) and one produced by EVP_PKEY_dup, which gives the duplicate its source's keymgmt. EVP_PKEY_dup itself only reads its source: the provided path exports through evp_keymgmt_util_export, declared const EVP_PKEY *, and every legacy ameth->copy (rsa/ec/ecx/dh/dsa_pkey_copy) duplicates the source key object without mutating it.",
+   "_comment_agent": "EVP_PKEY is opaque on the published API. Its complete value owns the attribute stack and elements, an acquired EVP_KEYMGMT reference with provider-owned keydata, its thread lock, and the operation-cache stack. The ASN.1 method pointer refers to static method-table storage. references is the object's atomic reference count. Reviewed for lifetime coupling: the struct has no OSSL_LIB_CTX field, but a provider-backed key transitively depends on the library context it was created in through the EVP_KEYMGMT it retains, and nothing in that chain keeps the context alive - EVP_KEYMGMT holds a provider reference, and OSSL_PROVIDER borrows its libctx. Every Rust owner of an EVP_PKEY must therefore carry the creating context's borrow, including one obtained by raising the reference count (X509_get_pubkey, X509_PUBKEY_get) and one produced by EVP_PKEY_dup, which gives the duplicate its source's keymgmt. EVP_PKEY_dup itself only reads its source: the provided path exports through evp_keymgmt_util_export, declared const EVP_PKEY *, and every legacy ameth->copy (rsa/ec/ecx/dh/dsa_pkey_copy) duplicates the source key object without mutating it. Reviewed again for the cached-fetch case: an acquired EVP_KEYMGMT reference does not by itself keep the record alive, because a method reached through evp_generic_fetch is stored in the OSSL_LIB_CTX method store and both EVP_KEYMGMT_up_ref and EVP_KEYMGMT_free are deliberate no-ops for a stored record. That is what makes the context borrow mandatory rather than merely conservative, and it applies to a generated key too: EVP_PKEY_gen assigns the operation's keymgmt through evp_keymgmt_util_assign_pkey -> EVP_PKEY_set_type_by_keymgmt, so EVP_PKEY_keygen and EVP_PKEY_paramgen carry the same dependency as EVP_PKEY_generate and EVP_PKEY_fromdata.",
    "fields": [
     {
      "name": "ameth",
@@ -5199,7 +5199,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Optional acquired EVP_KEYMGMT reference; assignment takes/up-refs a count and EVP_PKEY_free releases it after freeing keydata."
+      "note": "Optional acquired EVP_KEYMGMT reference; assignment (pkey_set_type via EVP_PKEY_set_type_by_keymgmt) up-refs a count and EVP_PKEY_free releases it after freeing keydata. Under OpenSSL's default cached fetch the method belongs to the OSSL_LIB_CTX method store and both the up-ref and the release are no-ops, so this field couples the key's lifetime to that library context."
      }
     },
     {
@@ -36931,6 +36931,79 @@
      }
     }
    ]
+  },
+  {
+   "name": "EVP_SKEYMGMT_fetch",
+   "defined_in": "crypto/evp/skeymgmt_meth.c",
+   "ptr_args": [
+    {
+     "name": "algorithm",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algorithm"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Transient NUL-terminated algorithm name, read for the call only (ossl_namemap_name2num). Null is tolerated and reports an unsupported algorithm rather than crashing. The constructed method copies the name it registers under; nothing retains this pointer."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional library context; null selects the process-wide default. Not retained by the caller-visible result, but evp_generic_fetch mutates it: inner_evp_generic_fetch reaches its OSSL_METHOD_STORE and OSSL_NAMEMAP and, on the default cached path, puts the constructed method into that store."
+     }
+    },
+    {
+     "name": "properties",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:properties"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query, read for the call only; null is normalized to the empty query. Nothing retains this pointer."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Runtime-conditional dual ownership. For a no_store method the caller receives one reference to release with EVP_SKEYMGMT_free. Under OpenSSL's default cached fetch the method lives in the library context's OSSL_METHOD_STORE, and EVP_SKEYMGMT_up_ref / EVP_SKEYMGMT_free are deliberate no-ops for it (both are gated on no_store != 0), so the record is really borrowed from arg:ctx and dies with that context. A safe owner must therefore be shared-only and carry the library context's borrow; it cannot be 'static unless ctx was null."
+    }
+   }
   },
   {
    "name": "EVP_SKEYMGMT_free",

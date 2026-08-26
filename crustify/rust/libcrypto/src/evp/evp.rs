@@ -24,8 +24,14 @@ define_ctype!(
     /// library context it was fetched from. Nothing in the chain keeps the
     /// context alive — a provider reference does not — so every owner of a key
     /// carries that dependency in its type: `BorrowedEvpPkey<'a>` for a key
-    /// built from a context borrow, and [`SharedEvpPkey<'a>`] for an extra
-    /// reference reached through a container that already carries one.
+    /// built from a context borrow — generation, import and duplication all
+    /// return one — and [`SharedEvpPkey<'a>`] for an extra reference reached
+    /// through a container that already carries one. A bare `CBox<EvpPkey>` is
+    /// reserved for the constructors that select no context at all
+    /// (`EVP_PKEY_new`, the legacy NID-keyed `EVP_PKEY_new_raw_*`,
+    /// `EVP_PKEY_new_mac_key` and `EVP_PKEY_new_CMAC_key`, which passes its
+    /// cipher's *name* on and builds through a null library context), so they
+    /// borrow nothing an owner could outlive.
     EvpPkey,
     EvpPkeyRef,
     EvpPkeyMut,
