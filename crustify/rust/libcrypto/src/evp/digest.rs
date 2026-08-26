@@ -498,7 +498,8 @@ mod digest_descriptor_tests {
             c"blocksize",
             UNSIGNED_INTEGER,
             &mut storage,
-        )]);
+        )
+        .expect("byte descriptor")]);
         assert!(EVP_MD_get_params(Some(digest.as_ref()), &mut params));
 
         let values = params.as_list().values();

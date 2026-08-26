@@ -1281,11 +1281,11 @@ mod cipher_operations_tests {
         // 16-byte IV that the published 12-byte length would have accepted
         // anyway becomes the exact requirement.
         let mut storage = 16_usize.to_ne_bytes().map(MaybeUninit::new);
-        let params = OsslParamArray::new([OsslParam::for_slice(
-            c"ivlen",
-            UNSIGNED_INTEGER,
-            &mut storage,
-        )]);
+        let params =
+            OsslParamArray::new([
+                OsslParam::for_slice(c"ivlen", UNSIGNED_INTEGER, &mut storage)
+                    .expect("byte descriptor"),
+            ]);
 
         let mut accepted = context();
         let mut ctx = accepted.as_mut();
@@ -1340,7 +1340,9 @@ mod cipher_operations_tests {
 
         let mut storage = [MaybeUninit::new(0_u8); TAG_LEN];
         let mut produced =
-            OsslParamArray::new([OsslParam::for_slice(c"tag", OCTET_STRING, &mut storage)]);
+            OsslParamArray::new([
+                OsslParam::for_slice(c"tag", OCTET_STRING, &mut storage).expect("byte descriptor")
+            ]);
         assert_eq!(
             EVP_CIPHER_CTX_get_params(&mut ctx, &mut produced.as_list_mut()),
             1
@@ -1362,7 +1364,8 @@ mod cipher_operations_tests {
 
             let mut expected = tag.map(MaybeUninit::new);
             let wanted =
-                OsslParamArray::new([OsslParam::for_slice(c"tag", OCTET_STRING, &mut expected)]);
+                OsslParamArray::new([OsslParam::for_slice(c"tag", OCTET_STRING, &mut expected)
+                    .expect("byte descriptor")]);
             assert_eq!(EVP_CIPHER_CTX_set_params(&mut ctx, &wanted.as_list()), 1);
             let result = EVP_DecryptFinal_ex(&mut ctx, &mut []);
             if result.is_ok() {

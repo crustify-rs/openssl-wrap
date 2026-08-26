@@ -22,15 +22,25 @@ use libcrypto_sys as ffi;
 /// A null `key` is the published array terminator. A null `data` is also valid
 /// and asks a setter to report its required size through `return_size`.
 ///
-/// The wrapper's byte view rests on one invariant: a non-null `data` addresses
-/// `data_size` bytes. That holds for every value-carrying `OSSL_PARAM_*` type,
-/// and it is what [`OsslParam::for_buffer`] establishes. It does *not* hold for
-/// `OSSL_PARAM_UTF8_PTR` and `OSSL_PARAM_OCTET_PTR`: `crypto/params.c` reaches
-/// their storage as `*(const void **)p->data`, a single pointer slot, and uses
-/// `data_size` to bound the *referent* instead. A byte run of `data_size` bytes
-/// therefore does not exist at `data` for those two, so the accessors report no
-/// byte view rather than fabricating one; use [`OsslParamRef::data_type`] to
-/// recognize them.
+/// The wrapper rests on one invariant, which couples `data` to `data_type`: for
+/// every value-carrying `OSSL_PARAM_*` type a non-null `data` addresses
+/// `data_size` bytes, and for `OSSL_PARAM_UTF8_PTR` and `OSSL_PARAM_OCTET_PTR`
+/// a non-null `data` addresses one aligned `*const c_void` slot.
+/// `crypto/params.c` reaches the latter two as `*(const void **)p->data` and
+/// uses `data_size` to bound the *referent* instead, so a byte run of
+/// `data_size` bytes does not exist at `data` for them; the accessors report no
+/// byte view rather than fabricating one, and [`OsslParamRef::data_type`]
+/// recognizes them.
+///
+/// The safe surface maintains that coupling rather than merely documenting it,
+/// because a descriptor reaches C through safe wrappers that hand the whole
+/// array to a provider. [`OsslParam::for_buffer`] describes a byte run, so it
+/// refuses the two pointer-slot types; [`OsslParamMut::set_data`] refuses to
+/// install a byte run under one, and [`OsslParamMut::set_data_type`] refuses to
+/// move a descriptor across the two classes while `data` is non-null. Without
+/// those refusals safe code could hand C a one-byte buffer typed
+/// `OSSL_PARAM_UTF8_PTR` and have `set_ptr_internal` /
+/// `get_ptr_internal_skip_checks` load or store a whole pointer through it.
 #[repr(transparent)]
 pub struct OsslParam<'data> {
     inner: CType<ffi::ossl_param_st>,
@@ -90,18 +100,28 @@ unsafe impl CValued for OsslParam<'_> {
     unsafe fn c_dispose(_this: NonNull<Self>) {}
 }
 
+/// Whether `data_type` makes `data` a lone `void *` slot instead of a byte run.
+///
+/// `set_ptr_internal` and `get_ptr_internal_skip_checks` in `crypto/params.c`
+/// reach `OSSL_PARAM_UTF8_PTR` and `OSSL_PARAM_OCTET_PTR` storage as
+/// `*(const void **)p->data` and report `data_size` as the *referent* length,
+/// which bounds no storage at `data`. Every other data type makes `data_size`
+/// the byte capacity of `data`.
+const fn is_pointer_slot(data_type: u32) -> bool {
+    matches!(
+        data_type,
+        ffi::OSSL_PARAM_UTF8_PTR | ffi::OSSL_PARAM_OCTET_PTR
+    )
+}
+
 /// The byte run addressable at a descriptor's `data`, when one exists.
 ///
-/// `data_size` is the byte capacity of `data` for every value-carrying
-/// `OSSL_PARAM_*` type. `OSSL_PARAM_UTF8_PTR` and `OSSL_PARAM_OCTET_PTR` break
-/// that: `set_ptr_internal` and `get_ptr_internal_skip_checks` in
-/// `crypto/params.c` treat `data` as a lone `void *` slot and report
-/// `data_size` as the *referent* length, which bounds no storage at `data`.
-/// Those two therefore have no byte view at all.
+/// Absent for the two pointer-slot types, which have no byte view at all.
 const fn data_extent(data_type: u32, data_size: usize) -> Option<usize> {
-    match data_type {
-        ffi::OSSL_PARAM_UTF8_PTR | ffi::OSSL_PARAM_OCTET_PTR => None,
-        _ => Some(data_size),
+    if is_pointer_slot(data_type) {
+        None
+    } else {
+        Some(data_size)
     }
 }
 
@@ -141,19 +161,24 @@ impl<'data> OsslParam<'data> {
     /// with [`OsslParamMut::take_data`].
     ///
     /// Deriving `data_size` from the buffer establishes the descriptor's byte
-    /// invariant. That makes this the wrong constructor for
-    /// `OSSL_PARAM_UTF8_PTR` and `OSSL_PARAM_OCTET_PTR`, whose `data` must be a
-    /// `void *` slot and whose `data_size` describes the referent; see
-    /// [`OsslParam`].
+    /// invariant, so `None` reports the two pointer-slot types
+    /// `OSSL_PARAM_UTF8_PTR` and `OSSL_PARAM_OCTET_PTR`: their `data` must be
+    /// one aligned `void *` slot and their `data_size` describes the referent,
+    /// neither of which a byte buffer states. Building one anyway would let a
+    /// provider load or store a whole pointer through a buffer that need be
+    /// neither eight bytes long nor pointer-aligned; see [`OsslParam`].
     #[must_use]
     pub fn for_buffer(
         key: &'data CStr,
         data_type: u32,
         mut data: CSliceMut<'data, MaybeUninit<u8>>,
-    ) -> CVal<Self> {
+    ) -> Option<CVal<Self>> {
+        if is_pointer_slot(data_type) {
+            return None;
+        }
         let data_size = data.len();
         let data = data.as_mut_elem_ptr().cast::<c_void>();
-        CVal::new(Self {
+        Some(CVal::new(Self {
             inner: CType::new(ffi::ossl_param_st {
                 key: key.as_ptr(),
                 data_type,
@@ -162,16 +187,19 @@ impl<'data> OsslParam<'data> {
                 return_size: usize::MAX,
             }),
             borrows: PhantomData,
-        })
+        }))
     }
 
     /// Creates inline descriptor storage from a Rust output buffer.
+    ///
+    /// `None` for the two pointer-slot types, as in
+    /// [`for_buffer`](Self::for_buffer).
     #[must_use]
     pub fn for_slice(
         key: &'data CStr,
         data_type: u32,
         data: &'data mut [MaybeUninit<u8>],
-    ) -> CVal<Self> {
+    ) -> Option<CVal<Self>> {
         let len = data.len();
         // SAFETY: a mutable slice supplies `len` contiguous `MaybeUninit<u8>`
         // slots, and consuming its lifetime here leaves the descriptor as the
@@ -297,12 +325,14 @@ impl<'view, 'data> OsslParamRef<'view, 'data> {
     ///
     /// A non-null pointer must address a live initialized `OSSL_PARAM` for
     /// `'view`. Its non-null `key` must be a NUL-terminated string live for
-    /// `'data`. Unless `data_type` is `OSSL_PARAM_UTF8_PTR` or
-    /// `OSSL_PARAM_OCTET_PTR` — for which the accessors publish no byte view —
-    /// a non-null `data` must address `data_size` bytes live for `'data`.
-    /// No Rust path may form a reference over that data while the returned
-    /// shared handle is in use; OpenSSL may still write it through the
-    /// descriptor, which is why the view is raw rather than a `&[u8]`.
+    /// `'data`. A non-null `data` must satisfy the descriptor's data-type
+    /// coupling for `'data`: `data_size` bytes for a value-carrying type, and
+    /// one aligned `*const c_void` slot when `data_type` is
+    /// `OSSL_PARAM_UTF8_PTR` or `OSSL_PARAM_OCTET_PTR`, for which the
+    /// accessors publish no byte view. No Rust path may form a reference over
+    /// that data while the returned shared handle is in use; OpenSSL may still
+    /// write it through the descriptor, which is why the view is raw rather
+    /// than a `&[u8]`.
     pub unsafe fn from_ptr(ptr: *mut ffi::ossl_param_st) -> Option<Self> {
         NonNull::new(ptr.cast::<OsslParam<'data>>()).map(|ptr| {
             // SAFETY: the caller supplies the liveness and field invariants.
@@ -451,11 +481,39 @@ impl<'view, 'data> OsslParamMut<'view, 'data> {
     /// Replaces `data` and `data_size` together, returning the previous run.
     ///
     /// Keeping the pair coupled prevents safe code from publishing a length
-    /// larger than the buffer it borrowed. The replacement always happens; the
-    /// result is the run the descriptor held, which is absent for a null `data`
-    /// and for the two pointer-slot data types, as in
-    /// [`OsslParamRef::data`].
+    /// larger than the buffer it borrowed. `Ok` carries the run the descriptor
+    /// held, which is absent for a null `data` and for the two pointer-slot
+    /// data types, as in [`OsslParamRef::data`].
+    ///
+    /// # Errors
+    ///
+    /// A byte run cannot be installed under `OSSL_PARAM_UTF8_PTR` or
+    /// `OSSL_PARAM_OCTET_PTR`, whose `data` is one aligned `*const c_void`
+    /// slot. Such a call leaves the descriptor untouched and hands the
+    /// refused run back; clear the pointer slot with
+    /// [`take_data`](Self::take_data) and retype the descriptor first if the
+    /// intent was to make it carry bytes.
     pub fn set_data(
+        &mut self,
+        data: Option<CSliceMut<'data, MaybeUninit<u8>>>,
+    ) -> Result<Option<CSliceMut<'data, MaybeUninit<u8>>>, CSliceMut<'data, MaybeUninit<u8>>> {
+        if let Some(data) = data {
+            // SAFETY: the handle contract keeps the descriptor live and this
+            // raw-place read copies an initialized scalar out of it.
+            let data_type = unsafe { addr_of!((*self.as_mut_ptr()).data_type).read() };
+            if is_pointer_slot(data_type) {
+                return Err(data);
+            }
+            return Ok(self.replace_data(Some(data)));
+        }
+        Ok(self.replace_data(None))
+    }
+
+    /// Writes the `data` / `data_size` pair, returning the previous run.
+    ///
+    /// The caller has already established that the new pair agrees with the
+    /// descriptor's `data_type`.
+    fn replace_data(
         &mut self,
         data: Option<CSliceMut<'data, MaybeUninit<u8>>>,
     ) -> Option<CSliceMut<'data, MaybeUninit<u8>>> {
@@ -482,8 +540,13 @@ impl<'view, 'data> OsslParamMut<'view, 'data> {
     }
 
     /// Clears the data fields and reclaims the stored buffer borrow.
+    ///
+    /// Clearing is valid for every data type: it leaves a null `data` and a
+    /// zero `data_size`, which describe no storage under either coupling. A
+    /// pointer-slot descriptor therefore reports no reclaimed run while still
+    /// being cleared.
     pub fn take_data(&mut self) -> Option<CSliceMut<'data, MaybeUninit<u8>>> {
-        self.set_data(None)
+        self.replace_data(None)
     }
 
     /// Sets the provider-written result size metadata.
@@ -492,11 +555,30 @@ impl<'view, 'data> OsslParamMut<'view, 'data> {
         unsafe { addr_of_mut!((*self.as_mut_ptr()).return_size).write(return_size) }
     }
 
-    /// Sets the runtime data discriminator.
-    pub fn set_data_type(&mut self, data_type: u32) {
-        // SAFETY: the exclusive handle permits writing this scalar field; the
-        // byte-oriented data view does not assume a particular discriminator.
-        unsafe { addr_of_mut!((*self.as_mut_ptr()).data_type).write(data_type) }
+    /// Sets the runtime data discriminator, reporting whether it was applied.
+    ///
+    /// `data_type` decides how OpenSSL reaches `data`: the two pointer-slot
+    /// types load and store a whole `*const c_void` there, every other type
+    /// reads and writes `data_size` bytes. Moving a descriptor between those
+    /// classes while `data` is non-null would therefore retype storage that
+    /// was borrowed under the other contract, so it is refused and the
+    /// descriptor is left untouched. Clear the pair with
+    /// [`take_data`](Self::take_data) first; between two types of the same
+    /// class the change always applies.
+    #[must_use]
+    pub fn set_data_type(&mut self, data_type: u32) -> bool {
+        // SAFETY: the exclusive handle permits reading and writing these
+        // scalar fields through raw-place projection, and the pointer read
+        // only inspects the stored address.
+        unsafe {
+            let data = addr_of!((*self.as_mut_ptr()).data).read();
+            let previous = addr_of!((*self.as_mut_ptr()).data_type).read();
+            if !data.is_null() && is_pointer_slot(data_type) != is_pointer_slot(previous) {
+                return false;
+            }
+            addr_of_mut!((*self.as_mut_ptr()).data_type).write(data_type);
+        }
+        true
     }
 }
 
@@ -680,7 +762,7 @@ mod tests {
     #[test]
     fn borrowed_fields_round_trip_without_owning_their_storage() {
         let mut bytes = [MaybeUninit::new(1_u8), MaybeUninit::new(2_u8)];
-        let mut param = OsslParam::for_slice(c"answer", 5, &mut bytes);
+        let mut param = OsslParam::for_slice(c"answer", 5, &mut bytes).expect("byte descriptor");
 
         let shared = param.as_ref();
         assert_eq!(shared.key(), Some(c"answer"));
@@ -690,7 +772,7 @@ mod tests {
         assert_eq!(shared.return_size(), usize::MAX);
 
         let mut exclusive = param.as_mut();
-        exclusive.set_data_type(4);
+        assert!(exclusive.set_data_type(4));
         exclusive.set_return_size(1);
         assert!(
             exclusive
@@ -745,7 +827,7 @@ mod tests {
     fn a_validated_run_of_inline_descriptors_spans_the_whole_array() {
         let mut bytes = [MaybeUninit::new(0_u8); 4];
         let mut values = [
-            OsslParam::for_slice(c"answer", 1, &mut bytes),
+            OsslParam::for_slice(c"answer", 1, &mut bytes).expect("byte descriptor"),
             OsslParam::end(),
         ];
         let first = values[0].as_ref().as_ptr();
@@ -768,7 +850,8 @@ mod tests {
     #[test]
     fn an_unterminated_or_empty_run_is_rejected() {
         let mut bytes = [MaybeUninit::new(0_u8); 4];
-        let mut unterminated = [OsslParam::for_slice(c"answer", 1, &mut bytes)];
+        let mut unterminated =
+            [OsslParam::for_slice(c"answer", 1, &mut bytes).expect("byte descriptor")];
         assert!(OsslParamListMut::from_values(&mut unterminated).is_none());
 
         let mut empty: [CVal<OsslParam<'static>>; 0] = [];
@@ -831,7 +914,9 @@ mod tests {
     #[test]
     fn parameter_array_takes_over_the_descriptor_borrows_and_reads_back() {
         let mut bytes = [MaybeUninit::new(0_u8); 4];
-        let mut array = OsslParamArray::new([OsslParam::for_slice(c"answer", 2, &mut bytes)]);
+        let mut array = OsslParamArray::new([
+            OsslParam::for_slice(c"answer", 2, &mut bytes).expect("byte descriptor")
+        ]);
         let start = array.as_ptr();
 
         // The moved descriptor is reachable again only through the array, and
@@ -875,17 +960,53 @@ mod tests {
         assert_eq!(exclusive.as_ref().data_size(), 4096);
         assert!(exclusive.as_ref().data().is_none());
         assert!(exclusive.data_mut().is_none());
-        // Clearing still happens; only the reclaimed run is withheld.
-        assert!(exclusive.take_data().is_none());
-        assert_eq!(exclusive.as_ref().data_size(), 0);
-
-        // The very same descriptor read as an octet string does carry a run.
-        exclusive.set_data_type(5);
+        // A byte run cannot be installed while the descriptor still says
+        // "pointer slot": the provider would store a whole `void *` into it.
         // SAFETY: `buffer` outlives this handle and nothing else views it.
         let run = unsafe {
             CSliceMut::from_raw_parts(NonNull::new_unchecked(buffer.as_mut_ptr()), buffer.len())
         };
-        assert!(exclusive.set_data(Some(run)).is_none());
+        let Err(run) = exclusive.set_data(Some(run)) else {
+            panic!("a byte run must not be installed under a pointer-slot type")
+        };
+        assert_eq!(run.len(), 4);
+        assert_eq!(exclusive.as_ref().data_size(), 4096);
+        // Nor can the descriptor be retyped out of the pointer-slot class
+        // while its `data` still addresses a pointer slot.
+        assert!(!exclusive.set_data_type(5));
+        assert_eq!(exclusive.as_ref().data_type(), ffi::OSSL_PARAM_OCTET_PTR);
+        // Switching between the two pointer-slot types keeps the coupling.
+        assert!(exclusive.set_data_type(ffi::OSSL_PARAM_UTF8_PTR));
+
+        // Clearing still happens; only the reclaimed run is withheld.
+        assert!(exclusive.take_data().is_none());
+        assert_eq!(exclusive.as_ref().data_size(), 0);
+
+        // With `data` cleared the class change is free, and the very same
+        // descriptor read as an octet string does carry a run again.
+        assert!(exclusive.set_data_type(5));
+        let Ok(previous) = exclusive.set_data(Some(run)) else {
+            panic!("a cleared descriptor accepts a byte run")
+        };
+        assert!(previous.is_none());
         assert_eq!(exclusive.as_ref().data().map(|data| data.len()), Some(4));
+    }
+
+    #[test]
+    fn the_pointer_slot_data_types_have_no_byte_buffer_constructor() {
+        // `crypto/params.c` loads and stores a whole `const void *` through
+        // `data` for these two, so a byte buffer cannot describe one: it need
+        // be neither pointer-sized nor pointer-aligned. Handing such a
+        // descriptor to a provider is a misaligned out-of-bounds access, and
+        // no `unsafe` would appear at the call site.
+        let mut one_byte = [MaybeUninit::new(0_u8); 1];
+        assert!(OsslParam::for_slice(c"mac", ffi::OSSL_PARAM_UTF8_PTR, &mut one_byte).is_none());
+        assert!(OsslParam::for_slice(c"mac", ffi::OSSL_PARAM_OCTET_PTR, &mut one_byte).is_none());
+        // A buffer that happens to be wide enough is refused just the same:
+        // the descriptor's `data_size` would still have to mean the referent.
+        let mut wide = [MaybeUninit::new(0_u8); 64];
+        assert!(OsslParam::for_slice(c"mac", ffi::OSSL_PARAM_UTF8_PTR, &mut wide).is_none());
+        // Every value-carrying type still builds.
+        assert!(OsslParam::for_slice(c"mac", 5, &mut wide).is_some());
     }
 }

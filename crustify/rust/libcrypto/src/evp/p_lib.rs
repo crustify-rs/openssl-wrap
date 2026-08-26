@@ -1094,8 +1094,9 @@ mod tests {
         let mut bits = [MaybeUninit::<u8>::uninit(); size_of::<c_int>()];
         let mut security_bits = [MaybeUninit::<u8>::uninit(); size_of::<c_int>()];
         let mut params = [
-            OsslParam::for_slice(c"bits", OSSL_PARAM_INTEGER, &mut bits),
-            OsslParam::for_slice(c"security-bits", OSSL_PARAM_INTEGER, &mut security_bits),
+            OsslParam::for_slice(c"bits", OSSL_PARAM_INTEGER, &mut bits).expect("byte descriptor"),
+            OsslParam::for_slice(c"security-bits", OSSL_PARAM_INTEGER, &mut security_bits)
+                .expect("byte descriptor"),
             OsslParam::end(),
         ];
         assert!(EVP_PKEY_get_params(key.as_ref(), &mut params));
@@ -1116,7 +1117,9 @@ mod tests {
 
         let key = EVP_PKEY_new().expect("EVP_PKEY_new");
         let mut bits = [MaybeUninit::<u8>::uninit(); size_of::<c_int>()];
-        let mut unterminated = [OsslParam::for_slice(c"bits", OSSL_PARAM_INTEGER, &mut bits)];
+        let mut unterminated =
+            [OsslParam::for_slice(c"bits", OSSL_PARAM_INTEGER, &mut bits)
+                .expect("byte descriptor")];
         assert!(!EVP_PKEY_get_params(key.as_ref(), &mut unterminated));
 
         let mut empty: [CVal<OsslParam<'static>>; 0] = [];
