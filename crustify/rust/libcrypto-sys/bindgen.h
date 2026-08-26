@@ -10,6 +10,7 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/kdf.h>
+#include <openssl/hpke.h>
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
 #include <openssl/provider.h>

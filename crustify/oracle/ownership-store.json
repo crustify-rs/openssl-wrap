@@ -5747,6 +5747,242 @@
    ]
   },
   {
+   "name": "ossl_hpke_ctx_st",
+   "defined_in": "crypto/hpke/hpke.c",
+   "_comment_agent": "The context is zero-allocated, owns every duplicated/fetched buffer or object field, borrows the caller's optional library context for the context lifetime, and borrows immutable suite metadata from static lookup tables. OSSL_HPKE_CTX_free releases the owned fields and the header; length-paired secret buffers are cleared before release.",
+   "fields": [
+    {
+     "name": "aead_ciph",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned fetched EVP_CIPHER reference; null for export-only suites and released by EVP_CIPHER_free."
+     }
+    },
+    {
+     "name": "aead_info",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Non-null immutable AEAD metadata selected from a static lookup table."
+     }
+    },
+    {
+     "name": "authpriv",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned EVP_PKEY duplicate installed by set1_authpriv and released by EVP_PKEY_free."
+     }
+    },
+    {
+     "name": "authpub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned authpublen-byte encoded public key copied into context storage and freed."
+     }
+    },
+    {
+     "name": "exportersec",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned exporterseclen-byte exporter secret; generated in place and clear-freed."
+     }
+    },
+    {
+     "name": "ikme",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned ikmelen-byte duplicate; replaced by set1_ikme and clear-freed."
+     }
+    },
+    {
+     "name": "kdf_info",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Non-null immutable KDF metadata selected from a static lookup table."
+     }
+    },
+    {
+     "name": "kem_info",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Non-null immutable KEM metadata selected from a static lookup table."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned keylen-byte AEAD key; generated in place and clear-freed."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller-owned library context stored without up-ref; it must remain live while the HPKE context uses it."
+     }
+    },
+    {
+     "name": "nonce",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned noncelen-byte AEAD base nonce; generated in place and clear-freed."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated duplicate made by the constructor and freed by the context."
+     }
+    },
+    {
+     "name": "psk",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned psklen-byte duplicate; replaced by set1_psk and clear-freed."
+     }
+    },
+    {
+     "name": "pskid",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": false,
+      "note": "Owned NUL-terminated PSK identifier duplicate; replaced and freed with the context."
+     }
+    },
+    {
+     "name": "shared_secret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Owned shared_secretlen-byte KEM output buffer; generated in place and clear-freed."
+     }
+    }
+   ]
+  },
+  {
    "name": "ossl_init_settings_st",
    "defined_in": "include/internal/conf.h",
    "_comment_agent": "Both optional string fields are independently owned strings allocated by the C runtime's strdup, and OPENSSL_INIT_free releases both and then the settings allocation with the C runtime's free. crypto/conf/conf_lib.c does this deliberately -- OPENSSL_INIT_new mallocs, and the two setters strdup/free rather than OPENSSL_strdup/OPENSSL_free -- so that a later CRYPTO_set_mem_functions cannot disjoin allocation from release; a wrapper must not substitute an OPENSSL_free-family releaser for either field or for the struct. The type carries no reference count and has no duplicator, so OPENSSL_INIT_free is its whole lifecycle. ossl_config_int (crypto/conf/conf_sap.c:58-60) is the only reader of the three fields anywhere and treats a NULL filename/appname as absent.",
@@ -37148,6 +37384,85 @@
      }
     }
    ]
+  },
+  {
+   "name": "OSSL_HPKE_CTX_free",
+   "defined_in": "crypto/hpke/hpke.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes the context ownership when non-null and releases all owned fields and header storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_CTX_new",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional caller-owned library context is stored without up-ref and must outlive the returned HPKE context."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query is read synchronously and duplicated into the context."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on validation/allocation failure or a fresh context released by OSSL_HPKE_CTX_free."
+    }
+   }
   },
   {
    "name": "OSSL_LIB_CTX_free",
