@@ -15,7 +15,7 @@
 - **`--max-loc`** — `1000`
 - **`--min-fields`** — `20`
 - **`--parallel-max`** — `16`
-- **branch** — `crustify/libcrypto-gpt-5.6-sol`, tip `25152454ab`; published at `crustify-rs/openssl-wrap`
+- **branch** — `crustify/libcrypto-gpt-5.6-sol`, tip `bfa3747667`; published at `crustify-rs/openssl-wrap`
 - **deps** — crustify-cli `51d44d1` (`docs/results-template-ub`), crustify-oracle `5582ec8` (`fix/closure-name-resolves-to-walked-node`), ffibox `600399f` (`main`)
 
 ## Review pass
@@ -83,17 +83,17 @@ in Notes.
 
 ## Overview
 
-- **Rust LoC, non-test** — `30,096`
-- **Rust LoC, tests** — `13,511`
+- **Rust LoC, non-test** — `30,343`
+- **Rust LoC, tests** — `13,726`
 - **C LoC** — `336,418` across the `1,044` targeted files
 - **ported types** — `0`
 - **ported symbols** — `1`
 - **wrapped types** — `92` (`18.5`% of API)
 - **wrapped callbacks** — `10` (`1.5`% of API)
-- **wrapped symbols** — `945` (`13.9`% of API)
+- **wrapped symbols** — `949` (`14.0`% of API)
 - **remaining types** — `374`
 - **remaining callbacks** — `638`
-- **remaining symbols** — `5,820`
+- **remaining symbols** — `5,816`
 
 Implementation `openai/gpt-5.6-sol` via `codex`; review `anthropic/claude-opus-5`
 via `claude`. Each row names the model that produced it.
@@ -117,8 +117,10 @@ via `claude`. Each row names the model that produced it.
 | `72-review-mackdf` | review | `15` | `77` | `46m25s` | `$47.43` (`opus5`) | `$3.16` | `$0.62` | — | — |
 | `66-random` | wrap | `2` | `24` | `33m38s` | `$18.68` (`gpt56sol`) | `$9.34` | `$0.78` | — | — |
 | `73-review-random` | review | `4` | `24` | `37m59s` | `$21.81` (`opus5`) | `$5.45` | `$0.91` | — | — |
-| orchestrator | orchestration | `88` | `957` | — | `$77.52`+ (`gpt56sol`) | — | — | — | — |
-| **Σ recorded agents** | | **`88`** | **`957`** | **`16h48m`** | **`$1,049.32`** | **$11.92** | **$1.10** | | **`$66.81`** |
+| `67-sign-verify` | wrap | `0` | `4` | `11m59s` | `$4.61` (`gpt56sol`) | — | `$1.15` | — | — |
+| `74-review-signverify` | review | `3` | `4` | `26m47s` | `$12.78` (`opus5`) | `$4.26` | `$3.20` | — | — |
+| orchestrator | orchestration | `88` | `961` | — | `$77.52`+ (`gpt56sol`) | — | — | — | — |
+| **Σ recorded agents** | | **`88`** | **`961`** | **`16h48m`** | **`$1,066.72`** | **$12.12** | **$1.11** | | **`$66.81`** |
 
 ## Raw lifetime discovery
 
@@ -269,7 +271,8 @@ via `claude`. Each row names the model that produced it.
 | `5` | — | `$11.31` | `20m10s` | `$2.26` |
 | `3` | — | `$9.34` | `19m02s` | `$3.11` |
 | `4` | — | `$8.81` | `21m49s` | `$2.20` |
-| **Σ `104`** | — | **`$239.91`** | — | **$2.31** |
+| `3` | — | `$9.92` | `17m32s` | `$3.31` |
+| **Σ `107`** | — | **`$249.83`** | — | **$2.33** |
 
 ### Batches — symbols
 
@@ -320,7 +323,8 @@ via `claude`. Each row names the model that produced it.
 | wrap | `37` | `827` | `$11.05` | `37m21s` | `$0.30` | `$0.01` |
 | wrap | `11` | `348` | `$7.19` | `14m19s` | `$0.65` | `$0.02` |
 | wrap | `13` | `154` | `$7.09` | `19m17s` | `$0.55` | `$0.05` |
-| **Σ** | **`986`** | **`13,156`** | **`$286.36`** | | **$0.29** | **$0.02** |
+| wrap | `4` | `92` | `$4.61` | `11m59s` | `$1.15` | `$0.05` |
+| **Σ** | **`990`** | **`13,248`** | **`$290.97`** | | **$0.29** | **$0.02** |
 
 ### Batches — review symbols
 
@@ -355,7 +359,8 @@ via `claude`. Each row names the model that produced it.
 | `6` | — | `$4.38` | `13m53s` | `$0.73` |
 | `11` | — | `$5.01` | `15m19s` | `$0.46` |
 | `13` | — | `$7.99` | `16m08s` | `$0.61` |
-| **Σ `672`** | — | **`$199.27`** | — | **$0.30** |
+| `4` | — | `$2.86` | `9m13s` | `$0.71` |
+| **Σ `676`** | — | **`$202.13`** | — | **$0.30** |
 
 ## Safety audit
 
@@ -363,17 +368,17 @@ Deterministic `crustify-audit unsafe`; no model.
 
 ### Snapshots
 
-| | foundation review, before (`894f727207`) | foundation review, after (`32ada326d7`) | campaign record (`25152454ab`) |
+| | foundation review, before (`894f727207`) | foundation review, after (`32ada326d7`) | campaign record (`bfa3747667`) |
 |---|---|---|---|
-| unsafe loc | `1,108` | `1,126` | `3,835` |
-| % of loc | `27.87%` | `26.29%` | `29.04%` |
-| blocks | `624` | `641` | `2,189` |
-| % in `impl T` | `42.31%` | `42.59%` | `44.81%` |
+| unsafe loc | `1,108` | `1,126` | `3,872` |
+| % of loc | `27.87%` | `26.29%` | `29.07%` |
+| blocks | `624` | `641` | `2,194` |
+| % in `impl T` | `42.31%` | `42.59%` | `44.71%` |
 | `unsafe fn` | `232` | `240` | `623` |
 | ...of which not sanctioned | `82` | `90` | `195` |
 | raw-ptr smell | `19` | `19` | `46` |
 | void-ptr smell | `4` | `4` | `6` |
-| FFI calls | `299` | `299` | `997` |
+| FFI calls | `299` | `299` | `1001` |
 | `&`/`&mut` on a wrapper | `0` | `0` | `0` |
 | field proj outside an accessor | `0` | `0` | `0` |
 
@@ -381,17 +386,17 @@ Deterministic `crustify-audit unsafe`; no model.
 
 | metric | foundation before | campaign record | Δ | reading |
 |---|---|---|---|---|
-| `code_lines` | `3,975` | `13,205` | `+9,230` | union of HIR definition spans (denominator); `cfg`-disabled items excluded |
-| `total_stmts` | `572` | `2,180` | `+1,608` | statements |
-| `unsafe_blocks` | `624` | `2,189` | `+1,565` | count of `unsafe { }` blocks, macro-expanded included |
+| `code_lines` | `3,975` | `13,321` | `+9,346` | union of HIR definition spans (denominator); `cfg`-disabled items excluded |
+| `total_stmts` | `572` | `2,205` | `+1,633` | statements |
+| `unsafe_blocks` | `624` | `2,194` | `+1,570` | count of `unsafe { }` blocks, macro-expanded included |
 | `unsafe_block_stmts` | `29` | `127` | `+98` | statements inside them |
-| `unsafe_block_lines` | `1,108` | `3,835` | `+2,727` | their lines, every outermost block |
+| `unsafe_block_lines` | `1,108` | `3,872` | `+2,764` | their lines, every outermost block |
 | `unsafe_blocks_wrapper_impl` | `264` | `981` | `+717` | inside `impl <wrapper T>` |
 | `unsafe_blocks_ffi_export` | `9` | `42` | `+33` | inside the C-ABI gateway |
 | `unsafe_fns` | `232` | `623` | `+391` | `unsafe fn` declarations, post-expansion |
 | `unsafe_fns_seam` | `150` | `428` | `+278` | ...the sanctioned subset |
 | `unsafe_fns_pub` | `228` | `574` | `+346` | ...of `unsafe_fns`, exported from the crate |
-| `ffi_calls` | `299` | `997` | `+698` | calls to a foreign item — the unsafe-FFI-call surface |
+| `ffi_calls` | `299` | `1,001` | `+702` | calls to a foreign item — the unsafe-FFI-call surface |
 | `wrapper_newtypes` | `30` | `73` | `+43` | LAYOUT newtypes — `repr(transparent)` over a `repr(C)` type by value |
 | `wrapper_newtypes_declared` | `30` | `73` | `+43` | the `CCell`-declared count, for comparison |
 | `wrapper_declared_nonconformant` | `0` | `0` | `+0` | declared but failing the structural test — **target 0** |
@@ -572,6 +577,30 @@ trampolines recovering the Rust closure from OpenSSL's `void *` argument, the
 unavoidable shape for passing a closure through a C callback API. Both carry
 SAFETY comments, guard against a panic crossing the FFI boundary, and reject a
 null value from the C side rather than dereferencing it.
+
+### The CryptoProvider tranche is complete
+
+Campaigns `63`-`67` close the surface a rustls `CryptoProvider` needs: digests,
+AEAD ciphers, MAC and KDF including HMAC and HPKE, secure random, and the
+one-shot signature finalizers, over the `EVP_PKEY` core that `60`-`62` landed.
+
+All six wrap waves reported `0` agent failures. One needed orchestrator repair
+at the gate — `65`, for the misplaced-SAFETY-comment defect below — and the
+other five landed clean.
+
+The tranche cost far less than its estimate. Sized against the public-signature
+graph before `60` ran, the minimum provider looked like `434` units; the actual
+wrap work over `63`-`67` was `277`. Each wave's dependency closure absorbed the
+next family's prerequisites, so the families shrank as the tranche progressed:
+`sign-verify` began at `14` public seeds and reached `67` with `4`, because
+one-shot signing bottoms out in `EVP_PKEY_CTX` and the digest surface that
+`61` and `63` had already wrapped.
+
+All four interleaved reviews moved no safety metric. Raw-pointer, dereference
+and void-pointer counts held exactly across `70`, `71`, `72` and `73`, and `67`
+itself added no new seam of any kind. That is the outcome a clean wave should
+produce, and it is what makes the review spend informative rather than merely
+expensive: it bought confirmation, not correction.
 
 ### The MAC and KDF tranche
 
