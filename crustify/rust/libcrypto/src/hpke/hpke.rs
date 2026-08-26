@@ -289,6 +289,10 @@ pub fn OSSL_HPKE_get_public_encap_size(suite: OsslHpkeSuiteRef<'_>) -> usize {
 
 /// Wraps: OSSL_HPKE_get_recommended_ikmelen
 /// Returns the suite's recommended deterministic key-generation input length.
+///
+/// This is the KEM's `Nsk`, the value `OSSL_HPKE_keygen` expects an `ikm` to
+/// carry. A suite naming a KEM this build does not support has no such length
+/// and reports `0`, which is the only way the underlying lookup can fail.
 #[must_use]
 pub fn OSSL_HPKE_get_recommended_ikmelen(suite: OsslHpkeSuiteRef<'_>) -> usize {
     // SAFETY: the by-value suite contains only initialized integer identifiers.
@@ -297,6 +301,13 @@ pub fn OSSL_HPKE_get_recommended_ikmelen(suite: OsslHpkeSuiteRef<'_>) -> usize {
 
 /// Wraps: OSSL_HPKE_keygen
 /// Generates a private key and writes its encoded public key.
+///
+/// `public_key` must hold at least `OSSL_HPKE_get_public_encap_size(suite)`
+/// bytes; OpenSSL treats its length as a hard capacity and fails rather than
+/// truncating, and the returned count is what it actually encoded. Supplying
+/// `ikm` selects deterministic generation: it must be non-empty and no longer
+/// than `OSSL_HPKE_MAX_PARMLEN`. The private key is returned with the library
+/// context's lifetime because its provider implementation is resolved there.
 pub fn OSSL_HPKE_keygen<'a>(
     suite: OsslHpkeSuiteRef<'_>,
     public_key: &mut [u8],
@@ -339,6 +350,11 @@ pub fn OSSL_HPKE_keygen<'a>(
 
 /// Wraps: OSSL_HPKE_open
 /// Authenticates and decrypts a ciphertext into caller-owned storage.
+///
+/// The context must be a receiver whose `OSSL_HPKE_decap` already succeeded,
+/// and `plaintext` must hold the ciphertext length less the suite's AEAD tag.
+/// Only a successful call consumes a sequence number, so a rejected tag leaves
+/// the context usable for the next message.
 pub fn OSSL_HPKE_open(
     ctx: &mut OsslHpkeCtxMut<'_>,
     plaintext: &mut [u8],
@@ -362,15 +378,25 @@ pub fn OSSL_HPKE_open(
             ciphertext.len(),
         )
     };
-    if status == 1 && written <= plaintext.len() {
-        Ok(written)
-    } else {
-        Err(status)
+    if status != 1 {
+        return Err(status);
     }
+    // OpenSSL never reports more than the capacity it was handed, so a longer
+    // length would mean the seam is mis-wired. Refuse it as a failure instead
+    // of publishing a count that outruns the caller's slice.
+    if written > plaintext.len() {
+        return Err(0);
+    }
+    Ok(written)
 }
 
 /// Wraps: OSSL_HPKE_seal
 /// Encrypts and authenticates plaintext into caller-owned storage.
+///
+/// The context must be a sender whose `OSSL_HPKE_encap` already succeeded, and
+/// `ciphertext` must hold `OSSL_HPKE_get_ciphertext_size(suite, plaintext.len())`
+/// bytes so the AEAD tag fits. Only a successful call consumes a sequence
+/// number.
 pub fn OSSL_HPKE_seal(
     ctx: &mut OsslHpkeCtxMut<'_>,
     ciphertext: &mut [u8],
@@ -394,15 +420,25 @@ pub fn OSSL_HPKE_seal(
             plaintext.len(),
         )
     };
-    if status == 1 && written <= ciphertext.len() {
-        Ok(written)
-    } else {
-        Err(status)
+    if status != 1 {
+        return Err(status);
     }
+    // OpenSSL never reports more than the capacity it was handed, so a longer
+    // length would mean the seam is mis-wired. Refuse it as a failure instead
+    // of publishing a count that outruns the caller's slice.
+    if written > ciphertext.len() {
+        return Err(0);
+    }
+    Ok(written)
 }
 
 /// Wraps: OSSL_HPKE_str2suite
 /// Parses a NUL-terminated suite name into caller-owned suite storage.
+///
+/// The name is `kem,kdf,aead` with each component written as its algorithm
+/// name or its IANA codepoint, matched case-insensitively. Returns 1 on
+/// success and 0 otherwise; every failure path leaves `suite` unchanged, so a
+/// rejected parse cannot half-overwrite an already valid record.
 pub fn OSSL_HPKE_str2suite(name: &CStr, suite: &mut OsslHpkeSuiteMut<'_>) -> i32 {
     // SAFETY: the name is NUL-terminated and the exclusive handle supplies a
     // writable initialized suite record.
@@ -411,6 +447,9 @@ pub fn OSSL_HPKE_str2suite(name: &CStr, suite: &mut OsslHpkeSuiteMut<'_>) -> i32
 
 /// Wraps: OSSL_HPKE_suite_check
 /// Reports whether all three suite identifiers form a supported combination.
+///
+/// This is the same lookup `OSSL_HPKE_CTX_new` and `OSSL_HPKE_keygen` apply,
+/// so it answers whether this build can use the suite at all.
 #[must_use]
 pub fn OSSL_HPKE_suite_check(suite: OsslHpkeSuiteRef<'_>) -> bool {
     // SAFETY: the by-value suite contains only initialized integer identifiers.
@@ -540,5 +579,160 @@ mod tests {
         .expect("grease");
         assert_eq!(written, OSSL_HPKE_get_public_encap_size(chosen.as_ref()));
         assert!(OSSL_HPKE_get_recommended_ikmelen(chosen.as_ref()) > 0);
+    }
+
+    #[test]
+    fn unsupported_suites_report_no_recommended_ikm_length() {
+        for (kem, kdf, aead) in [(0, 0, 0), (0x20, 0x01, 0x04), (0x20, 0x04, 0x01)] {
+            let rejected = OsslHpkeSuite::new(kem, kdf, aead);
+            assert!(!OSSL_HPKE_suite_check(rejected.as_ref()));
+            assert_eq!(OSSL_HPKE_get_recommended_ikmelen(rejected.as_ref()), 0);
+        }
+
+        // `Nsk` from RFC 9180's KEM table, which is what the C lookup returns.
+        for (kem, nsk) in [(0x20_u16, 32_usize), (0x21, 56), (0x10, 32), (0x12, 66)] {
+            let suite = OsslHpkeSuite::new(kem, 0x01, 0x01);
+            assert!(OSSL_HPKE_suite_check(suite.as_ref()));
+            assert_eq!(OSSL_HPKE_get_recommended_ikmelen(suite.as_ref()), nsk);
+        }
+    }
+
+    #[test]
+    fn a_rejected_suite_string_leaves_the_destination_untouched() {
+        let mut suite = OsslHpkeSuite::new(0x20, 0x01, 0x01);
+        for rejected in [
+            c"",
+            c"X25519,hkdf-sha256",
+            c"X25519,hkdf-sha256,",
+            c"X25519,hkdf-sha256,aes-128-gcm,extra",
+            c"nosuchkem,hkdf-sha256,aes-128-gcm",
+        ] {
+            assert_eq!(OSSL_HPKE_str2suite(rejected, &mut suite.as_mut()), 0);
+            assert_eq!(suite.as_ref().kem_id(), 0x20);
+            assert_eq!(suite.as_ref().kdf_id(), 0x01);
+            assert_eq!(suite.as_ref().aead_id(), 0x01);
+        }
+
+        // Codepoints are accepted alongside names, and only a full parse writes.
+        assert_eq!(
+            OSSL_HPKE_str2suite(c"0x10,0x03,0x02", &mut suite.as_mut()),
+            1
+        );
+        assert_eq!(suite.as_ref().kem_id(), 0x10);
+        assert_eq!(suite.as_ref().kdf_id(), 0x03);
+        assert_eq!(suite.as_ref().aead_id(), 0x02);
+    }
+
+    #[test]
+    fn deterministic_keygen_reproduces_the_rfc_public_key() {
+        // RFC 9180 A.1 sender key material, as used by the C `test_hpke_ikms`.
+        const IKM: [u8; 32] = [
+            0x72, 0x68, 0x60, 0x0d, 0x40, 0x3f, 0xce, 0x43, 0x15, 0x61, 0xae, 0xf5, 0x83, 0xee,
+            0x16, 0x13, 0x52, 0x7c, 0xff, 0x65, 0x5c, 0x13, 0x43, 0xf2, 0x98, 0x12, 0xe6, 0x67,
+            0x06, 0xdf, 0x32, 0x34,
+        ];
+        const PUBLIC: [u8; 32] = [
+            0x37, 0xfd, 0xa3, 0x56, 0x7b, 0xdb, 0xd6, 0x28, 0xe8, 0x86, 0x68, 0xc3, 0xc8, 0xd7,
+            0xe9, 0x7d, 0x1d, 0x12, 0x53, 0xb6, 0xd4, 0xea, 0x6d, 0x44, 0xc1, 0x50, 0xf7, 0x41,
+            0xf1, 0xbf, 0x44, 0x31,
+        ];
+
+        let suite = OsslHpkeSuite::new(0x20, 0x01, 0x01);
+        let mut generated = [0_u8; 133];
+        let (length, _private) =
+            OSSL_HPKE_keygen(suite.as_ref(), &mut generated, Some(&IKM[..]), None, None)
+                .expect("deterministic keygen");
+        assert_eq!(&generated[..length], &PUBLIC[..]);
+    }
+
+    #[test]
+    fn keygen_rejects_capacities_and_deterministic_inputs_c_refuses() {
+        let suite = OsslHpkeSuite::new(0x20, 0x01, 0x01);
+        let mut empty: [u8; 0] = [];
+        assert!(OSSL_HPKE_keygen(suite.as_ref(), &mut empty, None, None, None).is_err());
+
+        let mut public = [0_u8; 133];
+        // An empty `ikm` is the one slice C cannot distinguish from "absent".
+        let no_bytes: &[u8] = &[];
+        assert!(OSSL_HPKE_keygen(suite.as_ref(), &mut public, Some(no_bytes), None, None).is_err());
+        // `OSSL_HPKE_MAX_PARMLEN` is 66 octets.
+        let overlong: &[u8] = &[3_u8; 67];
+        assert!(OSSL_HPKE_keygen(suite.as_ref(), &mut public, Some(overlong), None, None).is_err());
+
+        // The encoded public key never truncates into a short buffer.
+        let mut short = [0_u8; 8];
+        assert!(OSSL_HPKE_keygen(suite.as_ref(), &mut short, None, None, None).is_err());
+        assert_eq!(short, [0_u8; 8]);
+    }
+
+    #[test]
+    fn open_rejects_a_wrong_tag_without_consuming_the_sequence() {
+        let suite = OsslHpkeSuite::new(0x20, 0x01, 0x01);
+        let mut public = [0_u8; 133];
+        let (public_len, private) =
+            OSSL_HPKE_keygen(suite.as_ref(), &mut public, None, None, None).expect("keygen");
+        let mut sender = OSSL_HPKE_CTX_new(0, suite.as_ref(), 0, None, None).expect("sender");
+        let mut receiver = OSSL_HPKE_CTX_new(0, suite.as_ref(), 1, None, None).expect("receiver");
+        let mut encapsulated = [0_u8; 133];
+        let enc_len = OSSL_HPKE_encap(
+            &mut sender.as_mut(),
+            &mut encapsulated,
+            &public[..public_len],
+            b"info",
+        )
+        .expect("encap");
+        assert_eq!(
+            OSSL_HPKE_decap(
+                &mut receiver.as_mut(),
+                &encapsulated[..enc_len],
+                private.as_ref(),
+                b"info",
+            ),
+            1
+        );
+
+        let plaintext = b"sequence stays put";
+        let mut ciphertext =
+            vec![0_u8; OSSL_HPKE_get_ciphertext_size(suite.as_ref(), plaintext.len())];
+        let ciphertext_len =
+            OSSL_HPKE_seal(&mut sender.as_mut(), &mut ciphertext, b"aad", plaintext).expect("seal");
+        let sealed = &ciphertext[..ciphertext_len];
+
+        // A tag computed over different AAD must not authenticate, and the
+        // failed attempt must not advance the receiver's sequence number.
+        let mut opened = vec![0_u8; plaintext.len()];
+        assert!(OSSL_HPKE_open(&mut receiver.as_mut(), &mut opened, b"other", sealed).is_err());
+        assert_eq!(OSSL_HPKE_CTX_get_seq(receiver.as_ref()), Some(0));
+
+        // Too little room for the plaintext is rejected before any write.
+        let mut cramped = vec![0_u8; plaintext.len() - 1];
+        assert!(OSSL_HPKE_open(&mut receiver.as_mut(), &mut cramped, b"aad", sealed).is_err());
+        assert!(cramped.iter().all(|byte| *byte == 0));
+
+        // The message is still readable on the untouched sequence number.
+        let opened_len =
+            OSSL_HPKE_open(&mut receiver.as_mut(), &mut opened, b"aad", sealed).expect("open");
+        assert_eq!(&opened[..opened_len], plaintext);
+        assert_eq!(OSSL_HPKE_CTX_get_seq(receiver.as_ref()), Some(1));
+    }
+
+    #[test]
+    fn seal_and_open_reject_degenerate_buffers() {
+        let suite = OsslHpkeSuite::new(0x20, 0x01, 0x01);
+        let mut sender = OSSL_HPKE_CTX_new(0, suite.as_ref(), 0, None, None).expect("sender");
+        let mut receiver = OSSL_HPKE_CTX_new(0, suite.as_ref(), 1, None, None).expect("receiver");
+        let mut scratch = [0_u8; 64];
+
+        // Empty slices never reach C: the wrapper reports the same refusal.
+        let mut empty: [u8; 0] = [];
+        assert!(OSSL_HPKE_seal(&mut sender.as_mut(), &mut empty, b"", b"pt").is_err());
+        assert!(OSSL_HPKE_seal(&mut sender.as_mut(), &mut scratch, b"", b"").is_err());
+        assert!(OSSL_HPKE_open(&mut receiver.as_mut(), &mut empty, b"", b"ct").is_err());
+        assert!(OSSL_HPKE_open(&mut receiver.as_mut(), &mut scratch, b"", b"").is_err());
+
+        // Without a preceding encap/decap the contexts hold no AEAD key, so C
+        // refuses both directions.
+        assert!(OSSL_HPKE_seal(&mut sender.as_mut(), &mut scratch, b"", b"pt").is_err());
+        assert!(OSSL_HPKE_open(&mut receiver.as_mut(), &mut scratch, b"", b"ct").is_err());
     }
 }
