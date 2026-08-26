@@ -5436,6 +5436,75 @@
    ]
   },
   {
+   "name": "hmac_ctx_st",
+   "defined_in": "crypto/hmac/hmac_local.h",
+   "_comment_agent": "The public API keeps hmac_ctx_st opaque, so these private pointer findings establish lifecycle without exposing fields.",
+   "fields": [
+    {
+     "name": "i_ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "hmac_ctx_alloc_mds allocates this inner digest context, HMAC operations mutate it, and HMAC_CTX_free releases it; allocation failure can leave it null."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "other"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "HMAC_Init_ex stores the caller's const EVP_MD without raising its reference count; it must remain alive while selected, and cleanup clears the slot."
+     }
+    },
+    {
+     "name": "md_ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "hmac_ctx_alloc_mds allocates this digest context, HMAC operations mutate it, and HMAC_CTX_free releases it; allocation failure can leave it null."
+     }
+    },
+    {
+     "name": "o_ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "hmac_ctx_alloc_mds allocates this outer digest context, HMAC operations mutate it, and HMAC_CTX_free releases it; allocation failure can leave it null."
+     }
+    }
+   ]
+  },
+  {
    "name": "hostent",
    "defined_in": "/usr/include/netdb.h",
    "_comment_agent": "hostent has no independent lifecycle primitive: nothing in the tree allocates, frees or duplicates an entry or any buffer it points at, so it gets borrowed handles and no owning pointer form. The pointer fields are recorded borrowed with lifetime `self` rather than `static` deliberately. gethostbyname's storage is statically allocated but NOT valid for the life of the program -- the next lookup on the same thread overwrites it in place -- so the name, alias and address buffers are exactly as valid as the entry handle that reached them, and binding them to 'static would be wrong. The other producer, crypto/bio/bio_addr.c's `static const struct hostent he_fallback`, points h_addr_list at file-scope statics and is itself const, i.e. read-only storage; between the two, no producer in this tree yields a writable entry, so an exclusive handle is only ever legitimate over caller-owned storage. BIO_lookup_ex is the only in-tree field reader: it takes h_addrtype, h_length and h_addr_list, and walks the address vector without a NULL check on the vector itself. h_name and h_aliases are never read in-tree; their records describe the public struct hostent surface rather than observed OpenSSL behaviour.",
@@ -34315,6 +34384,114 @@
      "note": "Returns NULL on allocation failure or a fresh fully initialized GENERAL_SUBTREE owned by the caller."
     }
    }
+  },
+  {
+   "name": "HMAC_CTX_copy",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "dctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:dctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows caller-owned destination storage and overwrites its logical state without consuming it."
+     }
+    },
+    {
+     "name": "sctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads the source state without consuming or mutating the source HMAC_CTX."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_CTX_free",
+   "defined_in": "crypto/hmac/hmac.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Accepts null; otherwise cleans all digest state, frees the three owned EVP_MD_CTX fields, and frees the HMAC_CTX allocation."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_CTX_new",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": null,
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null on allocation/reset failure or transfers a fresh fully initialized HMAC_CTX ownership obligation."
+    }
+   }
+  },
+  {
+   "name": "HMAC_CTX_reset",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Mutably borrows a live context, resets its digest state, and fills missing owned digest contexts without consuming the HMAC_CTX."
+     }
+    }
+   ]
   },
   {
    "name": "NAME_CONSTRAINTS_free",
