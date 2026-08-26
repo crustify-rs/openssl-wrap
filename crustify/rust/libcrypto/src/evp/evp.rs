@@ -672,3 +672,102 @@ mod kdf_tests {
         assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
     }
 }
+
+define_ctype!(
+    /// Wraps: evp_mac_st
+    ///
+    /// Pointer-compatible target for OpenSSL's opaque provider MAC method.
+    /// The record retains its provider, owns a copy of its algorithm name,
+    /// and borrows its dispatch functions and description from that provider.
+    /// Its private layout remains behind OpenSSL's public call surface.
+    ///
+    /// Public fetch and up-reference operations can name one cached record,
+    /// so safe owning APIs use [`SharedEvpMac`] and grant shared access only.
+    /// A fetched method also borrows the `OSSL_LIB_CTX` whose method store owns
+    /// a cached record; that dependency is carried by the owner's lifetime.
+    EvpMac,
+    EvpMacRef,
+    EvpMacMut,
+    ffi::evp_mac_st
+);
+
+// `EVP_MAC_free` is the public release operation. For an uncached `no_store`
+// method it decrements the reference count and releases the copied name,
+// provider, and allocation on the final count; for a cached method it is the
+// deliberate no-op paired with `EVP_MAC_up_ref`.
+impl_dropped!(EvpMac, ffi::evp_mac_st, ffi::EVP_MAC_free);
+
+// Do not register `EVP_MAC_up_ref` as `CCloned`: cloning a `CBox` would let
+// two owners of one method each obtain an exclusive borrowed handle.
+
+/// One owned, shared-only reference to a provider MAC method.
+///
+/// The lifetime carries the library-context dependency of a fetched method.
+/// A method selected from the process-wide default context may use `'static`.
+pub type SharedEvpMac<'a> = crate::refcount::SharedRef<'a, EvpMac>;
+
+impl<'a> EvpMacRef<'a> {
+    /// Raise this method's public reference and return a shared-only owner.
+    #[must_use]
+    pub fn try_share(&self) -> Option<SharedEvpMac<'a>> {
+        // SAFETY: the handle carries a live shared borrow. OpenSSL may update
+        // a no-store method's atomic reference count but otherwise leaves the
+        // method unchanged, and reports whether it created the paired public
+        // release obligation.
+        if unsafe { ffi::EVP_MAC_up_ref(self.as_ptr().cast_mut()) } != 1 {
+            return None;
+        }
+
+        // SAFETY: successful `EVP_MAC_up_ref` creates one matching
+        // `EVP_MAC_free` obligation (or the paired cached no-op). The owner
+        // retains this handle's library-context lifetime and grants no
+        // exclusive access.
+        unsafe { SharedEvpMac::from_raw(self.as_ptr().cast_mut()) }
+    }
+}
+
+#[cfg(test)]
+mod mac_tests {
+    use core::{mem::size_of, ptr};
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn fetched_mac_and_raised_reference_are_shared_only() {
+        assert_owned_cell::<EvpMac>();
+
+        // SAFETY: null selects the process-wide default library context, the
+        // algorithm name is a live NUL-terminated string, and a null property
+        // query selects the default implementation. A non-null result carries
+        // one public EVP_MAC release obligation.
+        let raw = unsafe { ffi::EVP_MAC_fetch(ptr::null_mut(), c"HMAC".as_ptr(), ptr::null()) };
+        // SAFETY: the default context is process-wide, and the fetched result
+        // transfers its public release obligation once.
+        let method: SharedEvpMac<'static> =
+            unsafe { SharedEvpMac::from_raw(raw) }.expect("EVP_MAC_fetch");
+
+        let shared = method.as_ref().try_share().expect("EVP_MAC_up_ref");
+        assert_eq!(shared.as_ptr(), method.as_ptr());
+        assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+
+    #[test]
+    fn opaque_mac_handles_are_pointer_sized() {
+        assert_eq!(
+            size_of::<EvpMacRef<'static>>(),
+            size_of::<*const ffi::evp_mac_st>()
+        );
+        assert_eq!(
+            size_of::<EvpMacMut<'static>>(),
+            size_of::<*mut ffi::evp_mac_st>()
+        );
+        assert_eq!(
+            size_of::<SharedEvpMac<'static>>(),
+            size_of::<*mut ffi::evp_mac_st>()
+        );
+    }
+}

@@ -71,6 +71,8 @@ const AGENT_ALLOWED_TYPES: &[&str] = &[
     "evp_cipher_st",
     "evp_md_ctx_st",
     "evp_md_st",
+    "evp_mac_ctx_st",
+    "evp_mac_st",
     "evp_pkey_st",
     "evp_pkey_ctx_st",
     "EVP_PKEY_gen_cb",
@@ -361,6 +363,13 @@ const AGENT_ALLOWED_FUNCTIONS: &[&str] = &[
     "EVP_MD_settable_ctx_params",
     "EVP_MD_up_ref",
     "EVP_MD_xof",
+    "EVP_MAC_CTX_dup",
+    "EVP_MAC_CTX_free",
+    "EVP_MAC_CTX_new",
+    "EVP_MAC_fetch",
+    "EVP_MAC_free",
+    "EVP_MAC_up_ref",
+    "crustify_EVP_MAC_CTX_can_dup",
     "EVP_PKEY_CTX_set1_pbe_pass",
     "EVP_PKEY_CTX_set1_scrypt_salt",
     "EVP_PKEY_CTX_set1_tls1_prf_secret",
@@ -1166,6 +1175,7 @@ fn main() {
         .arg(manifest_dir.join("compat_shims.c"))
         .arg("-o")
         .arg(&shim_object)
+        .arg(format!("-I{}", repo_root.display()))
         .arg(format!("-I{}", repo_root.join("include").display()))
         .status()
         .expect("failed to compile libcrypto compatibility shims");

@@ -4048,6 +4048,318 @@
    ]
   },
   {
+   "name": "evp_mac_ctx_st",
+   "defined_in": "crypto/evp/evp_local.h",
+   "_comment_agent": "EVP_MAC_CTX is publicly opaque. A completed context owns provider-specific algorithm state and one public EVP_MAC reference; duplication deep-copies the state and raises the method reference. Cached EVP_MAC references are paired public no-ops owned by the source OSSL_LIB_CTX, so the context also retains the method's library-context lifetime. No private field accessor is exposed by this wrap wave.",
+   "fields": [
+    {
+     "name": "algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Provider-specific MAC state returned by meth->newctx, mutated by MAC operations, duplicated by meth->dupctx, and released through meth->freectx."
+     }
+    },
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "The completed context carries one public EVP_MAC reference established by EVP_MAC_up_ref and balanced by EVP_MAC_free. Cached methods make both operations no-ops, so the context also inherits the method's OSSL_LIB_CTX lifetime."
+     }
+    }
+   ]
+  },
+  {
+   "name": "evp_mac_st",
+   "defined_in": "include/crypto/evp.h",
+   "_comment_agent": "EVP_MAC is a publicly opaque provider method. Completed records own their copied type name and one provider reference, borrow their description and dispatch callbacks from that provider, and use refcnt for dynamic no-store references. Cached methods remain owned by the fetching OSSL_LIB_CTX: public up-ref/free are paired no-ops unless no_store is set.",
+   "fields": [
+    {
+     "name": "description",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated algorithm description borrowed from provider algorithm metadata; the retained provider keeps it alive."
+     }
+    },
+    {
+     "name": "dupctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "final",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table; method validation rejects a completed record without it."
+     }
+    },
+    {
+     "name": "freectx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table; method validation rejects a completed record without it."
+     }
+    },
+    {
+     "name": "get_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "get_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "gettable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "gettable_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "init",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "init_skey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "newctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table; method validation rejects a completed record without it."
+     }
+    },
+    {
+     "name": "prov",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "A completed MAC method retains one provider reference through ossl_provider_up_ref; final evp_mac_free releases it. The provider owns the dispatch table and algorithm description."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "set_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "settable_ctx_params",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table."
+     }
+    },
+    {
+     "name": "type_name",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": false,
+      "note": "Owned NUL-terminated copy from ossl_algorithm_get1_first_name; completed construction requires it and final evp_mac_free releases it."
+     }
+    },
+    {
+     "name": "update",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "field:prov"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Mandatory provider dispatch callback borrowed from the retained provider's OSSL_DISPATCH table; method validation rejects a completed record without it."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_md_ctx_st",
    "defined_in": "crypto/evp/evp_local.h",
    "_comment_agent": "EVP_MD_CTX is publicly opaque. Findings follow digest.c initialization, copy and reset paths; no field accessor is exposed by this wrap wave.",
@@ -22371,6 +22683,248 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live key-management method and conditionally increments its internal reference count when it is not cache-owned."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_CTX_dup",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "lifetime": {
+    "for": "src",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": true,
+     "upref": false
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "src",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:src"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Synchronously reads a live source. The implementation dereferences src immediately and calls the method's optional dupctx slot without checking it; null is not accepted and callers must first establish that dupctx is present."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:src"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "After the caller establishes that the optional provider dupctx callback is present, returns null or a distinct context with its own free obligation, a raised method reference, and duplicated provider state. The source lifetime carries the cached method's OSSL_LIB_CTX dependency."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_CTX_free",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes a uniquely owned context, releases provider state through meth->freectx, releases its public method reference, and frees the header; null is a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_CTX_new",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live method, invokes its provider constructor, and raises one public method reference; the implementation dereferences mac immediately."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:mac"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Returns null or a fresh initialized context with one EVP_MAC_CTX_free obligation. It retains the input method and therefore its OSSL_LIB_CTX dependency."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_fetch",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "algorithm",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:algorithm"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Required transient NUL-terminated algorithm name; not retained."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional library-context selector; fetch may update its method cache, and the returned method must not outlive this context."
+     }
+    },
+    {
+     "name": "properties",
+     "ptr": {
+      "scalar": null,
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:properties"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional transient NUL-terminated property query; not retained."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": true,
+     "borrowed": {
+      "lifetime": "arg:libctx"
+     },
+     "nullable": true,
+     "mutable": true,
+     "note": "Null on failure or one public EVP_MAC reference released by EVP_MAC_free. Cached records remain owned by the selected OSSL_LIB_CTX method store, so the result retains that context lifetime."
+    }
+   }
+  },
+  {
+   "name": "EVP_MAC_free",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "lifetime": {
+    "for": "mac",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one public EVP_MAC reference. Null and cached methods are accepted as no-ops; a no-store method is down-referenced and its final count releases fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_up_ref",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "lifetime": {
+    "for": "mac",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live method and creates another public reference. No-store methods increment refcnt; cached methods require no physical increment because EVP_MAC_free is correspondingly a no-op."
      }
     }
    ]

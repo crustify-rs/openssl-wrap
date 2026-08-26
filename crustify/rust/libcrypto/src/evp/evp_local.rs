@@ -578,3 +578,165 @@ mod kdf_ctx_tests {
         assert_eq!(size_of::<EvpKdf>(), size_of::<ffi::evp_kdf_st>());
     }
 }
+
+define_ctype!(
+    /// Wraps: evp_mac_ctx_st
+    ///
+    /// Pointer-compatible target for OpenSSL's opaque MAC context. The
+    /// context uniquely owns its provider-specific state and carries one
+    /// public reference to its MAC method; both remain behind the public
+    /// `EVP_MAC_CTX_*` surface.
+    ///
+    /// That method reference does not make the context independent of its
+    /// library context: for a cached method `EVP_MAC_up_ref` and
+    /// `EVP_MAC_free` are paired no-ops, and the method store of the source
+    /// `OSSL_LIB_CTX` owns the record. Safe constructors must therefore use a
+    /// lifetime-bound owner for non-default library contexts.
+    EvpMacCtx,
+    EvpMacCtxRef,
+    EvpMacCtxMut,
+    ffi::evp_mac_ctx_st
+);
+
+// `EVP_MAC_CTX_free` releases the provider state through the method's runtime
+// `freectx` callback, settles the method's public reference, and frees the
+// unique context header.
+impl_dropped!(EvpMacCtx, ffi::evp_mac_ctx_st, ffi::EVP_MAC_CTX_free);
+
+/// An owned MAC context whose provider method retains a source borrow.
+///
+/// `EVP_MAC_CTX_dup` allocates an independent context and duplicates its
+/// provider state, but its raised method reference inherits the source
+/// method's `OSSL_LIB_CTX` dependency. This owner keeps that dependency in
+/// the type while still granting exclusive access to the distinct context.
+#[must_use = "dropping the owner releases the EVP_MAC_CTX"]
+pub struct BorrowedEvpMacCtx<'a> {
+    inner: CBox<EvpMacCtx>,
+    borrow: PhantomData<crate::evp::evp::EvpMacRef<'a>>,
+}
+
+impl<'a> BorrowedEvpMacCtx<'a> {
+    pub(crate) unsafe fn from_raw(raw: *mut ffi::evp_mac_ctx_st) -> Option<Self> {
+        // SAFETY: the caller transfers a fully initialized context and has
+        // selected a lifetime covering its retained method's library context.
+        unsafe { CBox::from_raw(raw) }.map(|inner| Self {
+            inner,
+            borrow: PhantomData,
+        })
+    }
+
+    /// Borrow the context without write access.
+    #[must_use]
+    pub fn as_ref(&self) -> EvpMacCtxRef<'_> {
+        self.inner.as_ref()
+    }
+
+    /// Exclusively borrow the context.
+    #[must_use]
+    pub fn as_mut(&mut self) -> EvpMacCtxMut<'_> {
+        self.inner.as_mut()
+    }
+
+    /// Create another independently owned context with the same dependencies.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<Self> {
+        // SAFETY: the owner supplies a live shared context. The shim only
+        // checks its immutable method pointer and optional dispatch slot.
+        if unsafe { ffi::crustify_EVP_MAC_CTX_can_dup(self.inner.as_ptr().cast_const()) } != 1 {
+            return None;
+        }
+        // SAFETY: the owner keeps the source live and shared for the call. A
+        // non-null result is distinct and carries one context-free obligation;
+        // the preceding check proves the C routine's optional callback exists.
+        let raw = unsafe { ffi::EVP_MAC_CTX_dup(self.inner.as_ptr().cast_const()) };
+        // SAFETY: the duplicate's retained method has the same dependency
+        // already bounded by this owner's `'a`.
+        unsafe { Self::from_raw(raw) }
+    }
+}
+
+impl<'a> EvpMacCtxRef<'a> {
+    /// Create an independently owned copy of this MAC context.
+    ///
+    /// Returns `None` when the provider omits context duplication, or when
+    /// provider-state duplication or allocation fails.
+    /// The result retains this handle's lifetime because its raised method
+    /// reference may still belong to the source library context's cache.
+    #[must_use]
+    pub fn try_dup(&self) -> Option<BorrowedEvpMacCtx<'a>> {
+        // SAFETY: the handle supplies a live shared context. The shim only
+        // checks its immutable method pointer and optional dispatch slot.
+        if unsafe { ffi::crustify_EVP_MAC_CTX_can_dup(self.as_ptr()) } != 1 {
+            return None;
+        }
+        // SAFETY: the handle carries a live shared source borrow. OpenSSL
+        // returns null or a distinct initialized context with one free
+        // obligation and duplicated provider state; the preceding check proves
+        // its optional provider callback exists.
+        let raw = unsafe { ffi::EVP_MAC_CTX_dup(self.as_ptr()) };
+        // SAFETY: a successful duplicate inherits only the retained method
+        // dependency already covered by this handle's `'a`.
+        unsafe { BorrowedEvpMacCtx::from_raw(raw) }
+    }
+}
+
+#[cfg(test)]
+mod mac_ctx_tests {
+    use core::{mem::size_of, ptr};
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+    use crate::evp::evp::SharedEvpMac;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn mac_context_borrows_mutably_and_duplicates_independently() {
+        assert_owned_cell::<EvpMacCtx>();
+
+        // SAFETY: null selects the process-wide default context, and both C
+        // string arguments obey `EVP_MAC_fetch`'s contract.
+        let method_raw =
+            unsafe { ffi::EVP_MAC_fetch(ptr::null_mut(), c"HMAC".as_ptr(), ptr::null()) };
+        // SAFETY: the default context is process-wide and the fetched method
+        // transfers one public release obligation.
+        let method: SharedEvpMac<'static> =
+            unsafe { SharedEvpMac::from_raw(method_raw) }.expect("EVP_MAC_fetch");
+        // SAFETY: `method` keeps a live MAC method available for the call. A
+        // non-null result is a fresh initialized provider context.
+        let raw = unsafe { ffi::EVP_MAC_CTX_new(method.as_ptr()) };
+        // SAFETY: the fresh result transfers one `EVP_MAC_CTX_free`
+        // obligation and its method uses the process-wide default context.
+        let mut context = unsafe { CBox::<EvpMacCtx>::from_raw(raw) }.expect("EVP_MAC_CTX_new");
+
+        assert_eq!(context.as_ref().as_ptr(), raw.cast_const());
+        assert_eq!(context.as_mut().as_mut_ptr(), raw);
+
+        let duplicate = context
+            .as_ref()
+            .try_dup()
+            .expect("EVP_MAC_CTX_dup of HMAC context");
+        assert_ne!(duplicate.as_ref().as_ptr(), raw.cast_const());
+    }
+
+    #[test]
+    fn opaque_mac_context_handles_are_pointer_sized() {
+        assert_eq!(
+            size_of::<EvpMacCtxRef<'static>>(),
+            size_of::<*const ffi::evp_mac_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<EvpMacCtxMut<'static>>(),
+            size_of::<*mut ffi::evp_mac_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<EvpMacCtx>>(),
+            size_of::<*mut ffi::evp_mac_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<BorrowedEvpMacCtx<'static>>(),
+            size_of::<*mut ffi::evp_mac_ctx_st>()
+        );
+    }
+}

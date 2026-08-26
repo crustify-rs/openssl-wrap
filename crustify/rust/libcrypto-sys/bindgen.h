@@ -81,6 +81,7 @@ int crustify_ASN1_STRING_length(const ASN1_STRING *string);
 void crustify_ASN1_STRING_length_set(ASN1_STRING *string, int length);
 int crustify_ASN1_STRING_set(ASN1_STRING *string, const unsigned char *data,
     size_t length);
+int crustify_EVP_MAC_CTX_can_dup(const EVP_MAC_CTX *ctx);
 typedef int (*crustify_BIO_mmsg_fn)(BIO *, BIO_MSG *, size_t, size_t,
     uint64_t, size_t *);
 crustify_BIO_mmsg_fn crustify_BIO_meth_get_recvmmsg(const BIO_METHOD *method);

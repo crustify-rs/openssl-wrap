@@ -5,6 +5,7 @@
 #include <openssl/crypto.h>
 #include <openssl/x509v3.h>
 #include "crypto/asn1.h"
+#include "crypto/evp/evp_local.h"
 #include "internal/bio.h"
 
 int crustify_ASN1_STRING_length(const ASN1_STRING *string)
@@ -43,6 +44,15 @@ int crustify_ASN1_STRING_set(ASN1_STRING *string, const unsigned char *data,
     /* ossl_asn1_bit_string_clear_unused_bits(): the 0x07 count and its flag. */
     string->flags &= ~(0x07 | ASN1_STRING_FLAG_BITS_LEFT);
     return 1;
+}
+
+/*
+ * EVP_MAC_CTX_dup() calls the provider's optional dupctx dispatch directly.
+ * Check it before the safe Rust wrapper enters that public routine.
+ */
+int crustify_EVP_MAC_CTX_can_dup(const EVP_MAC_CTX *ctx)
+{
+    return ctx != NULL && ctx->meth != NULL && ctx->meth->dupctx != NULL;
 }
 
 typedef int (*crustify_BIO_mmsg_fn)(BIO *, BIO_MSG *, size_t, size_t,
