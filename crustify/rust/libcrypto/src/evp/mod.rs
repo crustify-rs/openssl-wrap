@@ -22,6 +22,8 @@ pub mod mac_meth;
 pub mod names;
 pub mod p_legacy;
 pub mod p_lib;
+pub mod p_sign;
+pub mod p_verify;
 pub mod pmeth_check;
 pub mod pmeth_gn;
 pub mod pmeth_lib;

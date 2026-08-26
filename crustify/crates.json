@@ -1830,6 +1830,34 @@
                 "types": []
               },
               "tu": "crypto/evp/mac_meth.c"
+            },
+            "src/evp/p_sign.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_SignFinal",
+                  "EVP_SignFinal_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/p_sign.c"
+            },
+            "src/evp/p_verify.rs": {
+              "headers": [],
+              "members": {
+                "callbacks": [],
+                "functions": [
+                  "EVP_VerifyFinal",
+                  "EVP_VerifyFinal_ex"
+                ],
+                "globals": [],
+                "macros": [],
+                "types": []
+              },
+              "tu": "crypto/evp/p_verify.c"
             }
           },
           "rust_path": "src/evp"
