@@ -15,7 +15,7 @@
 - **`--max-loc`** — `1000`
 - **`--min-fields`** — `20`
 - **`--parallel-max`** — `16`
-- **branch** — `crustify/libcrypto-gpt-5.6-sol`, tip `13a55bf7c1`; published at `crustify-rs/openssl-wrap`
+- **branch** — `crustify/libcrypto-gpt-5.6-sol`, tip `e10e5b5f8b`; published at `crustify-rs/openssl-wrap`
 - **deps** — crustify-cli `51d44d1` (`docs/results-template-ub`), crustify-oracle `5582ec8` (`fix/closure-name-resolves-to-walked-node`), ffibox `600399f` (`main`)
 
 ## Review pass
@@ -83,17 +83,17 @@ in Notes.
 
 ## Overview
 
-- **Rust LoC, non-test** — `26,993`
-- **Rust LoC, tests** — `12,093`
+- **Rust LoC, non-test** — `29,166`
+- **Rust LoC, tests** — `13,076`
 - **C LoC** — `336,418` across the `1,044` targeted files
 - **ported types** — `0`
 - **ported symbols** — `1`
-- **wrapped types** — `83` (`16.6`% of API)
+- **wrapped types** — `90` (`18.1`% of API)
 - **wrapped callbacks** — `10` (`1.5`% of API)
-- **wrapped symbols** — `834` (`12.3`% of API)
-- **remaining types** — `383`
+- **wrapped symbols** — `921` (`13.6`% of API)
+- **remaining types** — `376`
 - **remaining callbacks** — `638`
-- **remaining symbols** — `5,931`
+- **remaining symbols** — `5,844`
 
 Implementation `openai/gpt-5.6-sol` via `codex`; review `anthropic/claude-opus-5`
 via `claude`. Each row names the model that produced it.
@@ -113,8 +113,10 @@ via `claude`. Each row names the model that produced it.
 | `70-review-digest` | review | `8` | `58` | `57m36s` | `$35.96` (`opus5`) | `$4.49` | `$0.62` | — | — |
 | `64-cipher-aead` | wrap | `1` | `90` | `57m46s` | `$28.05` (`gpt56sol`) | `$28.05` | `$0.31` | — | — |
 | `71-review-cipher` | review | `11` | `87` | `1h30m35s` | `$63.40` (`opus5`) | `$5.76` | `$0.73` | — | — |
-| orchestrator | orchestration | `79` | `846` | — | `$77.52`+ (`gpt56sol`) | — | — | — | — |
-| **Σ recorded agents** | | **`79`** | **`846`** | **`16h48m`** | **`$920.60`** | **$11.65** | **$1.09** | | **`$66.81`** |
+| `65-mac-kdf` | wrap | `7` | `87` | `1h04m19s` | `$40.80` (`gpt56sol`) | `$5.83` | `$0.47` | — | — |
+| `72-review-mackdf` | review | `15` | `77` | `46m25s` | `$47.43` (`opus5`) | `$3.16` | `$0.62` | — | — |
+| orchestrator | orchestration | `86` | `933` | — | `$77.52`+ (`gpt56sol`) | — | — | — | — |
+| **Σ recorded agents** | | **`86`** | **`933`** | **`16h48m`** | **`$1,008.83`** | **$11.73** | **$1.08** | | **`$66.81`** |
 
 ## Raw lifetime discovery
 
@@ -223,7 +225,11 @@ via `claude`. Each row names the model that produced it.
 | `1` | `0` | `0` | `$3.57` | `13m05s` | `$3.57` | — |
 | `1` | `0` | `0` | `$4.47` | `12m19s` | `$4.47` | — |
 | `1` | `0` | `0` | `$4.25` | `14m10s` | `$4.25` | — |
-| **Σ `94`** | **`132`** | **`113`** | **`$288.11`** | — | **$3.06** | **$2.18** |
+| `3` | `3` | `0` | `$5.84` | `12m24s` | `$1.95` | `$1.95` |
+| `2` | `0` | `0` | `$8.45` | `26m53s` | `$4.23` | — |
+| `1` | `0` | `0` | `$3.30` | `8m12s` | `$3.30` | — |
+| `1` | `0` | `0` | `$4.35` | `11m16s` | `$4.35` | — |
+| **Σ `101`** | **`135`** | **`113`** | **`$310.04`** | — | **$3.07** | **$2.30** |
 
 ### Batches — review types
 
@@ -256,7 +262,10 @@ via `claude`. Each row names the model that produced it.
 | `1` | — | `$4.88` | `12m10s` | `$4.88` |
 | `1` | — | `$6.85` | `14m12s` | `$6.85` |
 | `1` | — | `$4.69` | `13m04s` | `$4.69` |
-| **Σ `85`** | — | **`$201.11`** | — | **$2.37** |
+| `7` | — | `$9.35` | `20m54s` | `$1.34` |
+| `5` | — | `$11.31` | `20m10s` | `$2.26` |
+| `3` | — | `$9.34` | `19m02s` | `$3.11` |
+| **Σ `100`** | — | **`$231.10`** | — | **$2.31** |
 
 ### Batches — symbols
 
@@ -303,7 +312,9 @@ via `claude`. Each row names the model that produced it.
 | wrap | `33` | `519` | `$10.31` | `26m39s` | `$0.31` | `$0.02` |
 | wrap | `4` | `38` | `$3.06` | `7m54s` | `$0.77` | `$0.08` |
 | wrap | `3` | `123` | `$2.56` | `8m57s` | `$0.85` | `$0.02` |
-| **Σ** | **`875`** | **`11,383`** | **`$253.22`** | | **$0.29** | **$0.02** |
+| wrap | `50` | `444` | `$7.83` | `17m03s` | `$0.16` | `$0.02` |
+| wrap | `37` | `827` | `$11.05` | `37m21s` | `$0.30` | `$0.01` |
+| **Σ** | **`962`** | **`12,654`** | **`$272.09`** | | **$0.28** | **$0.02** |
 
 ### Batches — review symbols
 
@@ -334,7 +345,9 @@ via `claude`. Each row names the model that produced it.
 | `8` | — | `$10.29` | `20m15s` | `$1.29` |
 | `4` | — | `$2.32` | `6m45s` | `$0.58` |
 | `3` | — | `$3.37` | `9m42s` | `$1.12` |
-| **Σ `571`** | — | **`$168.84`** | — | **$0.30** |
+| `71` | — | `$13.05` | `25m30s` | `$0.18` |
+| `6` | — | `$4.38` | `13m53s` | `$0.73` |
+| **Σ `648`** | — | **`$186.27`** | — | **$0.29** |
 
 ## Safety audit
 
@@ -342,17 +355,17 @@ Deterministic `crustify-audit unsafe`; no model.
 
 ### Snapshots
 
-| | foundation review, before (`894f727207`) | foundation review, after (`32ada326d7`) | campaign record (`13a55bf7c1`) |
+| | foundation review, before (`894f727207`) | foundation review, after (`32ada326d7`) | campaign record (`e10e5b5f8b`) |
 |---|---|---|---|
-| unsafe loc | `1,108` | `1,126` | `3,423` |
-| % of loc | `27.87%` | `26.29%` | `28.86%` |
-| blocks | `624` | `641` | `1,944` |
-| % in `impl T` | `42.31%` | `42.59%` | `45.68%` |
-| `unsafe fn` | `232` | `240` | `545` |
-| ...of which not sanctioned | `82` | `90` | `175` |
-| raw-ptr smell | `19` | `19` | `38` |
+| unsafe loc | `1,108` | `1,126` | `3,740` |
+| % of loc | `27.87%` | `26.29%` | `29.04%` |
+| blocks | `624` | `641` | `2,135` |
+| % in `impl T` | `42.31%` | `42.59%` | `44.68%` |
+| `unsafe fn` | `232` | `240` | `599` |
+| ...of which not sanctioned | `82` | `90` | `187` |
+| raw-ptr smell | `19` | `19` | `41` |
 | void-ptr smell | `4` | `4` | `6` |
-| FFI calls | `299` | `299` | `886` |
+| FFI calls | `299` | `299` | `977` |
 | `&`/`&mut` on a wrapper | `0` | `0` | `0` |
 | field proj outside an accessor | `0` | `0` | `0` |
 
@@ -360,32 +373,32 @@ Deterministic `crustify-audit unsafe`; no model.
 
 | metric | foundation before | campaign record | Δ | reading |
 |---|---|---|---|---|
-| `code_lines` | `3,975` | `11,861` | `+7,886` | union of HIR definition spans (denominator); `cfg`-disabled items excluded |
-| `total_stmts` | `572` | `1,949` | `+1,377` | statements |
-| `unsafe_blocks` | `624` | `1,944` | `+1,320` | count of `unsafe { }` blocks, macro-expanded included |
-| `unsafe_block_stmts` | `29` | `114` | `+85` | statements inside them |
-| `unsafe_block_lines` | `1,108` | `3,423` | `+2,315` | their lines, every outermost block |
-| `unsafe_blocks_wrapper_impl` | `264` | `888` | `+624` | inside `impl <wrapper T>` |
-| `unsafe_blocks_ffi_export` | `9` | `34` | `+25` | inside the C-ABI gateway |
-| `unsafe_fns` | `232` | `545` | `+313` | `unsafe fn` declarations, post-expansion |
-| `unsafe_fns_seam` | `150` | `370` | `+220` | ...the sanctioned subset |
-| `unsafe_fns_pub` | `228` | `505` | `+277` | ...of `unsafe_fns`, exported from the crate |
-| `ffi_calls` | `299` | `886` | `+587` | calls to a foreign item — the unsafe-FFI-call surface |
-| `wrapper_newtypes` | `30` | `64` | `+34` | LAYOUT newtypes — `repr(transparent)` over a `repr(C)` type by value |
-| `wrapper_newtypes_declared` | `30` | `64` | `+34` | the `CCell`-declared count, for comparison |
+| `code_lines` | `3,975` | `12,877` | `+8,902` | union of HIR definition spans (denominator); `cfg`-disabled items excluded |
+| `total_stmts` | `572` | `2,144` | `+1,572` | statements |
+| `unsafe_blocks` | `624` | `2,135` | `+1,511` | count of `unsafe { }` blocks, macro-expanded included |
+| `unsafe_block_stmts` | `29` | `121` | `+92` | statements inside them |
+| `unsafe_block_lines` | `1,108` | `3,740` | `+2,632` | their lines, every outermost block |
+| `unsafe_blocks_wrapper_impl` | `264` | `954` | `+690` | inside `impl <wrapper T>` |
+| `unsafe_blocks_ffi_export` | `9` | `42` | `+33` | inside the C-ABI gateway |
+| `unsafe_fns` | `232` | `599` | `+367` | `unsafe fn` declarations, post-expansion |
+| `unsafe_fns_seam` | `150` | `412` | `+262` | ...the sanctioned subset |
+| `unsafe_fns_pub` | `228` | `550` | `+322` | ...of `unsafe_fns`, exported from the crate |
+| `ffi_calls` | `299` | `977` | `+678` | calls to a foreign item — the unsafe-FFI-call surface |
+| `wrapper_newtypes` | `30` | `71` | `+41` | LAYOUT newtypes — `repr(transparent)` over a `repr(C)` type by value |
+| `wrapper_newtypes_declared` | `30` | `71` | `+41` | the `CCell`-declared count, for comparison |
 | `wrapper_declared_nonconformant` | `0` | `0` | `+0` | declared but failing the structural test — **target 0** |
 | `wrapper_newtypes_undeclared` | `0` | `0` | `+0` | structural but undeclared — a hand-written layout newtype |
-| `raw_ptr_args` | `96` | `253` | `+157` | raw-ptr positions in arguments |
-| `raw_ptr_rets` | `104` | `266` | `+162` | raw-ptr positions in returns |
-| `raw_ptr_seam` | `181` | `481` | `+300` | sanctioned: seam fn / `mod ffi_export` / `extern "C"` / ptr-to-own-`Self` |
-| `raw_ptr_wrapped` | `4` | `16` | `+12` | **of the smell**: pointee is a C type that HAS a wrapper — the actionable defect |
+| `raw_ptr_args` | `96` | `287` | `+191` | raw-ptr positions in arguments |
+| `raw_ptr_rets` | `104` | `295` | `+191` | raw-ptr positions in returns |
+| `raw_ptr_seam` | `181` | `541` | `+360` | sanctioned: seam fn / `mod ffi_export` / `extern "C"` / ptr-to-own-`Self` |
+| `raw_ptr_wrapped` | `4` | `18` | `+14` | **of the smell**: pointee is a C type that HAS a wrapper — the actionable defect |
 | `raw_ptr_in_wrapper` | `0` | `0` | `+0` | **of the smell**: inside a wrapper impl — the least excusable placement |
-| `raw_ptr_derefs` | `151` | `313` | `+162` | `*p` on a raw pointer (volume) |
+| `raw_ptr_derefs` | `151` | `326` | `+175` | `*p` on a raw pointer (volume) |
 | `ref_to_type_wrapper` | `0` | `0` | `+0` | `&`/`&mut` on a layout newtype — **target 0** |
-| `field_proj_wrapped` | `112` | `301` | `+189` | projection VOLUME — shares one HIR shape with `addr_of!`, not a violation |
+| `field_proj_wrapped` | `112` | `310` | `+198` | projection VOLUME — shares one HIR shape with `addr_of!`, not a violation |
 | `field_proj_outside_impl` | `0` | `0` | `+0` | projections outside any accessor — **target 0** |
 | `field_ref_wrapped` | `0` | `0` | `+0` | `&(*p).field` — forbidden by the translator playbook — **target 0** |
-| `void_ptr_sanctioned` | `65` | `191` | `+126` | `*c_void` in a seam / `ffi_export` / `extern "C"` signature |
+| `void_ptr_sanctioned` | `65` | `216` | `+151` | `*c_void` in a seam / `ffi_export` / `extern "C"` signature |
 | `void_ptr_smell` | `4` | `6` | `+2` | `*c_void` elsewhere; `void_ptr_sites` names each one |
 
 ## Notes
@@ -552,6 +565,18 @@ unavoidable shape for passing a closure through a C callback API. Both carry
 SAFETY comments, guard against a panic crossing the FFI boundary, and reject a
 null value from the C side rather than dereferencing it.
 
+### The MAC and KDF tranche
+
+`65` brought three new modules — `hmac`, `kdf` and `hpke` — and was the first
+wave whose homing needed correcting before launch. The orchestrator's router
+sent `include/openssl/hpke.h` to `core`, its fallback for an unrecognised
+header, while the 21-entity `crypto/hpke/hpke.c` went to `hpke`, splitting one
+subsystem across two modules against the co-homing rule. Both now sit in `hpke`.
+
+Its review, `72`, is the third in a row to move no safety metric: raw-pointer,
+dereference and void-pointer counts held exactly, and it added `45` audited
+lines.
+
 ### A recurring translator habit the gates keep catching
 
 Both `60` and `61` landed with `0` agent failures and then failed clippy on the
@@ -569,6 +594,14 @@ is inside `#[cfg(test)]`.
 Both classes are mechanical and cheap to repair at landing, but they are
 translator-side defects that a review pass should be told to look for rather
 than the orchestrator fixing by hand every wave.
+
+The misplaced-SAFETY-comment defect recurred in `65`, in `hmac.rs` twice and
+`hpke.rs` once, with exactly the shape `61` produced in `rsa_lib.rs`: the
+comment above an `assert_eq!` whose argument holds the `unsafe` block, so it
+attaches to the macro. Three occurrences across five waves, always in test
+helpers, and `cargo test` cannot catch any of them because the lint is
+clippy-only and the code is inside `#[cfg(test)]`. An agent that runs its own
+tests sees green. This is a translator-prompt gap, not agent carelessness.
 
 ### Remaining leads, accepted
 
