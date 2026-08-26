@@ -1497,7 +1497,7 @@
   {
    "name": "asn1_object_st",
    "defined_in": "include/crypto/asn1.h",
-   "_comment_agent": "ASN1_OBJECT conditionally owns its names and encoded bytes according to ASN1_OBJECT_FLAG_DYNAMIC_STRINGS/DATA. Built-in objects borrow immutable static tables, while transient non-dynamic objects may borrow caller storage; all three pointers are nullable.",
+   "_comment_agent": "ASN1_OBJECT conditionally owns its names and encoded bytes according to ASN1_OBJECT_FLAG_DYNAMIC_STRINGS/DATA. Built-in objects borrow immutable static tables, while transient non-dynamic objects may borrow caller storage; all three pointers are nullable. Reviewed 2026-08-26 against crypto/asn1/a_object.c and crypto/objects/obj_dat.{c,h}; the per-field blocks stand. Added evidence: the three flag bits are independent and ASN1_OBJECT_FLAG_DYNAMIC covers only the header allocation, so ASN1_OBJECT_free releases exactly the parts the object owns and is a complete no-op on a built-in. nid_objs is a `static const ASN1_OBJECT[]` whose entries leave flags zero and whose data points into the `static const so[]` blob, so `mutable: false` on sn/ln/data is a hard property of the storage and not just const-qualification -- nothing may be written through an ASN1_OBJECT* that might name a built-in. The header allocation is likewise runtime-conditional: OBJ_dup returns its argument unchanged for a non-dynamic object, and add_object installs OBJ_dup(obj) -- a dynamic copy -- in the added-object hash, which OBJ_nid2obj hands back without transferring. That registry pointer is the one ASN1_OBJECT* that must never be adopted as an owner; every other non-null result may be.",
    "fields": [
     {
      "name": "data",

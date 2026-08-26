@@ -10,9 +10,42 @@ use crate::stack::stack::{Stack, StackMut, StackRef};
 define_ctype!(
     /// Wraps: asn1_object_st
     ///
-    /// The public OpenSSL API keeps `ASN1_OBJECT` opaque. Owned handles use
-    /// `ffibox::CBox<Asn1Object>` and borrowed access remains lifetime-bound
-    /// through `Asn1ObjectRef` and `Asn1ObjectMut`.
+    /// The public OpenSSL API keeps `ASN1_OBJECT` opaque: `include/openssl`
+    /// only forward-declares the tag, so the generated binding is a body-less
+    /// struct and the handles carry pointer provenance and a Rust lifetime
+    /// without exposing a layout. Owned handles use `ffibox::CBox<Asn1Object>`
+    /// and borrowed access remains lifetime-bound through `Asn1ObjectRef` and
+    /// `Asn1ObjectMut`.
+    ///
+    /// The hidden body (`include/crypto/asn1.h`) owns `sn`, `ln` and `data`
+    /// only when the matching `ASN1_OBJECT_FLAG_DYNAMIC_STRINGS` /
+    /// `ASN1_OBJECT_FLAG_DYNAMIC_DATA` bit is set; `ASN1_OBJECT_FLAG_DYNAMIC`
+    /// separately covers the header allocation. `ASN1_OBJECT_free` consults all
+    /// three, so it releases exactly the parts the object owns.
+    ///
+    /// # Adopting a raw `ASN1_OBJECT *`
+    ///
+    /// Because that destructor is flag-guarded, it does nothing at all for a
+    /// compiled-in object — `nid_objs` in `crypto/objects/obj_dat.h` is a
+    /// `static const` table whose entries leave `flags` zero. Adopting one into
+    /// a [`ffibox::CBox`] is therefore harmless, which is what lets the safe
+    /// surface hand back an owner from every `OBJ_*` entry point that may
+    /// resolve to the shared registry, `ossl_c2i_ASN1_OBJECT` included.
+    ///
+    /// The one adoption that is not sound is a *dynamic* object the process
+    /// still owns. `add_object` installs `OBJ_dup(obj)` — a dynamic copy — in
+    /// the added-object hash, and `OBJ_nid2obj` returns that stored pointer
+    /// without transferring it, so releasing it double-frees and leaves the
+    /// registry dangling. [`crate::objects::obj_dat::OBJ_nid2obj`] sidesteps
+    /// the distinction by returning a detached copy instead of the registry's
+    /// pointer.
+    ///
+    /// # Mutation
+    ///
+    /// `Asn1ObjectMut` exists for uniformity and carries no setters. A handle
+    /// may name a `static const` table entry, and nothing in the opaque public
+    /// API distinguishes that at runtime, so this wrapper publishes no
+    /// operation that writes through an `ASN1_OBJECT *`.
     Asn1Object,
     Asn1ObjectRef,
     Asn1ObjectMut,
@@ -107,6 +140,64 @@ mod tests {
         unsafe { ffi::ASN1_OBJECT_free(raw) };
 
         assert!(is_borrowed);
+    }
+
+    #[test]
+    fn owning_a_builtin_object_leaves_the_registry_intact() {
+        // SAFETY: the input is a live NUL-terminated numeric OID. `no_name`
+        // skips the name tables, and a recognized encoding resolves to the
+        // shared registry object.
+        let raw = unsafe { ffi::OBJ_txt2obj(c"1.2.840.113549.1.1.1".as_ptr(), 1) };
+        // SAFETY: every non-null `ASN1_OBJECT *` may be released with
+        // `ASN1_OBJECT_free`, which this owner runs exactly once on drop.
+        let owned = unsafe { CBox::<Asn1Object>::from_raw(raw) }.expect("RSA object identifier");
+
+        // A borrowed duplicate is `OBJ_dup`'s non-dynamic branch, which proves
+        // this owner holds a built-in whose destructor is a complete no-op.
+        assert!(matches!(
+            owned.as_ref().try_dup(),
+            Some(Asn1ObjectDuplicate::Borrowed(_))
+        ));
+        // SAFETY: the object is live while this owner holds it.
+        let nid = unsafe { ffi::OBJ_obj2nid(owned.as_ref().as_ptr()) };
+        assert_ne!(nid, 0);
+
+        drop(owned);
+
+        // SAFETY: the drop above released nothing, so the `static const` table
+        // entry outlives the owner that adopted it.
+        assert_eq!(unsafe { ffi::OBJ_obj2nid(raw) }, nid);
+    }
+
+    #[test]
+    fn owned_duplicates_outlive_their_source() {
+        use crate::objects::obj_dat::{OBJ_get0_data, OBJ_length, OBJ_txt2obj};
+
+        let source =
+            OBJ_txt2obj(c"1.3.6.1.4.1.55555.987654", true).expect("numeric object identifier");
+        let length = OBJ_length(Some(source.as_ref()));
+        let mut expected = [0_u8; 32];
+        assert!(length > 0 && length <= expected.len());
+        assert!(
+            OBJ_get0_data(source.as_ref())
+                .expect("OID bytes")
+                .copy_to_slice(&mut expected[..length])
+        );
+
+        let Some(Asn1ObjectDuplicate::Owned(copy)) = source.as_ref().try_dup() else {
+            panic!("a dynamic object identifier must duplicate into a fresh owner");
+        };
+        assert_ne!(copy.as_ptr(), source.as_ptr());
+        drop(source);
+
+        let mut copied = [0_u8; 32];
+        assert_eq!(OBJ_length(Some(copy.as_ref())), length);
+        assert!(
+            OBJ_get0_data(copy.as_ref())
+                .expect("OID bytes")
+                .copy_to_slice(&mut copied[..length])
+        );
+        assert_eq!(copied[..length], expected[..length]);
     }
 }
 
