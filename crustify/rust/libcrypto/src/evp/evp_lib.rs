@@ -1215,3 +1215,86 @@ mod cipher_asn1_parameter_tests {
         assert!(EVP_CIPHER_param_to_asn1(None, &mut parameters.as_mut()) <= 0);
     }
 }
+
+/// Wraps: EVP_CIPHER_CTX_get_algor
+///
+/// Retrieves a newly allocated algorithm identifier. Any partial output from
+/// an unsuccessful decode is reclaimed before returning `None`.
+#[must_use]
+pub fn EVP_CIPHER_CTX_get_algor(ctx: &mut EvpCipherCtxMut<'_>) -> (i32, Option<CBox<X509Algor>>) {
+    let mut algorithm = ptr::null_mut();
+    // SAFETY: the context is exclusively borrowed and the initialized local
+    // slot is writable. Starting with null selects the allocating C contract.
+    let status = unsafe { ffi::EVP_CIPHER_CTX_get_algor(ctx.as_mut_ptr(), &mut algorithm) };
+    // SAFETY: the slot started null. Any non-null value written by the decoder
+    // carries exactly one X509_ALGOR_free obligation, even if decoding later
+    // reports failure.
+    let algorithm = unsafe { CBox::from_raw(algorithm) };
+    if status == 1 {
+        (status, algorithm)
+    } else {
+        drop(algorithm);
+        (status, None)
+    }
+}
+
+/// Wraps: EVP_CIPHER_CTX_get_algor_params
+///
+/// Replaces the algorithm identifier's owned parameter with the value
+/// reported by the active cipher provider operation.
+pub fn EVP_CIPHER_CTX_get_algor_params(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    algorithm: &mut X509AlgorMut<'_>,
+) -> i32 {
+    // SAFETY: both handles are exclusively borrowed. The algorithm identifier
+    // is non-null and owns its optional parameter, which the C decoder may
+    // reuse or replace while preserving its destructor contract.
+    unsafe { ffi::EVP_CIPHER_CTX_get_algor_params(ctx.as_mut_ptr(), algorithm.as_mut_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_CTX_set_algor_params
+///
+/// Passes the borrowed algorithm identifier parameter to the active cipher
+/// provider operation without transferring it.
+pub fn EVP_CIPHER_CTX_set_algor_params(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    algorithm: X509AlgorRef<'_>,
+) -> i32 {
+    // SAFETY: the context is exclusively borrowed and the algorithm identifier
+    // remains live and readable for the synchronous encoding and dispatch.
+    unsafe { ffi::EVP_CIPHER_CTX_set_algor_params(ctx.as_mut_ptr(), algorithm.as_ptr()) }
+}
+
+#[cfg(test)]
+mod cipher_algorithm_identifier_tests {
+    use super::*;
+    use crate::evp::evp_enc::{
+        CipherDirection, EVP_CIPHER_CTX_new, EVP_CIPHER_fetch, EVP_CipherInit_ex2,
+    };
+
+    #[test]
+    fn calls_preserve_typed_ownership() {
+        let cipher = EVP_CIPHER_fetch(None, c"AES-128-CBC", None).expect("AES-128-CBC");
+        let mut ctx = EVP_CIPHER_CTX_new().expect("cipher context");
+        assert_eq!(
+            EVP_CipherInit_ex2(
+                &mut ctx.as_mut(),
+                Some(cipher.as_ref()),
+                Some(&[0x42; 16]),
+                Some(&[0x24; 16]),
+                None,
+                CipherDirection::Encrypt,
+            ),
+            1
+        );
+
+        let mut algorithm = X509Algor::new().expect("algorithm identifier");
+        let address = algorithm.as_ref().as_ptr();
+        let _ = EVP_CIPHER_CTX_set_algor_params(&mut ctx.as_mut(), algorithm.as_ref());
+        let _ = EVP_CIPHER_CTX_get_algor_params(&mut ctx.as_mut(), &mut algorithm.as_mut());
+        assert_eq!(algorithm.as_ref().as_ptr(), address);
+
+        let (status, retrieved) = EVP_CIPHER_CTX_get_algor(&mut ctx.as_mut());
+        assert!(status != 1 || retrieved.is_some());
+    }
+}

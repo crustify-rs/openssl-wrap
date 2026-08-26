@@ -16108,6 +16108,89 @@
    }
   },
   {
+   "name": "EVP_CIPHER_CTX_get_algor",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "alg",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:alg"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The outer X509_ALGOR ** slot is optional and borrowed for the call; on successful decode it receives or reuses an X509_ALGOR carrying a caller-owned X509_ALGOR_free obligation."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is required and synchronously passed to EVP_CIPHER_CTX_get_params, which may update provider-operation state."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_get_algor_params",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "alg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:alg"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The required algorithm identifier is borrowed and its owned parameter may be decoded in place or replaced without transferring the X509_ALGOR itself."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is required and synchronously passed to EVP_CIPHER_CTX_get_params, which may update provider-operation state."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_CIPHER_CTX_get_app_data",
    "defined_in": "crypto/evp/evp_lib.c",
    "ptr_args": [
@@ -16688,6 +16771,46 @@
       "nullable": true,
       "mutable": true,
       "note": "Disposes provider state and the owned fetched cipher and zeroes an initialized context in place; null and never-initialized contexts are accepted."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_CTX_set_algor_params",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "alg",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:alg"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The required const algorithm identifier and its parameter are only encoded synchronously; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The context is required and synchronously passed to EVP_CIPHER_CTX_set_params, which updates provider-operation state."
      }
     }
    ]
