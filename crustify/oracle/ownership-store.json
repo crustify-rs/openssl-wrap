@@ -37365,6 +37365,336 @@
    ]
   },
   {
+   "name": "EVP_SignFinal",
+   "defined_in": "crypto/evp/p_sign.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "May finalize or reset digest state when continuation is disabled or context copying fails."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The legacy non-const declaration is read-only; a temporary operation context raises any reference it retains and is freed before return."
+     }
+    },
+    {
+     "name": "siglen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:siglen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Out-only signature byte count; initialized to zero before fallible work."
+     }
+    },
+    {
+     "name": "sigret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sigret"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller supplies at least EVP_PKEY_get_size(pkey) bytes; at most that many bytes are written."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_SignFinal_ex",
+   "defined_in": "crypto/evp/p_sign.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "May finalize or reset digest state when continuation is disabled or context copying fails."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null selects the default library context; the temporary operation context is freed before return."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Read-only for the synchronous operation."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query consumed synchronously."
+     }
+    },
+    {
+     "name": "siglen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:siglen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Out-only signature byte count; initialized to zero before fallible work."
+     }
+    },
+    {
+     "name": "sigret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sigret"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Caller supplies at least EVP_PKEY_get_size(pkey) bytes; at most that many bytes are written."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_VerifyFinal",
+   "defined_in": "crypto/evp/p_verify.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "May finalize or reset digest state when continuation is disabled or context copying fails."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The legacy non-const declaration is read-only; a temporary operation context raises any reference it retains and is freed before return."
+     }
+    },
+    {
+     "name": "sigbuf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sigbuf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads exactly siglen signature bytes during the call."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_VerifyFinal_ex",
+   "defined_in": "crypto/evp/p_verify.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "May finalize or reset digest state when continuation is disabled or context copying fails."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Null selects the default library context; the temporary operation context is freed before return."
+     }
+    },
+    {
+     "name": "pkey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pkey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Read-only for the synchronous operation."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional NUL-terminated property query consumed synchronously."
+     }
+    },
+    {
+     "name": "sigbuf",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:sigbuf"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reads exactly siglen signature bytes during the call."
+     }
+    }
+   ]
+  },
+  {
    "name": "EXTENDED_KEY_USAGE_free",
    "defined_in": "crypto/x509/v3_extku.c",
    "lifetime": {
