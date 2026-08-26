@@ -14,13 +14,25 @@ use crate::evp::evp_local::EvpMdCtxMut;
 /// Wraps: EVP_VerifyFinal
 ///
 /// Returns `1` for a valid signature, `0` for an invalid signature, and a
-/// negative status for another verification error.
+/// negative status for another verification error. A signature longer than
+/// `u32::MAX` has no C length to carry it, so it is refused with `-1` without
+/// calling OpenSSL and without queueing an error.
+///
+/// Only a copy of `ctx` is finalized, so `ctx` stays usable for further
+/// [`EVP_DigestUpdate`](crate::evp::digest::EVP_DigestUpdate) and verification
+/// calls. Two cases finalize `ctx` itself instead: `EVP_MD_CTX_FLAG_FINALISE`
+/// set on it, or a provider that cannot duplicate its digest context. The
+/// exclusive borrow covers both outcomes.
+///
+/// `pkey` is only read. The temporary key-operation context C builds around it
+/// raises its own reference and releases it before this call returns.
 pub fn EVP_VerifyFinal(ctx: &mut EvpMdCtxMut<'_>, signature: &[u8], pkey: EvpPkeyRef<'_>) -> i32 {
     let Ok(signature_len) = u32::try_from(signature.len()) else {
         return -1;
     };
     // SAFETY: the context is exclusively borrowed, the signature slice is
-    // readable for the converted length, and the shared key handle is live.
+    // readable for the converted length, and the key stays live for a call
+    // that retains no reference past its return.
     unsafe {
         ffi::EVP_VerifyFinal(
             ctx.as_mut_ptr(),
@@ -34,7 +46,12 @@ pub fn EVP_VerifyFinal(ctx: &mut EvpMdCtxMut<'_>, signature: &[u8], pkey: EvpPke
 /// Wraps: EVP_VerifyFinal_ex
 ///
 /// Verifies while selecting the library context and property query used to
-/// create the temporary key-operation context.
+/// create the temporary key-operation context. Both borrows are needed only
+/// for the synchronous call: that context is freed before the return.
+///
+/// Return values, the length refusal, continuation and the key borrow are
+/// those of [`EVP_VerifyFinal`], which is this function with both selectors
+/// omitted.
 pub fn EVP_VerifyFinal_ex(
     ctx: &mut EvpMdCtxMut<'_>,
     signature: &[u8],
@@ -108,6 +125,15 @@ mod tests {
         altered[0] ^= 1;
         assert_ne!(
             EVP_VerifyFinal(&mut verifier.as_mut(), &altered, key.as_ref()),
+            1
+        );
+
+        // An empty slice has no allocation behind it; the wrapper still passes
+        // a matching zero length, so C never reads through the dangling
+        // pointer and simply rejects the signature.
+        let mut verifier = digest_message(digest.as_ref());
+        assert_ne!(
+            EVP_VerifyFinal(&mut verifier.as_mut(), &[], key.as_ref()),
             1
         );
     }

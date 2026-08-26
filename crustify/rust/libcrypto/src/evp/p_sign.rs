@@ -11,11 +11,20 @@ use libcrypto_sys as ffi;
 use crate::bio::context::OsslLibCtxRef;
 use crate::evp::evp::EvpPkeyRef;
 use crate::evp::evp_local::EvpMdCtxMut;
+use crate::evp::p_lib::EVP_PKEY_get_size;
 
+/// Proves the output extent C never checks.
+///
+/// `EVP_SignFinal_ex` passes `EVP_PKEY_get_size(pkey)` to `EVP_PKEY_sign` as
+/// the buffer capacity, so C writes up to that many bytes whatever the caller
+/// actually allocated. A non-positive size is refused as well: such a key
+/// cannot state a signature length and C would fail the sign anyway, and
+/// refusing keeps a zero-extent buffer pointer out of the call.
 fn signature_capacity(pkey: EvpPkeyRef<'_>, output_len: usize) -> Result<(), i32> {
-    // SAFETY: the shared key handle is live and the size query retains nothing.
-    let required = unsafe { ffi::EVP_PKEY_get_size(pkey.as_ptr()) };
-    if required < 0 || usize::try_from(required).map_or(true, |len| output_len < len) {
+    let Ok(required) = usize::try_from(EVP_PKEY_get_size(pkey)) else {
+        return Err(0);
+    };
+    if required == 0 || output_len < required {
         return Err(0);
     }
     Ok(())
@@ -34,8 +43,18 @@ fn initialized_signature(output: &mut [MaybeUninit<u8>], written: u32) -> Result
 /// Wraps: EVP_SignFinal
 ///
 /// Finalizes a digest copy and writes the resulting signature into `output`.
-/// The returned slice is the initialized prefix. A short buffer is rejected
-/// before OpenSSL can observe or modify the digest context.
+/// The returned slice is the initialized prefix. `output` must hold at least
+/// `EVP_PKEY_get_size(pkey)` bytes; a short buffer is rejected before OpenSSL
+/// can observe or modify the digest context, as `Err(0)` with no error queued.
+///
+/// Only a copy of `ctx` is finalized, so `ctx` stays usable for further
+/// [`EVP_DigestUpdate`](crate::evp::digest::EVP_DigestUpdate) and signing
+/// calls. Two cases finalize `ctx` itself instead: `EVP_MD_CTX_FLAG_FINALISE`
+/// set on it, or a provider that cannot duplicate its digest context. The
+/// exclusive borrow covers both outcomes.
+///
+/// `pkey` is only read. The temporary key-operation context C builds around it
+/// raises its own reference and releases it before this call returns.
 pub fn EVP_SignFinal<'out>(
     ctx: &mut EvpMdCtxMut<'_>,
     output: &'out mut [MaybeUninit<u8>],
@@ -43,8 +62,9 @@ pub fn EVP_SignFinal<'out>(
 ) -> Result<&'out mut [u8], i32> {
     signature_capacity(pkey, output.len())?;
     let mut written = 0_u32;
-    // SAFETY: the context is exclusively borrowed, the key is live, and the
-    // capacity check supplied the documented `EVP_PKEY_get_size` byte extent.
+    // SAFETY: the context is exclusively borrowed, the key stays live for a
+    // call that retains no reference past its return, and the capacity check
+    // supplied the documented `EVP_PKEY_get_size` byte extent.
     let status = unsafe {
         ffi::EVP_SignFinal(
             ctx.as_mut_ptr(),
@@ -62,7 +82,11 @@ pub fn EVP_SignFinal<'out>(
 /// Wraps: EVP_SignFinal_ex
 ///
 /// Finalizes and signs while selecting the library context and property query
-/// used to create the temporary key-operation context.
+/// used to create the temporary key-operation context. Both borrows are needed
+/// only for the synchronous call: that context is freed before the return.
+///
+/// Capacity, continuation and key-borrow contracts are those of
+/// [`EVP_SignFinal`], which is this function with both selectors omitted.
 pub fn EVP_SignFinal_ex<'out>(
     ctx: &mut EvpMdCtxMut<'_>,
     output: &'out mut [MaybeUninit<u8>],
@@ -99,7 +123,7 @@ mod tests {
     use super::*;
     use crate::evp::digest::{EVP_DigestInit_ex, EVP_DigestUpdate, EVP_MD_CTX_new, EVP_MD_fetch};
     use crate::evp::evp_lib::{EVP_PKEY_Q_keygen, QuickKeygen};
-    use crate::evp::p_lib::EVP_PKEY_get_size;
+    use crate::evp::p_verify::EVP_VerifyFinal;
 
     #[test]
     fn signing_checks_capacity_and_returns_only_initialized_bytes() {
@@ -119,10 +143,52 @@ mod tests {
             Err(0)
         );
 
+        // The refusal happened before any C call, so the context is untouched
+        // and an adequate buffer still signs.
         let mut output = vec![MaybeUninit::uninit(); required];
         let signature = EVP_SignFinal_ex(&mut ctx.as_mut(), &mut output, key.as_ref(), None, None)
             .expect("signature");
         assert!(!signature.is_empty());
         assert!(signature.len() <= required);
+    }
+
+    /// Pins the documented continuation property: only a copy of the context is
+    /// finalized, so the same context keeps hashing and signing afterwards.
+    #[test]
+    fn signing_finalizes_a_copy_and_leaves_the_context_usable() {
+        let key = EVP_PKEY_Q_keygen(None, None, QuickKeygen::Rsa { bits: 2048 }).expect("RSA key");
+        let digest = EVP_MD_fetch(None, c"SHA2-256", None).expect("SHA-256");
+        let required = usize::try_from(EVP_PKEY_get_size(key.as_ref())).expect("key size");
+
+        let mut signer = EVP_MD_CTX_new().expect("digest context");
+        assert_eq!(
+            EVP_DigestInit_ex(&mut signer.as_mut(), Some(digest.as_ref())),
+            1
+        );
+        assert_eq!(EVP_DigestUpdate(&mut signer.as_mut(), b"first"), 1);
+
+        let mut first = vec![MaybeUninit::uninit(); required];
+        let first = EVP_SignFinal(&mut signer.as_mut(), &mut first, key.as_ref())
+            .expect("signature over the prefix")
+            .to_vec();
+
+        assert_eq!(EVP_DigestUpdate(&mut signer.as_mut(), b"second"), 1);
+        let mut second = vec![MaybeUninit::uninit(); required];
+        let second = EVP_SignFinal(&mut signer.as_mut(), &mut second, key.as_ref())
+            .expect("signature over both parts")
+            .to_vec();
+        assert_ne!(first, second);
+
+        let verify = |message: &[u8], signature: &[u8]| {
+            let mut ctx = EVP_MD_CTX_new().expect("digest context");
+            assert_eq!(
+                EVP_DigestInit_ex(&mut ctx.as_mut(), Some(digest.as_ref())),
+                1
+            );
+            assert_eq!(EVP_DigestUpdate(&mut ctx.as_mut(), message), 1);
+            EVP_VerifyFinal(&mut ctx.as_mut(), signature, key.as_ref())
+        };
+        assert_eq!(verify(b"first", &first), 1);
+        assert_eq!(verify(b"firstsecond", &second), 1);
     }
 }

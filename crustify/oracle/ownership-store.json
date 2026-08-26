@@ -37490,7 +37490,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Read-only for the synchronous operation."
+      "note": "The legacy non-const declaration is read-only; this body builds the temporary EVP_PKEY_CTX that up-refs the key and frees it before returning, so no reference outlives the call. A legacy key is additionally mutated internally, under its own lock, when the operation exports it to a provider and caches the result."
      }
     },
     {
@@ -37655,7 +37655,7 @@
       },
       "nullable": false,
       "mutable": false,
-      "note": "Read-only for the synchronous operation."
+      "note": "The legacy non-const declaration is read-only; this body builds the temporary EVP_PKEY_CTX that up-refs the key and frees it before returning, so no reference outlives the call. A legacy key is additionally mutated internally, under its own lock, when the operation exports it to a provider and caches the result."
      }
     },
     {
