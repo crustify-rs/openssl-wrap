@@ -908,7 +908,7 @@
   {
    "name": "X509_algor_st",
    "defined_in": "include/openssl/x509.h",
-   "_comment_agent": "X509_ALGOR owns both pointer fields through its ASN.1 SEQUENCE template. X509_ALGOR_set0 transfers the algorithm object and parameter payload on success; sequence teardown releases algorithm with ASN1_OBJECT_free and the optional parameter with ASN1_TYPE_free. Direct code writes through parameter, while algorithm objects are treated as immutable after installation. Both slots can be null.",
+   "_comment_agent": "X509_ALGOR owns both pointer fields through its ASN.1 SEQUENCE template. X509_ALGOR_set0 transfers the algorithm object and parameter payload on success; sequence teardown releases algorithm with ASN1_OBJECT_free and the optional parameter with ASN1_TYPE_free. Direct code writes through parameter, while algorithm objects are treated as immutable after installation. Both slots can be null, but X509_ALGOR_new does not start null: the template installs the built-in OBJ_nid2obj(NID_undef) object. The record is also embedded by value (public NETSCAPE_SPKI.sig_algor; internal x509_st, x509_cinf_st, X509_req_st, X509_crl_st, X509_crl_info_st, X509_ACERT bodies) and built on the stack in crypto/evp/evp_lib.c; that embedded teardown runs inside the parent's ASN1_EMBED template and has no standalone C disposer.",
    "fields": [
     {
      "name": "algorithm",
@@ -922,7 +922,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": false,
-      "note": "Owned AlgorithmIdentifier OID slot. X509_ALGOR_set0 frees the old object and transfers aobj on success; ASN.1 sequence teardown calls ASN1_OBJECT_free. Built-in objects are accepted because that destructor is intentionally a no-op for non-dynamic objects. Callers read but do not mutate the installed ASN1_OBJECT pointee."
+      "note": "Owned AlgorithmIdentifier OID slot. X509_ALGOR_set0 frees the old object and transfers aobj on success; ASN.1 sequence teardown calls ASN1_OBJECT_free. Built-in objects are accepted because that destructor is intentionally a no-op for non-dynamic objects, and X509_ALGOR_new installs one of them (OBJ_nid2obj(NID_undef)) rather than leaving the slot null; the stack instances in crypto/evp/evp_lib.c and the error path of ossl_X509_ALGOR_from_nid do leave it null. The template marks the field mandatory, so a null slot or a content-free OID makes asn1_ex_i2c return -1: i2d_X509_ALGOR and hence the encode/decode X509_ALGOR_dup both fail in that state, and OBJ_cmp inside X509_ALGOR_cmp would dereference the null. Callers read but do not mutate the installed ASN1_OBJECT pointee."
      }
     },
     {
@@ -937,7 +937,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": true,
-      "note": "Optional owned ASN1_TYPE. X509_ALGOR_set0 allocates, replaces, or frees it according to ptype, and sequence teardown releases it; multiple users update its discriminator and active payload in place."
+      "note": "Optional owned ASN1_TYPE. X509_ALGOR_set0 allocates, replaces, or frees it according to ptype, and sequence teardown releases it; multiple users update its discriminator and active payload in place. The ASN1_OPT template omits a null slot from the encoding, so unlike algorithm a null parameter keeps the identifier encodable. The one exception to the owning contract is the hand-built stack X509_ALGOR in crypto/evp/evp_lib.c, which points parameter at a caller-owned ASN1_TYPE and is abandoned without teardown."
      }
     }
    ]

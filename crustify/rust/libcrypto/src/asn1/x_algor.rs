@@ -30,6 +30,11 @@ pub fn X509_ALGOR_cmp(a: X509AlgorRef<'_>, b: X509AlgorRef<'_>) -> Option<Orderi
 
 /// Wraps: X509_ALGOR_dup
 /// Deep-copies an optional AlgorithmIdentifier.
+///
+/// The copy is made by re-encoding and re-decoding the source, so `None` also
+/// reports a source the SEQUENCE template cannot encode — a detached
+/// `algorithm`, or one holding an OID with no content octets such as the
+/// built-in object [`X509_ALGOR_new`] installs.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn X509_ALGOR_dup(algorithm: Option<X509AlgorRef<'_>>) -> Option<CBox<X509Algor>> {
@@ -81,7 +86,11 @@ pub fn X509_ALGOR_get0<'a>(algorithm: X509AlgorRef<'a>) -> X509AlgorComponents<'
 }
 
 /// Wraps: X509_ALGOR_new
-/// Allocates an empty, fully initialized AlgorithmIdentifier.
+/// Allocates a fully initialized AlgorithmIdentifier.
+///
+/// The template installs the built-in `NID_undef` object in `algorithm` and
+/// leaves `parameter` null; see [`X509Algor::new`] for what that state does and
+/// does not allow.
 #[must_use]
 #[allow(non_snake_case)]
 pub fn X509_ALGOR_new() -> Option<CBox<X509Algor>> {

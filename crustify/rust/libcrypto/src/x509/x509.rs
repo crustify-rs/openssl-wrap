@@ -106,6 +106,31 @@ define_ctype!(
     /// algorithm object and optional parameter before releasing this record.
     /// Borrowed access is carried by [`X509AlgorRef`] and [`X509AlgorMut`]
     /// without forming a Rust reference over memory OpenSSL may mutate.
+    ///
+    /// # Embedded by value
+    ///
+    /// This record is also embedded by value, in the public
+    /// `NETSCAPE_SPKI::sig_algor` and in the internal `x509_st`,
+    /// `x509_cinf_st`, `X509_req_st`, `X509_crl_st` and `X509_crl_info_st`
+    /// bodies. The layout newtype covers that placement and the two handles
+    /// reach such a projected place. No `ffibox::CValued` is registered: the
+    /// embedded teardown lives inside the parent's `ASN1_EMBED` template
+    /// (`ossl_asn1_primitive_free` on each field, no header release) and
+    /// OpenSSL publishes no standalone disposer for it, while the hand-built
+    /// stack instance in `crypto/evp/evp_lib.c` deliberately *borrows* its
+    /// `parameter` — so a dispose-on-drop by-value owner would be wrong for
+    /// the one by-value shape Rust could construct today.
+    ///
+    /// # Duplication is fallible
+    ///
+    /// `X509_ALGOR_dup` re-encodes and re-decodes its source, so it fails for
+    /// every identifier the SEQUENCE template cannot encode: `algorithm`
+    /// detached, or holding an OID with no content octets. A freshly allocated
+    /// identifier is already in that state — see [`X509Algor::new`] — so
+    /// `Clone`, which aborts the process when the C routine fails, is not the
+    /// right entry point here. Use [`ffibox::CBox::try_clone`] or
+    /// [`crate::asn1::x_algor::X509_ALGOR_dup`], both of which surface the
+    /// failure as `None`.
     X509Algor,
     X509AlgorRef,
     X509AlgorMut,
@@ -119,11 +144,19 @@ impl_dropped!(X509Algor, ffi::X509_algor_st, ffi::X509_ALGOR_free);
 
 // This type has no reference count. `X509_ALGOR_dup` encodes and decodes the
 // source into a fresh independent allocation, so every clone owes one full
-// `X509_ALGOR_free`.
+// `X509_ALGOR_free`. That round trip is fallible for states this safe surface
+// can reach, which is why the type documentation steers callers to the
+// `Option`-returning duplication entry points rather than to `Clone`.
 impl_cloned!(X509Algor, ffi::X509_algor_st, dup = ffi::X509_ALGOR_dup);
 
 impl X509Algor {
-    /// Allocates a complete empty algorithm identifier.
+    /// Allocates a fully initialized algorithm identifier.
+    ///
+    /// The SEQUENCE template does not leave the record blank: it installs the
+    /// built-in `NID_undef` object in `algorithm` — so
+    /// [`algorithm`](X509AlgorRef::algorithm) already reports `Some` — and
+    /// leaves the optional `parameter` null. That object carries no content
+    /// octets, so the fresh identifier is allocated but not yet encodable.
     #[must_use]
     pub fn new() -> Option<CBox<Self>> {
         // SAFETY: a non-null result is a fresh, fully initialized allocation
@@ -135,9 +168,11 @@ impl X509Algor {
 impl<'a> X509AlgorRef<'a> {
     /// Wraps: X509_algor_st.algorithm
     ///
-    /// Borrows the installed algorithm OID. Null is representable because the
-    /// public layout and `X509_ALGOR_set0` permit clearing this slot, although
-    /// encoding such an incomplete identifier may fail.
+    /// Borrows the installed algorithm OID. Null is representable: the public
+    /// layout, `X509_ALGOR_set0` and the stack instances OpenSSL builds by hand
+    /// in `crypto/evp/evp_lib.c` all leave this slot empty. The template marks
+    /// the field mandatory, so encoding an identifier in that state fails
+    /// rather than omitting it, and so does `X509_ALGOR_dup`.
     #[must_use]
     pub fn algorithm(&self) -> Option<Asn1ObjectRef<'a>> {
         // SAFETY: raw-place projection copies the pointer from the live shared
@@ -180,20 +215,27 @@ impl X509AlgorMut<'_> {
     pub fn set_algorithm(&mut self, algorithm: Option<CBox<Asn1Object>>) {
         let algorithm = algorithm.map_or(ptr::null_mut(), CBox::into_raw);
         // SAFETY: the exclusive handle permits replacing this owned pointer.
-        // The old non-null value carries exactly the release obligation that
-        // transfers into the temporary owner below.
+        // The old non-null value carries exactly the release the field owed,
+        // which transfers into the temporary owner below.
         let previous =
             unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).algorithm).replace(algorithm) };
         // SAFETY: the prior field value, when non-null, was owned by this
-        // identifier and is no longer reachable through it.
+        // identifier and is no longer reachable through it. `ASN1_OBJECT_free`
+        // is flag-guarded, so adopting a built-in object here — the state
+        // `X509_ALGOR_new` leaves behind — releases nothing.
         drop(unsafe { CBox::<Asn1Object>::from_raw(previous) });
     }
 
     /// Takes the owned algorithm object, leaving the nullable slot empty.
+    ///
+    /// The detached object may be a built-in registry entry — that is what
+    /// `X509_ALGOR_new` installs — whose `ASN1_OBJECT_free` is a documented
+    /// no-op, so the returned owner is safe either way. The identifier is left
+    /// unencodable until a new object is installed.
     #[must_use]
     pub fn take_algorithm(&mut self) -> Option<CBox<Asn1Object>> {
         // SAFETY: the exclusive handle permits clearing the field, transferring
-        // its unique release obligation to the returned owner.
+        // whatever release the field owed to the returned owner.
         let algorithm =
             unsafe { ptr::addr_of_mut!((*self.as_mut_ptr()).algorithm).replace(ptr::null_mut()) };
         // SAFETY: a non-null old field was owned by this identifier and remains
@@ -234,6 +276,7 @@ mod x509_algor_tests {
 
     use super::*;
     use crate::asn1::a_object::ASN1_OBJECT_create;
+    use crate::asn1::x_algor::{X509_ALGOR_dup, i2d_X509_ALGOR};
 
     fn assert_owned_cloneable_cell<T: CCell + CCloned + CDropped>() {}
 
@@ -258,6 +301,47 @@ mod x509_algor_tests {
         let mut algorithm = X509Algor::new().expect("X509_ALGOR_new");
         assert_eq!(algorithm.as_ref().as_ptr(), algorithm.as_ptr().cast_const());
         assert_eq!(algorithm.as_mut().as_mut_ptr(), algorithm.as_ptr());
+    }
+
+    #[test]
+    fn a_fresh_identifier_carries_the_builtin_undefined_object() {
+        let algorithm = X509Algor::new().expect("X509_ALGOR_new");
+
+        // The SEQUENCE template installs `OBJ_nid2obj(NID_undef)`, so the
+        // mandatory slot is occupied even though nothing was set yet.
+        assert!(algorithm.as_ref().algorithm().is_some());
+        assert!(algorithm.as_ref().parameter().is_none());
+
+        // That built-in object has no content octets, so the identifier cannot
+        // be encoded and the encode/decode duplication therefore fails.
+        assert!(i2d_X509_ALGOR(algorithm.as_ref()).is_none());
+        assert!(algorithm.try_clone().is_none());
+        assert!(X509_ALGOR_dup(Some(algorithm.as_ref())).is_none());
+    }
+
+    #[test]
+    fn detaching_the_builtin_object_is_harmless_and_stays_fallible() {
+        let mut algorithm = X509Algor::new().expect("X509_ALGOR_new");
+
+        // `ASN1_OBJECT_free` is flag-guarded, so adopting the registry entry
+        // into an owner and dropping it releases nothing.
+        let builtin = algorithm
+            .as_mut()
+            .take_algorithm()
+            .expect("built-in undefined object");
+        drop(builtin);
+        assert!(algorithm.as_ref().algorithm().is_none());
+
+        // A detached mandatory field keeps the identifier unencodable.
+        assert!(i2d_X509_ALGOR(algorithm.as_ref()).is_none());
+        assert!(algorithm.try_clone().is_none());
+
+        // Installing a real OID makes both operations succeed.
+        let oid = [0x2a_u8, 0x03, 0x04];
+        let object = ASN1_OBJECT_create(0, &oid, None, None).expect("OID object");
+        algorithm.as_mut().set_algorithm(Some(object));
+        assert!(i2d_X509_ALGOR(algorithm.as_ref()).is_some());
+        assert!(algorithm.try_clone().is_some());
     }
 
     #[test]
