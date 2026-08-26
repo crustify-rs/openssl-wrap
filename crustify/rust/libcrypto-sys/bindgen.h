@@ -15,6 +15,7 @@
 #include <openssl/lhash.h>
 #include <openssl/objects.h>
 #include <openssl/provider.h>
+#include <openssl/rand.h>
 #include <openssl/rsa.h>
 #include <openssl/stack.h>
 #include <openssl/x509.h>
@@ -27,6 +28,15 @@
 #if defined(OPENSSL_NO_DEPRECATED_3_0)
 typedef long (*crustify_BIO_callback_fn)(BIO *b, int oper,
     const char *argp, int argi, long argl, long ret);
+/* Preserve the public legacy table layout when configured no-deprecated. */
+struct rand_meth_st {
+    int (*seed)(const void *buf, int num);
+    int (*bytes)(unsigned char *buf, int num);
+    void (*cleanup)(void);
+    int (*add)(const void *buf, int num, double randomness);
+    int (*pseudorand)(unsigned char *buf, int num);
+    int (*status)(void);
+};
 void BIO_set_callback(BIO *b, crustify_BIO_callback_fn callback);
 int EVP_PKEY_CTX_get0_dh_kdf_ukm(EVP_PKEY_CTX *ctx, unsigned char **ukm);
 int EVP_PKEY_CTX_get0_ecdh_kdf_ukm(EVP_PKEY_CTX *ctx, unsigned char **ukm);

@@ -824,3 +824,70 @@ mod mac_ctx_tests {
         );
     }
 }
+
+define_ctype!(
+    /// Wraps: evp_rand_ctx_st
+    ///
+    /// Opaque layout target for OpenSSL's provider random context. A context
+    /// owns its provider-side state, one reference to its random method, and
+    /// an optional raised reference to its parent. `EVP_RAND_CTX_free`
+    /// releases one count and destroys those resources on the final count.
+    ///
+    /// A newly created sole owner may use [`CBox<EvpRandCtx>`]. Once another
+    /// count is raised, use [`SharedEvpRandCtx`] so safe code cannot request
+    /// exclusive access to an allocation reachable through another owner.
+    EvpRandCtx,
+    EvpRandCtxRef,
+    EvpRandCtxMut,
+    ffi::evp_rand_ctx_st
+);
+
+impl_dropped!(EvpRandCtx, ffi::evp_rand_ctx_st, ffi::EVP_RAND_CTX_free);
+
+/// One owned, shared-only reference to an `EVP_RAND_CTX`.
+pub type SharedEvpRandCtx<'a> = crate::refcount::SharedRef<'a, EvpRandCtx>;
+
+impl<'a> EvpRandCtxRef<'a> {
+    /// Raises the context's reference count and returns a shared-only owner.
+    #[must_use]
+    pub fn try_share(&self) -> Option<SharedEvpRandCtx<'a>> {
+        // SAFETY: this handle proves the context is live. OpenSSL changes only
+        // its atomic reference count and reports whether it created a matching
+        // `EVP_RAND_CTX_free` obligation.
+        if unsafe { ffi::EVP_RAND_CTX_up_ref(self.as_ptr().cast_mut()) } != 1 {
+            return None;
+        }
+
+        // SAFETY: the successful up-ref transferred exactly one release
+        // obligation, and the owner retains the source handle's lifetime.
+        unsafe { SharedEvpRandCtx::from_raw(self.as_ptr().cast_mut()) }
+    }
+}
+
+#[cfg(test)]
+mod rand_ctx_tests {
+    use core::mem::size_of;
+
+    use ffibox::{CCell, CDropped};
+
+    use super::*;
+
+    fn assert_owned_cell<T: CCell + CDropped>() {}
+
+    #[test]
+    fn opaque_rand_context_has_typed_ownership_and_borrows() {
+        assert_owned_cell::<EvpRandCtx>();
+        assert_eq!(
+            size_of::<EvpRandCtxRef<'static>>(),
+            size_of::<*const ffi::evp_rand_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<EvpRandCtxMut<'static>>(),
+            size_of::<*mut ffi::evp_rand_ctx_st>()
+        );
+        assert_eq!(
+            size_of::<CBox<EvpRandCtx>>(),
+            size_of::<*mut ffi::evp_rand_ctx_st>()
+        );
+    }
+}

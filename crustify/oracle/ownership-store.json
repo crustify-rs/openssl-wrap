@@ -5239,6 +5239,79 @@
    ]
   },
   {
+   "name": "evp_rand_ctx_st",
+   "defined_in": "crypto/evp/evp_local.h",
+   "_comment_agent": "EVP_RAND_CTX_new constructs a fully initialized refcounted context. The final EVP_RAND_CTX_free releases the owned provider algorithm context through meth->freectx, releases the owned EVP_RAND reference, frees storage, and recursively down-references parent. refcnt_lock is zero-initialized and never accessed in this tree.",
+   "fields": [
+    {
+     "name": "algctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "Provider newctx supplies one context; final free invokes meth->freectx. Failed/null construction is never published."
+     }
+    },
+    {
+     "name": "meth",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": false,
+      "mutable": true,
+      "note": "EVP_RAND_CTX_new raises one EVP_RAND reference and final free calls EVP_RAND_free."
+     }
+    },
+    {
+     "name": "parent",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Optional parent receives an up-ref during construction and a matching EVP_RAND_CTX_free on final child release."
+     }
+    },
+    {
+     "name": "refcnt",
+     "refcount": true
+    },
+    {
+     "name": "refcnt_lock",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Legacy layout member: zero-initialized and never read, assigned, or released by any tree-wide toucher in this revision."
+     }
+    }
+   ]
+  },
+  {
    "name": "evp_signature_st",
    "defined_in": "crypto/evp/evp_local.h",
    "_comment_agent": "EVP_SIGNATURE is a refcounted method record. It owns one provider reference and its copied type name; its description and dispatch callbacks borrow from the retained provider module.",
@@ -7439,6 +7512,115 @@
       "nullable": true,
       "mutable": true,
       "note": "Owned ASN1_TYPE value slot. OTHERNAME ASN.1 sequence teardown releases it, while construction paths replace or populate the discriminator and active payload in place. The public layout and GENERAL_NAME_set0_othername permit NULL."
+     }
+    }
+   ]
+  },
+  {
+   "name": "rand_meth_st",
+   "defined_in": "include/openssl/rand.h",
+   "_comment_agent": "Each RAND_METHOD member is an optional function pointer. The table borrows executable code with static lifetime; it neither owns nor releases callbacks. Seed/add synchronously read num bytes, bytes/pseudorand synchronously write num bytes, and cleanup/status take no data.",
+   "fields": [
+    {
+     "name": "add",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional synchronous additional-entropy callback."
+     }
+    },
+    {
+     "name": "bytes",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional synchronous output callback."
+     }
+    },
+    {
+     "name": "cleanup",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional no-argument cleanup callback."
+     }
+    },
+    {
+     "name": "pseudorand",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional synchronous output callback."
+     }
+    },
+    {
+     "name": "seed",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional synchronous seed callback."
+     }
+    },
+    {
+     "name": "status",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Optional no-argument status callback."
      }
     }
    ]
@@ -36869,6 +37051,65 @@
       "nullable": true,
       "mutable": true,
       "note": ""
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_RAND_CTX_free",
+   "defined_in": "crypto/evp/evp_rand.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "Consumes one optional EVP_RAND_CTX reference; final release destroys fields and storage."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_RAND_CTX_up_ref",
+   "defined_in": "crypto/evp/evp_rand.c",
+   "lifetime": {
+    "for": "ctx",
+    "is_dropper": false,
+    "is_disposer": false,
+    "is_cloner": {
+     "deep": false,
+     "upref": true
+    }
+   },
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "self"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrows a live context and atomically increments its reference count."
      }
     }
    ]
