@@ -263,6 +263,12 @@ pub fn RAND_set_rand_method(method: Option<RandMethodRef<'static>>) -> bool {
 
 /// Wraps: RAND_pseudo_bytes
 /// Fills `output` through the deprecated compatibility random method.
+///
+/// The installed method's `pseudorand` callback supplies the result verbatim;
+/// OpenSSL's own default table routes it to the same DRBG generation as
+/// [`RAND_bytes`](crate::rand::rand_lib::RAND_bytes), so `1` means success.
+/// `-1` reports that no method or no `pseudorand` callback is installed, and
+/// also rejects a slice longer than a C `int` can express.
 #[cfg(feature = "deprecated-1-1-0")]
 #[allow(non_snake_case)]
 pub fn RAND_pseudo_bytes(output: &mut [u8]) -> i32 {

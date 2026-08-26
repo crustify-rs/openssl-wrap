@@ -22,6 +22,11 @@ fn c_string_ptr(value: Option<&CStr>) -> *const core::ffi::c_char {
 
 /// Wraps: RAND_add
 /// Mixes `buffer` into the default random generator with the given entropy estimate.
+///
+/// `randomness` estimates how many bytes of entropy `buffer` carries and should
+/// lie between zero and its length. The C function reports nothing: `true` only
+/// states that the request was submitted, and `false` that `buffer` is longer
+/// than a C `int` can express, so nothing was mixed in.
 #[must_use]
 pub fn RAND_add(buffer: &[u8], randomness: f64) -> bool {
     let Ok(length) = i32::try_from(buffer.len()) else {
@@ -35,6 +40,11 @@ pub fn RAND_add(buffer: &[u8], randomness: f64) -> bool {
 
 /// Wraps: RAND_bytes
 /// Fills `output` from the public random generator.
+///
+/// Returns `1` on success, `0` on failure and `-1` when the current random
+/// method does not implement generation. `output` keeps its previous contents
+/// unless the call reports success. A slice longer than a C `int` can express
+/// is rejected as out of range with `-1`, without generating anything.
 pub fn RAND_bytes(output: &mut [u8]) -> i32 {
     let Ok(length) = i32::try_from(output.len()) else {
         return -1;
@@ -45,12 +55,31 @@ pub fn RAND_bytes(output: &mut [u8]) -> i32 {
 }
 
 /// Wraps: RAND_keep_random_devices_open
-pub fn RAND_keep_random_devices_open(keep_open: bool) {
-    // SAFETY: this function has no pointer or caller-side memory obligations.
+/// Controls whether the default provider's seed sources retain their device
+/// file descriptors, which lets them keep working inside a `chroot(2)` jail.
+///
+/// # Safety
+///
+/// No other thread may acquire entropy from the default seed source during
+/// this call. The device-backed seeder keeps its retention flag and its open
+/// descriptors in unsynchronized process-global storage
+/// (`providers/implementations/rands/seeding/rand_unix.c`), which the entropy
+/// path reads without a lock, so a concurrent call races it. Passing `false`
+/// additionally closes those descriptors, and the freed descriptor numbers may
+/// be reused by an unrelated `open` before a concurrent seeder finishes
+/// reading from them. Call this during initialization, as OpenSSL documents.
+pub unsafe fn RAND_keep_random_devices_open(keep_open: bool) {
+    // SAFETY: the caller excludes concurrent entropy acquisition, which is the
+    // only reader of the global retention flag and of the device descriptors
+    // this call may close. The argument itself carries no memory obligation.
     unsafe { ffi::RAND_keep_random_devices_open(i32::from(keep_open)) }
 }
 
 /// Wraps: RAND_poll
+/// Reseeds the default generator from the configured entropy sources.
+///
+/// Returns whether seed data was generated; the C function reports this as a
+/// strict `0` or `1`.
 #[must_use]
 pub fn RAND_poll() -> bool {
     // SAFETY: this function has no pointer or caller-side memory obligations.
@@ -59,6 +88,9 @@ pub fn RAND_poll() -> bool {
 
 /// Wraps: RAND_priv_bytes
 /// Fills `output` from the private random generator.
+///
+/// Reports success and rejects an out-of-range length exactly as
+/// [`RAND_bytes`] does.
 pub fn RAND_priv_bytes(output: &mut [u8]) -> i32 {
     let Ok(length) = i32::try_from(output.len()) else {
         return -1;
@@ -70,6 +102,9 @@ pub fn RAND_priv_bytes(output: &mut [u8]) -> i32 {
 
 /// Wraps: RAND_seed
 /// Mixes `buffer` into the default random generator as seed material.
+///
+/// Equivalent to [`RAND_add`] with the entropy estimate set to the slice
+/// length, and reports submission the same way.
 #[must_use]
 pub fn RAND_seed(buffer: &[u8]) -> bool {
     let Ok(length) = i32::try_from(buffer.len()) else {
@@ -82,10 +117,15 @@ pub fn RAND_seed(buffer: &[u8]) -> bool {
 }
 
 /// Wraps: RAND_status
+/// Reports whether the random generator holds enough seed material.
 #[must_use]
 pub fn RAND_status() -> bool {
     // SAFETY: this function has no pointer or caller-side memory obligations.
-    unsafe { ffi::RAND_status() == 1 }
+    //
+    // A legacy `RAND_METHOD` returns its `status` callback's value verbatim,
+    // so the result is only documented as a truth value, not as a strict `1`.
+    // C tests it that way itself, as in `RAND_load_file`.
+    unsafe { ffi::RAND_status() != 0 }
 }
 
 /// Wraps: RAND_bytes_ex

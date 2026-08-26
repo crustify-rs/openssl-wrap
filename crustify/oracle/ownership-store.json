@@ -42139,7 +42139,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Synchronous write of exactly num bytes; the safe wrapper derives num from an exclusively borrowed byte slice."
+      "note": "Caller-owned output array of num bytes, written only during the synchronous call. The callee writes exactly num bytes when it reports success and leaves the buffer untouched on failure, so the safe wrapper takes an already-initialized exclusively borrowed byte slice and derives num from it."
      }
     }
    ]
@@ -42405,7 +42405,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Synchronous write of exactly num bytes; the safe wrapper derives num from an exclusively borrowed byte slice."
+      "note": "Caller-owned output array of num bytes, written only during the synchronous call. The callee writes exactly num bytes when it reports success and leaves the buffer untouched on failure, so the safe wrapper takes an already-initialized exclusively borrowed byte slice and derives num from it."
      }
     }
    ]
@@ -42468,7 +42468,7 @@
       },
       "nullable": false,
       "mutable": true,
-      "note": "Synchronous write of exactly num bytes; the safe wrapper derives num from an exclusively borrowed byte slice."
+      "note": "Caller-owned output array of num bytes, written only during the synchronous call. The callee writes exactly num bytes when it reports success and leaves the buffer untouched on failure, so the safe wrapper takes an already-initialized exclusively borrowed byte slice and derives num from it."
      }
     }
    ]
