@@ -16966,6 +16966,46 @@
    ]
   },
   {
+   "name": "EVP_CIPHER_asn1_to_param",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:c"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The implementation accepts null c and returns an error; otherwise cipher/provider dispatch may mutate context state synchronously."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "AlgorithmIdentifier parameters are read synchronously and never retained; valid call paths require a non-null ASN1_TYPE."
+     }
+    }
+   ]
+  },
+  {
    "name": "EVP_CIPHER_can_pipeline",
    "defined_in": "crypto/evp/evp_enc.c",
    "ptr_args": [
@@ -17337,6 +17377,46 @@
      "note": "Optional provider borrowed from and retained by the cipher; no reference is transferred."
     }
    }
+  },
+  {
+   "name": "EVP_CIPHER_get_asn1_iv",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The cipher context is required and EVP_CipherInit_ex updates its IV synchronously."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "The body explicitly permits null; a non-null ASN1_TYPE is read synchronously and not retained."
+     }
+    }
+   ]
   },
   {
    "name": "EVP_CIPHER_get_block_size",
@@ -17716,6 +17796,86 @@
       "nullable": false,
       "mutable": false,
       "note": "Callback function pointer is borrowed and invoked only during the synchronous traversal."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_param_to_asn1",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:c"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The implementation accepts null c and returns an error; cipher/provider dispatch may access mutable context state synchronously."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "The output ASN1_TYPE is replaced or populated synchronously and must be non-null on valid call paths."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_set_asn1_iv",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "c",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:c"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The required cipher context is only queried for its original IV and length and is not retained."
+     }
+    },
+    {
+     "name": "type",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:type"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "The body explicitly permits null; a non-null ASN1_TYPE receives an owned octet-string copy synchronously."
      }
     }
    ]

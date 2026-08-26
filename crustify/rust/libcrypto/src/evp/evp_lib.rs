@@ -12,6 +12,7 @@ use ffibox::CBox;
 use ffibox::{CSlice, CSliceMut};
 use libcrypto_sys as ffi;
 
+use crate::asn1::openssl_asn1::{Asn1TypeMut, Asn1TypeRef};
 use crate::bio::context::OsslLibCtxRef;
 use crate::evp::evp::{
     EvpCipherRef, EvpMdRef, EvpPkeyCtxMut, EvpPkeyCtxRef, SharedEvpCipher, SharedEvpMd,
@@ -1095,5 +1096,122 @@ mod scheduled_cipher_metadata_tests {
             names.push(name.to_bytes().to_vec());
         }));
         assert!(names.iter().any(|name| name == b"AES-128-CBC"));
+    }
+}
+
+/// Wraps: EVP_CIPHER_asn1_to_param
+///
+/// Applies the borrowed ASN.1 algorithm parameters to an initialized cipher
+/// context. A missing context preserves OpenSSL's error-returning null case.
+pub fn EVP_CIPHER_asn1_to_param(
+    ctx: Option<&mut EvpCipherCtxMut<'_>>,
+    parameters: Asn1TypeRef<'_>,
+) -> c_int {
+    let ctx = ctx.map_or(ptr::null_mut(), |ctx| ctx.as_mut_ptr());
+    // SAFETY: `ctx` is null or exclusively borrowed and `parameters` remains
+    // live for the call. This conversion path only reads the ASN.1 value; the
+    // legacy C signature predates const-correctness and retains neither input.
+    unsafe { ffi::EVP_CIPHER_asn1_to_param(ctx, parameters.as_ptr().cast_mut()) }
+}
+
+/// Wraps: EVP_CIPHER_get_asn1_iv
+///
+/// Reads an optional ASN.1 octet string and installs it as the context IV.
+pub fn EVP_CIPHER_get_asn1_iv(
+    ctx: &mut EvpCipherCtxMut<'_>,
+    parameters: Option<Asn1TypeRef<'_>>,
+) -> c_int {
+    let parameters = parameters.map_or(ptr::null_mut(), |value| value.as_ptr().cast_mut());
+    // SAFETY: the context is exclusively borrowed. The optional ASN.1 value
+    // is null or live and only read synchronously; OpenSSL retains no pointer.
+    unsafe { ffi::EVP_CIPHER_get_asn1_iv(ctx.as_mut_ptr(), parameters) }
+}
+
+/// Wraps: EVP_CIPHER_param_to_asn1
+///
+/// Replaces the ASN.1 algorithm parameters with those of the cipher context.
+/// A missing context preserves OpenSSL's error-returning null case.
+pub fn EVP_CIPHER_param_to_asn1(
+    ctx: Option<&mut EvpCipherCtxMut<'_>>,
+    parameters: &mut Asn1TypeMut<'_>,
+) -> c_int {
+    let ctx = ctx.map_or(ptr::null_mut(), |ctx| ctx.as_mut_ptr());
+    // SAFETY: `ctx` is null or exclusively borrowed and `parameters` is a live
+    // exclusive ASN.1 value whose payload OpenSSL may replace synchronously.
+    unsafe { ffi::EVP_CIPHER_param_to_asn1(ctx, parameters.as_mut_ptr()) }
+}
+
+/// Wraps: EVP_CIPHER_set_asn1_iv
+///
+/// Copies the context's original IV into an optional ASN.1 value.
+pub fn EVP_CIPHER_set_asn1_iv(
+    ctx: EvpCipherCtxRef<'_>,
+    parameters: Option<&mut Asn1TypeMut<'_>>,
+) -> c_int {
+    let parameters = parameters.map_or(ptr::null_mut(), |value| value.as_mut_ptr());
+    // SAFETY: the live context is only queried for its original IV and length.
+    // The optional ASN.1 value is exclusively borrowed for payload replacement;
+    // the C function copies the bytes and retains neither pointer.
+    unsafe { ffi::EVP_CIPHER_set_asn1_iv(ctx.as_ptr().cast_mut(), parameters) }
+}
+
+#[cfg(test)]
+mod cipher_asn1_parameter_tests {
+    use super::*;
+    use crate::asn1::openssl_asn1::Asn1Type;
+    use crate::evp::evp_enc::{
+        CipherDirection, EVP_CIPHER_CTX_new, EVP_CIPHER_fetch, EVP_CipherInit_ex2,
+    };
+
+    fn initialized_context(
+        cipher: EvpCipherRef<'_>,
+        iv: Option<&[u8]>,
+    ) -> CBox<crate::evp::evp_local::EvpCipherCtx> {
+        let mut ctx = EVP_CIPHER_CTX_new().expect("cipher context");
+        assert_eq!(
+            EVP_CipherInit_ex2(
+                &mut ctx.as_mut(),
+                Some(cipher),
+                Some(&[0x42; 16]),
+                iv,
+                None,
+                CipherDirection::Encrypt,
+            ),
+            1
+        );
+        ctx
+    }
+
+    #[test]
+    fn cipher_iv_helpers_accept_their_documented_optional_parameter() {
+        let cipher = EVP_CIPHER_fetch(None, c"AES-128-CBC", None).expect("AES-128-CBC");
+        let mut ctx = initialized_context(cipher.as_ref(), Some(&[0x24; 16]));
+        let mut parameters = Asn1Type::new().expect("ASN1_TYPE_new");
+
+        assert_eq!(
+            EVP_CIPHER_set_asn1_iv(ctx.as_ref(), Some(&mut parameters.as_mut())),
+            1
+        );
+        assert_eq!(
+            EVP_CIPHER_get_asn1_iv(&mut ctx.as_mut(), Some(parameters.as_ref())),
+            16
+        );
+        assert_eq!(EVP_CIPHER_set_asn1_iv(ctx.as_ref(), None), 0);
+        assert_eq!(EVP_CIPHER_get_asn1_iv(&mut ctx.as_mut(), None), 0);
+    }
+
+    #[test]
+    fn cipher_parameters_round_trip_through_asn1() {
+        let cipher = EVP_CIPHER_fetch(None, c"AES-128-CBC", None).expect("AES-128-CBC");
+        let mut source = initialized_context(cipher.as_ref(), Some(&[0x24; 16]));
+        let mut parameters = Asn1Type::new().expect("ASN1_TYPE_new");
+
+        assert!(
+            EVP_CIPHER_param_to_asn1(Some(&mut source.as_mut()), &mut parameters.as_mut(),) > 0
+        );
+
+        let mut target = initialized_context(cipher.as_ref(), None);
+        assert!(EVP_CIPHER_asn1_to_param(Some(&mut target.as_mut()), parameters.as_ref()) > 0);
+        assert!(EVP_CIPHER_param_to_asn1(None, &mut parameters.as_mut()) <= 0);
     }
 }
