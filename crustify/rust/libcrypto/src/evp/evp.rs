@@ -531,6 +531,8 @@ impl<'a> EvpMdRef<'a> {
 mod md_tests {
     use core::ptr;
 
+    use ffibox::CBox;
+
     use super::*;
 
     #[test]
@@ -548,6 +550,55 @@ mod md_tests {
         let shared = digest.as_ref().try_share().expect("EVP_MD_up_ref");
         assert_eq!(shared.as_ptr(), digest.as_ptr());
         assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+
+    /// A cached fetch hands back a record the library context's method store
+    /// owns, not a counted reference of its own — the reason [`SharedEvpMd`]
+    /// carries the fetching context's borrow instead of being `'static`.
+    #[test]
+    fn a_cached_fetch_shares_one_library_context_owned_record() {
+        // SAFETY: the constructor returns null or a fresh, fully initialized
+        // context carrying one ownership obligation, transferred once here.
+        let libctx =
+            unsafe { CBox::<crate::bio::context::OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
+                .expect("OSSL_LIB_CTX_new");
+
+        let fetch = || {
+            // SAFETY: `libctx` is live for the whole closure body, the
+            // algorithm name is NUL-terminated, and a null property query
+            // selects the default implementation.
+            unsafe { ffi::EVP_MD_fetch(libctx.as_ptr(), c"SHA2-256".as_ptr(), ptr::null()) }
+        };
+
+        let first = fetch();
+        assert!(!first.is_null());
+        // Two fetches name one record: caching stores the constructed
+        // method and hands it back without a reference for the caller.
+        assert_eq!(first, fetch());
+
+        // SAFETY: the record is live and owned by `libctx`'s method store; on
+        // the cached path the public up-reference reports success without
+        // touching a count, which is why `try_share` may not treat its result
+        // as sole ownership.
+        let borrowed = unsafe { EvpMdRef::from_ptr(first) }.expect("fetched method");
+        let share = borrowed.try_share().expect("public up-reference");
+        assert_eq!(share.as_ptr(), first);
+        // The share's own release runs here and changes nothing.
+        drop(share);
+
+        // Balancing both fetches still leaves the record usable, because every
+        // public release is a no-op for a cached method.
+        for _ in 0..2 {
+            // SAFETY: releasing a cached record is the documented no-op path;
+            // the store keeps the only real reference.
+            unsafe { ffi::EVP_MD_free(first) };
+        }
+        // SAFETY: the record is still live, as the previous releases show.
+        assert!(!unsafe { ffi::EVP_MD_get0_name(first) }.is_null());
+
+        // `libctx` frees the record here, which is the dependency
+        // `SharedEvpMd<'a>` exists to express.
+        drop(libctx);
     }
 }
 
@@ -634,6 +685,9 @@ define_ctype!(
 // count; cached records deliberately pair this with a no-op up-reference.
 impl_dropped!(EvpKdf, ffi::evp_kdf_st, ffi::EVP_KDF_free);
 
+// Do not register `EVP_KDF_up_ref` as `CCloned`: cloning a `CBox` would let
+// two owners of one method each obtain an exclusive borrowed handle.
+
 /// One owned, shared-only reference to an `EVP_KDF` method.
 ///
 /// The lifetime carries the library-context dependency of a fetched method.
@@ -660,6 +714,8 @@ impl<'a> EvpKdfRef<'a> {
 mod kdf_tests {
     use core::ptr;
 
+    use ffibox::CBox;
+
     use super::*;
 
     #[test]
@@ -676,6 +732,55 @@ mod kdf_tests {
         let shared = kdf.as_ref().try_share().expect("EVP_KDF_up_ref");
         assert_eq!(shared.as_ptr(), kdf.as_ptr());
         assert_eq!(shared.as_ref().as_ptr(), raw.cast_const());
+    }
+
+    /// A cached fetch hands back a record the library context's method store
+    /// owns, not a counted reference of its own — the reason [`SharedEvpKdf`]
+    /// carries the fetching context's borrow instead of being `'static`.
+    #[test]
+    fn a_cached_fetch_shares_one_library_context_owned_record() {
+        // SAFETY: the constructor returns null or a fresh, fully initialized
+        // context carrying one ownership obligation, transferred once here.
+        let libctx =
+            unsafe { CBox::<crate::bio::context::OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
+                .expect("OSSL_LIB_CTX_new");
+
+        let fetch = || {
+            // SAFETY: `libctx` is live for the whole closure body, the
+            // algorithm name is NUL-terminated, and a null property query
+            // selects the default implementation.
+            unsafe { ffi::EVP_KDF_fetch(libctx.as_ptr(), c"HKDF".as_ptr(), ptr::null()) }
+        };
+
+        let first = fetch();
+        assert!(!first.is_null());
+        // Two fetches name one record: caching stores the constructed
+        // method and hands it back without a reference for the caller.
+        assert_eq!(first, fetch());
+
+        // SAFETY: the record is live and owned by `libctx`'s method store; on
+        // the cached path the public up-reference reports success without
+        // touching a count, which is why `try_share` may not treat its result
+        // as sole ownership.
+        let borrowed = unsafe { EvpKdfRef::from_ptr(first) }.expect("fetched method");
+        let share = borrowed.try_share().expect("public up-reference");
+        assert_eq!(share.as_ptr(), first);
+        // The share's own release runs here and changes nothing.
+        drop(share);
+
+        // Balancing both fetches still leaves the record usable, because every
+        // public release is a no-op for a cached method.
+        for _ in 0..2 {
+            // SAFETY: releasing a cached record is the documented no-op path;
+            // the store keeps the only real reference.
+            unsafe { ffi::EVP_KDF_free(first) };
+        }
+        // SAFETY: the record is still live, as the previous releases show.
+        assert!(!unsafe { ffi::EVP_KDF_get0_name(first) }.is_null());
+
+        // `libctx` frees the record here, which is the dependency
+        // `SharedEvpKdf<'a>` exists to express.
+        drop(libctx);
     }
 }
 
@@ -736,7 +841,7 @@ impl<'a> EvpMacRef<'a> {
 mod mac_tests {
     use core::{mem::size_of, ptr};
 
-    use ffibox::{CCell, CDropped};
+    use ffibox::{CBox, CCell, CDropped};
 
     use super::*;
 
@@ -775,5 +880,54 @@ mod mac_tests {
             size_of::<SharedEvpMac<'static>>(),
             size_of::<*mut ffi::evp_mac_st>()
         );
+    }
+
+    /// A cached fetch hands back a record the library context's method store
+    /// owns, not a counted reference of its own — the reason [`SharedEvpMac`]
+    /// carries the fetching context's borrow instead of being `'static`.
+    #[test]
+    fn a_cached_fetch_shares_one_library_context_owned_record() {
+        // SAFETY: the constructor returns null or a fresh, fully initialized
+        // context carrying one ownership obligation, transferred once here.
+        let libctx =
+            unsafe { CBox::<crate::bio::context::OsslLibCtx>::from_raw(ffi::OSSL_LIB_CTX_new()) }
+                .expect("OSSL_LIB_CTX_new");
+
+        let fetch = || {
+            // SAFETY: `libctx` is live for the whole closure body, the
+            // algorithm name is NUL-terminated, and a null property query
+            // selects the default implementation.
+            unsafe { ffi::EVP_MAC_fetch(libctx.as_ptr(), c"HMAC".as_ptr(), ptr::null()) }
+        };
+
+        let first = fetch();
+        assert!(!first.is_null());
+        // Two fetches name one record: caching stores the constructed
+        // method and hands it back without a reference for the caller.
+        assert_eq!(first, fetch());
+
+        // SAFETY: the record is live and owned by `libctx`'s method store; on
+        // the cached path the public up-reference reports success without
+        // touching a count, which is why `try_share` may not treat its result
+        // as sole ownership.
+        let borrowed = unsafe { EvpMacRef::from_ptr(first) }.expect("fetched method");
+        let share = borrowed.try_share().expect("public up-reference");
+        assert_eq!(share.as_ptr(), first);
+        // The share's own release runs here and changes nothing.
+        drop(share);
+
+        // Balancing both fetches still leaves the record usable, because every
+        // public release is a no-op for a cached method.
+        for _ in 0..2 {
+            // SAFETY: releasing a cached record is the documented no-op path;
+            // the store keeps the only real reference.
+            unsafe { ffi::EVP_MAC_free(first) };
+        }
+        // SAFETY: the record is still live, as the previous releases show.
+        assert!(!unsafe { ffi::EVP_MAC_get0_name(first) }.is_null());
+
+        // `libctx` frees the record here, which is the dependency
+        // `SharedEvpMac<'a>` exists to express.
+        drop(libctx);
     }
 }

@@ -3225,7 +3225,7 @@
   {
    "name": "evp_kdf_ctx_st",
    "defined_in": "crypto/evp/evp_local.h",
-   "_comment_agent": "EVP_KDF_CTX is public-opaque. Both private pointer fields are owned by a fully constructed context and are settled by EVP_KDF_CTX_free; no private field accessor is emitted.",
+   "_comment_agent": "Reviewed: EVP_KDF_CTX is public-opaque. Both private pointer fields are owned by a fully constructed context and are settled by EVP_KDF_CTX_free; no private field accessor is emitted. Adding the library-context dependency that evp_mac_ctx_st records but this entry omitted: EVP_KDF_up_ref/EVP_KDF_free touch refcnt only when no_store != 0 (crypto/evp/kdf_meth.c), so for a cached method both are paired no-ops and the source OSSL_LIB_CTX's method store owns the record; a completed context therefore inherits that library-context lifetime and safe constructors must return a lifetime-bound owner. Unlike EVP_MAC_CTX_dup, EVP_KDF_CTX_dup checks src->meth->dupctx != NULL itself (crypto/evp/kdf_lib.c), so it needs no guard shim; ARGON2ID is a default-provider KDF with no dupctx dispatch entry and exercises that NULL return.",
    "fields": [
     {
      "name": "algctx",
@@ -3254,7 +3254,7 @@
       "borrowed": null,
       "nullable": false,
       "mutable": true,
-      "note": "A completed context owns one EVP_KDF reference established by EVP_KDF_up_ref; duplication raises it and EVP_KDF_CTX_free releases it."
+      "note": "A completed context owns one EVP_KDF reference established by EVP_KDF_up_ref; duplication raises it and EVP_KDF_CTX_free releases it. For a cached (no_store == 0) method both operations are no-ops and the fetching OSSL_LIB_CTX's method store owns the record, so the context also inherits that library-context lifetime."
      }
     }
    ]
@@ -4050,7 +4050,7 @@
   {
    "name": "evp_mac_ctx_st",
    "defined_in": "crypto/evp/evp_local.h",
-   "_comment_agent": "EVP_MAC_CTX is publicly opaque. A completed context owns provider-specific algorithm state and one public EVP_MAC reference; duplication deep-copies the state and raises the method reference. Cached EVP_MAC references are paired public no-ops owned by the source OSSL_LIB_CTX, so the context also retains the method's library-context lifetime. No private field accessor is exposed by this wrap wave.",
+   "_comment_agent": "Reviewed: EVP_MAC_CTX is publicly opaque. A completed context owns provider-specific algorithm state and one public EVP_MAC reference; duplication deep-copies the state and raises the method reference. Cached EVP_MAC references are paired public no-ops owned by the source OSSL_LIB_CTX, so the context also retains the method's library-context lifetime. No private field accessor is exposed by this wrap wave. Adding the verified reason EVP_MAC_CTX_dup needs a guard the KDF equivalent does not: evp_mac_from_algorithm (crypto/evp/mac_meth.c) does not count OSSL_FUNC_MAC_DUPCTX towards fnctxcnt, so meth->dupctx may legitimately be NULL, and EVP_MAC_CTX_dup calls src->meth->dupctx unconditionally once src->algctx != NULL (crypto/evp/mac_lib.c). A safe wrapper must therefore check that dispatch slot before entering the public routine; every MAC in the default provider does supply dupctx, so the guard is reachable only through a third-party provider.",
    "fields": [
     {
      "name": "algctx",
@@ -4064,7 +4064,7 @@
       "borrowed": null,
       "nullable": false,
       "mutable": true,
-      "note": "Provider-specific MAC state returned by meth->newctx, mutated by MAC operations, duplicated by meth->dupctx, and released through meth->freectx."
+      "note": "Provider-specific MAC state returned by meth->newctx, mutated by MAC operations, duplicated by meth->dupctx, and released through meth->freectx. meth->dupctx is optional (not required by evp_mac_from_algorithm), and EVP_MAC_CTX_dup dereferences it without a null check, so duplication must be gated on that slot."
      }
     },
     {

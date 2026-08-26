@@ -521,6 +521,13 @@ define_ctype!(
     /// The C implementation owns provider-specific state and one retained
     /// `EVP_KDF` method reference; `EVP_KDF_CTX_free` settles both.
     ///
+    /// That retained reference does not make the context independent of its
+    /// library context: `EVP_KDF_up_ref` and `EVP_KDF_free` act on the count
+    /// only for a `no_store` method, so for a cached one they are paired
+    /// no-ops and the method store of the source `OSSL_LIB_CTX` owns the
+    /// record. Safe constructors therefore hand back [`BorrowedEvpKdfCtx`]
+    /// rather than a bare `CBox<EvpKdfCtx>`.
+    ///
     /// Duplication is fallible and provider-dependent, so it is exposed by
     /// [`EvpKdfCtxRef::try_dup`] rather than as an infallible `Clone`.
     EvpKdfCtx,
@@ -619,12 +626,37 @@ mod kdf_ctx_tests {
         let duplicate = ctx.as_ref().try_dup().expect("EVP_KDF_CTX_dup");
 
         assert_ne!(duplicate.as_ref().as_ptr(), ctx.as_ref().as_ptr());
+        // The owner duplicates on its own, keeping the same dependencies.
+        let again = duplicate.try_dup().expect("EVP_KDF_CTX_dup of a duplicate");
+        assert_ne!(again.as_ref().as_ptr(), duplicate.as_ref().as_ptr());
         assert_eq!(ctx.as_mut().as_mut_ptr(), raw_ctx);
         assert_eq!(
             size_of::<CBox<EvpKdfCtx>>(),
             size_of::<*mut ffi::evp_kdf_ctx_st>()
         );
         assert_eq!(size_of::<EvpKdf>(), size_of::<ffi::evp_kdf_st>());
+    }
+
+    /// `EVP_KDF_CTX_dup` refuses a provider that publishes no `dupctx`, which
+    /// the documented `None` result has to report. ARGON2ID is the default
+    /// provider's KDF without that dispatch entry.
+    #[test]
+    fn duplicating_a_context_without_provider_dupctx_reports_failure() {
+        // SAFETY: null selects the process-wide default context and default
+        // properties; the static algorithm name is NUL-terminated.
+        let raw_kdf =
+            unsafe { ffi::EVP_KDF_fetch(ptr::null_mut(), c"ARGON2ID".as_ptr(), ptr::null()) };
+        // SAFETY: a successful fetch transfers one public method reference.
+        let kdf: SharedEvpKdf<'static> =
+            unsafe { SharedEvpKdf::from_raw(raw_kdf) }.expect("EVP_KDF_fetch");
+
+        // SAFETY: the borrowed method is live; a non-null result transfers a
+        // fully initialized context and one `EVP_KDF_CTX_free` obligation.
+        let raw_ctx = unsafe { ffi::EVP_KDF_CTX_new(kdf.as_ptr()) };
+        // SAFETY: ownership of the fresh context transfers exactly once.
+        let ctx = unsafe { CBox::<EvpKdfCtx>::from_raw(raw_ctx) }.expect("KDF context");
+
+        assert!(ctx.as_ref().try_dup().is_none());
     }
 }
 
@@ -767,6 +799,9 @@ mod mac_ctx_tests {
             .try_dup()
             .expect("EVP_MAC_CTX_dup of HMAC context");
         assert_ne!(duplicate.as_ref().as_ptr(), raw.cast_const());
+        // The owner duplicates on its own, keeping the same dependencies.
+        let again = duplicate.try_dup().expect("EVP_MAC_CTX_dup of a duplicate");
+        assert_ne!(again.as_ref().as_ptr(), duplicate.as_ref().as_ptr());
     }
 
     #[test]
