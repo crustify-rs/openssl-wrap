@@ -138,7 +138,7 @@
   {
    "name": "ASN1_VALUE_st",
    "defined_in": null,
-   "_comment_agent": "OpenSSL deliberately never defines ASN1_VALUE_st; include/openssl/asn1.h documents it as an opaque type-erased pointer equivalent to void *. It has no layout or lifecycle of its own.",
+   "_comment_agent": "Reviewed. OpenSSL deliberately never defines ASN1_VALUE_st; include/openssl/asn1.h only typedefs the tag, and the templates use its pointers as type-erased handles, so the type has no layout. Correcting the earlier claim that it also has no lifecycle: it has one, it is simply not recoverable from the pointer. ASN1_item_new / ASN1_item_new_ex construct a value and ASN1_item_free(val, it) releases it, both parameterized by the const ASN1_ITEM * template; crypto/asn1/tasn_fre.c forwards to ossl_asn1_item_embed_free(&val, it, 0), which walks `it` to reach every field, so the template is part of the destructor rather than a hint. The Rust owner is therefore a CBoxWith over a CDropper carrying that template, never a plain CBox with a CDropped impl; the wrap wave emits only the borrowed handles, because every ASN1_VALUE * this crate produces is reached through one of the concrete generated types the templates cast to and from, each already carrying its own wrapper and *_free. ASN1_item_dup is the matching deep copy but takes and returns void *, so it belongs to the void lifetime tier, not to this tag.",
    "fields": []
   },
   {
@@ -2735,7 +2735,7 @@
   {
    "name": "evp_cipher_ctx_st",
    "defined_in": "crypto/evp/evp_local.h",
-   "_comment_agent": "EVP_CIPHER_CTX is publicly opaque. Findings follow evp_enc.c initialization, copy, reset, application-data, legacy cipher-data, and provider-state paths; this wrap wave exposes no field accessors.",
+   "_comment_agent": "EVP_CIPHER_CTX is publicly opaque. Findings follow evp_enc.c initialization, copy, reset, application-data, legacy cipher-data, and provider-state paths; this wrap wave exposes no field accessors. Reviewed and corrected on one point: the retained cipher is NOT an unconditional keepalive. evp_cipher_init_internal stores the selected record in fetched_cipher behind EVP_CIPHER_up_ref and EVP_CIPHER_CTX_reset releases it with EVP_CIPHER_free, so the obligations match, but for a cached fetch or a legacy static record both are no-ops (evp_cipher_up_ref/evp_cipher_free return early unless origin == EVP_ORIG_DYNAMIC, and the public wrappers additionally short-circuit unless EVP_CIPH_FLAG_NO_STORE). ossl_method_store_cache_get hands back the stored method without taking a reference, so a cached record is owned by the method store of the OSSL_LIB_CTX it was fetched from and an initialized context must not outlive that context. Verified empirically: two fetches from one explicit OSSL_LIB_CTX return the same pointer, three EVP_CIPHER_free calls leave it usable, and after OSSL_LIB_CTX_free the context still holds the released pointer. Same shape as evp_md_ctx_st; latent rather than reachable while no safe OSSL_LIB_CTX_new wrapper exists.",
    "fields": [
     {
      "name": "algctx",
@@ -2823,7 +2823,7 @@
   {
    "name": "evp_cipher_st",
    "defined_in": "include/crypto/evp.h",
-   "_comment_agent": "The public EVP_CIPHER surface is opaque, so no field accessor is emitted. Internal inspection shows dynamic records retain prov, own type_name, borrow description and dispatch callbacks from provider-backed algorithm metadata, and use refcnt for dynamic reference counting; legacy static records leave these pointers null.",
+   "_comment_agent": "The public EVP_CIPHER surface is opaque, so no field accessor is emitted. Internal inspection shows dynamic records retain prov, own type_name, borrow description and dispatch callbacks from provider-backed algorithm metadata, and use refcnt for dynamic reference counting; legacy static records leave these pointers null. Reviewed and extended: the public EVP_CIPHER_up_ref/EVP_CIPHER_free pair is refcounting ONLY for a record carrying EVP_CIPH_FLAG_NO_STORE, and evp_cipher_up_ref/evp_cipher_free are in turn no-ops unless origin == EVP_ORIG_DYNAMIC. A cached fetch therefore returns a borrowed pointer whose storage the fetching OSSL_LIB_CTX's method store owns (ossl_method_store_cache_get takes no reference), which is why the Rust owner is lifetime-parameterized on the fetching context rather than 'static, and why an owner of a cached record must never be treated as sole ownership.",
    "fields": [
     {
      "name": "ccipher",
@@ -8455,6 +8455,50 @@
      "note": "Returns a fresh fully initialized ASN1_TYPE allocation, or null on allocation failure."
     }
    }
+  },
+  {
+   "name": "ASN1_item_free",
+   "defined_in": "crypto/asn1/tasn_fre.c",
+   "lifetime": {
+    "for": "val",
+    "is_dropper": true,
+    "is_disposer": false,
+    "is_cloner": null
+   },
+   "ptr_args": [
+    {
+     "name": "it",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "static"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "The ASN.1 template that says what the erased value is. ossl_asn1_item_embed_free dereferences it unconditionally (it->funcs, it->itype), so NULL is not accepted here even though the inner ossl_asn1_primitive_free tolerates a null item on its own. Templates are the static const ASN1_ITEM tables emitted by ASN1_ITEM_start/ASN1_ITEM_rptr, so the borrow is static and read-only."
+     }
+    },
+    {
+     "name": "val",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": true,
+      "borrowed": null,
+      "nullable": true,
+      "mutable": true,
+      "note": "The value being released. ASN1_item_free forwards to ossl_asn1_item_embed_free(&val, it, 0) with embed=0, so the pointee's own storage is freed, not just its fields. NULL is accepted: for every non-primitive itype embed_free returns early on *pval == NULL, and every DEFINE_ASN1 generated TYPE_free in asn1t.h forwards a possibly-NULL pointer here. Teardown is item-directed, so this is a CDropper carrying `it`, not a CDropped on the value."
+     }
+    }
+   ]
   },
   {
    "name": "AUTHORITY_INFO_ACCESS_free",

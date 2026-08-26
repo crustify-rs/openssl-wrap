@@ -308,9 +308,29 @@ define_ctype!(
     /// Wraps: evp_cipher_ctx_st
     ///
     /// Pointer-compatible target for OpenSSL's opaque cipher context. Its
-    /// fetched cipher reference and provider-specific state are owned by the
-    /// context; application data and legacy cipher data remain externally
-    /// managed and are copied only as borrowed pointers.
+    /// provider algorithm state is owned by the context; application data and
+    /// legacy cipher data remain externally managed and are copied only as
+    /// borrowed pointers.
+    ///
+    /// The retained cipher is *not* an unconditional keepalive. Reviewed
+    /// against `crypto/evp/evp_enc.c`: `evp_cipher_init_internal` stores the
+    /// selected record in `fetched_cipher` behind `EVP_CIPHER_up_ref`, and
+    /// `EVP_CIPHER_CTX_reset` releases it with `EVP_CIPHER_free`, so the two
+    /// obligations always match — but for a cached fetch or a legacy static
+    /// record *both* are deliberate no-ops, because `evp_cipher_up_ref` and
+    /// `evp_cipher_free` return early unless `origin == EVP_ORIG_DYNAMIC`.
+    /// A cached record belongs to the method store of the `OSSL_LIB_CTX` it
+    /// was fetched from, so an initialized context must not outlive that
+    /// library context.
+    ///
+    /// `CBox<EvpCipherCtx>` carries no borrow parameter and cannot state that,
+    /// exactly as [`EvpMdCtx`] cannot for `EVP_MD_CTX`. This is latent rather
+    /// than reachable: no safe constructor hands out an owned
+    /// `CBox<crate::bio::context::OsslLibCtx>` today, so every
+    /// [`crate::evp::evp::EvpCipherRef`] safe code can build is backed by the
+    /// process-wide default context. A wrapper for `OSSL_LIB_CTX_new` must be
+    /// landed together with a lifetime-bound owner for this type — the shape
+    /// [`BorrowedEvpCipherCtx`] already uses for duplication.
     ///
     /// An owning [`CBox<EvpCipherCtx>`] uniquely owns the context header and
     /// settles its retained state through `EVP_CIPHER_CTX_free`. It is not

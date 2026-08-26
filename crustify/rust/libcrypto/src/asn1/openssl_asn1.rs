@@ -42,6 +42,24 @@ define_ctype!(
     /// OpenSSL deliberately leaves this tag undefined and uses its pointers as
     /// type-erased ASN.1 value handles. The borrowed handles therefore carry only
     /// pointer provenance and a Rust lifetime; they never expose a layout.
+    ///
+    /// The type does have a lifecycle, but not one recoverable from the
+    /// pointer: `ASN1_item_new` / `ASN1_item_new_ex` build a value and
+    /// `ASN1_item_free(val, it)` releases it, both parameterized by the
+    /// `const ASN1_ITEM *` template that says what the erased storage really
+    /// is. `crypto/asn1/tasn_fre.c` forwards straight to
+    /// `ossl_asn1_item_embed_free(&val, it, 0)`, which walks `it` to reach
+    /// every field, so the template is part of the destructor and not a hint.
+    /// An owner would therefore be a [`ffibox::CBoxWith`] over a
+    /// [`ffibox::CDropper`] carrying that template, never a plain
+    /// `ffibox::CBox<Asn1Value>` with a [`ffibox::CDropped`] impl.
+    ///
+    /// No such owner is emitted here: every `ASN1_VALUE *` this crate produces
+    /// today is reached through one of the concrete generated types the
+    /// templates cast to and from, each of which already has its own wrapper
+    /// and its own `*_free`. The erased owner belongs with the first
+    /// wrapper for the generic `ASN1_item_*` surface, which also needs an
+    /// `ASN1_ITEM` wrapper it can hold.
     Asn1Value,
     Asn1ValueRef,
     Asn1ValueMut,
