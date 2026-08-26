@@ -156,6 +156,25 @@ pub fn EVP_MAC_gettable_params<'a>(mac: EvpMacRef<'a>) -> Option<CSlice<'a, Ossl
     unsafe { mac_params(params) }
 }
 
+/// Wraps: EVP_MAC_settable_ctx_params
+/// Returns the provider-owned descriptors for settable MAC parameters.
+#[must_use]
+pub fn EVP_MAC_settable_ctx_params<'mac>(
+    mac: EvpMacRef<'mac>,
+) -> Option<CSlice<'mac, OsslParam<'mac>>> {
+    // SAFETY: the live method retains its provider and dispatch table.
+    let params = unsafe { ffi::EVP_MAC_settable_ctx_params(mac.as_ptr()) };
+    // SAFETY: the method borrow retains the returned terminated table.
+    unsafe { mac_params(params) }
+}
+
+/// Wraps: EVP_MAC_up_ref
+/// Raises a MAC method reference and returns a shared-only owner.
+#[must_use]
+pub fn EVP_MAC_up_ref<'a>(mac: EvpMacRef<'a>) -> Option<SharedEvpMac<'a>> {
+    mac.try_share()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -164,6 +183,9 @@ mod tests {
     fn fetched_mac_advertises_parameters_and_enumerates_synchronously() {
         let mac = EVP_MAC_fetch(None, c"HMAC", None).expect("fetch HMAC");
         assert!(EVP_MAC_get0_provider(mac.as_ref()).is_some());
+        assert!(EVP_MAC_settable_ctx_params(mac.as_ref()).is_some());
+        let second = EVP_MAC_up_ref(mac.as_ref()).expect("up-ref");
+        assert_eq!(second.as_ptr(), mac.as_ptr());
         for params in [
             EVP_MAC_gettable_params(mac.as_ref()),
             EVP_MAC_gettable_ctx_params(mac.as_ref()),

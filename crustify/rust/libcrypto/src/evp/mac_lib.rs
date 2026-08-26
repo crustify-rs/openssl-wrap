@@ -2,13 +2,15 @@
 
 #![allow(non_snake_case)]
 
-use core::ffi::CStr;
+use core::ffi::{CStr, c_char, c_void};
 use core::ptr;
+use std::boxed::Box;
+use std::panic::{AssertUnwindSafe, catch_unwind, resume_unwind};
 
 use libcrypto_sys as ffi;
 
 use crate::core::openssl_core::{OsslParamListMut, OsslParamListRef};
-use crate::evp::evp::EvpMacRef;
+use crate::evp::evp::{EvpMacRef, EvpSkeyRef};
 use crate::evp::evp_local::{BorrowedEvpMacCtx, EvpMacCtxMut, EvpMacCtxRef};
 
 /// Wraps: EVP_MAC_CTX_dup
@@ -160,6 +162,89 @@ pub fn EVP_MAC_init(
     unsafe { ffi::EVP_MAC_init(ctx.as_mut_ptr(), key, key_len, params) }
 }
 
+/// Wraps: EVP_MAC_init_SKEY
+/// Initializes a MAC context from a provider secret key and parameter list.
+pub fn EVP_MAC_init_SKEY(
+    ctx: &mut EvpMacCtxMut<'_>,
+    skey: EvpSkeyRef<'_>,
+    params: &OsslParamListRef<'_, '_>,
+) -> i32 {
+    // SAFETY: both typed handles are live for the synchronous call and the
+    // validated parameter list includes its required null-key terminator.
+    unsafe { ffi::EVP_MAC_init_SKEY(ctx.as_mut_ptr(), skey.as_ptr().cast_mut(), params.as_ptr()) }
+}
+
+/// Wraps: EVP_MAC_is_a
+/// Reports whether an optional MAC method has the requested algorithm name.
+#[must_use]
+pub fn EVP_MAC_is_a(mac: Option<EvpMacRef<'_>>, name: &CStr) -> bool {
+    let mac = mac.map_or(ptr::null(), |mac| mac.as_ptr());
+    // SAFETY: null is accepted for the method and `name` is NUL-terminated;
+    // the lookup is synchronous and retains neither pointer.
+    unsafe { ffi::EVP_MAC_is_a(mac, name.as_ptr()) == 1 }
+}
+
+/// Wraps: EVP_MAC_names_do_all
+/// Synchronously visits every name associated with a MAC method.
+pub fn EVP_MAC_names_do_all<F>(mac: EvpMacRef<'_>, callback: &mut F) -> bool
+where
+    F: for<'name> FnMut(&'name CStr),
+{
+    struct CallbackContext<'callback, F> {
+        callback: &'callback mut F,
+        panic: Option<Box<dyn core::any::Any + Send>>,
+        valid: bool,
+    }
+
+    unsafe extern "C" fn trampoline<F>(name: *const c_char, data: *mut c_void)
+    where
+        F: for<'name> FnMut(&'name CStr),
+    {
+        // SAFETY: the wrapper passes this exact context and keeps it uniquely
+        // borrowed throughout OpenSSL's synchronous traversal.
+        let context = unsafe { &mut *data.cast::<CallbackContext<'_, F>>() };
+        if context.panic.is_some() {
+            return;
+        }
+        if name.is_null() {
+            context.valid = false;
+            return;
+        }
+        // SAFETY: OpenSSL supplies a live NUL-terminated name for this call.
+        let name = unsafe { CStr::from_ptr(name) };
+        if let Err(panic) = catch_unwind(AssertUnwindSafe(|| (context.callback)(name))) {
+            context.panic = Some(panic);
+        }
+    }
+
+    let mut context = CallbackContext {
+        callback,
+        panic: None,
+        valid: true,
+    };
+    // SAFETY: the method is live and the callback context remains valid and
+    // exclusively borrowed until the synchronous enumeration returns.
+    let complete = unsafe {
+        ffi::EVP_MAC_names_do_all(
+            mac.as_ptr(),
+            Some(trampoline::<F>),
+            ptr::from_mut(&mut context).cast(),
+        ) == 1
+    };
+    if let Some(panic) = context.panic {
+        resume_unwind(panic);
+    }
+    complete && context.valid
+}
+
+/// Wraps: EVP_MAC_update
+/// Supplies the next byte run to an initialized MAC context.
+pub fn EVP_MAC_update(ctx: &mut EvpMacCtxMut<'_>, data: &[u8]) -> i32 {
+    // SAFETY: the exclusive context handle is live and `data` supplies exactly
+    // the readable byte count passed to the synchronous provider callback.
+    unsafe { ffi::EVP_MAC_update(ctx.as_mut_ptr(), data.as_ptr(), data.len()) }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,6 +255,12 @@ mod tests {
         let mac = EVP_MAC_fetch(None, c"HMAC", None).expect("fetch HMAC");
         assert_eq!(EVP_MAC_get0_name(mac.as_ref()), Some(c"HMAC"));
         let _ = EVP_MAC_get0_description(mac.as_ref());
+        assert!(EVP_MAC_is_a(Some(mac.as_ref()), c"HMAC"));
+        let mut saw_hmac = false;
+        assert!(EVP_MAC_names_do_all(mac.as_ref(), &mut |name| {
+            saw_hmac |= name.to_bytes().eq_ignore_ascii_case(b"HMAC");
+        }));
+        assert!(saw_hmac);
 
         let mut ctx = EVP_MAC_CTX_new(mac.as_ref()).expect("new MAC context");
         assert_eq!(

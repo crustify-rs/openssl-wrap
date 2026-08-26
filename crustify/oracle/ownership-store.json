@@ -24496,6 +24496,182 @@
    ]
   },
   {
+   "name": "EVP_MAC_init_SKEY",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "skey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:skey"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_is_a",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_names_do_all",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_settable_ctx_params",
+   "defined_in": "crypto/evp/mac_meth.c",
+   "ptr_args": [
+    {
+     "name": "mac",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:mac"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:mac"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+    }
+   }
+  },
+  {
    "name": "EVP_MAC_up_ref",
    "defined_in": "crypto/evp/mac_meth.c",
    "lifetime": {
@@ -24523,6 +24699,46 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live method and creates another public reference. No-store methods increment refcnt; cached methods require no physical increment because EVP_MAC_free is correspondingly a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_MAC_update",
+   "defined_in": "crypto/evp/mac_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
      }
     }
    ]
@@ -37291,6 +37507,45 @@
    ]
   },
   {
+   "name": "HMAC_CTX_get_md",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": {
+      "by_val": true
+     },
+     "array": null,
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:ctx"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+    }
+   }
+  },
+  {
    "name": "HMAC_CTX_new",
    "defined_in": "crypto/hmac/hmac.c",
    "ptr_ret": {
@@ -37327,6 +37582,280 @@
       "nullable": false,
       "mutable": true,
       "note": "Mutably borrows a live context, resets its digest state, and fills missing owned digest contexts without consuming the HMAC_CTX."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_CTX_set_flags",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_Final",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "len",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:len"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_Init",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_Init_ex",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "impl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:impl"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "md",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:md"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_Update",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "HMAC_size",
+   "defined_in": "crypto/hmac/hmac.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
      }
     }
    ]
@@ -40015,6 +40544,46 @@
    ]
   },
   {
+   "name": "OSSL_HPKE_CTX_get_seq",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "seq",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:seq"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
    "name": "OSSL_HPKE_CTX_new",
    "defined_in": "crypto/hpke/hpke.c",
    "ptr_args": [
@@ -40065,6 +40634,902 @@
      "note": "Returns null on validation/allocation failure or a fresh context released by OSSL_HPKE_CTX_free."
     }
    }
+  },
+  {
+   "name": "OSSL_HPKE_CTX_set1_authpriv",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "priv",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:priv"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_CTX_set1_authpub",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_CTX_set1_ikme",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "ikme",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ikme"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_CTX_set1_psk",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "psk",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:psk"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "pskid",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pskid"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_CTX_set_seq",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_decap",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "enc",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:enc"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "info",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:info"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "recippriv",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:recippriv"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_encap",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "enc",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:enc"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "enclen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:enclen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "info",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:info"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_export",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "label",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:label"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "secret",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:secret"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_get_ciphertext_size",
+   "defined_in": "crypto/hpke/hpke.c"
+  },
+  {
+   "name": "OSSL_HPKE_get_grease_value",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ct",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ct"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "enc",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:enc"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "enclen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:enclen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "suite",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:suite"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "suite_in",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:suite_in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_get_public_encap_size",
+   "defined_in": "crypto/hpke/hpke.c"
+  },
+  {
+   "name": "OSSL_HPKE_get_recommended_ikmelen",
+   "defined_in": "crypto/hpke/hpke.c"
+  },
+  {
+   "name": "OSSL_HPKE_keygen",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "ikm",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ikm"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "libctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:libctx"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "priv",
+     "ptr": {
+      "scalar": {
+       "by_ref": {
+        "owned": true,
+        "borrowed": null
+       }
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:priv"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "propq",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:propq"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "pub",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pub"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "publen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:publen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_open",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "aad",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:aad"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "ct",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ct"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "pt",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pt"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "ptlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ptlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_seal",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "aad",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:aad"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "ct",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ct"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "ctlen",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctlen"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "pt",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:pt"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_str2suite",
+   "defined_in": "crypto/hpke/hpke.c",
+   "ptr_args": [
+    {
+     "name": "str",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:str"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    },
+    {
+     "name": "suite",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:suite"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Reviewed against the implementation; the safe wrapper encodes this contract."
+     }
+    }
+   ]
+  },
+  {
+   "name": "OSSL_HPKE_suite_check",
+   "defined_in": "crypto/hpke/hpke.c"
   },
   {
    "name": "OSSL_LIB_CTX_free",

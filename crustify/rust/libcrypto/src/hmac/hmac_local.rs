@@ -1,6 +1,6 @@
 //! Wrappers assigned from `crypto/hmac/hmac_local.h`.
 
-use ffibox::{define_ctype, impl_dropped};
+use ffibox::define_ctype;
 use libcrypto_sys as ffi;
 
 define_ctype!(
@@ -27,10 +27,6 @@ define_ctype!(
     HmacCtxMut,
     ffi::hmac_ctx_st
 );
-
-// `HMAC_CTX_free` resets the active digest state, releases the three owned
-// `EVP_MD_CTX` objects, and frees the context allocation.
-impl_dropped!(HmacCtx, ffi::hmac_ctx_st, ffi::HMAC_CTX_free);
 
 #[cfg(test)]
 mod tests {
