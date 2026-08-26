@@ -128,6 +128,28 @@ mod tests {
             duplicate.as_ref().as_ptr()
         );
     }
+
+    /// The key above is an `EVP_PKEY_NONE` container: it holds no `keymgmt`,
+    /// so it exercises none of the provider-side dependency this type's
+    /// ownership claims are about. A provider-backed key does. `EVP_PKEY_dup`
+    /// gives the copy the source's acquired `EVP_KEYMGMT` and exports its key
+    /// data through it, which is why the duplicate keeps the source handle's
+    /// borrow instead of becoming a context-independent `CBox<EvpPkey>`.
+    #[test]
+    fn duplicating_a_provider_backed_key_carries_the_source_borrow() {
+        use crate::evp::evp_lib::{EVP_PKEY_Q_keygen, QuickKeygen};
+        use crate::evp::p_lib::{EVP_PKEY_eq, EVP_PKEY_is_a};
+
+        let key = EVP_PKEY_Q_keygen(None, None, QuickKeygen::Ed25519).expect("Ed25519 keygen");
+        let duplicate = key.as_ref().try_dup().expect("EVP_PKEY_dup");
+
+        assert_ne!(duplicate.as_ref().as_ptr(), key.as_ref().as_ptr());
+        assert!(EVP_PKEY_is_a(duplicate.as_ref(), c"ED25519"));
+        assert_eq!(EVP_PKEY_eq(key.as_ref(), duplicate.as_ref()), 1);
+
+        // Each owner releases its own reference and its own provider key data,
+        // and the duplicate cannot outlive the borrow it inherited.
+    }
 }
 
 define_ctype!(

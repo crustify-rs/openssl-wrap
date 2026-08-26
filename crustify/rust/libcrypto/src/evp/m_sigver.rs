@@ -156,7 +156,8 @@ pub fn EVP_DigestSignInit<'a>(
 /// # Safety
 ///
 /// `digest` must remain live until this digest context is reset,
-/// reinitialized or freed.
+/// reinitialized or freed, and until every context copied or duplicated from
+/// it is, because the copy carries the same unowned pointer.
 ///
 /// Unlike `EVP_DigestInit_ex2`, which adopts one reference into
 /// `ctx->fetched_digest`, `do_sigver_init` only records `ctx->reqdigest =
@@ -283,10 +284,10 @@ pub fn EVP_DigestVerifyInit<'a>(
 ///
 /// # Safety
 ///
-/// `digest` must remain live until this digest context is reset,
-/// reinitialized or freed, for the reason spelled out on
-/// [`EVP_DigestSignInit_with_md`]: `do_sigver_init` stores it in
-/// `ctx->reqdigest` without raising its reference count.
+/// `digest` must remain live until this digest context, and every context
+/// copied or duplicated from it, is reset, reinitialized or freed, for the
+/// reason spelled out on [`EVP_DigestSignInit_with_md`]: `do_sigver_init`
+/// stores it in `ctx->reqdigest` without raising its reference count.
 #[allow(non_snake_case)]
 pub unsafe fn EVP_DigestVerifyInit_with_md<'a>(
     ctx: &'a mut EvpMdCtxMut<'_>,

@@ -272,10 +272,15 @@ define_ctype!(
     /// [`crate::evp::digest::EVP_MD_CTX_dup`], which creates an independent
     /// context and duplicates or raises the references that copy needs.
     ///
-    /// The one contract this owner does not express is a non-default library
-    /// context. `EVP_DigestInit_ex2` stores the supplied `EVP_MD` in
-    /// `fetched_digest`, and under OpenSSL's default cached fetch
-    /// `EVP_MD_up_ref` is a no-op for a stored record — the digest belongs to
+    /// Two lifetime dependencies of an initialized context stay outside this
+    /// owner's type. Neither is reachable from safe code today; both are
+    /// recorded here because a wrapper that made them reachable would have to
+    /// change this type.
+    ///
+    /// The first is a non-default library context. `EVP_DigestInit_ex2` stores
+    /// the supplied `EVP_MD` in `fetched_digest`, and `EVP_MD_up_ref` touches
+    /// the count only for a record flagged `EVP_MD_FLAG_NO_STORE`, so under
+    /// OpenSSL's default cached fetch it is a no-op and the digest belongs to
     /// the `OSSL_LIB_CTX` it was fetched from. `CBox<EvpMdCtx>` carries no
     /// borrow parameter, so it cannot state that it must not outlive that
     /// context, the way [`crate::evp::pmeth_lib::BorrowedEvpPkeyCtx`] does for
@@ -284,6 +289,20 @@ define_ctype!(
     /// cannot release a library context under a live digest context. A wrapper
     /// for `OSSL_LIB_CTX_new` must be landed together with a lifetime-bound
     /// owner for this type.
+    ///
+    /// The second is `reqdigest`, the record
+    /// [`EVP_MD_CTX_get0_md`](crate::evp::evp_lib::EVP_MD_CTX_get0_md)
+    /// publishes. `evp_md_init_internal` keeps it equal to the counted
+    /// `fetched_digest`, but `do_sigver_init`'s caller-supplied-digest branch
+    /// assigns `ctx->reqdigest = type` with no reference count and without
+    /// touching `fetched_digest`, so that slot is then a bare borrow of the
+    /// caller's record — and `EVP_MD_CTX_copy_ex`, hence
+    /// [`EVP_MD_CTX_dup`](crate::evp::digest::EVP_MD_CTX_dup), copies the
+    /// unowned pointer into a destination that may outlive the source. The
+    /// obligation therefore belongs to the caller of the `unsafe`
+    /// [`EVP_DigestSignInit_with_md`](crate::evp::m_sigver::EVP_DigestSignInit_with_md)
+    /// and its verify twin, and it extends to every context copied or
+    /// duplicated from one so initialized.
     EvpMdCtx,
     EvpMdCtxRef,
     EvpMdCtxMut,
@@ -300,9 +319,10 @@ impl_dropped!(EvpMdCtx, ffi::evp_md_ctx_st, ffi::EVP_MD_CTX_free);
 // registered as `CCloned`. `Clone` is infallible by trait contract, so
 // `CBox::clone` aborts the process when the C routine returns null — and
 // `EVP_MD_CTX_dup` reports ordinary "cannot copy this context" outcomes that
-// way, not just allocation failure: `EVP_MD_CTX_copy_ex` refuses a legacy
-// digest whose method has no `dupctx`, and its `EVP_PKEY_CTX_dup` of an
-// attached public-key context fails outright for a generation operation.
+// way, not just allocation failure: `EVP_MD_CTX_copy_ex` refuses an
+// initialized source whose digest is legacy (`prov == NULL`) or whose provider
+// method publishes no `dupctx`, and its `EVP_PKEY_CTX_dup` of an attached
+// public-key context fails outright for a generation operation.
 // Duplication is therefore exposed only through the fallible
 // `crate::evp::digest::EVP_MD_CTX_dup`, which yields an independent
 // `CBox<EvpMdCtx>` that may be mutably borrowed and freed on its own.
@@ -334,6 +354,66 @@ mod md_ctx_tests {
         let duplicate = crate::evp::digest::EVP_MD_CTX_dup(context.as_ref())
             .expect("EVP_MD_CTX_dup of an empty context");
         assert_ne!(duplicate.as_ptr(), raw);
+    }
+
+    /// The empty-context copy above takes `EVP_MD_CTX_copy_ex`'s `in->digest ==
+    /// NULL` shortcut, which duplicates nothing. This one drives the path the
+    /// type's ownership claims are about: the source holds provider state and
+    /// a counted `fetched_digest`, so the copy runs the provider `dupctx` and
+    /// re-references the digest, and both contexts settle their own state on
+    /// drop. It also pins the reviewed `reqdigest == fetched_digest` invariant
+    /// for an `EVP_DigestInit*`-initialized context: the duplicate publishes
+    /// the same record the source does.
+    #[test]
+    fn duplicating_an_initialized_context_copies_provider_state() {
+        use crate::evp::digest::{
+            EVP_DigestFinal_ex, EVP_DigestInit_ex2, EVP_DigestUpdate, EVP_MD_CTX_dup, EVP_MD_fetch,
+        };
+        use crate::evp::evp_lib::EVP_MD_CTX_get0_md;
+
+        let digest = EVP_MD_fetch(None, c"SHA2-256", None).expect("EVP_MD_fetch");
+        // SAFETY: a non-null result is a fresh, fully initialized empty digest
+        // context with one matching `EVP_MD_CTX_free` obligation.
+        let raw = unsafe { ffi::EVP_MD_CTX_new() };
+        // SAFETY: ownership of the fresh result transfers exactly once.
+        let mut context = unsafe { CBox::<EvpMdCtx>::from_raw(raw) }.expect("EVP_MD_CTX_new");
+
+        assert_eq!(
+            EVP_DigestInit_ex2(&mut context.as_mut(), Some(digest.as_ref()), None),
+            1
+        );
+        assert_eq!(EVP_DigestUpdate(&mut context.as_mut(), b"crustify"), 1);
+
+        // `EVP_DigestInit*` adopts the digest into `fetched_digest`, so the
+        // record the context publishes is the one it keeps alive itself.
+        let published = EVP_MD_CTX_get0_md(context.as_ref()).expect("initialized digest");
+        assert_eq!(published.as_ptr(), digest.as_ref().as_ptr());
+
+        let mut duplicate = EVP_MD_CTX_dup(context.as_ref()).expect("EVP_MD_CTX_dup");
+        assert_ne!(duplicate.as_ptr(), raw);
+        assert_eq!(
+            EVP_MD_CTX_get0_md(duplicate.as_ref())
+                .expect("duplicated digest")
+                .as_ptr(),
+            published.as_ptr()
+        );
+
+        // The copy carries the source's absorbed input, and finalizing one
+        // leaves the other's provider state untouched.
+        let mut from_copy = [0_u8; 32];
+        let mut from_source = [0_u8; 32];
+        assert_eq!(
+            EVP_DigestFinal_ex(&mut duplicate.as_mut(), &mut from_copy),
+            Ok(from_copy.len())
+        );
+        assert_eq!(
+            EVP_DigestFinal_ex(&mut context.as_mut(), &mut from_source),
+            Ok(from_source.len())
+        );
+        assert_eq!(from_copy, from_source);
+
+        // Both owners drop here, each releasing its own provider state and its
+        // own `fetched_digest` reference.
     }
 
     #[test]

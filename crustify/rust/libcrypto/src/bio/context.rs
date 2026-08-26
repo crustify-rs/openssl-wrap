@@ -47,6 +47,25 @@ ffibox::define_ctype!(
     /// code cannot reach that: [`ffibox::CBox`] holds a raw pointer and is
     /// therefore neither `Send` nor `Sync`, so an owner never crosses threads,
     /// and this wrapper adds no `Send`/`Sync` impl of its own.
+    ///
+    /// ```compile_fail
+    /// use ffibox::CBox;
+    /// use libcrypto::bio::context::OsslLibCtx;
+    ///
+    /// fn assert_send<T: Send>() {}
+    /// // Sending an owner would let one thread release the context another
+    /// // thread installed as its default, leaving that thread-local dangling.
+    /// assert_send::<CBox<OsslLibCtx>>();
+    /// ```
+    ///
+    /// ```compile_fail
+    /// use ffibox::CBox;
+    /// use libcrypto::bio::context::OsslLibCtx;
+    ///
+    /// fn assert_sync<T: Sync>() {}
+    /// // Sharing one is the same hazard reached through a borrow.
+    /// assert_sync::<CBox<OsslLibCtx>>();
+    /// ```
     OsslLibCtx,
     OsslLibCtxRef,
     OsslLibCtxMut,
