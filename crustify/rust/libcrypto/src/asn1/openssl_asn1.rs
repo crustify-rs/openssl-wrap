@@ -7,7 +7,7 @@ use ffibox::{CBox, define_ctype, impl_dropped};
 
 use libcrypto_sys as ffi;
 
-use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef, Asn1StringMut, Asn1StringRef};
+use crate::asn1::asn1::{Asn1Object, Asn1ObjectRef, Asn1String, Asn1StringMut, Asn1StringRef};
 use crate::stack::stack::{Stack, StackMut, StackRef};
 
 define_ctype!(
@@ -420,8 +420,9 @@ impl_dropped!(Asn1Type, ffi::asn1_type_st, ffi::ASN1_TYPE_free);
 pub enum Asn1TypeKind {
     /// `V_ASN1_UNDEF`: the tag a freshly allocated `ASN1_TYPE` carries.
     ///
-    /// `ossl_asn1_primitive_new` stores it together with a null payload, and
-    /// `ASN1_TYPE_get` reports such a value as having no content.
+    /// `asn1_primitive_new` (`crypto/asn1/tasn_new.c`) stores it together with
+    /// a null payload, and `ASN1_TYPE_get` reports such a value as having no
+    /// content.
     Undefined,
     Boolean,
     Integer,
@@ -527,7 +528,7 @@ impl Asn1TypeKind {
     /// `V_ASN1_NULL` has no content, `V_ASN1_BOOLEAN` stores its byte inline,
     /// `V_ASN1_OBJECT` holds an `ASN1_OBJECT` and `V_ASN1_ANY` a nested
     /// `ASN1_TYPE`. `V_ASN1_UNDEF` is excluded as the not-yet-set state
-    /// `ossl_asn1_primitive_new` always pairs with a null payload; a C caller
+    /// `asn1_primitive_new` always pairs with a null payload; a C caller
     /// that stores a string under it instead sees it reported as
     /// [`Asn1TypeValue::Undefined`], never as a mistyped payload. See
     /// [`Asn1TypeKind`].
@@ -567,6 +568,50 @@ impl<'a> Asn1TypeStringRef<'a> {
     }
 }
 
+/// Exclusive counterpart of [`Asn1TypeStringRef`].
+///
+/// The string arms are recorded as mutable: OpenSSL edits an `ASN1_TYPE`'s
+/// payload in place through the ordinary `ASN1_STRING_*` setters rather than
+/// replacing the whole value. None of those setters touches the string's own
+/// `type` field, so no operation reachable from here can desynchronize the
+/// payload from the discriminator that selects its releaser.
+pub struct Asn1TypeStringMut<'a> {
+    value: Asn1StringMut<'a>,
+    kind: Asn1TypeKind,
+}
+
+impl<'a> Asn1TypeStringMut<'a> {
+    /// Returns the concrete ASN.1 string kind.
+    #[must_use]
+    pub const fn kind(&self) -> Asn1TypeKind {
+        self.kind
+    }
+
+    /// Borrows the payload for the ASN.1 string call surface.
+    ///
+    /// The result references the Rust-owned handle, not the C object, which is
+    /// the form [`crate::asn1::asn1_lib`]'s setters take.
+    #[must_use]
+    pub fn as_string_mut(&mut self) -> &mut Asn1StringMut<'a> {
+        &mut self.value
+    }
+
+    /// Consumes this tagged handle for the payload's exclusive handle.
+    #[must_use]
+    pub fn into_string_mut(self) -> Asn1StringMut<'a> {
+        self.value
+    }
+
+    /// Reborrows the tagged payload shared.
+    #[must_use]
+    pub fn as_ref(&self) -> Asn1TypeStringRef<'_> {
+        Asn1TypeStringRef {
+            value: self.value.as_ref(),
+            kind: self.kind,
+        }
+    }
+}
+
 /// Wraps: asn1_type_st.value
 #[derive(Clone, Copy)]
 pub enum Asn1TypeValue<'a> {
@@ -575,6 +620,16 @@ pub enum Asn1TypeValue<'a> {
     Undefined,
     /// Wraps: asn1_type_st.value.boolean
     Boolean(c_int),
+    /// The ASN.1 NULL value, which carries no content.
+    ///
+    /// The union slot beside this tag is not readable as a payload and is not
+    /// read here. `asn1_primitive_new` and `asn1_ex_c2i` park the non-null
+    /// sentinel `(ASN1_VALUE *)1` in it, while `ASN1_TYPE_set(a, V_ASN1_NULL,
+    /// NULL)` — the form [`Asn1TypeMut::set_null`] and OpenSSL's own
+    /// `X509_ALGOR_set0` use — leaves it null. Every consumer of the tag
+    /// ignores the slot: `ossl_asn1_primitive_free` and `ASN1_TYPE_cmp` take
+    /// their `V_ASN1_NULL` arms without touching it, and `asn1_ex_i2c` encodes
+    /// zero content bytes.
     Null,
     /// Wraps: asn1_type_st.value.object
     Object(Option<Asn1ObjectRef<'a>>),
@@ -749,6 +804,111 @@ impl Asn1TypeMut<'_> {
         unsafe { ffi::ASN1_TYPE_set(self.as_mut_ptr(), ffi::V_ASN1_BOOLEAN as c_int, marker) }
     }
 
+    /// Exclusively reborrows the active `asn1_string_st` payload.
+    ///
+    /// `None` when the discriminator selects a tag whose payload is not an
+    /// ASN.1 string — see [`Asn1TypeKind::holds_string`] — or when the arm is
+    /// null. The payload is reachable only through this value, so the reborrow
+    /// inherits its exclusivity.
+    #[must_use]
+    pub fn string_value_mut(&mut self) -> Option<Asn1TypeStringMut<'_>> {
+        let kind = self.as_ref().kind();
+        if !kind.holds_string() {
+            return None;
+        }
+        // SAFETY: `kind` was read from this live `ASN1_TYPE` and selects one of
+        // the `asn1_string_st`-compatible arms. Copying the common union
+        // pointer neither dereferences it nor forms a reference to C storage.
+        let raw = unsafe { ptr::addr_of!((*self.as_mut_ptr()).value.asn1_string).read() };
+        // SAFETY: a non-null active string arm is owned by this value, so the
+        // exclusive handle over the whole `ASN1_TYPE` is the only route to it
+        // for as long as the reborrow lives.
+        let value = unsafe { Asn1StringMut::from_ptr(raw) }?;
+        Some(Asn1TypeStringMut { value, kind })
+    }
+
+    /// Transfers an owned ASN.1 string payload into this value under `kind`.
+    ///
+    /// The owning counterpart of [`try_set_string`](Self::try_set_string),
+    /// which copies. A tag failing [`Asn1TypeKind::holds_string`] is rejected
+    /// and the string handed back: storing these bytes under `V_ASN1_OBJECT`,
+    /// `V_ASN1_ANY` or one of the payload-less tags would leave
+    /// `ossl_asn1_primitive_free` dispatching the wrong releaser for them.
+    ///
+    /// `kind` need not equal the string's own `ASN1_STRING_type`. OpenSSL keeps
+    /// the two independent — `ASN1_TYPE_set1` installs an `ASN1_STRING_dup`
+    /// that preserves the source's `type` under whatever tag it was given — and
+    /// the discriminator is what selects the releaser.
+    pub fn set_string_owned(
+        &mut self,
+        kind: Asn1TypeKind,
+        value: CBox<Asn1String>,
+    ) -> Result<(), CBox<Asn1String>> {
+        if !kind.holds_string() {
+            return Err(value);
+        }
+        let value = value.into_raw().cast::<c_void>();
+        // SAFETY: ownership of `value` has been surrendered, and the tag was
+        // checked to be one whose releaser is the ASN.1 string teardown.
+        // OpenSSL releases the old payload before recording the new one.
+        unsafe { ffi::ASN1_TYPE_set(self.as_mut_ptr(), kind.as_raw(), value) }
+        Ok(())
+    }
+
+    /// Takes the owned ASN.1 string payload, resetting this value to
+    /// `V_ASN1_UNDEF`.
+    ///
+    /// `None` for a tag whose payload is not an ASN.1 string, and for a null
+    /// arm. The value is left in exactly the state `asn1_primitive_new` builds,
+    /// so it stays releasable and reusable.
+    #[must_use]
+    pub fn take_string(&mut self) -> Option<CBox<Asn1String>> {
+        if !self.as_ref().kind().holds_string() {
+            return None;
+        }
+        // SAFETY: the tag selects a string-compatible arm of the live union.
+        // Clearing the arm and the discriminator together through raw-place
+        // projections reproduces the freshly allocated state, so the value
+        // never names a payload it no longer owns.
+        let detached = unsafe {
+            let value = self.as_mut_ptr();
+            let detached = ptr::addr_of_mut!((*value).value.asn1_string).replace(ptr::null_mut());
+            ptr::addr_of_mut!((*value).type_).write(ffi::V_ASN1_UNDEF);
+            detached
+        };
+        // SAFETY: a non-null detached arm was the heap ASN.1 string a fully
+        // constructed `ASN1_TYPE` owns, and its single `ASN1_STRING_free`
+        // obligation is no longer reachable through this value.
+        unsafe { CBox::from_raw(detached) }
+    }
+
+    /// Takes the owned ASN.1 object payload, resetting this value to
+    /// `V_ASN1_UNDEF`.
+    ///
+    /// `None` unless the discriminator is `V_ASN1_OBJECT` and the arm is
+    /// non-null. As with [`take_string`](Self::take_string), the value is left
+    /// in the freshly allocated state.
+    #[must_use]
+    pub fn take_object(&mut self) -> Option<CBox<Asn1Object>> {
+        if self.as_ref().kind() != Asn1TypeKind::Object {
+            return None;
+        }
+        // SAFETY: the discriminator selects the object arm of the live union,
+        // and clearing it together with the discriminator reproduces the
+        // freshly allocated state.
+        let detached = unsafe {
+            let value = self.as_mut_ptr();
+            let detached = ptr::addr_of_mut!((*value).value.object).replace(ptr::null_mut());
+            ptr::addr_of_mut!((*value).type_).write(ffi::V_ASN1_UNDEF);
+            detached
+        };
+        // SAFETY: a non-null detached arm carries the release obligation this
+        // value held. `ASN1_OBJECT_free` is flag-guarded, so adopting a
+        // non-dynamic registry entry installed by
+        // [`try_set_object`](Self::try_set_object) is a no-op teardown.
+        unsafe { CBox::from_raw(detached) }
+    }
+
     /// Transfers an owned ASN.1 object into this value.
     pub fn set_object_owned(&mut self, object: CBox<Asn1Object>) {
         let object = object.into_raw().cast::<c_void>();
@@ -757,10 +917,23 @@ impl Asn1TypeMut<'_> {
         unsafe { ffi::ASN1_TYPE_set(self.as_mut_ptr(), ffi::V_ASN1_OBJECT as c_int, object) }
     }
 
-    /// Deep-copies a borrowed ASN.1 object into this value.
+    /// Installs a borrowed ASN.1 object, copying it only when it is dynamic.
+    ///
+    /// `ASN1_TYPE_set1` duplicates through `OBJ_dup`, which copies a dynamic
+    /// object but hands back *the source pointer itself* for a non-dynamic
+    /// one — a `nid_objs` entry from `crypto/objects/obj_dat.h`, as
+    /// [`crate::asn1::asn1::Asn1ObjectDuplicate`] records. This value then
+    /// aliases the caller's object rather than owning a copy of it.
+    ///
+    /// That aliasing is sound and needs no lifetime coupling: the objects
+    /// `OBJ_dup` refuses to copy are `static const` table entries that live for
+    /// the process, and `ASN1_OBJECT_free` is flag-guarded, so releasing this
+    /// value leaves such an entry alone. Callers comparing pointers should
+    /// expect the borrowed one back.
     pub fn try_set_object(&mut self, object: Asn1ObjectRef<'_>) -> bool {
-        // SAFETY: both handles are live. `ASN1_TYPE_set1` duplicates the object
-        // before replacing this value and reports allocation failure as zero.
+        // SAFETY: both handles are live. `ASN1_TYPE_set1` duplicates or aliases
+        // the object before replacing this value and reports allocation failure
+        // as zero. Either result is releasable exactly once by this value.
         unsafe {
             ffi::ASN1_TYPE_set1(
                 self.as_mut_ptr(),
@@ -771,6 +944,18 @@ impl Asn1TypeMut<'_> {
     }
 
     /// Deep-copies a tagged ASN.1 string value into this value.
+    ///
+    /// [`set_string_owned`](Self::set_string_owned) transfers a payload instead
+    /// of copying it.
+    ///
+    /// The copy goes through `ASN1_STRING_dup`, which carries the same caveat
+    /// as [`crate::asn1::asn1::Asn1String`]'s `Clone`: `ASN1_STRING_copy`
+    /// propagates the source flags, so duplicating a payload whose bytes are
+    /// external (`ASN1_STRING_FLAG_DATA_NOT_OWNED`, or the streaming
+    /// `ASN1_STRING_FLAG_NDEF`) yields a copy that allocates its own buffer yet
+    /// is flagged as not owning it. Releasing this value then leaks those
+    /// bytes. Such a payload only reaches here from a C-built value, since the
+    /// safe surface never installs one.
     pub fn try_set_string(&mut self, value: Asn1TypeStringRef<'_>) -> bool {
         // SAFETY: `value` can only be created from a live string-compatible
         // union arm and carries its exact discriminator. OpenSSL duplicates it
@@ -801,8 +986,8 @@ mod asn1_type_tests {
         );
 
         let mut value = Asn1Type::new().expect("ASN1_TYPE_new");
-        // `ossl_asn1_primitive_new` hands back `V_ASN1_UNDEF` and a null
-        // payload, not one of the tagged arms.
+        // `asn1_primitive_new` hands back `V_ASN1_UNDEF` and a null payload,
+        // not one of the tagged arms.
         assert_eq!(value.as_ref().kind(), Asn1TypeKind::Undefined);
         assert!(matches!(value.as_ref().value(), Asn1TypeValue::Undefined));
 
@@ -939,6 +1124,132 @@ mod asn1_type_tests {
         // target owns storage of its own and `ASN1_TYPE_free` may release it.
         assert_ne!(copy.as_string().as_ptr(), source.as_ptr().cast_const());
         assert_eq!(target.as_ref().kind(), Asn1TypeKind::Other);
+    }
+
+    #[test]
+    fn non_dynamic_objects_are_aliased_rather_than_duplicated() {
+        // `nid_objs[NID_undef]` is a `static const` table entry, so `OBJ_dup`
+        // inside `ASN1_TYPE_set1` returns the source pointer instead of a copy.
+        // SAFETY: the lookup takes a scalar and hands back process-lifetime
+        // registry storage for a known-registered NID.
+        let raw = unsafe { ffi::OBJ_nid2obj(ffi::NID_undef as c_int) };
+        // SAFETY: the registry entry is a live immutable object that outlives
+        // every handle taken here.
+        let registered = unsafe { Asn1ObjectRef::from_ptr(raw) }.expect("registry object");
+
+        let mut value = Asn1Type::new().expect("ASN1_TYPE_new");
+        assert!(value.as_mut().try_set_object(registered));
+        let Asn1TypeValue::Object(Some(stored)) = value.as_ref().value() else {
+            panic!("object arm");
+        };
+        assert_eq!(stored.as_ptr(), raw.cast_const());
+
+        // Releasing the value must leave the shared table entry intact, which
+        // the flag-guarded `ASN1_OBJECT_free` guarantees.
+        drop(value);
+        assert_eq!(
+            crate::objects::obj_dat::OBJ_obj2nid(Some(registered)),
+            ffi::NID_undef as c_int
+        );
+    }
+
+    #[test]
+    fn owned_string_payloads_transfer_in_and_out_without_copying() {
+        let string = crate::asn1::asn1_lib::ASN1_STRING_new().expect("ASN1_STRING_new");
+        let string_ptr = string.as_ptr();
+
+        let mut value = Asn1Type::new().expect("ASN1_TYPE_new");
+        value
+            .as_mut()
+            .set_string_owned(Asn1TypeKind::Utf8String, string)
+            .expect("UTF8String holds a string payload");
+
+        // Unlike `try_set_string`, the exact allocation handed in is installed.
+        let Asn1TypeValue::Utf8String(Some(installed)) = value.as_ref().value() else {
+            panic!("UTF8 string arm");
+        };
+        assert_eq!(installed.as_string().as_ptr(), string_ptr.cast_const());
+
+        let detached = value.as_mut().take_string().expect("installed payload");
+        assert_eq!(detached.as_ptr(), string_ptr);
+        // The emptied value is back in the freshly allocated state, so it is
+        // still releasable and can take a new payload.
+        assert_eq!(value.as_ref().kind(), Asn1TypeKind::Undefined);
+        assert!(matches!(value.as_ref().value(), Asn1TypeValue::Undefined));
+        assert!(value.as_mut().take_string().is_none());
+
+        value
+            .as_mut()
+            .set_string_owned(Asn1TypeKind::Other, detached)
+            .expect("V_ASN1_OTHER holds a string payload");
+        assert_eq!(value.as_ref().kind(), Asn1TypeKind::Other);
+    }
+
+    #[test]
+    fn tags_without_a_string_payload_reject_an_owned_string() {
+        let mut value = Asn1Type::new().expect("ASN1_TYPE_new");
+        for kind in [
+            Asn1TypeKind::Undefined,
+            Asn1TypeKind::Boolean,
+            Asn1TypeKind::Null,
+            Asn1TypeKind::Object,
+            Asn1TypeKind::Any,
+        ] {
+            let string = crate::asn1::asn1_lib::ASN1_STRING_new().expect("ASN1_STRING_new");
+            let string_ptr = string.as_ptr();
+            let returned = value
+                .as_mut()
+                .set_string_owned(kind, string)
+                .expect_err("payload representation is not an ASN1_STRING");
+            // The rejected string comes back owned, so nothing is leaked.
+            assert_eq!(returned.as_ptr(), string_ptr);
+        }
+        // None of the rejected calls disturbed the value.
+        assert_eq!(value.as_ref().kind(), Asn1TypeKind::Undefined);
+    }
+
+    #[test]
+    fn owned_object_payloads_are_detachable_and_string_payloads_are_mutable() {
+        // SAFETY: the literal is NUL terminated and OpenSSL returns a fresh
+        // fully initialized dynamic object or null.
+        let raw = unsafe { ffi::OBJ_txt2obj(c"1.3.6.1.4.1.55555.171717".as_ptr(), 1) };
+        // SAFETY: a fresh numeric OID transfers one free obligation.
+        let object = unsafe { CBox::<Asn1Object>::from_raw(raw) }.expect("ASN1 object");
+
+        let mut value = Asn1Type::new().expect("ASN1_TYPE_new");
+        value.as_mut().set_object_owned(object);
+        assert!(value.as_mut().take_string().is_none());
+        let detached = value.as_mut().take_object().expect("installed object");
+        assert_eq!(detached.as_ptr(), raw);
+        assert_eq!(value.as_ref().kind(), Asn1TypeKind::Undefined);
+        assert!(value.as_mut().take_object().is_none());
+
+        let string = crate::asn1::asn1_lib::ASN1_STRING_new().expect("ASN1_STRING_new");
+        value
+            .as_mut()
+            .set_string_owned(Asn1TypeKind::OctetString, string)
+            .expect("OCTET STRING holds a string payload");
+
+        {
+            let mut value = value.as_mut();
+            let mut payload = value.string_value_mut().expect("installed payload");
+            assert_eq!(payload.kind(), Asn1TypeKind::OctetString);
+            assert!(crate::asn1::asn1_lib::ASN1_STRING_set1_data(
+                payload.as_string_mut(),
+                b"in place"
+            ));
+        }
+
+        let Asn1TypeValue::OctetString(Some(edited)) = value.as_ref().value() else {
+            panic!("octet string arm");
+        };
+        let bytes =
+            crate::asn1::asn1_lib::ASN1_STRING_get0_data(edited.as_string()).expect("string data");
+        assert_eq!(bytes.elems().collect::<Vec<_>>(), b"in place");
+
+        // The discriminator still selects the string releaser for the edited
+        // payload, so the value releases exactly what it owns.
+        assert_eq!(value.as_ref().kind(), Asn1TypeKind::OctetString);
     }
 }
 

@@ -1587,7 +1587,7 @@
   {
    "name": "asn1_type_st",
    "defined_in": "include/openssl/asn1.h",
-   "_comment_agent": "The value union is discriminator-controlled. Heap ASN1_TYPE values created by OpenSSL own active pointer payloads; ASN1_TYPE_free dispatches their release. The common ptr view also appears in non-owning stack temporaries. Pointer arms are nullable; string-shaped payloads are mutable internally, while ASN1_OBJECT payloads are observed immutably. Reviewed 2026-08-23: the ASN1_VALUE spelling of value.asn1_value names the union's generic aliasing slot, not the pointee, so V_ASN1_OTHER and every unenumerated tag carry an ASN1_STRING and only V_ASN1_ANY carries a nested ASN1_TYPE.",
+   "_comment_agent": "The value union is discriminator-controlled. Heap ASN1_TYPE values created by OpenSSL own active pointer payloads; ASN1_TYPE_free dispatches their release. The common ptr view also appears in non-owning stack temporaries. Pointer arms are nullable; string-shaped payloads are mutable internally, while ASN1_OBJECT payloads are observed immutably. Reviewed 2026-08-23: the ASN1_VALUE spelling of value.asn1_value names the union's generic aliasing slot, not the pointee, so V_ASN1_OTHER and every unenumerated tag carry an ASN1_STRING and only V_ASN1_ANY carries a nested ASN1_TYPE. Reviewed 2026-08-26: ASN1_TYPE_set1 does not always copy. For V_ASN1_OBJECT it calls OBJ_dup (crypto/objects/obj_lib.c), which returns the SOURCE pointer for a non-dynamic object, so the value aliases a static const nid_objs entry that its flag-guarded ASN1_OBJECT_free never releases; for every other tag it calls ASN1_STRING_dup, whose ASN1_STRING_copy propagates ASN1_STRING_FLAG_DATA_NOT_OWNED / ASN1_STRING_FLAG_NDEF, so copying an external-buffer payload yields a duplicate that allocates bytes it is flagged not to own and leaks them on release.",
    "fields": [
     {
      "name": "value.asn1_string",
@@ -1736,7 +1736,7 @@
       "borrowed": null,
       "nullable": true,
       "mutable": false,
-      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted."
+      "note": "When this union arm is active, a fully constructed ASN1_TYPE owns the pointee and releases it according to the type discriminator; null is permitted. Ownership here is the flag-guarded ASN1_OBJECT obligation, not exclusive storage: ASN1_TYPE_set1 installs OBJ_dup's result, which for a non-dynamic object is the caller's own pointer into the static const nid_objs table, and ASN1_OBJECT_free then releases nothing. asn1_ex_c2i instead builds a dynamic object through ossl_c2i_ASN1_OBJECT."
      }
     },
     {
