@@ -480,10 +480,38 @@ mod digest_descriptor_tests {
 
     #[test]
     fn get_params_accepts_safe_owned_descriptor_storage() {
+        use core::mem::{MaybeUninit, size_of};
+
         let digest = fetch(c"SHA2-256");
-        let mut params = OsslParamArray::new(&[]);
+        let mut empty = OsslParamArray::new([]);
+        assert!(EVP_MD_get_params(Some(digest.as_ref()), &mut empty));
+        assert!(!EVP_MD_get_params(None, &mut empty));
+
+        // `OSSL_PARAM_UNSIGNED_INTEGER`, per `include/openssl/core.h`.
+        const UNSIGNED_INTEGER: u32 = 2;
+
+        // The array took over the descriptor's exclusive borrow of `storage`,
+        // so the provider writes through it and the result reads back off the
+        // array rather than off a buffer safe code still holds.
+        let mut storage = [MaybeUninit::new(0_u8); size_of::<usize>()];
+        let mut params = OsslParamArray::new([OsslParam::for_slice(
+            c"blocksize",
+            UNSIGNED_INTEGER,
+            &mut storage,
+        )]);
         assert!(EVP_MD_get_params(Some(digest.as_ref()), &mut params));
-        assert!(!EVP_MD_get_params(None, &mut params));
+
+        let values = params.as_list().values();
+        let block_size = values.get(0).expect("the blocksize descriptor");
+        assert_eq!(block_size.return_size(), size_of::<usize>());
+        let written = block_size.data().expect("the filled run");
+        let mut bytes = [0_u8; size_of::<usize>()];
+        for (index, byte) in bytes.iter_mut().enumerate() {
+            // SAFETY: `return_size` reports that the provider initialized the
+            // whole run, so every byte of it now holds a value.
+            *byte = unsafe { written.elem(index).expect("in range").assume_init() };
+        }
+        assert_eq!(usize::from_ne_bytes(bytes), 64);
     }
 
     #[test]
