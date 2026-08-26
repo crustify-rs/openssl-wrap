@@ -95,4 +95,6 @@ int X509_check_ip(const X509 *x, const unsigned char *chk, size_t chklen,
     unsigned int flags);
 int X509_check_ip_asc(const X509 *x, const char *ipasc, unsigned int flags);
 #endif
+/* `no-deprecated` hides this still-linked compatibility declaration. */
+int EVP_CIPHER_impl_ctx_size(const EVP_CIPHER *cipher);
 /* crustify:compat-shims:end */

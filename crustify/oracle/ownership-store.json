@@ -17454,6 +17454,312 @@
    ]
   },
   {
+   "name": "EVP_CIPHER_get_nid",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_get_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_get_type",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_gettable_ctx_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cipher"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned null-key-terminated descriptor array retained by the borrowed cipher/provider."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_gettable_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cipher"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned null-key-terminated descriptor array retained by the borrowed cipher/provider."
+    }
+   }
+  },
+  {
+   "name": "EVP_CIPHER_impl_ctx_size",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "e",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:e"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_is_a",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "name",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": true,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:name"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_names_do_all",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "A live shared cipher is required and borrowed for the synchronous traversal."
+     }
+    },
+    {
+     "name": "data",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:data"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Opaque callback state is borrowed for the synchronous traversal and may be mutated by the callback."
+     }
+    },
+    {
+     "name": "fn",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:fn"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Callback function pointer is borrowed and invoked only during the synchronous traversal."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CIPHER_settable_ctx_params",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ],
+   "ptr_ret": {
+    "ptr": {
+     "scalar": null,
+     "array": {
+      "by_val": true
+     },
+     "string": false,
+     "owned": false,
+     "borrowed": {
+      "lifetime": "arg:cipher"
+     },
+     "nullable": true,
+     "mutable": false,
+     "note": "Provider-owned null-key-terminated descriptor array retained by the borrowed cipher/provider."
+    }
+   }
+  },
+  {
    "name": "EVP_CIPHER_up_ref",
    "defined_in": "crypto/evp/evp_enc.c",
    "lifetime": {
@@ -17481,6 +17787,1346 @@
       "nullable": false,
       "mutable": true,
       "note": "Borrows a live cipher and creates another public reference. NO_STORE dynamic records increment refcnt; cached and legacy records need no physical increment because EVP_CIPHER_free is correspondingly a no-op."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_Cipher",
+   "defined_in": "crypto/evp/evp_lib.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherFinal",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherFinal_ex",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherInit",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherInit_SKEY",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "skey",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:skey"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherInit_ex",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "impl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:impl"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherInit_ex2",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherPipelineDecryptInit",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:iv"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherPipelineEncryptInit",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:iv"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherPipelineFinal",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:out"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "outsize",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outsize"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherPipelineUpdate",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:in"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "inl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:inl"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_ref": {
+        "owned": null,
+        "borrowed": {
+         "lifetime": "arg:out"
+        }
+       }
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "outsize",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outsize"
+      },
+      "nullable": false,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_CipherUpdate",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DecryptFinal",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DecryptFinal_ex",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DecryptInit",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DecryptInit_ex",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "impl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:impl"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DecryptInit_ex2",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_DecryptUpdate",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
      }
     }
    ]
@@ -18669,6 +20315,433 @@
       "nullable": true,
       "mutable": false,
       "note": "Null is valid only with zero length."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_EncryptFinal",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_EncryptFinal_ex",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_EncryptInit",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_EncryptInit_ex",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "impl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:impl"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_EncryptInit_ex2",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "cipher",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:cipher"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "iv",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:iv"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "key",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:key"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    }
+   ]
+  },
+  {
+   "name": "EVP_EncryptUpdate",
+   "defined_in": "crypto/evp/evp_enc.c",
+   "ptr_args": [
+    {
+     "name": "ctx",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:ctx"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
+     }
+    },
+    {
+     "name": "in",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:in"
+      },
+      "nullable": true,
+      "mutable": false,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "out",
+     "ptr": {
+      "scalar": null,
+      "array": {
+       "by_val": true
+      },
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:out"
+      },
+      "nullable": true,
+      "mutable": true,
+      "note": "Caller buffer is borrowed only for the synchronous operation; its extent is supplied or derived by sibling length/context fields."
+     }
+    },
+    {
+     "name": "outl",
+     "ptr": {
+      "scalar": {
+       "by_val": true
+      },
+      "array": null,
+      "string": false,
+      "owned": false,
+      "borrowed": {
+       "lifetime": "arg:outl"
+      },
+      "nullable": false,
+      "mutable": true,
+      "note": "Borrowed for the synchronous call; no ownership transfers."
      }
     }
    ]

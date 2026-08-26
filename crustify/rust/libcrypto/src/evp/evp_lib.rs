@@ -955,3 +955,145 @@ mod cipher_metadata_tests {
         assert_eq!(EVP_CIPHER_CTX_get_key_length(context), 0);
     }
 }
+
+/// Wraps: EVP_CIPHER_get_nid
+#[must_use]
+pub fn EVP_CIPHER_get_nid(cipher: Option<crate::evp::evp::EvpCipherRef<'_>>) -> c_int {
+    let cipher = cipher.map_or(ptr::null(), |cipher| cipher.as_ptr());
+    // SAFETY: null is accepted; otherwise the shared handle is live.
+    unsafe { ffi::EVP_CIPHER_get_nid(cipher) }
+}
+
+/// Wraps: EVP_CIPHER_get_type
+#[must_use]
+pub fn EVP_CIPHER_get_type(cipher: Option<crate::evp::evp::EvpCipherRef<'_>>) -> c_int {
+    let cipher = cipher.map_or(ptr::null(), |cipher| cipher.as_ptr());
+    // SAFETY: null is accepted through the NID getter; otherwise the handle is live.
+    unsafe { ffi::EVP_CIPHER_get_type(cipher) }
+}
+
+/// Wraps: EVP_CIPHER_impl_ctx_size
+#[must_use]
+pub fn EVP_CIPHER_impl_ctx_size(cipher: Option<crate::evp::evp::EvpCipherRef<'_>>) -> c_int {
+    let cipher = cipher.map_or(ptr::null(), |cipher| cipher.as_ptr());
+    // SAFETY: this compatibility implementation accepts null and retains nothing.
+    unsafe { ffi::EVP_CIPHER_impl_ctx_size(cipher) }
+}
+
+/// Wraps: EVP_CIPHER_is_a
+#[must_use]
+pub fn EVP_CIPHER_is_a(cipher: Option<crate::evp::evp::EvpCipherRef<'_>>, name: &CStr) -> bool {
+    let cipher = cipher.map_or(ptr::null(), |cipher| cipher.as_ptr());
+    // SAFETY: null is accepted for the cipher and `name` is NUL-terminated.
+    unsafe { ffi::EVP_CIPHER_is_a(cipher, name.as_ptr()) == 1 }
+}
+
+/// Wraps: EVP_CIPHER_names_do_all
+/// Synchronously visits every provider name associated with a cipher.
+pub fn EVP_CIPHER_names_do_all<F>(
+    cipher: crate::evp::evp::EvpCipherRef<'_>,
+    callback: &mut F,
+) -> bool
+where
+    F: for<'name> FnMut(&'name CStr),
+{
+    struct State<'a, F> {
+        callback: &'a mut F,
+        panic: Option<Box<dyn core::any::Any + Send>>,
+        valid: bool,
+    }
+    unsafe extern "C" fn trampoline<F>(name: *const c_char, data: *mut c_void)
+    where
+        F: for<'name> FnMut(&'name CStr),
+    {
+        // SAFETY: the wrapper keeps this exact state uniquely borrowed.
+        let state = unsafe { &mut *data.cast::<State<'_, F>>() };
+        if state.panic.is_some() {
+            return;
+        }
+        if name.is_null() {
+            state.valid = false;
+            return;
+        }
+        // SAFETY: OpenSSL supplies a live NUL-terminated callback name.
+        let name = unsafe { CStr::from_ptr(name) };
+        if let Err(panic) = catch_unwind(AssertUnwindSafe(|| (state.callback)(name))) {
+            state.panic = Some(panic);
+        }
+    }
+    let mut state = State {
+        callback,
+        panic: None,
+        valid: true,
+    };
+    // SAFETY: cipher, trampoline and state remain live until traversal returns.
+    let complete = unsafe {
+        ffi::EVP_CIPHER_names_do_all(
+            cipher.as_ptr(),
+            Some(trampoline::<F>),
+            ptr::from_mut(&mut state).cast(),
+        ) == 1
+    };
+    if let Some(panic) = state.panic {
+        resume_unwind(panic);
+    }
+    complete && state.valid
+}
+
+/// Wraps: EVP_Cipher
+/// Dispatches update or final after checking the implicit output capacity.
+pub fn EVP_Cipher(
+    ctx: &mut crate::evp::evp_local::EvpCipherCtxMut<'_>,
+    output: &mut [u8],
+    input: Option<&[u8]>,
+) -> c_int {
+    let input_len = match input.map_or(Ok(0), |input| u32::try_from(input.len())) {
+        Ok(len) => len,
+        Err(_) => return 0,
+    };
+    // SAFETY: the live context is queried synchronously for scalar metadata.
+    let block = EVP_CIPHER_CTX_get_block_size(ctx.as_ref());
+    let Ok(block) = usize::try_from(block) else {
+        return 0;
+    };
+    if block == 0 {
+        return 0;
+    }
+    let Some(required) =
+        input
+            .map_or(0, <[u8]>::len)
+            .checked_add(if block == 1 { 0 } else { block })
+    else {
+        return 0;
+    };
+    if output.len() < required {
+        return 0;
+    }
+    let output = output.as_mut_ptr();
+    let input = input.map_or(ptr::null(), <[u8]>::as_ptr);
+    // SAFETY: input has the supplied extent and output has worst-case capacity. Null input selects finalization and nothing is retained.
+    unsafe { ffi::EVP_Cipher(ctx.as_mut_ptr(), output, input, input_len) }
+}
+
+#[cfg(test)]
+mod scheduled_cipher_metadata_tests {
+    use super::*;
+    use crate::evp::evp::SharedEvpCipher;
+
+    #[test]
+    fn metadata_and_names_use_typed_borrows() {
+        let cipher: SharedEvpCipher<'static> =
+            crate::evp::evp_enc::EVP_CIPHER_fetch(None, c"AES-128-CBC", None).expect("AES-128-CBC");
+        assert_ne!(
+            EVP_CIPHER_get_nid(Some(cipher.as_ref())),
+            ffi::NID_undef as i32
+        );
+        assert!(EVP_CIPHER_is_a(Some(cipher.as_ref()), c"AES-128-CBC"));
+        assert_eq!(EVP_CIPHER_impl_ctx_size(Some(cipher.as_ref())), 0);
+        let mut names = Vec::new();
+        assert!(EVP_CIPHER_names_do_all(cipher.as_ref(), &mut |name| {
+            names.push(name.to_bytes().to_vec());
+        }));
+        assert!(names.iter().any(|name| name == b"AES-128-CBC"));
+    }
+}
